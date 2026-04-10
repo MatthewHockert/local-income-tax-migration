@@ -1,0 +1,21 @@
+# Data files (large, not for version control)
+data/*.rds
+data/*.csv
+data/*.xlsx
+data/lodes/
+data/pa_dced_raw/
+data/pa_afr_raw/
+data/irs_soi/
+
+# R artifacts
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Archive of old scripts
+archive/
