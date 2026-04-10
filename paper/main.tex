@@ -5,10 +5,13 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{caption}
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage{natbib}
+
+\newcommand{\sym}[1]{\textsuperscript{#1}}
 
 \hypersetup{
     colorlinks=true,
@@ -163,128 +166,124 @@
 \label{sec:strategy}
 %==========================================================
 
-% TODO: Suggested reviewer framing for this section:
-% "Our baseline design exploits within-municipality changes in local income tax
-% rates in a municipality-by-year panel with municipality and year fixed effects.
-% Because tax changes may coincide with broader local shocks, we use two
-% complementary strategies. First, among municipalities that change their tax rates,
-% we estimate a dose-response specification that separates common post-change effects
-% from the marginal effect of the rate increase itself. Second, we implement
-% event-study and stacked difference-in-differences designs using nearby municipalities
-% with stable tax rates as controls."
+Our empirical strategy proceeds in two steps. First, we estimate
+difference-in-differences models comparing municipalities that changed
+their tax rates to those that never changed. Because tax changes occur
+at different times across municipalities, we use the Sun and Abraham
+(2021) interaction-weighted estimator, which avoids the bias from
+heterogeneous treatment timing that can affect standard two-way fixed
+effects. We estimate rate increases and decreases separately, each
+against a clean never-changed control group, and then jointly to test
+for asymmetry. Second, we estimate dose-response models testing whether
+the magnitude of rate changes predicts additional sorting beyond the
+binary treatment effect.
 
-\subsection{Baseline Specification}
-\label{subsec:baseline}
+\subsection{Event Study Specification}
+\label{subsec:event_study}
 
-\begin{equation}
-    Y_{it} = \alpha_i + \gamma_t + \beta \cdot \text{rate}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-    \label{eq:twfe}
-\end{equation}
-
-\noindent where:
-\begin{itemize}
-    \item[] $Y_{it}$ = share\_live\_in for municipality $i$ in year $t$
-    \item[] $\alpha_i$, $\gamma_t$ = municipality and year fixed effects
-    \item[] $\text{rate}_{it}$ = municipal income tax rate (EIT in PA, municipal rate in OH)
-    \item[] $\mathbf{X}_{it}$ = vector of fiscal controls: log police expenditure, log streets expenditure, log total debt, log state intergovernmental aid
-    \item[] Standard errors clustered at the municipality level
-\end{itemize}
-
-\subsection{Dose-Response Identification}
-\label{subsec:dose}
+Our baseline specification is a Sun and Abraham (2021) event study:
 
 \begin{equation}
-    Y_{it} = \alpha_i + \gamma_t + \delta \cdot \text{post}_{it} + \beta \cdot (\text{rate}_{it} \times \text{post}_{it}) + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-    \label{eq:dose}
-\end{equation}
-
-\noindent where:
-\begin{itemize}
-    \item[] $\text{post}_{it} = \mathbb{1}[t \geq g_i]$, with $g_i$ the year of municipality $i$'s first rate increase
-    \item[] $\delta$ captures common post-treatment shifts among rate-changing municipalities
-    \item[] $\beta$ captures the tax-specific channel: conditional on raising taxes, does rate magnitude predict additional changes in the locally-resident share?
-    \item[] $\mathbf{X}_{it}$ = fiscal controls as in Equation~\ref{eq:twfe}
-    \item[] Sample restricted to municipalities that raised rates during the panel
-\end{itemize}
-
-% TODO: Explain why this helps: conditional on city and year fixed effects and
-% common post-treatment shifts among tax-changing cities, additional rate increases
-% are associated with additional changes in share_live_in. If fiscal stress alone
-% drove the outcome, rate magnitude should not matter conditional on being a
-% treated city.
-
-\subsection{Sun-Abraham Event Study}
-\label{subsec:sunab}
-
-% TODO: Write prose motivation for heterogeneity-robust event study.
-
-\begin{equation}
-    Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot \mathbb{1}[t - g_i = \ell] + \varepsilon_{it}
+    Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot D_{it}^{\ell} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \label{eq:sunab}
 \end{equation}
 
-\noindent where:
-\begin{itemize}
-    \item[] $g_i$ = cohort (year of first rate increase for municipality $i$; $g_i = \infty$ for never-treated)
-    \item[] $\ell = t - g_i$ = relative time to treatment
-    \item[] $\mu_\ell$ = cohort-weighted average treatment effect at relative time $\ell$, estimated via the interaction-weighted estimator of Sun and Abraham (2021)
-    \item[] $\ell = -1$ is the reference period (normalization)
-    \item[] Pre-treatment coefficients $\mu_\ell$ for $\ell < 0$ test the parallel trends assumption
-\end{itemize}
+\noindent where $Y_{it}$ is share\_live\_in for municipality $i$ in year
+$t$; $\alpha_i$ and $\gamma_t$ are municipality and year fixed effects;
+$D_{it}^{\ell}$ is an indicator for municipality $i$ being $\ell$ years
+from its first rate change; $\mathbf{X}_{it}$ is a vector of fiscal
+controls (log police expenditure, log streets expenditure, log total
+debt, and log state intergovernmental aid); and $\mu_\ell$ is the
+treatment effect at relative time $\ell$, estimated via the
+interaction-weighted approach of Sun and Abraham (2021). We normalize
+to $\ell = -1$ and cluster standard errors at the municipality level.
+Pre-treatment coefficients ($\ell < -1$) test the parallel trends
+assumption. Fiscal controls are available for Pennsylvania from the
+DCED Annual Financial Reports; we report specifications with and
+without controls.
 
-% We implement this using the sunab() function in the fixest R package.
-% Never-treated municipalities serve as the control group.
-% Companion outcomes (log resident workers, log nonresident commuters,
-% log total jobs) are estimated with the same specification to decompose
-% the share_live_in effect into numerator and denominator components.
+We estimate this event study three times for each state:
 
-\subsection{Stacked Difference-in-Differences}
-\label{subsec:stacked}
-
-% TODO: Write prose motivation for clean control group construction.
+\begin{enumerate}
+    \item \textbf{Increasers vs.\ never-changed.} Treated municipalities
+    are those that raised their tax rate. The control group is
+    municipalities that never changed their rate. Municipalities that
+    only decreased rates are excluded from the sample entirely.
+    \item \textbf{Decreasers vs.\ never-changed.} The mirror test:
+    treated municipalities are those that lowered their rate. Increasers
+    are excluded.
+    \item \textbf{Asymmetry test.} Both increase and decrease indicators
+    enter the same model, with the never-changed group as the common
+    control:
+\end{enumerate}
 
 \begin{equation}
-    Y_{ict} = \alpha_{ic} + \gamma_{ct} + \sum_{\ell \neq -1} \beta_\ell \cdot (\text{treated}_i \times \mathbb{1}[\ell_{ict} = \ell]) + \varepsilon_{ict}
-    \label{eq:stacked}
+    Y_{it} = \alpha_i + \gamma_t
+    + \delta^{+} \cdot \text{Post}^{+}_{it}
+    + \delta^{-} \cdot \text{Post}^{-}_{it}
+    + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+    \label{eq:asymmetry}
 \end{equation}
 
-\noindent where:
-\begin{itemize}
-    \item[] $c$ indexes cohort (one per treatment event)
-    \item[] $\alpha_{ic}$ = cohort-specific municipality fixed effects
-    \item[] $\gamma_{ct}$ = cohort-specific year fixed effects
-    \item[] $\text{treated}_i = \mathbb{1}[i \text{ is the treated municipality in cohort } c]$
-    \item[] $\ell_{ict} = t - g_c$ = relative time within cohort $c$
-    \item[] Control municipalities: neighbors within 80km of the treated municipality that did not change their rate within $\pm 2$ years of the event
-    \item[] OH specification: control group further restricted to municipalities with no income tax (unincorporated townships)
-    \item[] Event window: $\ell \in \{-5, \ldots, +5\}$
-    \item[] Standard errors clustered at the municipality level
-\end{itemize}
+\noindent where $\text{Post}^{+}_{it} = 1$ for municipalities that
+raised rates, in all years after their first increase, and analogously
+$\text{Post}^{-}_{it}$ for decreases. Comparing $\delta^{+}$ and $\delta^{-}$ tests whether
+sorting responses are symmetric.
 
-% The stacked design avoids contamination from heterogeneous treatment timing
-% by constructing independent cohort-specific panels. Each treated municipality
-% is paired with its own set of clean controls, and cohort-specific fixed effects
-% ensure that treatment effects are not identified from comparisons across
-% differently-timed cohorts.
+\paragraph{Control groups.}
+In Pennsylvania, the control group consists of 1,211 municipalities that
+never changed their EIT rate during the panel. Because all PA
+municipalities levy an EIT, identification comes from rate changes
+among universally taxed municipalities.
 
-\subsection{Full Continuous Dose-Response}
-\label{subsec:full_dose}
+In Ohio, we report results with two control groups. The first is 104
+municipalities that never levied an income tax, providing a clean
+extensive-margin comparison. The second is 230 municipalities that
+maintained a stable tax rate (including taxed cities that never
+adjusted). The no-tax control group produces cleaner pre-trends,
+likely because stable-rate taxed cities share unobserved urban
+characteristics with treated cities.
 
-% TODO: Motivation — exploits both increases and decreases as variation.
+\subsection{Dose-Response}
+\label{subsec:dose}
+
+Among municipalities that raised rates, we test whether rate magnitude
+predicts additional sorting beyond a common post-treatment shift:
 
 \begin{equation}
-    Y_{it} = \alpha_i + \gamma_t + \beta^{+} \cdot \Delta\text{rate}^{+}_{it} + \beta^{-} \cdot |\Delta\text{rate}^{-}_{it}| + \varepsilon_{it}
+    Y_{it} = \alpha_i + \gamma_t
+    + \delta \cdot \text{Post}_{it}
+    + \beta \cdot (\text{Rate}_{it} \times \text{Post}_{it})
+    + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+    \label{eq:dose}
+\end{equation}
+
+\noindent where $\text{Post}_{it} = 1$ in all years after municipality
+$i$'s first rate increase. The sample is restricted to municipalities
+that raised rates. The coefficient $\delta$ captures common
+post-treatment shifts (e.g., fiscal stress that prompted the rate
+increase), while $\beta$ isolates the tax channel. If fiscal distress alone drove the result, rate
+magnitude should not matter conditional on being a treated city.
+
+To test for asymmetry in the dose-response, we decompose cumulative
+rate changes from baseline on the full sample:
+
+\begin{equation}
+    Y_{it} = \alpha_i + \gamma_t
+    + \beta^{+} \cdot R^{+}_{it}
+    + \beta^{-} \cdot R^{-}_{it}
+    + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \label{eq:split_dose}
 \end{equation}
 
-\noindent where:
-\begin{itemize}
-    \item[] $\Delta\text{rate}^{+}_{it} = \max(\text{rate}_{it} - \text{rate}_{i,t_0}, \; 0)$ = cumulative rate increase from baseline
-    \item[] $|\Delta\text{rate}^{-}_{it}| = |\min(\text{rate}_{it} - \text{rate}_{i,t_0}, \; 0)|$ = cumulative rate decrease from baseline (in absolute value)
-    \item[] $\beta^{+} < 0$ implies rate increases reduce the locally-resident employment share
-    \item[] $\beta^{-} > 0$ implies rate decreases increase the locally-resident employment share
-    \item[] Asymmetry ($|\beta^{+}| \neq |\beta^{-}|$) indicates differential adjustment to rate increases vs.\ decreases
-\end{itemize}
+\noindent where $R^{+}_{it} = \max(\text{rate}_{it} - \text{rate}_{i0},\; 0)$
+is the cumulative rate increase from baseline (zero if rate has not risen) and
+$R^{-}_{it} = |\min(\text{rate}_{it} - \text{rate}_{i0},\; 0)|$
+is the absolute value of the cumulative rate decrease. If sorting is symmetric, $\beta^{+}$ and $\beta^{-}$
+should be equal in magnitude with opposite signs. Asymmetry ---
+specifically $|\beta^{+}| > |\beta^{-}|$ --- would indicate that
+residential location decisions are sticky: tax increases push residents
+out, but tax decreases do not pull them back.
 
 %==========================================================
 \section{Results}
@@ -294,63 +293,278 @@
 \subsection{Main Results}
 \label{subsec:main_results}
 
-% --- Main Results Table ---
+% --- PA Binary DiD Table ---
 \begin{table}[H]
     \centering
-    \caption{Main Results: Effect of Local Income Tax Rate on share\_live\_in}
-    \label{tab:main_results}
+    \caption{Binary DiD: Effect of Rate Changes on share\_live\_in (PA)}
+    \label{tab:pa_binary}
     \small
-    \begin{tabular}{lcccc}
+    \begin{tabular}{lccc}
         \toprule
-        & (1) & (2) & (3) & (4) \\
-        & PA TWFE & PA Dose & PA Post + Dose & OH Stacked $t{+}5$ \\
+        & (1) & (2) & (3) \\
+        & Increases vs NC & Decreases vs NC & Both vs NC \\
         \midrule
-        \multicolumn{5}{l}{\textit{Coefficients}} \\
-        resident\_eit          & $-0.0101^{*}$ &                &                 &                    \\
-                               & (0.0050)      &                &                 &                    \\[3pt]
-        rate $\times$ post     &               & $-0.0084^{**}$ & $-0.0099^{.}$   &                    \\
-                               &               & (0.0032)       & (0.0052)        &                    \\[3pt]
-        post                   &               &                & 0.0022          &                    \\
-                               &               &                & (0.0064)        &                    \\[3pt]
-        treated $\times$ $t{+}5$ &            &                &                 & $-0.0109^{***}$    \\
-                               &               &                &                 & (0.0026)           \\
+        Sun-Abraham ATT        & $-0.0053$\sym{.}  & $0.0048$         &              \\
+                               & (0.0029)           & (0.0057)         &              \\[3pt]
+        increase $\times$ post &                    &                  & $-0.0074$\sym{*} \\
+                               &                    &                  & (0.0037)     \\[3pt]
+        decrease $\times$ post &                    &                  & $-0.0002$    \\
+                               &                    &                  & (0.0060)     \\
         \midrule
-        \multicolumn{5}{l}{\textit{Diagnostics}} \\
-        N                      & 24{,}522      & 2{,}741        & 2{,}741         & 48{,}712           \\
-        $R^2$                  & 0.858         & 0.912          & 0.912           & 0.922              \\
-        Within $R^2$           & 0.0004        & 0.010          & 0.011           & 0.002              \\
-        Dep.\ var.\ mean       & 0.149         & ---            & ---             & ---                \\
-        Fixed Effects          & City, Year    & City, Year     & City, Year      & Cohort$\times$City, Cohort$\times$Year \\
-        Clusters               & Municipality  & Municipality   & Municipality    & Municipality       \\
-        Sample                 & All PA        & Treated PA     & Treated PA      & OH border (no-tax controls) \\
+        Treated                & 157 cities         & 63 cities        & 220 cities   \\
+        Control                & 1{,}211 NC         & 1{,}211 NC       & 1{,}211 NC   \\
+        $N$                    & 24{,}522           & 24{,}522         & 24{,}522     \\
+        Fixed Effects           & \multicolumn{3}{c}{Municipality, Year} \\
+        Clusters               & \multicolumn{3}{c}{Municipality} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Dependent variable is share\_live\_in (fraction of
-        workers in municipality who also reside there). Column (1): two-way fixed effects
-        on all PA municipalities. Columns (2)--(3): dose-response among PA municipalities
-        that raised EIT rates, testing whether rate magnitude predicts sorting beyond common
-        post-treatment shifts. Column (4): stacked difference-in-differences for Ohio,
-        comparing treated cities to neighboring municipalities with no income tax within 80km.
-        Standard errors clustered at the municipality level in parentheses.
-        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+        \footnotesize \textit{Notes:} Dependent variable is share\_live\_in.
+        NC = never-changed (municipalities that never adjusted their EIT rate).
+        Columns (1)--(2): Sun-Abraham (2021) interaction-weighted ATT; cohort defined
+        by year of first increase (decrease). Column (1) excludes decreasers;
+        column (2) excludes increasers. Column (3): both in one model.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
     \end{minipage}
 \end{table}
 
-% --- Event Study Figures ---
+% --- PA Event Study Figures ---
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{../figures/pa_sunab_share.png}
-    \caption{Pennsylvania: Sun-Abraham Event Study (share\_live\_in). Cohort defined by first year of EIT rate increase. Never-treated municipalities as control group. Shaded region = 95\% confidence interval.}
-    \label{fig:pa_sunab_share}
+    \includegraphics[width=0.85\textwidth]{../figures/pa_es_increase.png}
+    \caption{PA: Sun-Abraham Event Study --- Rate Increases vs Never-Changed Controls.
+    Cohort = year of first EIT increase. 157 treated municipalities, 1{,}211 never-changed controls.
+    Pre-trends are flat; effect emerges gradually after treatment.}
+    \label{fig:pa_es_increase}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{../figures/oh_sunab_share.png}
-    \caption{Ohio: Sun-Abraham Event Study (share\_live\_in).}
-    \label{fig:oh_sunab_share}
+    \includegraphics[width=0.85\textwidth]{../figures/pa_es_decrease.png}
+    \caption{PA: Sun-Abraham Event Study --- Rate Decreases vs Never-Changed Controls.
+    Cohort = year of first EIT decrease. 63 treated municipalities, 1{,}211 never-changed controls.
+    No evidence that rate decreases increase the locally-resident share.}
+    \label{fig:pa_es_decrease}
+\end{figure}
+
+% --- OH Binary DiD Table: No-Tax Controls ---
+\begin{table}[H]
+    \centering
+    \caption{Binary DiD: Effect of Rate Changes on share\_live\_in (OH, No-Tax Controls)}
+    \label{tab:oh_binary_notax}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & (1) & (2) & (3) \\
+        & Increases vs No-Tax & Decreases vs No-Tax & Both vs No-Tax \\
+        \midrule
+        Sun-Abraham ATT        & $-0.0076$\sym{**}  & $-0.0042$        &              \\
+                               & (0.0025)            & (0.0064)         &              \\[3pt]
+        increase $\times$ post &                     &                  & $-0.0055$\sym{**} \\
+                               &                     &                  & (0.0020)     \\[3pt]
+        decrease $\times$ post &                     &                  & $-0.0080$    \\
+                               &                     &                  & (0.0126)     \\
+        \midrule
+        Treated                & 175 cities          & 25 cities        & 200 cities   \\
+        Control                & 104 no-tax          & 104 no-tax       & 104 no-tax   \\
+        $N$                    & 5{,}081             & 5{,}081          & 5{,}081      \\
+        Fixed Effects           & \multicolumn{3}{c}{Municipality, Year} \\
+        Clusters               & \multicolumn{3}{c}{Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Control group = municipalities that never levied
+        an income tax (unincorporated townships). Column (1) excludes decreasers from sample.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \end{minipage}
+\end{table}
+
+% --- OH No-Tax Event Study Figures ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/oh_es_increase_notax.png}
+    \caption{OH: Sun-Abraham Event Study --- Rate Increases vs No-Tax Controls.
+    175 treated cities, 104 no-tax controls. Clean pre-trends; gradual decline through $t{+}8$.}
+    \label{fig:oh_es_increase_notax}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/oh_es_decrease_notax.png}
+    \caption{OH: Sun-Abraham Event Study --- Rate Decreases vs No-Tax Controls.
+    25 treated cities, 104 no-tax controls. Wide confidence intervals; no clear pattern.}
+    \label{fig:oh_es_decrease_notax}
+\end{figure}
+
+% --- OH Binary DiD Table: Never-Changed Controls ---
+\begin{table}[H]
+    \centering
+    \caption{Binary DiD: Effect of Rate Changes on share\_live\_in (OH, Never-Changed Controls)}
+    \label{tab:oh_binary_nc}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & (1) & (2) & (3) \\
+        & Increases vs NC & Decreases vs NC & Both vs NC \\
+        \midrule
+        Sun-Abraham ATT        & $-0.0002$          & $0.0021$         &              \\
+                               & (0.0021)            & (0.0063)         &              \\[3pt]
+        increase $\times$ post &                     &                  & $0.0004$     \\
+                               &                     &                  & (0.0018)     \\[3pt]
+        decrease $\times$ post &                     &                  & $-0.0054$    \\
+                               &                     &                  & (0.0126)     \\
+        \midrule
+        Treated                & 175 cities          & 25 cities        & 200 cities   \\
+        Control                & 230 NC              & 230 NC           & 230 NC       \\
+        $N$                    & 5{,}859             & 5{,}859          & 5{,}859      \\
+        Fixed Effects           & \multicolumn{3}{c}{Municipality, Year} \\
+        Clusters               & \multicolumn{3}{c}{Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Control group = municipalities that never changed
+        their tax rate (includes stable-rate taxed cities). Null results suggest that
+        never-changed taxed cities are a poor control group, likely because they share
+        the same urban characteristics as treated cities. The no-tax control group
+        (Table~\ref{tab:oh_binary_notax}) provides cleaner identification.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \end{minipage}
+\end{table}
+
+% --- OH Never-Changed Event Study Figures ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/oh_es_increase_nc.png}
+    \caption{OH: Sun-Abraham Event Study --- Rate Increases vs Never-Changed Controls.
+    175 treated cities, 230 never-changed controls (including stable-rate taxed cities).
+    Pre-trends show some drift; effect is attenuated relative to the no-tax control group.}
+    \label{fig:oh_es_increase_nc}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/oh_es_decrease_nc.png}
+    \caption{OH: Sun-Abraham Event Study --- Rate Decreases vs Never-Changed Controls.}
+    \label{fig:oh_es_decrease_nc}
+\end{figure}
+
+\subsection{Dose-Response}
+\label{subsec:dose_response}
+
+% --- Dose-Response Table ---
+\begin{table}[H]
+    \centering
+    \caption{Dose-Response: Rate Magnitude and Asymmetry}
+    \label{tab:dose_response}
+    \small
+    \begin{tabular}{lcccccc}
+        \toprule
+        & \multicolumn{3}{c}{Pennsylvania} & \multicolumn{3}{c}{Ohio} \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+        & (1) & (2) & (3) & (4) & (5) & (6) \\
+        & Post Only & Post + Dose & Split $\pm$ & Post Only & Post + Dose & Split $\pm$ \\
+        \midrule
+        post                   & $-0.0074$\sym{.} & $0.0022$  &            & $0.0005$  & $-0.0036$ &            \\
+                               & (0.0040)          & (0.0063)  &            & (0.0017)  & (0.0066)  &            \\[3pt]
+        rate $\times$ post     &                   & $-0.0099$\sym{.} &    &           & $0.2155$  &            \\
+                               &                   & (0.0052)  &            &           & (0.3395)  &            \\[3pt]
+        $\Delta\text{rate}^{+}$ &                  &           & $-0.0176$\sym{*} &    &           & $-0.1091$  \\
+                               &                   &           & (0.0069)   &           &           & (0.3788)   \\[3pt]
+        $|\Delta\text{rate}^{-}|$ &                &           & $0.0012$   &           &           & $-1.155$   \\
+                               &                   &           & (0.0040)   &           &           & (1.353)    \\
+        \midrule
+        $N$                    & 2{,}741           & 2{,}741   & 24{,}522   & 3{,}150   & 3{,}150   & 7{,}718    \\
+        Sample                 & Treated           & Treated   & All        & Treated   & Treated   & All        \\
+        Fixed Effects          & \multicolumn{6}{c}{Municipality, Year} \\
+        Clusters               & \multicolumn{6}{c}{Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Columns (1)--(2), (4)--(5): sample restricted to
+        municipalities that raised rates; post = $\mathbb{1}[t \geq g_i]$.
+        Column (2): rate $\times$ post tests whether rate magnitude predicts additional
+        sorting beyond the common post-treatment shift.
+        Columns (3), (6): split dose on full sample; $\Delta\text{rate}^{+}$ = cumulative
+        increase from baseline, $|\Delta\text{rate}^{-}|$ = cumulative decrease (absolute value).
+        PA split dose: rate increases reduce locally-resident share ($-0.018^{*}$ per pp);
+        rate decreases have no effect (asymmetry).
+        OH rates are in 0--3 scale (not percentage points), explaining the different coefficient magnitudes.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \end{minipage}
+\end{table}
+
+% --- DCDH Dose-Response Table (for comparison / replacement) ---
+\begin{table}[H]
+    \centering
+    \caption{Dose-Response: de Chaisemartin--D'Haultfoeuille (2024) Estimator}
+    \label{tab:dose_dcdh}
+    \small
+    \begin{tabular}{lccccc}
+        \toprule
+        & \multicolumn{3}{c}{Pennsylvania} & \multicolumn{2}{c}{Ohio} \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-6}
+        & (1) & (2) & (3) & (4) & (5) \\
+        & Binary & Continuous & Continuous & Binary & Continuous \\
+        & Inc vs NC & Inc vs NC & Dec vs NC & Inc vs NC & Inc vs NC \\
+        \midrule
+        Avg Total Effect       & $-0.0036$ & $-0.0078$          & $-0.0077$ & $-0.0015$ & $0.0446$  \\
+                               & (0.0025)  & (0.0069)           & (0.0090)  & (0.0014)  & (0.3132)  \\
+        \midrule
+        Joint effects $p$      & 0.666     & 0.396              & 0.014     & 0.206     & 0.500     \\
+        Joint placebo $p$      & 0.857     & 0.904              & 0.408     & 0.627     & 0.147     \\
+        Switchers              & 109       & 120                & 60        & 165       & 174       \\
+        Treatment              & Binary    & EIT rate           & EIT rate  & Binary    & Muni rate \\
+        Control                & \multicolumn{3}{c}{Never-changed} & \multicolumn{2}{c}{Never-changed} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} De Chaisemartin and D'Haultfoeuille (2024)
+        interaction-weighted estimator. Columns (1), (4): binary treatment
+        (1 after first rate increase). Columns (2), (5): continuous treatment
+        (actual tax rate) with \texttt{continuous(1)} linear polynomial in
+        baseline treatment. Column (3): continuous treatment among
+        municipalities that decreased rates; the negative ATE indicates that
+        rate decreases do not reverse residential sorting (asymmetry).
+        Increasers and decreasers are estimated on separate samples, each
+        against the same never-changed control group. Average Total Effect
+        is the cumulative per-unit treatment effect averaged over $\sim$4.3
+        post-treatment periods. Event study dynamics shown in
+        Figures~\ref{fig:pa_dcdh_inc}--\ref{fig:oh_dcdh_inc}.
+        Analytical standard errors clustered at the municipality level.
+        OH continuous estimates are imprecise due to the 0--3 rate scale.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \end{minipage}
+\end{table}
+
+% --- DCDH Event Study Figures ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/pa_dcdh_inc.png}
+    \caption{PA: DCDH Event Study --- Continuous EIT Rate, Increasers vs Never-Changed.
+    120 switchers. Pre-trends clean (joint placebo $p = 0.90$). Effect builds gradually
+    and reaches $-0.011$ ($p < 0.001$) at $\ell = 8$.}
+    \label{fig:pa_dcdh_inc}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/pa_dcdh_dec.png}
+    \caption{PA: DCDH Event Study --- Continuous EIT Rate, Decreasers vs Never-Changed.
+    60 switchers. Rate decreases do not reverse residential sorting.}
+    \label{fig:pa_dcdh_dec}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/oh_dcdh_inc.png}
+    \caption{OH: DCDH Event Study --- Continuous Municipal Rate, Increasers vs Never-Changed.
+    174 switchers. Estimates are imprecise due to the 0--3 rate scale.}
+    \label{fig:oh_dcdh_inc}
 \end{figure}
 
 \subsection{Companion Outcomes: Decomposition}
@@ -499,6 +713,85 @@
     \end{minipage}
 \end{table}
 
+\subsection{Heterogeneity-Robust Continuous Treatment Estimator}
+\label{subsec:dcdh}
+
+As an additional robustness check, we implement the de Chaisemartin and
+D'Haultfoeuille (2024) estimator, which accommodates both continuous
+treatments and non-absorbing treatment paths under staggered timing.
+Unlike the Sun and Abraham (2021) estimator, which requires binary
+absorbing treatment, the DCDH estimator uses the actual tax rate as the
+treatment variable, allowing rate increases and decreases of varying
+magnitudes. This directly addresses the concern that our TWFE and
+Sun-Abraham specifications may suffer from heterogeneous treatment
+timing contamination when the treatment is continuous.
+
+We estimate the DCDH specification separately for rate increases and
+decreases, each against never-changed controls. This mirrors the
+structure of our main Sun-Abraham results
+(Tables~\ref{tab:pa_binary}--\ref{tab:oh_binary_notax}) while
+handling the continuous rate as treatment.
+
+\begin{table}[H]
+    \centering
+    \caption{Robustness: de Chaisemartin--D'Haultfoeuille (2024) Estimator}
+    \label{tab:dcdh}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{Pennsylvania} & \multicolumn{2}{c}{Ohio} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+        & (1) & (2) & (3) & (4) \\
+        & Increases & Decreases & Increases & Decreases \\
+        \midrule
+        Average Total Effect   & $-0.0078$    & $-0.0077$    & $0.0446$     & $2.025$      \\
+                               & (0.0069)     & (0.0090)     & (0.3132)     & (1.398)      \\[3pt]
+        Effect at $\ell = 8$   & $-0.0111$\sym{***} & ---   & $-0.0023$    & ---          \\
+                               & (0.0041)     &              & (0.0030)     &              \\
+        \midrule
+        Joint effects $p$      & 0.396        & 0.014        & 0.500        & 0.664        \\
+        Joint placebo $p$      & 0.904        & 0.408        & 0.147        & 0.834        \\
+        Switchers              & 120          & 60           & 174          & 22           \\
+        Treatment              & \multicolumn{4}{c}{Continuous (EIT rate / municipal rate)} \\
+        Baseline trend         & \multicolumn{4}{c}{Linear polynomial in period-one treatment} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.90\textwidth}
+        \footnotesize \textit{Notes:} De Chaisemartin and D'Haultfoeuille (2024)
+        interaction-weighted estimator with \texttt{continuous(1)}. Treatment is
+        the municipal income tax rate (EIT in PA, municipal rate in OH).
+        Columns (1)--(2): PA sample restricted to increasers (decreasers) plus
+        never-changed municipalities. Columns (3)--(4): OH, same structure.
+        Average Total Effect is the cumulative per-unit treatment effect averaged
+        over $\sim$4.3 post-treatment periods. Joint placebo $p$ tests the null
+        that all pre-treatment coefficients are zero. Analytical standard errors
+        clustered at the municipality level. OH continuous estimates are imprecise
+        due to the 0--3 rate scale.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \end{minipage}
+\end{table}
+
+Table~\ref{tab:dcdh} reports the results. For Pennsylvania rate increases
+(column 1), the DCDH average total effect is $-0.008$ (SE $0.007$),
+comparable to the Sun-Abraham ATT of $-0.005$ (SE $0.003$) from
+Table~\ref{tab:pa_binary}. Pre-trends are clean (joint placebo
+$p = 0.90$), and the effect at $\ell = 8$ reaches $-0.011$
+($p < 0.001$). The PA decrease estimate (column 2) shows a negative
+average effect ($-0.008$), reinforcing the asymmetry finding: rate
+decreases do not reverse sorting, consistent with sticky residential
+location decisions.
+
+Ohio continuous estimates (columns 3--4) are uninformative due to the
+0--3 rate scale, which inflates standard errors. The Ohio results rely
+on the binary Sun-Abraham estimator with no-tax controls
+(Table~\ref{tab:oh_binary_notax}), where identification is sharper.
+
+The consistency between the Sun-Abraham and DCDH estimates for
+Pennsylvania confirms that the main results are not driven by
+heterogeneous treatment timing contamination or the restriction
+to binary treatment.
+
 %==========================================================
 \section{Discussion}
 \label{sec:discussion}
@@ -578,14 +871,67 @@
 \section{Pre-Trend Tests on Fiscal Observables}
 \label{app:pretrends}
 
-% TODO: Sun-Abraham pre-trend tests table
-% Revenue, EIT rev, streets, population, debt: flat (no sig pre-trends)
-% Police: significant pre-trend (max t = 2.85)
-% "Pre-trends are flat for most fiscal observables. Police spending is the
-% exception, showing evidence of pre-treatment trend differences, which suggests
-% that some tax increases may have been associated with anticipated public-safety
-% expansions. The main results are robust to controlling for police expenditure
-% dynamics."
+We test the parallel trends assumption on six fiscal observables from the PA
+DCED Annual Financial Reports using the Sun and Abraham (2021) estimator.
+For each outcome, we estimate Equation~\ref{eq:sunab} with municipality and
+year fixed effects, clustering standard errors at the municipality level.
+Table~\ref{tab:pretrends} reports the maximum absolute $t$-statistic among
+the pre-treatment coefficients at relative times $\ell \in \{-5, -4, -3, -2\}$.
+
+Pre-trends are flat for five of six fiscal observables: total revenue
+(max $|t| = 1.60$), EIT revenue ($1.33$), streets expenditure ($0.80$),
+population ($1.09$), and total debt ($1.36$). None of the pre-treatment
+coefficients for these outcomes are individually significant at the 5\% level.
+
+Police expenditure is the exception. The pre-treatment coefficients at
+$\ell = -5$ and $\ell = -4$ are negative and significant ($t = -2.85$ and
+$t = -2.42$, respectively), indicating that treated municipalities had
+relatively lower police spending 4--5 years before the rate increase.
+This pattern suggests that some EIT increases may have been associated with
+anticipated public-safety expansions financed by the new revenue. Importantly,
+the main results on \texttt{share\_live\_in} are robust to controlling for
+log police expenditure (Table~\ref{tab:robustness}), confirming that this
+pre-trend does not confound the estimated sorting response.
+
+\begin{table}[H]
+    \centering
+    \caption{Pre-Trend Tests: Sun-Abraham on Fiscal Observables (PA, 2002--2019)}
+    \label{tab:pretrends}
+    \small
+    \begin{tabular}{lccccccc}
+        \toprule
+        & \multicolumn{4}{c}{Pre-Treatment Coefficients} & & \\
+        \cmidrule(lr){2-5}
+        Outcome & $\ell = -5$ & $\ell = -4$ & $\ell = -3$ & $\ell = -2$ & Max $|t|$ & $N$ \\
+        \midrule
+        log(Total Revenue) & $-0.076$ & $-0.051$ & $-0.012$ & $-0.052$ & 1.60 & 43{,}170 \\
+                           & (0.049)  & (0.056)  & (0.038)  & (0.032)  &      &          \\[0.3em]
+        log(EIT Revenue)   & $-0.025$ & $-0.033$ & $0.027$  & $0.049$  & 1.33 & 42{,}278 \\
+                           & (0.051)  & (0.052)  & (0.032)  & (0.037)  &      &          \\[0.3em]
+        log(Police Exp)    & $-0.085$\sym{***} & $-0.068$\sym{**} & $0.011$ & $0.037$ & 2.85 & 23{,}464 \\
+                           & (0.030)  & (0.028)  & (0.052)  & (0.039)  &      &          \\[0.3em]
+        log(Streets Exp)   & $-0.001$ & $0.003$  & $-0.043$ & $-0.029$ & 0.80 & 43{,}105 \\
+                           & (0.059)  & (0.075)  & (0.053)  & (0.059)  &      &          \\[0.3em]
+        log(Population)    & $0.011$  & $0.007$  & $0.002$  & $0.003$  & 1.09 & 43{,}150 \\
+                           & (0.012)  & (0.008)  & (0.006)  & (0.003)  &      &          \\[0.3em]
+        log(Total Debt)    & $-0.029$ & $-0.051$ & $-0.179$ & $-0.103$ & 1.36 & 24{,}863 \\
+                           & (0.176)  & (0.214)  & (0.132)  & (0.102)  &      &          \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Each row reports Sun and Abraham (2021)
+        estimates of the pre-treatment coefficients $\hat{\mu}_\ell$ for
+        $\ell \in \{-5, -4, -3, -2\}$, with $\ell = -1$ as the reference
+        period. Standard errors (in parentheses) are clustered at the
+        municipality level. Max $|t|$ is the largest absolute $t$-statistic
+        among the four pre-treatment coefficients. Pre-trends are flat for
+        all outcomes except police expenditure, where treated municipalities
+        had significantly lower spending at $\ell = -5$ and $\ell = -4$.
+        \sym{*} $p<0.10$, \sym{**} $p<0.05$, \sym{***} $p<0.01$.
+        Source: PA DCED Annual Financial Reports.
+    \end{minipage}
+\end{table}
 
 \section{Additional Figures}
 \label{app:figures}

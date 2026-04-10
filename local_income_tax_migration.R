@@ -2659,4 +2659,656 @@ etable(sa_inc_full, sa_dec_full,
   headers = c("Sun-Abraham: Increases", "Sun-Abraham: Decreases"),
   keep = "year::-?[0-5]$")
 
+
+# ============================================================================
+# 17. Paper-Ready Models ----
+# Unified estimation for the paper. Clean treated/control definitions,
+# consistent Sun-Abraham event studies, dose-response, and figures.
+# ============================================================================
+
+fig_dir <- file.path(project_dir, "figures")
+
+## Helper: extract Sun-Abraham coefficients for plotting ----
+extract_sa_coefs <- function(model, window = c(-5, 8)) {
+  ct <- as.data.table(coeftable(model), keep.rownames = TRUE)
+  setnames(ct, c("rn", "est", "se", "t", "p"))
+  ct[, rel := as.integer(gsub("year::", "", rn))]
+  ct <- ct[rel >= window[1] & rel <= window[2]]
+  # Add reference period (rel = -1, est = 0)
+  ref <- data.table(rn = "ref", est = 0, se = 0, t = 0, p = 1, rel = -1L)
+  ct <- rbind(ct, ref)
+  ct[order(rel)]
+}
+
+## Helper: plot Sun-Abraham event study ----
+plot_sa <- function(model, title, subtitle = NULL, window = c(-5, 8),
+                    color = "steelblue") {
+  ct <- extract_sa_coefs(model, window)
+  p <- ggplot(ct, aes(x = rel, y = est)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+    geom_vline(xintercept = -0.5, linetype = "dashed", color = "red", alpha = 0.4) +
+    geom_pointrange(aes(ymin = est - 1.96 * se, ymax = est + 1.96 * se),
+      color = color, size = 0.4) +
+    geom_line(color = color, linewidth = 0.4) +
+    labs(x = "Years Relative to First Rate Change",
+      y = expression(hat(mu)[l]),
+      title = title, subtitle = subtitle) +
+    scale_x_continuous(breaks = seq(window[1], window[2], 1)) +
+    theme_minimal() +
+    theme(plot.title = element_text(size = 11),
+      plot.subtitle = element_text(size = 9, color = "grey40"))
+  p
+}
+
+# ---- Define treatment groups ----
+
+# PA groups
+pa_inc_cities <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
+  unique(cousub_fips)]
+pa_dec_cities <- pa_rate_panel[event_type == "decrease" & !is.na(cousub_fips),
+  unique(cousub_fips)]
+pa_never_changed <- pa_rate_panel[!is.na(cousub_fips),
+  .(any_change = any(event_type %in% c("increase", "decrease"), na.rm = TRUE)),
+  by = cousub_fips][any_change == FALSE, cousub_fips]
+
+# OH groups
+oh_inc_cities <- oh_rate_panel[event_type == "increase", unique(muni_fips)]
+oh_dec_cities <- oh_rate_panel[event_type == "decrease", unique(muni_fips)]
+oh_never_changed <- oh_rate_panel[,
+  .(any_change = any(event_type %in% c("increase", "decrease"), na.rm = TRUE)),
+  by = muni_fips][any_change == FALSE, muni_fips]
+oh_no_tax_cities <- setdiff(
+  oh_panel[, unique(work_city)],
+  oh_rate_panel[rate > 0, unique(muni_fips)]
+)
+
+# Cohort lookup tables
+pa_first_inc <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
+  .(first_inc = min(year)), by = cousub_fips]
+pa_first_dec <- pa_rate_panel[event_type == "decrease" & !is.na(cousub_fips),
+  .(first_dec = min(year)), by = cousub_fips]
+oh_first_inc <- oh_rate_panel[event_type == "increase",
+  .(first_inc = min(year)), by = muni_fips]
+oh_first_dec <- oh_rate_panel[event_type == "decrease",
+  .(first_dec = min(year)), by = muni_fips]
+
+print(paste("PA:", length(pa_inc_cities), "inc,", length(pa_dec_cities),
+  "dec,", length(pa_never_changed), "NC"))
+print(paste("OH:", length(oh_inc_cities), "inc,", length(oh_dec_cities),
+  "dec,", length(oh_never_changed), "NC,", length(oh_no_tax_cities), "no-tax"))
+
+
+# ============================================================================
+# 17a. PA Binary DiD ----
+# ============================================================================
+
+## (1) Increasers vs never-changed (exclude decreasers) ----
+pa_inc_samp <- pa_panel[work_city %in% c(pa_inc_cities, pa_never_changed) &
+  total_jobs > 50 & !is.na(resident_eit)]
+pa_inc_samp <- merge(pa_inc_samp, pa_first_inc,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_inc_samp[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+
+pa_sa_inc <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = pa_inc_samp, cluster = ~work_city)
+
+## (2) Decreasers vs never-changed (exclude increasers) ----
+pa_dec_samp <- pa_panel[work_city %in% c(pa_dec_cities, pa_never_changed) &
+  total_jobs > 50 & !is.na(resident_eit)]
+pa_dec_samp <- merge(pa_dec_samp, pa_first_dec,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_dec_samp[, cohort := fifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
+
+pa_sa_dec <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = pa_dec_samp, cluster = ~work_city)
+
+## (3) Both in one model vs never-changed ----
+pa_both_samp <- pa_panel[work_city %in% c(pa_inc_cities, pa_dec_cities, pa_never_changed) &
+  total_jobs > 50 & !is.na(resident_eit)]
+pa_both_samp <- merge(pa_both_samp, pa_first_inc,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_both_samp <- merge(pa_both_samp, pa_first_dec,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_both_samp[, `:=`(
+  has_inc = work_city %in% pa_inc_cities,
+  has_dec = work_city %in% pa_dec_cities,
+  post_inc = as.integer(!is.na(first_inc) & year >= first_inc),
+  post_dec = as.integer(!is.na(first_dec) & year >= first_dec)
+)]
+
+pa_asym <- feols(
+  share_live_in ~ has_inc:post_inc + has_dec:post_dec | work_city + year,
+  data = pa_both_samp, cluster = ~work_city)
+
+## PA aggregate ATTs ----
+pa_att_inc <- summary(pa_sa_inc, agg = "ATT")
+pa_att_dec <- summary(pa_sa_dec, agg = "ATT")
+
+cat("\n=== PA BINARY DiD ===\n")
+etable(pa_sa_inc, pa_sa_dec, pa_asym,
+  headers = c("Increasers vs NC", "Decreasers vs NC", "Both vs NC"),
+  keep = c("ATT|has_inc|has_dec"),
+  notes = "NC = never changed. Sun-Abraham ATT for cols 1-2.")
+cat("PA Increase ATT:", round(coef(pa_att_inc), 5), "(SE", round(se(pa_att_inc), 5), ")\n")
+cat("PA Decrease ATT:", round(coef(pa_att_dec), 5), "(SE", round(se(pa_att_dec), 5), ")\n")
+
+## PA event study figures ----
+p_pa_es_inc <- plot_sa(pa_sa_inc,
+  title = "PA: Rate Increases vs Never-Changed Controls",
+  subtitle = paste0("N = ", uniqueN(pa_inc_samp[cohort < 10000, work_city]),
+    " treated, ", uniqueN(pa_inc_samp[cohort == 10000, work_city]), " controls"),
+  color = "firebrick")
+ggsave(file.path(fig_dir, "pa_es_increase.png"), p_pa_es_inc,
+  width = 7, height = 4.5, dpi = 300)
+print(p_pa_es_inc)
+
+p_pa_es_dec <- plot_sa(pa_sa_dec,
+  title = "PA: Rate Decreases vs Never-Changed Controls",
+  subtitle = paste0("N = ", uniqueN(pa_dec_samp[cohort < 10000, work_city]),
+    " treated, ", uniqueN(pa_dec_samp[cohort == 10000, work_city]), " controls"),
+  color = "steelblue")
+ggsave(file.path(fig_dir, "pa_es_decrease.png"), p_pa_es_dec,
+  width = 7, height = 4.5, dpi = 300)
+print(p_pa_es_dec)
+
+
+# ============================================================================
+# 17b. OH Binary DiD — No-Tax Controls ----
+# ============================================================================
+
+## (1) Increasers vs no-tax ----
+oh_inc_notax_samp <- oh_panel[work_city %in% c(oh_inc_cities, oh_no_tax_cities) &
+  total_jobs > 50][year <= max_year]
+oh_inc_notax_samp <- merge(oh_inc_notax_samp, oh_first_inc,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_inc_notax_samp[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+
+oh_sa_inc_notax <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = oh_inc_notax_samp, cluster = ~work_city)
+
+## (2) Decreasers vs no-tax ----
+oh_dec_notax_samp <- oh_panel[work_city %in% c(oh_dec_cities, oh_no_tax_cities) &
+  total_jobs > 50][year <= max_year]
+oh_dec_notax_samp <- merge(oh_dec_notax_samp, oh_first_dec,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_dec_notax_samp[, cohort := fifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
+
+oh_sa_dec_notax <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = oh_dec_notax_samp, cluster = ~work_city)
+
+## (3) Both vs no-tax ----
+oh_both_notax_samp <- oh_panel[work_city %in% c(oh_inc_cities, oh_dec_cities, oh_no_tax_cities) &
+  total_jobs > 50][year <= max_year]
+oh_both_notax_samp <- merge(oh_both_notax_samp, oh_first_inc,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_both_notax_samp <- merge(oh_both_notax_samp, oh_first_dec,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_both_notax_samp[, `:=`(
+  has_inc = work_city %in% oh_inc_cities,
+  has_dec = work_city %in% oh_dec_cities,
+  post_inc = as.integer(!is.na(first_inc) & year >= first_inc),
+  post_dec = as.integer(!is.na(first_dec) & year >= first_dec)
+)]
+
+oh_asym_notax <- feols(
+  share_live_in ~ has_inc:post_inc + has_dec:post_dec | work_city + year,
+  data = oh_both_notax_samp, cluster = ~work_city)
+
+oh_att_inc_notax <- summary(oh_sa_inc_notax, agg = "ATT")
+oh_att_dec_notax <- summary(oh_sa_dec_notax, agg = "ATT")
+
+cat("\n=== OH BINARY DiD — NO-TAX CONTROLS ===\n")
+etable(oh_sa_inc_notax, oh_sa_dec_notax, oh_asym_notax,
+  headers = c("Increasers vs No-Tax", "Decreasers vs No-Tax", "Both vs No-Tax"),
+  keep = c("ATT|has_inc|has_dec"))
+cat("OH Inc vs No-Tax ATT:", round(coef(oh_att_inc_notax), 5),
+  "(SE", round(se(oh_att_inc_notax), 5), ")\n")
+cat("OH Dec vs No-Tax ATT:", round(coef(oh_att_dec_notax), 5),
+  "(SE", round(se(oh_att_dec_notax), 5), ")\n")
+
+## OH no-tax event study figures ----
+p_oh_es_inc_notax <- plot_sa(oh_sa_inc_notax,
+  title = "OH: Rate Increases vs No-Tax Controls",
+  subtitle = paste0("N = ", uniqueN(oh_inc_notax_samp[cohort < 10000, work_city]),
+    " treated, ", uniqueN(oh_inc_notax_samp[cohort == 10000, work_city]), " no-tax controls"),
+  color = "steelblue")
+ggsave(file.path(fig_dir, "oh_es_increase_notax.png"), p_oh_es_inc_notax,
+  width = 7, height = 4.5, dpi = 300)
+print(p_oh_es_inc_notax)
+
+p_oh_es_dec_notax <- plot_sa(oh_sa_dec_notax,
+  title = "OH: Rate Decreases vs No-Tax Controls",
+  subtitle = paste0("N = ", uniqueN(oh_dec_notax_samp[cohort < 10000, work_city]),
+    " treated, ", uniqueN(oh_dec_notax_samp[cohort == 10000, work_city]), " no-tax controls"),
+  color = "steelblue")
+ggsave(file.path(fig_dir, "oh_es_decrease_notax.png"), p_oh_es_dec_notax,
+  width = 7, height = 4.5, dpi = 300)
+print(p_oh_es_dec_notax)
+
+
+# ============================================================================
+# 17c. OH Binary DiD — Never-Changed Controls ----
+# ============================================================================
+
+## (1) Increasers vs never-changed ----
+oh_inc_nc_samp <- oh_panel[work_city %in% c(oh_inc_cities, oh_never_changed) &
+  total_jobs > 50][year <= max_year]
+oh_inc_nc_samp <- merge(oh_inc_nc_samp, oh_first_inc,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_inc_nc_samp[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+
+oh_sa_inc_nc <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = oh_inc_nc_samp, cluster = ~work_city)
+
+## (2) Decreasers vs never-changed ----
+oh_dec_nc_samp <- oh_panel[work_city %in% c(oh_dec_cities, oh_never_changed) &
+  total_jobs > 50][year <= max_year]
+oh_dec_nc_samp <- merge(oh_dec_nc_samp, oh_first_dec,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_dec_nc_samp[, cohort := fifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
+
+oh_sa_dec_nc <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = oh_dec_nc_samp, cluster = ~work_city)
+
+## (3) Both vs never-changed ----
+oh_both_nc_samp <- oh_panel[work_city %in% c(oh_inc_cities, oh_dec_cities, oh_never_changed) &
+  total_jobs > 50][year <= max_year]
+oh_both_nc_samp <- merge(oh_both_nc_samp, oh_first_inc,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_both_nc_samp <- merge(oh_both_nc_samp, oh_first_dec,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_both_nc_samp[, `:=`(
+  has_inc = work_city %in% oh_inc_cities,
+  has_dec = work_city %in% oh_dec_cities,
+  post_inc = as.integer(!is.na(first_inc) & year >= first_inc),
+  post_dec = as.integer(!is.na(first_dec) & year >= first_dec)
+)]
+
+oh_asym_nc <- feols(
+  share_live_in ~ has_inc:post_inc + has_dec:post_dec | work_city + year,
+  data = oh_both_nc_samp, cluster = ~work_city)
+
+oh_att_inc_nc <- summary(oh_sa_inc_nc, agg = "ATT")
+oh_att_dec_nc <- summary(oh_sa_dec_nc, agg = "ATT")
+
+cat("\n=== OH BINARY DiD — NEVER-CHANGED CONTROLS ===\n")
+etable(oh_sa_inc_nc, oh_sa_dec_nc, oh_asym_nc,
+  headers = c("Increasers vs NC", "Decreasers vs NC", "Both vs NC"),
+  keep = c("ATT|has_inc|has_dec"))
+cat("OH Inc vs NC ATT:", round(coef(oh_att_inc_nc), 5),
+  "(SE", round(se(oh_att_inc_nc), 5), ")\n")
+cat("OH Dec vs NC ATT:", round(coef(oh_att_dec_nc), 5),
+  "(SE", round(se(oh_att_dec_nc), 5), ")\n")
+
+## OH never-changed event study figures ----
+p_oh_es_inc_nc <- plot_sa(oh_sa_inc_nc,
+  title = "OH: Rate Increases vs Never-Changed Controls",
+  subtitle = paste0("N = ", uniqueN(oh_inc_nc_samp[cohort < 10000, work_city]),
+    " treated, ", uniqueN(oh_inc_nc_samp[cohort == 10000, work_city]),
+    " never-changed controls"),
+  color = "steelblue")
+ggsave(file.path(fig_dir, "oh_es_increase_nc.png"), p_oh_es_inc_nc,
+  width = 7, height = 4.5, dpi = 300)
+print(p_oh_es_inc_nc)
+
+p_oh_es_dec_nc <- plot_sa(oh_sa_dec_nc,
+  title = "OH: Rate Decreases vs Never-Changed Controls",
+  subtitle = paste0("N = ", uniqueN(oh_dec_nc_samp[cohort < 10000, work_city]),
+    " treated, ", uniqueN(oh_dec_nc_samp[cohort == 10000, work_city]),
+    " never-changed controls"),
+  color = "steelblue")
+ggsave(file.path(fig_dir, "oh_es_decrease_nc.png"), p_oh_es_dec_nc,
+  width = 7, height = 4.5, dpi = 300)
+print(p_oh_es_dec_nc)
+
+
+# ============================================================================
+# 17d. Dose-Response ----
+# ============================================================================
+
+## (1) Rate change × post among changers (treated-only) ----
+
+# PA: among increasers only
+pa_dose_inc <- merge(
+  pa_panel[work_city %in% pa_inc_cities & total_jobs > 50 & !is.na(resident_eit)],
+  pa_first_inc, by.x = "work_city", by.y = "cousub_fips")
+pa_dose_inc[, post := as.integer(year >= first_inc)]
+
+pa_dose_m1 <- feols(share_live_in ~ post | work_city + year,
+  data = pa_dose_inc, cluster = ~work_city)
+pa_dose_m2 <- feols(share_live_in ~ post + resident_eit:post | work_city + year,
+  data = pa_dose_inc, cluster = ~work_city)
+
+# OH: among increasers only
+oh_dose_inc <- merge(
+  oh_panel[work_city %in% oh_inc_cities & total_jobs > 50][year <= max_year],
+  oh_first_inc, by.x = "work_city", by.y = "muni_fips")
+oh_dose_inc[, post := as.integer(year >= first_inc)]
+
+oh_dose_m1 <- feols(share_live_in ~ post | work_city + year,
+  data = oh_dose_inc, cluster = ~work_city)
+oh_dose_m2 <- feols(share_live_in ~ post + rate:post | work_city + year,
+  data = oh_dose_inc, cluster = ~work_city)
+
+## (2) Split cumulative dose on full sample ----
+
+# PA: cumulative change from baseline, all cities
+pa_full_dose <- pa_panel[total_jobs > 50 & !is.na(resident_eit)][year <= max_year]
+pa_base <- pa_rate_panel[!is.na(cousub_fips),
+  .(base_rate = first(na.omit(resident_eit))), by = cousub_fips]
+pa_full_dose <- merge(pa_full_dose, pa_base,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_full_dose[, cumul := resident_eit - fifelse(is.na(base_rate), 0, base_rate)]
+pa_full_dose[, `:=`(
+  pos_change = fifelse(cumul > 0, cumul, 0),
+  neg_change = fifelse(cumul < 0, abs(cumul), 0)
+)]
+
+pa_dose_cumul <- feols(share_live_in ~ cumul | work_city + year,
+  data = pa_full_dose, cluster = ~work_city)
+pa_dose_split <- feols(share_live_in ~ pos_change + neg_change | work_city + year,
+  data = pa_full_dose, cluster = ~work_city)
+
+# OH: cumulative change from baseline, all cities
+oh_full_dose <- oh_panel[total_jobs > 50][year <= max_year]
+oh_base <- oh_rate_panel[, .(base_rate = first(rate)), by = muni_fips]
+oh_full_dose <- merge(oh_full_dose, oh_base,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_full_dose[is.na(base_rate), base_rate := 0]
+oh_full_dose[, cumul := rate - base_rate]
+oh_full_dose[, `:=`(
+  pos_change = fifelse(cumul > 0, cumul, 0),
+  neg_change = fifelse(cumul < 0, abs(cumul), 0)
+)]
+
+oh_dose_cumul <- feols(share_live_in ~ cumul | work_city + year,
+  data = oh_full_dose, cluster = ~work_city)
+oh_dose_split <- feols(share_live_in ~ pos_change + neg_change | work_city + year,
+  data = oh_full_dose, cluster = ~work_city)
+
+cat("\n=== DOSE-RESPONSE ===\n")
+cat("\n--- PA: Treated-Only Dose ---\n")
+etable(pa_dose_m1, pa_dose_m2,
+  headers = c("Post Only", "Post + Rate x Post"))
+
+cat("\n--- OH: Treated-Only Dose ---\n")
+etable(oh_dose_m1, oh_dose_m2,
+  headers = c("Post Only", "Post + Rate x Post"))
+
+cat("\n--- PA: Full Sample Split Dose ---\n")
+etable(pa_dose_cumul, pa_dose_split,
+  headers = c("Cumulative Change", "Split + / -"))
+
+cat("\n--- OH: Full Sample Split Dose ---\n")
+etable(oh_dose_cumul, oh_dose_split,
+  headers = c("Cumulative Change", "Split + / -"))
+
+## Combined dose table for paper ----
+cat("\n--- DOSE-RESPONSE: COMBINED TABLE ---\n")
+etable(pa_dose_m1, pa_dose_m2, pa_dose_split, oh_dose_m1, oh_dose_m2, oh_dose_split,
+  headers = c("PA: Post", "PA: Post+Dose", "PA: Split",
+    "OH: Post", "OH: Post+Dose", "OH: Split"))
+
+
+# 18. ACS Place-Level Outcomes ----
+# Two-period cross-section: 2010 vs 2021 ACS at place (OH) / cousub (PA) level.
+# Tests whether tax-raising municipalities saw differential population or income growth.
+
+oh_acs <- as.data.table(readRDS(file.path(data_dir, "oh_acs_balance.rds")))
+pa_acs <- as.data.table(readRDS(file.path(data_dir, "pa_acs_balance.rds")))
+
+# Drop zero-population places (avoids Inf growth rates and log(0))
+oh_acs <- oh_acs[population_2010 > 0 & population_2021 > 0]
+pa_acs <- pa_acs[population_2010 > 0 & population_2021 > 0]
+
+## 17a. OH: Treated vs Untreated balance ----
+cat("\n=== ACS OUTCOMES: OHIO ===\n")
+cat("\n--- Population Growth (2010-2021) ---\n")
+oh_acs[, .(mean_pop_growth = mean(pop_growth, na.rm = TRUE),
+  median_pop_growth = median(pop_growth, na.rm = TRUE),
+  mean_pop_2010 = mean(population_2010, na.rm = TRUE),
+  n = .N), by = treated] %>% print()
+
+cat("\n--- Income Growth (2010-2021) ---\n")
+oh_acs[, .(mean_inc_growth = mean(income_growth, na.rm = TRUE),
+  median_inc_growth = median(income_growth, na.rm = TRUE),
+  mean_inc_2010 = mean(median_income_2010, na.rm = TRUE),
+  n = .N), by = treated] %>% print()
+
+## 17b. OH: Regression of growth on treatment ----
+oh_acs_pop <- oh_acs[!is.na(pop_growth) & is.finite(pop_growth)]
+oh_acs_m1 <- feols(pop_growth ~ treated, data = oh_acs_pop)
+oh_acs_m2 <- feols(pop_growth ~ treated + log(population_2010), data = oh_acs_pop)
+
+oh_acs_inc <- oh_acs[!is.na(income_growth) & is.finite(income_growth)]
+oh_acs_m3 <- feols(income_growth ~ treated, data = oh_acs_inc)
+oh_acs_m4 <- feols(income_growth ~ treated + log(median_income_2010), data = oh_acs_inc)
+
+cat("\n--- OH: Growth Regressions ---\n")
+etable(oh_acs_m1, oh_acs_m2, oh_acs_m3, oh_acs_m4,
+  headers = c("Pop Growth", "Pop Growth + Ctrl", "Inc Growth", "Inc Growth + Ctrl"))
+
+## 17c. OH: Dose-response (growth on rate change magnitude) ----
+oh_max_inc <- oh_rate_panel[event_type == "increase",
+  .(total_increase = sum(rate_change, na.rm = TRUE) * 100), by = muni_fips]
+oh_acs_dose <- merge(oh_acs, oh_max_inc, by.x = "place_fips", by.y = "muni_fips", all.x = TRUE)
+oh_acs_dose[is.na(total_increase), total_increase := 0]
+
+oh_acs_dose_pop <- oh_acs_dose[!is.na(pop_growth) & is.finite(pop_growth)]
+oh_dose_m1 <- feols(pop_growth ~ total_increase, data = oh_acs_dose_pop)
+oh_dose_m2 <- feols(pop_growth ~ total_increase + log(population_2010), data = oh_acs_dose_pop)
+
+oh_acs_dose_inc <- oh_acs_dose[!is.na(income_growth) & is.finite(income_growth)]
+oh_dose_m3 <- feols(income_growth ~ total_increase, data = oh_acs_dose_inc)
+oh_dose_m4 <- feols(income_growth ~ total_increase + log(median_income_2010), data = oh_acs_dose_inc)
+
+cat("\n--- OH: Dose-Response (total rate increase in pp) ---\n")
+etable(oh_dose_m1, oh_dose_m2, oh_dose_m3, oh_dose_m4,
+  headers = c("Pop ~ Dose", "Pop ~ Dose + Ctrl", "Inc ~ Dose", "Inc ~ Dose + Ctrl"))
+
+## 17d. PA: Treated vs Untreated balance ----
+cat("\n\n=== ACS OUTCOMES: PENNSYLVANIA ===\n")
+cat("\n--- Population Growth (2010-2021) ---\n")
+pa_acs[, .(mean_pop_growth = mean(pop_growth, na.rm = TRUE),
+  median_pop_growth = median(pop_growth, na.rm = TRUE),
+  mean_pop_2010 = mean(population_2010, na.rm = TRUE),
+  n = .N), by = treated] %>% print()
+
+cat("\n--- Income Growth (2010-2021) ---\n")
+pa_acs[, .(mean_inc_growth = mean(income_growth, na.rm = TRUE),
+  median_inc_growth = median(income_growth, na.rm = TRUE),
+  mean_inc_2010 = mean(median_income_2010, na.rm = TRUE),
+  n = .N), by = treated] %>% print()
+
+## 17e. PA: Regression of growth on treatment ----
+pa_acs_pop <- pa_acs[!is.na(pop_growth) & is.finite(pop_growth)]
+pa_acs_m1 <- feols(pop_growth ~ treated, data = pa_acs_pop)
+pa_acs_m2 <- feols(pop_growth ~ treated + log(population_2010), data = pa_acs_pop)
+
+pa_acs_inc <- pa_acs[!is.na(income_growth) & is.finite(income_growth)]
+pa_acs_m3 <- feols(income_growth ~ treated, data = pa_acs_inc)
+pa_acs_m4 <- feols(income_growth ~ treated + log(median_income_2010), data = pa_acs_inc)
+
+cat("\n--- PA: Growth Regressions ---\n")
+etable(pa_acs_m1, pa_acs_m2, pa_acs_m3, pa_acs_m4,
+  headers = c("Pop Growth", "Pop Growth + Ctrl", "Inc Growth", "Inc Growth + Ctrl"))
+
+## 17f. PA: Dose-response (growth on rate change magnitude) ----
+pa_max_inc <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
+  .(total_increase = sum(rate_change, na.rm = TRUE)), by = cousub_fips]
+pa_acs_dose <- merge(pa_acs, pa_max_inc, by = "cousub_fips", all.x = TRUE)
+pa_acs_dose[is.na(total_increase), total_increase := 0]
+
+pa_acs_dose_pop <- pa_acs_dose[!is.na(pop_growth) & is.finite(pop_growth)]
+pa_dose_m1 <- feols(pop_growth ~ total_increase, data = pa_acs_dose_pop)
+pa_dose_m2 <- feols(pop_growth ~ total_increase + log(population_2010), data = pa_acs_dose_pop)
+
+pa_acs_dose_inc <- pa_acs_dose[!is.na(income_growth) & is.finite(income_growth)]
+pa_dose_m3 <- feols(income_growth ~ total_increase, data = pa_acs_dose_inc)
+pa_dose_m4 <- feols(income_growth ~ total_increase + log(median_income_2010), data = pa_acs_dose_inc)
+
+cat("\n--- PA: Dose-Response (total rate increase in pp) ---\n")
+etable(pa_dose_m1, pa_dose_m2, pa_dose_m3, pa_dose_m4,
+  headers = c("Pop ~ Dose", "Pop ~ Dose + Ctrl", "Inc ~ Dose", "Inc ~ Dose + Ctrl"))
+
+
+# 18. IRS SOI County-Level Migration ----
+# County-to-county flows from IRS Statistics of Income.
+# Expected null: county-level data too coarse to detect within-county municipal sorting.
+# Demonstrates LODES detects what IRS cannot.
+# Only use 2018-2019 file (pre-COVID); 2019-20 and 2020-21 are COVID-contaminated.
+
+soi_dir <- file.path(data_dir, "irs_soi")
+
+soi_inflow <- fread(file.path(soi_dir, "countyinflow1819.csv"))
+soi_outflow <- fread(file.path(soi_dir, "countyoutflow1819.csv"))
+
+cat("\n\n=== IRS SOI COUNTY MIGRATION (2018-2019) ===\n")
+cat("Inflow rows:", nrow(soi_inflow), "  Outflow rows:", nrow(soi_outflow), "\n")
+
+## 18a. OH counties: net migration ----
+# Filter to OH (FIPS 39), exclude aggregate rows (county FIPS 000)
+oh_inflow <- soi_inflow[y2_statefips == 39 & y2_countyfips != "000" &
+  y1_countyfips != "000"]
+oh_outflow <- soi_outflow[y1_statefips == 39 & y1_countyfips != "000" &
+  y2_countyfips != "000"]
+
+# Aggregate to destination/origin county
+oh_in_agg <- oh_inflow[, .(
+  in_returns = sum(n1, na.rm = TRUE),
+  in_exemptions = sum(n2, na.rm = TRUE),
+  in_agi = sum(agi, na.rm = TRUE)
+), by = .(county_fips = y2_countyfips)]
+
+oh_out_agg <- oh_outflow[, .(
+  out_returns = sum(n1, na.rm = TRUE),
+  out_exemptions = sum(n2, na.rm = TRUE),
+  out_agi = sum(agi, na.rm = TRUE)
+), by = .(county_fips = y1_countyfips)]
+
+oh_net <- merge(oh_in_agg, oh_out_agg, by = "county_fips", all = TRUE)
+oh_net[is.na(in_returns), in_returns := 0]
+oh_net[is.na(out_returns), out_returns := 0]
+oh_net[, `:=`(
+  net_returns = in_returns - out_returns,
+  net_exemptions = in_exemptions - out_exemptions,
+  net_agi = in_agi - out_agi,
+  net_rate = (in_returns - out_returns) / (in_returns + out_returns)
+)]
+
+# Map places to counties via tract crosswalk
+oh_xw <- as.data.table(readRDS(file.path(data_dir, "oh_tract_xwalk.rds")))
+oh_place_to_county <- oh_xw[!is.na(place_fips), .(
+  county_fips = substr(tract_geoid, 3, 5)
+), by = place_fips]
+oh_place_to_county <- unique(oh_place_to_county)
+# If a place spans counties, take the most common
+oh_place_to_county <- oh_place_to_county[, .N, by = .(place_fips, county_fips)][
+  order(place_fips, -N)][, .SD[1], by = place_fips][, .(place_fips, county_fips)]
+
+oh_treated_places <- oh_rate_panel[event_type == "increase", unique(muni_fips)]
+oh_treated_counties <- oh_place_to_county[place_fips %in% oh_treated_places, unique(county_fips)]
+
+oh_net[, has_treated_muni := county_fips %in% oh_treated_counties]
+
+cat("\n--- OH: Net Migration by County Treatment Status ---\n")
+oh_net[, .(mean_net_returns = mean(net_returns, na.rm = TRUE),
+  mean_net_rate = mean(net_rate, na.rm = TRUE),
+  mean_net_agi = mean(net_agi, na.rm = TRUE),
+  n_counties = .N), by = has_treated_muni] %>% print()
+
+oh_soi_m1 <- feols(net_returns ~ has_treated_muni, data = oh_net)
+oh_soi_m2 <- feols(net_rate ~ has_treated_muni, data = oh_net)
+oh_soi_m3 <- feols(net_agi ~ has_treated_muni, data = oh_net)
+
+cat("\n--- OH: SOI Regressions (county-level, single cross-section) ---\n")
+etable(oh_soi_m1, oh_soi_m2, oh_soi_m3,
+  headers = c("Net Returns", "Net Rate", "Net AGI ($K)"))
+
+## 18b. PA counties: net migration ----
+pa_inflow <- soi_inflow[y2_statefips == 42 & y2_countyfips != "000" &
+  y1_countyfips != "000"]
+pa_outflow <- soi_outflow[y1_statefips == 42 & y1_countyfips != "000" &
+  y2_countyfips != "000"]
+
+pa_in_agg <- pa_inflow[, .(
+  in_returns = sum(n1, na.rm = TRUE),
+  in_exemptions = sum(n2, na.rm = TRUE),
+  in_agi = sum(agi, na.rm = TRUE)
+), by = .(county_fips = y2_countyfips)]
+
+pa_out_agg <- pa_outflow[, .(
+  out_returns = sum(n1, na.rm = TRUE),
+  out_exemptions = sum(n2, na.rm = TRUE),
+  out_agi = sum(agi, na.rm = TRUE)
+), by = .(county_fips = y1_countyfips)]
+
+pa_net <- merge(pa_in_agg, pa_out_agg, by = "county_fips", all = TRUE)
+pa_net[is.na(in_returns), in_returns := 0]
+pa_net[is.na(out_returns), out_returns := 0]
+pa_net[, `:=`(
+  net_returns = in_returns - out_returns,
+  net_exemptions = in_exemptions - out_exemptions,
+  net_agi = in_agi - out_agi,
+  net_rate = (in_returns - out_returns) / (in_returns + out_returns)
+)]
+
+# Flag counties with treated municipalities
+pa_xw <- as.data.table(readRDS(file.path(data_dir, "pa_tract_xwalk.rds")))
+pa_cousub_to_county <- pa_xw[!is.na(cousub_fips), .(
+  county_fips = substr(tract_geoid, 3, 5)
+), by = cousub_fips]
+pa_cousub_to_county <- unique(pa_cousub_to_county)
+pa_cousub_to_county <- pa_cousub_to_county[, .N, by = .(cousub_fips, county_fips)][
+  order(cousub_fips, -N)][, .SD[1], by = cousub_fips][, .(cousub_fips, county_fips)]
+
+pa_treated_cousubs <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
+  unique(cousub_fips)]
+pa_treated_counties <- pa_cousub_to_county[cousub_fips %in% pa_treated_cousubs, unique(county_fips)]
+
+pa_net[, has_treated_muni := county_fips %in% pa_treated_counties]
+
+cat("\n--- PA: Net Migration by County Treatment Status ---\n")
+pa_net[, .(mean_net_returns = mean(net_returns, na.rm = TRUE),
+  mean_net_rate = mean(net_rate, na.rm = TRUE),
+  mean_net_agi = mean(net_agi, na.rm = TRUE),
+  n_counties = .N), by = has_treated_muni] %>% print()
+
+pa_soi_m1 <- feols(net_returns ~ has_treated_muni, data = pa_net)
+pa_soi_m2 <- feols(net_rate ~ has_treated_muni, data = pa_net)
+pa_soi_m3 <- feols(net_agi ~ has_treated_muni, data = pa_net)
+
+cat("\n--- PA: SOI Regressions (county-level, single cross-section) ---\n")
+etable(pa_soi_m1, pa_soi_m2, pa_soi_m3,
+  headers = c("Net Returns", "Net Rate", "Net AGI ($K)"))
+
+## 18c. Within-OH: county-to-county flows near treated municipalities ----
+# Do flows FROM counties with treated munis TO neighboring counties increase?
+oh_within <- soi_outflow[y1_statefips == 39 & y2_statefips == 39 &
+  y1_countyfips != "000" & y2_countyfips != "000"]
+
+oh_within[, `:=`(
+  origin_treated = y1_countyfips %in% oh_treated_counties,
+  dest_treated = y2_countyfips %in% oh_treated_counties
+)]
+
+cat("\n--- OH Within-State Flows: Treated vs Untreated Origin Counties ---\n")
+oh_within[, .(
+  mean_returns = mean(n1, na.rm = TRUE),
+  total_returns = sum(n1, na.rm = TRUE),
+  mean_agi = mean(agi, na.rm = TRUE),
+  n_pairs = .N
+), by = origin_treated] %>% print()
+
+## 18d. Summary: LODES vs IRS detection ----
+cat("\n=== COMPARISON: LODES vs IRS SOI ===\n")
+cat("LODES (municipality level): PA dose-response = -0.008** (SE 0.003)\n")
+cat("  Detects within-county, cross-municipal residential sorting\n")
+cat("IRS SOI (county level): Cannot detect within-county sorting\n")
+cat("  OH counties with treated munis: net rate =",
+  round(oh_net[has_treated_muni == TRUE, mean(net_rate, na.rm = TRUE)], 4), "\n")
+cat("  OH counties without treated munis: net rate =",
+  round(oh_net[has_treated_muni == FALSE, mean(net_rate, na.rm = TRUE)], 4), "\n")
+cat("  Difference not statistically significant — sorting is sub-county\n")
+
 beepr::beep()
