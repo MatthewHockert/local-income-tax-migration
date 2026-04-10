@@ -267,6 +267,25 @@
 % ensure that treatment effects are not identified from comparisons across
 % differently-timed cohorts.
 
+\subsection{Full Continuous Dose-Response}
+\label{subsec:full_dose}
+
+% TODO: Motivation — exploits both increases and decreases as variation.
+
+\begin{equation}
+    Y_{it} = \alpha_i + \gamma_t + \beta^{+} \cdot \Delta\text{rate}^{+}_{it} + \beta^{-} \cdot |\Delta\text{rate}^{-}_{it}| + \varepsilon_{it}
+    \label{eq:split_dose}
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item[] $\Delta\text{rate}^{+}_{it} = \max(\text{rate}_{it} - \text{rate}_{i,t_0}, \; 0)$ = cumulative rate increase from baseline
+    \item[] $|\Delta\text{rate}^{-}_{it}| = |\min(\text{rate}_{it} - \text{rate}_{i,t_0}, \; 0)|$ = cumulative rate decrease from baseline (in absolute value)
+    \item[] $\beta^{+} < 0$ implies rate increases reduce the locally-resident employment share
+    \item[] $\beta^{-} > 0$ implies rate decreases increase the locally-resident employment share
+    \item[] Asymmetry ($|\beta^{+}| \neq |\beta^{-}|$) indicates differential adjustment to rate increases vs.\ decreases
+\end{itemize}
+
 %==========================================================
 \section{Results}
 \label{sec:results}

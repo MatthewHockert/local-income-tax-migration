@@ -2602,4 +2602,61 @@ for (min_j in c(10, 50, 100, 200, 500)) {
     fifelse(abs(coef(m)) / se(m) > 1.96, "**", fifelse(abs(coef(m)) / se(m) > 1.65, "*", ""))))
 }
 
+# 16. Full Dose-Response: Both Directions ----
+
+## Binary treated x post (PA, staggered)
+pa_first_dec <- pa_rate_panel[event_type == "decrease" & !is.na(cousub_fips),
+  .(first_dec_yr = min(year)), by = cousub_fips]
+pa_samp <- merge(pa_samp, pa_first_dec, by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+
+pa_samp[, `:=`(
+  treated_dec = !is.na(first_dec_yr),
+  post_dec = as.integer(!is.na(first_dec_yr) & year >= first_dec_yr)
+)]
+
+## 16a. Binary increase x post vs decrease x post ----
+bin_inc <- feols(share_live_in ~ has_increase:post_increase | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+bin_dec <- feols(share_live_in ~ treated_dec:post_dec | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+bin_both <- feols(share_live_in ~ has_increase:post_increase + treated_dec:post_dec | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+
+etable(bin_inc, bin_dec, bin_both,
+  headers = c("Increase x Post", "Decrease x Post", "Both"))
+
+## 16b. Full continuous: cumulative change from baseline ----
+pa_baseline_rate2 <- pa_rate_panel[!is.na(cousub_fips),
+  .(base_rate = first(na.omit(resident_eit))), by = cousub_fips]
+pa_samp <- merge(pa_samp, pa_baseline_rate2,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_samp[, cumul_change2 := resident_eit - fifelse(is.na(base_rate), 0, base_rate)]
+
+m_cumul <- feols(share_live_in ~ cumul_change2 | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+etable(m_cumul, headers = "PA: Cumulative Change (all municipalities)")
+
+## 16c. Split positive / negative dose ----
+pa_samp[, `:=`(
+  pos_change = fifelse(cumul_change2 > 0, cumul_change2, 0),
+  neg_change = fifelse(cumul_change2 < 0, abs(cumul_change2), 0)
+)]
+
+m_split_dose <- feols(share_live_in ~ pos_change + neg_change | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+etable(m_split_dose, headers = "PA: Split Dose (positive / negative)")
+
+## 16d. Sun-Abraham: increase vs decrease cohorts ----
+pa_samp[, cohort_inc := fifelse(is.na(first_increase_year), 10000L, as.integer(first_increase_year))]
+pa_samp[, cohort_dec := fifelse(is.na(first_dec_yr), 10000L, as.integer(first_dec_yr))]
+
+sa_inc_full <- feols(share_live_in ~ sunab(cohort_inc, year) | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+sa_dec_full <- feols(share_live_in ~ sunab(cohort_dec, year) | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+
+etable(sa_inc_full, sa_dec_full,
+  headers = c("Sun-Abraham: Increases", "Sun-Abraham: Decreases"),
+  keep = "year::-?[0-5]$")
+
 beepr::beep()
