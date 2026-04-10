@@ -117,7 +117,7 @@ oh_no_tax_cities <- setdiff(
   oh_rate_panel[rate > 0, unique(muni_fips)])
 oh_stable_taxed <- setdiff(oh_never_changed, oh_no_tax_cities)
 
-# PA: all variation is intensive margin
+# PA groups
 pa_inc_cities <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
   unique(cousub_fips)]
 pa_dec_cities <- pa_rate_panel[event_type == "decrease" & !is.na(cousub_fips),
@@ -125,6 +125,21 @@ pa_dec_cities <- pa_rate_panel[event_type == "decrease" & !is.na(cousub_fips),
 pa_never_changed <- pa_rate_panel[!is.na(cousub_fips),
   .(any_change = any(event_type %in% c("increase", "decrease"), na.rm = TRUE)),
   by = cousub_fips][any_change == FALSE, cousub_fips]
+
+# PA: extensive margin (adoption from 0 -> positive)
+pa_rate_by_muni <- pa_rate_panel[!is.na(cousub_fips) & !is.na(resident_eit),
+  .(ever_zero = any(resident_eit == 0),
+    ever_positive = any(resident_eit > 0)), by = cousub_fips]
+pa_adopters <- pa_rate_by_muni[ever_zero == TRUE & ever_positive == TRUE, cousub_fips]
+pa_never_taxed <- pa_rate_by_muni[ever_zero == TRUE & ever_positive == FALSE, cousub_fips]
+
+# PA first adoption year (first year with positive rate after having 0)
+pa_first_adoption <- pa_rate_panel[!is.na(cousub_fips) & cousub_fips %in% pa_adopters &
+  !is.na(resident_eit) & resident_eit > 0,
+  .(first_adopt = min(year)), by = cousub_fips]
+# Drop those "adopting" in 2000 (first year of data — can't confirm true adoption)
+pa_first_adoption <- pa_first_adoption[first_adopt > 2002]
+pa_adopters <- pa_first_adoption$cousub_fips
 
 # Cohort lookups
 pa_first_inc <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
@@ -140,6 +155,8 @@ print(paste("OH all increasers:", length(oh_inc_cities)))
 print(paste("OH no-tax controls:", length(oh_no_tax_cities)))
 print(paste("OH stable-rate taxed:", length(oh_stable_taxed)))
 print(paste("OH decreasers:", length(oh_dec_cities)))
+print(paste("PA adopters (0->tax, post-2002):", length(pa_adopters)))
+print(paste("PA never-taxed (always 0):", length(pa_never_taxed)))
 print(paste("PA increasers:", length(pa_inc_cities)))
 print(paste("PA decreasers:", length(pa_dec_cities)))
 print(paste("PA never-changed:", length(pa_never_changed)))
@@ -171,6 +188,75 @@ p_q1a <- plot_sa(q1a_model,
 print(p_q1a)
 ggsave(file.path(fig_dir, "q1a_oh_adoption.png"), p_q1a,
   width = 7, height = 4.5, dpi = 300)
+
+## Q1: PA Adoption (0 -> positive EIT) ----
+q1_pa_sample <- pa_panel[work_city %in% c(pa_adopters, pa_never_taxed) &
+  total_jobs > 50 & !is.na(resident_eit)][year <= max_year]
+q1_pa_sample <- merge(q1_pa_sample, pa_first_adoption,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+q1_pa_sample[, cohort := fifelse(is.na(first_adopt), 10000L, as.integer(first_adopt))]
+
+if (uniqueN(q1_pa_sample[cohort < 10000, work_city]) >= 3) {
+  q1_pa_model <- feols(
+    share_live_in ~ sunab(cohort, year) | work_city + year,
+    data = q1_pa_sample, cluster = ~work_city)
+  print_att(q1_pa_model, "Q1: PA Adoption vs Never-Taxed")
+
+  p_q1_pa <- plot_sa(q1_pa_model,
+    title = "Q1: PA Adoption (0 -> EIT) vs Never-Taxed",
+    subtitle = paste0(length(pa_adopters), " adopters vs ",
+      length(pa_never_taxed), " never-taxed"),
+    color = "firebrick")
+  print(p_q1_pa)
+  ggsave(file.path(fig_dir, "q1_pa_adoption.png"), p_q1_pa,
+    width = 7, height = 4.5, dpi = 300)
+} else {
+  print("Q1 PA: Too few adopters for Sun-Abraham")
+}
+
+## Q1: Pooled OH + PA Adoption ----
+# Stack OH and PA adopters + never-taxed controls with state x year FE
+oh_q1_stack <- oh_panel[work_city %in% c(oh_adopters, oh_no_tax_cities) &
+  total_jobs > 50][year <= max_year]
+oh_q1_stack <- merge(oh_q1_stack, oh_first_adoption,
+  by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
+oh_q1_stack[, `:=`(state = "OH", city_id = paste0("OH_", work_city))]
+
+pa_q1_stack <- pa_panel[work_city %in% c(pa_adopters, pa_never_taxed) &
+  total_jobs > 50 & !is.na(resident_eit)][year <= max_year]
+pa_q1_stack <- merge(pa_q1_stack, pa_first_adoption,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_q1_stack[, `:=`(state = "PA", city_id = paste0("PA_", work_city))]
+
+pooled_q1 <- rbindlist(list(
+  oh_q1_stack[, .(city_id, state, year, share_live_in, first_adopt, total_jobs)],
+  pa_q1_stack[, .(city_id, state, year, share_live_in, first_adopt, total_jobs)]
+))
+pooled_q1[, cohort := fifelse(is.na(first_adopt), 10000L, as.integer(first_adopt))]
+pooled_q1[, state_year := paste0(state, "_", year)]
+
+q1_pooled_model <- feols(
+  share_live_in ~ sunab(cohort, year) | city_id + state_year,
+  data = pooled_q1, cluster = ~city_id)
+
+n_treated_pooled <- uniqueN(pooled_q1[cohort < 10000, city_id])
+n_control_pooled <- uniqueN(pooled_q1[cohort == 10000, city_id])
+print_att(q1_pooled_model, "Q1: Pooled OH+PA Adoption vs Never-Taxed")
+
+p_q1_pooled <- plot_sa(q1_pooled_model,
+  title = "Q1: Pooled Adoption (0 -> tax) vs Never-Taxed",
+  subtitle = paste0(n_treated_pooled, " adopters (OH+PA) vs ",
+    n_control_pooled, " never-taxed controls; state x year FE"),
+  color = "darkgreen")
+print(p_q1_pooled)
+ggsave(file.path(fig_dir, "q1_pooled_adoption.png"), p_q1_pooled,
+  width = 7, height = 4.5, dpi = 300)
+
+## Q1 Summary ----
+print("Q1 Summary:")
+print_att(q1a_model, "  OH only")
+if (exists("q1_pa_model")) print_att(q1_pa_model, "  PA only")
+print_att(q1_pooled_model, "  Pooled")
 
 
 # ============================================================================
@@ -274,9 +360,33 @@ print(p_q2_pa)
 ggsave(file.path(fig_dir, "q2_pa_intensive.png"), p_q2_pa,
   width = 7, height = 4.5, dpi = 300)
 
+## Q2 PA: Rate increasers vs no-tax ----
+q2_pa_notax_sample <- pa_panel[work_city %in% c(pa_inc_cities, pa_never_taxed) &
+  total_jobs > 50 & !is.na(resident_eit)]
+q2_pa_notax_sample <- merge(q2_pa_notax_sample, pa_first_inc,
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+q2_pa_notax_sample[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+
+q2_pa_notax <- feols(
+  share_live_in ~ sunab(cohort, year) | work_city + year,
+  data = q2_pa_notax_sample, cluster = ~work_city)
+
+print_att(q2_pa_notax, "Q2: PA Rate Increasers vs No-Tax")
+
+p_q2_pa_notax <- plot_sa(q2_pa_notax,
+  title = "Q2: PA Rate Increases vs No-Tax Municipalities",
+  subtitle = paste0(uniqueN(q2_pa_notax_sample[cohort < 10000, work_city]),
+    " increasers vs ", uniqueN(q2_pa_notax_sample[cohort == 10000, work_city]),
+    " no-tax controls"),
+  color = "firebrick")
+print(p_q2_pa_notax)
+ggsave(file.path(fig_dir, "q2_pa_notax.png"), p_q2_pa_notax,
+  width = 7, height = 4.5, dpi = 300)
+
 ## Q2 Summary table ----
-etable(q2_oh, q2_oh_notax, q2_pa,
-  headers = c("OH: Inc vs Stable-Taxed", "OH: Inc vs No-Tax", "PA: Inc vs NC"),
+etable(q2_oh_notax, q2_pa_notax, q2_oh, q2_pa,
+  headers = c("OH Inc vs No-Tax", "PA Inc vs No-Tax",
+    "OH Inc vs Stable", "PA Inc vs Stable"),
   drop.section = "coef")
 
 

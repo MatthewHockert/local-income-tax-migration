@@ -255,6 +255,33 @@ print(paste("OH inc sample:", nrow(oh_inc_sample), "obs,",
 print(paste("OH dec sample:", nrow(oh_dec_sample), "obs,",
   uniqueN(oh_dec_sample$work_city), "munis"))
 
+# OH samples split by control group (for Q2 table)
+oh_no_tax_cities <- setdiff(
+  oh_base[, unique(work_city)],
+  oh_rate_panel[rate > 0, unique(muni_fips)])
+oh_stable_taxed <- setdiff(oh_never_changed, oh_no_tax_cities)
+
+oh_inc_notax_sample <- oh_base[work_city %in% c(oh_inc_cities, oh_no_tax_cities)]
+oh_inc_notax_sample[, work_city_int := as.integer(as.factor(work_city))]
+
+oh_inc_stable_sample <- oh_base[work_city %in% c(oh_inc_cities, oh_stable_taxed)]
+oh_inc_stable_sample[, work_city_int := as.integer(as.factor(work_city))]
+
+# PA no-tax sample (for Q2 col 2)
+pa_rate_by_muni <- pa_rate_panel[!is.na(cousub_fips) & !is.na(resident_eit),
+  .(ever_zero = any(resident_eit == 0), ever_positive = any(resident_eit > 0)), by = cousub_fips]
+pa_never_taxed <- pa_rate_by_muni[ever_zero == TRUE & ever_positive == FALSE, cousub_fips]
+
+pa_inc_notax_sample <- pa_base[work_city %in% c(pa_inc_cities, pa_never_taxed)]
+pa_inc_notax_sample[, work_city_int := as.integer(as.factor(work_city))]
+
+print(paste("OH inc vs no-tax:", nrow(oh_inc_notax_sample), "obs,",
+  uniqueN(oh_inc_notax_sample$work_city), "munis"))
+print(paste("OH inc vs stable:", nrow(oh_inc_stable_sample), "obs,",
+  uniqueN(oh_inc_stable_sample$work_city), "munis"))
+print(paste("PA inc vs no-tax:", nrow(pa_inc_notax_sample), "obs,",
+  uniqueN(pa_inc_notax_sample$work_city), "munis"))
+
 # PA samples with fiscal controls (subset with complete controls)
 pa_ctrl_vars <- c("log_police", "log_streets", "log_debt", "log_state_aid")
 pa_has_controls <- complete.cases(pa_base[, ..pa_ctrl_vars])
@@ -358,6 +385,68 @@ oh_dcdh_all <- did_multiplegt_dyn(
   cluster = "work_city_int",
   graph_off = TRUE)
 print_dcdh(oh_dcdh_all, "OH All (continuous)")
+
+
+# Q2 Table Models: DCDH by control group ----
+# These match the Q2 table columns: inc vs no-tax, inc vs stable-rate
+
+# OH Inc vs No-Tax (continuous)
+oh_dcdh_inc_notax <- did_multiplegt_dyn(
+  df = as.data.frame(oh_inc_notax_sample),
+  outcome = "share_live_in",
+  group = "work_city_int",
+  time = "year",
+  treatment = "rate",
+  effects = 8,
+  placebo = 5,
+  continuous = 1,
+  cluster = "work_city_int",
+  graph_off = TRUE)
+print_dcdh(oh_dcdh_inc_notax, "OH Inc vs No-Tax (DCDH)")
+
+# OH Inc vs Stable-Taxed (continuous) — same as oh_dcdh_inc above
+# (oh_inc_sample uses oh_never_changed which is stable+notax mixed;
+#  oh_inc_stable_sample uses only stable-taxed)
+oh_dcdh_inc_stable <- did_multiplegt_dyn(
+  df = as.data.frame(oh_inc_stable_sample),
+  outcome = "share_live_in",
+  group = "work_city_int",
+  time = "year",
+  treatment = "rate",
+  effects = 8,
+  placebo = 5,
+  continuous = 1,
+  cluster = "work_city_int",
+  graph_off = TRUE)
+print_dcdh(oh_dcdh_inc_stable, "OH Inc vs Stable-Taxed (DCDH)")
+
+# PA Inc vs No-Tax (continuous) — may fail with only 5 controls
+tryCatch({
+  pa_dcdh_inc_notax <- did_multiplegt_dyn(
+    df = as.data.frame(pa_inc_notax_sample),
+    outcome = "share_live_in",
+    group = "work_city_int",
+    time = "year",
+    treatment = "resident_eit",
+    effects = 8,
+    placebo = 5,
+    continuous = 1,
+    cluster = "work_city_int",
+    graph_off = TRUE)
+  print_dcdh(pa_dcdh_inc_notax, "PA Inc vs No-Tax (DCDH)")
+}, error = function(e) {
+  print(paste("PA Inc vs No-Tax DCDH failed:", e$message))
+})
+
+# PA Inc vs Stable-Rate (continuous) — same as pa_dcdh_inc above
+# (pa_inc_sample already uses pa_never_changed = stable-rate)
+print_dcdh(pa_dcdh_inc, "PA Inc vs Stable-Rate (DCDH) [= pa_dcdh_inc]")
+
+# Q2 Summary
+print("Q2 DCDH Summary:")
+print_dcdh(oh_dcdh_inc_notax, "  OH Inc vs No-Tax")
+print_dcdh(oh_dcdh_inc_stable, "  OH Inc vs Stable")
+print_dcdh(pa_dcdh_inc, "  PA Inc vs Stable")
 
 
 # PA Models with Fiscal Controls ----

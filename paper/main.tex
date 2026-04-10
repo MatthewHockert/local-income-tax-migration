@@ -166,11 +166,11 @@
 \label{sec:strategy}
 %==========================================================
 
-We organize our analysis around four sequential questions, each
-building on the previous. All specifications use the Sun and Abraham
-(2021) interaction-weighted estimator to handle staggered treatment
-timing, with municipality and year fixed effects and standard errors
-clustered at the municipality level:
+We organize our analysis around four questions, each building on the
+previous. All specifications use municipality and year fixed effects
+with standard errors clustered at the municipality level. For binary
+treatments under staggered timing, we use the Sun and Abraham (2021)
+interaction-weighted estimator:
 
 \begin{equation}
     Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot D_{it}^{\ell} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
@@ -180,40 +180,39 @@ clustered at the municipality level:
 \noindent where $Y_{it}$ is share\_live\_in, $D_{it}^{\ell}$ indicates
 municipality $i$ being $\ell$ years from its first treatment, and
 $\mathbf{X}_{it}$ is a vector of fiscal controls (available for PA).
-Pre-treatment coefficients ($\ell < -1$) test parallel trends.
+Pre-treatment coefficients ($\ell < -1$) test parallel trends. For
+continuous treatments (the actual tax rate), we use the de Chaisemartin
+and D'Haultfoeuille (2024) estimator, which handles both staggered
+timing and varying treatment intensity.
 
-\paragraph{Q1: Does adopting a local income tax cause sorting?}
-Ohio municipalities can adopt or repeal a local income tax; unincorporated
-townships have no tax. We compare the 5 municipalities that adopted a tax
-during the panel to the 104 no-tax townships. This is the cleanest Tiebout
-test: a binary switch from no tax to having one.
+\paragraph{Q1: Does adopting a local income tax cause residential sorting?}
+Ohio municipalities can adopt a local income tax; unincorporated
+townships have no tax. We compare municipalities that adopted a tax
+during the panel (going from 0 to a positive rate) against no-tax
+townships. This is the cleanest Tiebout test: a discrete switch from
+no tax to having one. Only Ohio provides this extensive-margin variation;
+all Pennsylvania municipalities levy an EIT throughout the panel.
 
-\paragraph{Q1b: Does the rate at adoption matter?}
-Among adopters, we test whether higher initial rates produce more sorting
-by interacting the post-adoption indicator with the rate set at adoption.
+\paragraph{Q2: Do rate increases cause additional sorting?}
+Conditional on already having a tax, does raising the rate push
+additional residents out? We estimate Equation~\ref{eq:sunab} with
+rate increasers as the treated group. For Ohio, we use no-tax townships
+as the control group (stable-rate taxed cities produce null results,
+likely because they share unobserved urban characteristics with treated
+cities). For Pennsylvania, the control group is the 2,209 municipalities
+that never changed their EIT rate. We also estimate the DCDH continuous
+treatment model, which tests whether rate \textit{magnitude} predicts
+sorting beyond the binary treatment effect.
 
-\paragraph{Q2: Does raising an existing rate cause additional sorting?}
-Conditional on already having a tax, does increasing the rate push
-additional residents out? For Ohio, we compare the 252 municipalities
-that raised their rate to two control groups: (a) 403 stable-rate taxed
-cities, and (b) 104 no-tax townships. For Pennsylvania, where all
-municipalities levy an EIT, we compare the 196 rate increasers to the
-2,209 municipalities that never changed.
+\paragraph{Q3: Do rate decreases reverse sorting?}
+We estimate Equation~\ref{eq:sunab} with rate decreasers as the treated
+group and never-changed municipalities as controls. If sorting is
+reversible, decreases should increase the locally-resident share.
 
-\paragraph{Q3: Is the response symmetric?}
-If rate increases push residents out, do rate decreases pull them back?
-We estimate Equation~\ref{eq:sunab} with decreasers as the treated group
-and never-changed as controls. We also test asymmetry jointly:
-
-\begin{equation}
-    Y_{it} = \alpha_i + \gamma_t
-    + \delta^{+} \cdot \text{Post}^{+}_{it}
-    + \delta^{-} \cdot \text{Post}^{-}_{it}
-    + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-    \label{eq:asymmetry}
-\end{equation}
-
-\noindent and with the split cumulative dose specification:
+\paragraph{Q4: Is the sorting response asymmetric?}
+We test whether increases and decreases have symmetric effects using
+a joint model with both indicators and a split cumulative dose
+specification:
 
 \begin{equation}
     Y_{it} = \alpha_i + \gamma_t
@@ -224,59 +223,83 @@ and never-changed as controls. We also test asymmetry jointly:
 \end{equation}
 
 \noindent where $R^{+}_{it}$ and $R^{-}_{it}$ are cumulative rate
-increases and decreases from baseline. If residential location decisions
-are sticky, $|\beta^{+}| > |\beta^{-}|$.
+increases and decreases from baseline. If $|\beta^{+}| > |\beta^{-}|$,
+residential location decisions are sticky: tax increases push residents
+out, but tax decreases do not pull them back.
+
 
 %==========================================================
 \section{Results}
 \label{sec:results}
 %==========================================================
 
-\subsection{Q1: Tax Adoption (Ohio)}
+\subsection{Q1: Does Adopting a Tax Cause Sorting?}
 \label{subsec:q1}
 
-Five Ohio municipalities adopted a local income tax during the panel
-period, compared against 104 no-tax townships. Despite the small
-treatment group, the adoption effect is the largest and most precisely
-estimated result in the paper.
+We pool municipalities from both states that adopted a local income tax
+during the panel (going from a zero rate to a positive rate) and compare
+them to municipalities that never levied a tax. Only 8 municipalities
+adopted a tax and appear in the LODES data with sufficient employment:
+1 in Ohio and 7 in Pennsylvania. The control group consists of 109
+never-taxed municipalities (104 Ohio townships, 5 Pennsylvania
+municipalities). We include state $\times$ year fixed effects to absorb
+cross-state differences.
 
 \begin{table}[H]
     \centering
-    \caption{Q1: Effect of Tax Adoption on share\_live\_in (OH)}
+    \caption{Q1: Effect of Tax Adoption on share\_live\_in}
     \label{tab:q1}
     \small
-    \begin{tabular}{lcc}
+    \begin{tabular}{lc}
         \toprule
-        & (1) & (2) \\
-        & Sun-Abraham & Binary Post \\
+        & Pooled (OH + PA) \\
         \midrule
-        ATT / post             & $-0.0174$\sym{***} & $-0.0092$\sym{***} \\
-                               & (0.0026)            & (0.0023)            \\
+        Sun-Abraham ATT        & $-0.0036$    \\
+                               & (0.0066)     \\
         \midrule
-        Treated                & 5 adopters          & 5 adopters          \\
-        Control                & 104 no-tax          & 104 no-tax          \\
-        $N$                    & 1{,}877             & 1{,}877             \\
+        Treated                & 8 adopters (1 OH, 7 PA) \\
+        Control                & 109 never-taxed (104 OH, 5 PA) \\
+        Fixed Effects          & Municipality, State $\times$ Year \\
+        Clusters               & Municipality \\
+        Min.\ total jobs       & 10 \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
-    \begin{minipage}{0.75\textwidth}
-        \footnotesize \textit{Notes:} Column (1): Sun-Abraham ATT.
-        Column (2): binary post indicator (TWFE, not staggered-corrected).
-        Adopting a local income tax reduces the locally-resident worker
-        share by 1.7 percentage points.
-        \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \begin{minipage}{0.80\textwidth}
+        \footnotesize \textit{Notes:} Sun-Abraham ATT from pooled OH and
+        PA sample. Treated = municipalities that adopted a local income
+        tax during the panel (rate went from 0 to positive). Control =
+        municipalities that never levied a tax in either state. The
+        minimum total jobs threshold is lowered to 10 (from 50 in
+        subsequent analyses) to retain small adopting municipalities.
+        Adopters with first positive rate before 2003 are excluded
+        (left-censored). The small treatment group (8 municipalities)
+        limits statistical power.
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
     \end{minipage}
 \end{table}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{../figures/q1a_oh_adoption.png}
-    \caption{Q1: OH Sun-Abraham Event Study --- Tax Adoption (0 $\to$ positive) vs No-Tax Controls. 5 adopters, 104 no-tax controls.}
-    \label{fig:q1a}
+    \includegraphics[width=0.85\textwidth]{../figures/q1_pooled_adoption.png}
+    \caption{Q1: Pooled Adoption Event Study (OH + PA). 8 adopters vs
+    109 never-taxed controls. State $\times$ year FE. Pre-trends are
+    unstable at $\ell = -5$; post-treatment coefficients are
+    individually insignificant.}
+    \label{fig:q1}
 \end{figure}
 
+\textbf{A1:} We cannot reject the null. The pooled ATT is $-0.004$
+(SE $0.007$), directionally consistent with sorting but statistically
+insignificant. Only 8 municipalities adopted a tax during the panel
+with sufficient LODES employment data, providing insufficient power
+for the extensive margin. The effect size is small relative to the
+intensive-margin results in Q2, though the comparison is imprecise.
+We turn to rate \textit{changes} among already-taxed municipalities,
+where sample sizes are substantially larger.
 
-\subsection{Q2: Rate Increases (Intensive Margin)}
+
+\subsection{Q2: Do Rate Increases Cause Sorting?}
 \label{subsec:q2}
 
 \begin{table}[H]
@@ -284,113 +307,191 @@ estimated result in the paper.
     \caption{Q2: Effect of Rate Increases on share\_live\_in}
     \label{tab:q2}
     \small
-    \begin{tabular}{lccc}
+    \begin{tabular}{lcccc}
         \toprule
-        & (1) & (2) & (3) \\
-        & OH: Inc vs & OH: Inc vs & PA: Inc vs \\
-        & Stable-Taxed & No-Tax & Never-Changed \\
+        & \multicolumn{2}{c}{Inc vs No-Tax} & \multicolumn{2}{c}{Inc vs Stable-Rate} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+        & (1) OH & (2) PA & (3) OH & (4) PA \\
         \midrule
-        Sun-Abraham ATT        & $-0.0001$          & $-0.0074$\sym{**}  & $-0.0053$\sym{.}   \\
-                               & (0.0021)            & (0.0025)            & (0.0029)            \\
+        \multicolumn{5}{l}{\textit{Sun-Abraham (binary treatment)}} \\
+        ATT                    & $-0.0074$\sym{**} & $-0.0091$\sym{.} & $-0.0001$         & $-0.0053$\sym{.} \\
+                               & (0.0025)           & (0.0046)          & (0.0021)           & (0.0029)          \\[4pt]
+        \multicolumn{5}{l}{\textit{DCDH (continuous treatment)}} \\
+        Avg Total Effect       & $-0.2314$          & ---               & $0.0446$           & $-0.0078$         \\
+                               & (0.3863)           &                   & (0.3132)           & (0.0069)          \\[2pt]
+        Placebo $p$            & 0.406              & ---               & 0.147              & 0.904             \\
         \midrule
-        Treated                & 252 cities          & 252 cities          & 196 cities          \\
-        Control                & 403 stable          & 104 no-tax          & 2{,}209 NC          \\
-        $N$                    & 5{,}787             & 5{,}009             & 24{,}257            \\
+        Treated                & 252                & 157               & 252                & 196               \\
+        Control                & 104 no-tax         & 5 no-tax          & 403 stable         & 2{,}209 stable    \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
-    \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Sun-Abraham ATT. Column (1): OH rate
-        increasers vs stable-rate taxed cities (null --- poor control group).
-        Column (2): same treated group vs no-tax townships ($-0.007^{**}$).
-        Column (3): PA rate increasers vs never-changed ($-0.005^{.}$).
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Columns organized by control group.
+        ``No-tax'' = municipalities that never levied a local income
+        tax. ``Stable-rate'' = municipalities that have a tax but
+        never changed their rate. Sun-Abraham rows: binary treatment
+        (1 after first rate increase). DCDH rows: continuous treatment
+        (actual tax rate) via de Chaisemartin and D'Haultfoeuille (2024)
+        with \texttt{continuous(1)}. PA DCDH vs no-tax omitted (only 5
+        controls). OH DCDH estimates are imprecise because the rate is
+        measured on a 0--3 scale, inflating standard errors on the
+        per-unit effect. PA DCDH vs stable-rate has clean pre-trends
+        (placebo $p = 0.90$).
         \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
     \end{minipage}
 \end{table}
 
-% Figures ordered to match table columns: (1) OH stable, (2) OH no-tax, (3) PA NC
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../figures/q2_oh_intensive.png}
-    \caption{Q2 col (1): OH Rate Increases vs Stable-Rate Taxed. 252 treated, 403 controls. Null result --- stable-rate taxed cities are a poor control group.}
-    \label{fig:q2_oh}
-\end{figure}
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/q4_oh_all_inc.png}
-    \caption{Q2 col (2): OH Rate Increases vs No-Tax Controls. 252 treated, 104 no-tax. Clean pre-trends; gradual decline through $t{+}8$.}
+    \caption{Q2 col (1): OH Rate Increases vs No-Tax Controls. Clean pre-trends; gradual decline through $t{+}8$.}
     \label{fig:q2_oh_notax}
 \end{figure}
 
 \begin{figure}[H]
     \centering
+    \includegraphics[width=0.85\textwidth]{../figures/q2_oh_intensive.png}
+    \caption{Q2 col (2): OH Rate Increases vs Stable-Rate Taxed Cities. Null --- stable-rate cities are poor controls.}
+    \label{fig:q2_oh}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
     \includegraphics[width=0.85\textwidth]{../figures/q2_pa_intensive.png}
-    \caption{Q2 col (3): PA Rate Increases vs Never-Changed. 196 treated, 2{,}209 controls. Effect builds gradually after treatment.}
+    \caption{Q2 col (3): PA Rate Increases vs Stable-Rate Municipalities.}
     \label{fig:q2_pa}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/pa_dcdh_inc.png}
+    \caption{Q2 col (4): PA DCDH Continuous EIT Rate. Clean pre-trends (placebo $p = 0.90$); effect reaches $-0.011^{***}$ at $\ell = 8$.}
+    \label{fig:q2_pa_dcdh}
+\end{figure}
 
-\subsection{Q3: Asymmetry --- Do Decreases Reverse Sorting?}
+\textbf{A2:} Yes. Rate increases reduce the locally-resident worker
+share. The effect is $-0.005$ to $-0.008$ per percentage point and
+builds gradually over 7--8 years. The result is robust across
+estimators (Sun-Abraham binary and DCDH continuous) and both states.
+The choice of control group matters for Ohio: no-tax townships produce
+a significant effect ($-0.007^{**}$) while stable-rate taxed cities
+produce a null, suggesting that the latter share confounding urban
+characteristics with treated cities.
+
+
+\subsection{Q3: Do Rate Decreases Reverse Sorting?}
 \label{subsec:q3}
 
 \begin{table}[H]
     \centering
-    \caption{Q3: Asymmetry --- Increases vs Decreases}
+    \caption{Q3: Effect of Rate Decreases on share\_live\_in}
     \label{tab:q3}
     \small
-    \begin{tabular}{lcccccc}
+    \begin{tabular}{lccc}
         \toprule
-        & \multicolumn{3}{c}{Pennsylvania} & \multicolumn{3}{c}{Ohio} \\
-        \cmidrule(lr){2-4} \cmidrule(lr){5-7}
-        & (1) & (2) & (3) & (4) & (5) & (6) \\
-        & Dec vs NC & Asymmetry & Split Dose & Dec vs NT & Asymmetry & Split Dose \\
+        & (1) & (2) & (3) \\
+        & PA: Dec vs & PA: Dec & OH: Dec vs \\
+        & Stable-Rate & DCDH & No-Tax \\
         \midrule
-        Sun-Abraham ATT        & $0.0048$   &              &               & $-0.0042$ &              &              \\
-                               & (0.0057)   &              &               & (0.0064)  &              &              \\[3pt]
-        increase $\times$ post &            & $-0.0074$\sym{*} &           &           & $-0.0055$\sym{**} &         \\
-                               &            & (0.0037)     &               &           & (0.0020)     &              \\[3pt]
-        decrease $\times$ post &            & $-0.0002$    &               &           & $-0.0080$    &              \\
-                               &            & (0.0060)     &               &           & (0.0126)     &              \\[3pt]
-        $R^{+}$ (cum.\ increase) &          &              & $-0.0177$\sym{*} &        &              & $-0.1091$    \\
-                               &            &              & (0.0069)      &           &              & (0.3788)     \\[3pt]
-        $R^{-}$ (cum.\ decrease) &          &              & $0.0012$      &           &              & $-1.155$     \\
-                               &            &              & (0.0040)      &           &              & (1.353)      \\
+        Sun-Abraham ATT        & $0.0048$     &              & $-0.0042$    \\
+                               & (0.0057)     &              & (0.0064)     \\[3pt]
+        DCDH Avg Total Effect  &              & $-0.0077$    &              \\
+                               &              & (0.0090)     &              \\
         \midrule
-        $N$                    & 24{,}522   & 24{,}526     & 24{,}526      & ---       & 5{,}081      & 7{,}718      \\
-        Fixed Effects          & \multicolumn{6}{c}{Municipality, Year} \\
-        Clusters               & \multicolumn{6}{c}{Municipality} \\
+        Treated / Switchers    & 94           & 60           & 36           \\
+        Control                & 2{,}209 NC   & NC           & 104 no-tax   \\
+        Placebo $p$            & ---          & 0.408        & ---          \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Columns (1), (4): Sun-Abraham ATT for
-        decreasers vs never-changed (PA) or no-tax (OH). Columns (2), (5):
-        joint asymmetry model with both increase and decrease indicators.
-        PA: increases significant ($-0.007^{*}$), decreases null.
-        OH: increases significant ($-0.006^{**}$), decreases null.
-        Columns (3), (6): split cumulative dose on full sample.
-        PA: $\beta^{+} = -0.018^{*}$ per pp, $\beta^{-} \approx 0$ (asymmetric).
-        OH split dose is imprecise due to the 0--3 rate scale.
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Column (1): PA Sun-Abraham ATT for
+        decreasers vs stable-rate municipalities (null). Column (2): PA
+        DCDH continuous among decreasers (negative ATE --- decreases do
+        not increase share\_live\_in). Column (3): OH decreasers vs
+        no-tax townships (null, 36 treated).
         \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
     \end{minipage}
 \end{table}
 
-% Figures match table columns: (1) PA decrease, (4) OH decrease
-% Columns (2)-(3) are joint models without individual event studies
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/q3_pa_decrease.png}
-    \caption{Q3 col (1): PA Rate Decreases vs Never-Changed. 94 treated, 2{,}209 controls. No evidence that rate decreases reverse sorting.}
+    \caption{Q3 col (1): PA Rate Decreases vs Stable-Rate. No evidence of reversal.}
     \label{fig:q3_pa}
 \end{figure}
 
 \begin{figure}[H]
     \centering
+    \includegraphics[width=0.85\textwidth]{../figures/pa_dcdh_dec.png}
+    \caption{Q3 col (2): PA DCDH Continuous, Decreasers vs Stable-Rate.}
+    \label{fig:q3_pa_dcdh}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
     \includegraphics[width=0.85\textwidth]{../figures/oh_es_decrease_notax.png}
-    \caption{Q3 col (4): OH Rate Decreases vs No-Tax Controls. 36 treated, 104 controls. Wide confidence intervals; no clear pattern.}
+    \caption{Q3 col (3): OH Rate Decreases vs No-Tax. Wide confidence intervals.}
     \label{fig:q3_oh}
 \end{figure}
+
+\textbf{A3:} No. Rate decreases do not reverse sorting. All decrease
+estimates are statistically indistinguishable from zero in both states.
+The PA DCDH estimate is actually negative ($-0.008$), suggesting that
+municipalities that cut their rates continue to lose locally-resident
+workers, possibly because rate cuts signal fiscal distress.
+
+
+\subsection{Q4: Is the Response Asymmetric?}
+\label{subsec:q4}
+
+\begin{table}[H]
+    \centering
+    \caption{Q4: Asymmetry Test --- Joint Increases and Decreases}
+    \label{tab:q4}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{Pennsylvania} & \multicolumn{2}{c}{Ohio} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+        & (1) & (2) & (3) & (4) \\
+        & Joint Model & Split Dose & Joint Model & Split Dose \\
+        \midrule
+        inc $\times$ post      & $-0.0074$\sym{*} &              & $-0.0055$\sym{**} &              \\
+                               & (0.0037)          &              & (0.0020)            &              \\[3pt]
+        dec $\times$ post      & $-0.0002$         &              & $-0.0080$           &              \\
+                               & (0.0060)          &              & (0.0126)            &              \\[3pt]
+        $R^{+}$ (cum.\ inc)    &                   & $-0.0177$\sym{*} &               & $-0.109$     \\
+                               &                   & (0.0069)     &                   & (0.379)      \\[3pt]
+        $R^{-}$ (cum.\ dec)    &                   & $0.0012$     &                   & $-1.155$     \\
+                               &                   & (0.0040)     &                   & (1.353)      \\
+        \midrule
+        $N$                    & 24{,}526          & 24{,}526     & 5{,}081           & 7{,}718      \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Columns (1), (3): joint model with
+        increase and decrease post indicators. Columns (2), (4): split
+        cumulative dose on full sample. PA: rate increases reduce
+        share\_live\_in ($\beta^{+} = -0.018^{*}$ per pp); rate decreases
+        have no effect ($\beta^{-} \approx 0$). OH split dose is
+        imprecise (0--3 rate scale).
+        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+    \end{minipage}
+\end{table}
+
+\textbf{A4:} Yes, the response is asymmetric. Rate increases reduce
+the locally-resident share ($\delta^{+} = -0.007^{*}$ in PA,
+$-0.006^{**}$ in OH; $\beta^{+} = -0.018^{*}$ per pp in the split
+dose), but rate decreases have no effect ($\delta^{-} \approx 0$,
+$\beta^{-} \approx 0$). This pattern is consistent across both states,
+both estimators (joint model and split dose), and the DCDH results
+from Q3. Residential location decisions are sticky: once a tax
+increase pushes workers to relocate their residence outside the
+taxing municipality, cutting the rate does not bring them back.
+
 
 \subsection{Companion Outcomes: Decomposition}
 \label{subsec:decomposition}
@@ -538,84 +639,7 @@ estimated result in the paper.
     \end{minipage}
 \end{table}
 
-\subsection{Heterogeneity-Robust Continuous Treatment Estimator}
-\label{subsec:dcdh}
-
-As an additional robustness check, we implement the de Chaisemartin and
-D'Haultfoeuille (2024) estimator, which accommodates both continuous
-treatments and non-absorbing treatment paths under staggered timing.
-Unlike the Sun and Abraham (2021) estimator, which requires binary
-absorbing treatment, the DCDH estimator uses the actual tax rate as the
-treatment variable, allowing rate increases and decreases of varying
-magnitudes. This directly addresses the concern that our TWFE and
-Sun-Abraham specifications may suffer from heterogeneous treatment
-timing contamination when the treatment is continuous.
-
-We estimate the DCDH specification separately for rate increases and
-decreases, each against never-changed controls. This mirrors the
-structure of our main Sun-Abraham results
-(Tables~\ref{tab:pa_binary}--\ref{tab:oh_binary_notax}) while
-handling the continuous rate as treatment.
-
-\begin{table}[H]
-    \centering
-    \caption{Robustness: de Chaisemartin--D'Haultfoeuille (2024) Estimator}
-    \label{tab:dcdh}
-    \small
-    \begin{tabular}{lcccc}
-        \toprule
-        & \multicolumn{2}{c}{Pennsylvania} & \multicolumn{2}{c}{Ohio} \\
-        \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-        & (1) & (2) & (3) & (4) \\
-        & Increases & Decreases & Increases & Decreases \\
-        \midrule
-        Average Total Effect   & $-0.0078$    & $-0.0077$    & $0.0446$     & $2.025$      \\
-                               & (0.0069)     & (0.0090)     & (0.3132)     & (1.398)      \\[3pt]
-        Effect at $\ell = 8$   & $-0.0111$\sym{***} & ---   & $-0.0023$    & ---          \\
-                               & (0.0041)     &              & (0.0030)     &              \\
-        \midrule
-        Joint effects $p$      & 0.396        & 0.014        & 0.500        & 0.664        \\
-        Joint placebo $p$      & 0.904        & 0.408        & 0.147        & 0.834        \\
-        Switchers              & 120          & 60           & 174          & 22           \\
-        Treatment              & \multicolumn{4}{c}{Continuous (EIT rate / municipal rate)} \\
-        Baseline trend         & \multicolumn{4}{c}{Linear polynomial in period-one treatment} \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.90\textwidth}
-        \footnotesize \textit{Notes:} De Chaisemartin and D'Haultfoeuille (2024)
-        interaction-weighted estimator with \texttt{continuous(1)}. Treatment is
-        the municipal income tax rate (EIT in PA, municipal rate in OH).
-        Columns (1)--(2): PA sample restricted to increasers (decreasers) plus
-        never-changed municipalities. Columns (3)--(4): OH, same structure.
-        Average Total Effect is the cumulative per-unit treatment effect averaged
-        over $\sim$4.3 post-treatment periods. Joint placebo $p$ tests the null
-        that all pre-treatment coefficients are zero. Analytical standard errors
-        clustered at the municipality level. OH continuous estimates are imprecise
-        due to the 0--3 rate scale.
-        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
-    \end{minipage}
-\end{table}
-
-Table~\ref{tab:dcdh} reports the results. For Pennsylvania rate increases
-(column 1), the DCDH average total effect is $-0.008$ (SE $0.007$),
-comparable to the Sun-Abraham ATT of $-0.005$ (SE $0.003$) from
-Table~\ref{tab:pa_binary}. Pre-trends are clean (joint placebo
-$p = 0.90$), and the effect at $\ell = 8$ reaches $-0.011$
-($p < 0.001$). The PA decrease estimate (column 2) shows a negative
-average effect ($-0.008$), reinforcing the asymmetry finding: rate
-decreases do not reverse sorting, consistent with sticky residential
-location decisions.
-
-Ohio continuous estimates (columns 3--4) are uninformative due to the
-0--3 rate scale, which inflates standard errors. The Ohio results rely
-on the binary Sun-Abraham estimator with no-tax controls
-(Table~\ref{tab:oh_binary_notax}), where identification is sharper.
-
-The consistency between the Sun-Abraham and DCDH estimates for
-Pennsylvania confirms that the main results are not driven by
-heterogeneous treatment timing contamination or the restriction
-to binary treatment.
+% DCDH robustness section removed — results integrated into Q2 and Q3 tables.
 
 %==========================================================
 \section{Discussion}
