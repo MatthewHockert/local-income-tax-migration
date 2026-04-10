@@ -42,7 +42,9 @@ Rscript robustness.R           # Philadelphia exclusion + fiscal controls
 | `companion_outcomes.R` | Decomposition: resident/nonresident/total jobs |
 | `pretreatment_balance.R` | Balance table + pre-trend tests on fiscal observables |
 | `robustness.R` | Philadelphia exclusion + fiscal controls (4-way table) |
-| `paper/main.tex` | LaTeX scaffold with filled tables and figures |
+| `run_paper_models.R` | Paper-ready Sun-Abraham models: inc/dec vs NC, OH no-tax/NC controls, dose-response |
+| `run_dcdh.R` | de Chaisemartin & D'Haultfoeuille (2024) continuous treatment estimator + ACRT |
+| `paper/main.tex` | LaTeX with filled tables, figures, and robustness section |
 
 ## Main Script Sections
 
@@ -65,6 +67,9 @@ Rscript robustness.R           # Philadelphia exclusion + fiscal controls
 | 14 | Heterogeneity: earnings (SE01/SE03) and age (SA01-SA03) |
 | 15 | Federal worker placebo (JT04) |
 | 16 | Sample sensitivity + full continuous dose-response (both directions) |
+| 17 | Paper-ready models: Sun-Abraham inc/dec splits, OH two control groups, dose-response |
+| 18 | ACS place-level outcomes (population, income growth — null) |
+| 19 | IRS SOI county migration (null at county level — LODES detects what IRS can't) |
 
 ## Sample: 2002-2019
 
@@ -72,14 +77,18 @@ Trimmed at load time (`max_year <- 2019`) to exclude COVID-contaminated LODES 20
 
 ## Key Results
 
-- PA dose-response (treated only): rate x post = **-0.008** (SE 0.003)**
+- PA Sun-Abraham (inc vs NC): ATT = **-0.005** (SE 0.003), clean pre-trends, effect at t+8 significant
+- PA DCDH continuous (inc vs NC): ATE = **-0.008** (SE 0.007), placebo p = 0.90, Effect_8 = **-0.011***
+- OH Sun-Abraham (inc vs no-tax): ATT = **-0.008*** (SE 0.003), clean pre-trends
+- OH Sun-Abraham (inc vs never-changed): null — stable-rate taxed cities are poor controls
 - PA split dose: increases **-0.018*** per pp; decreases +0.001 (null, asymmetric)
-- OH cleaned stacked DiD (no-tax controls): **-0.011*** at t+5**
-- Sun-Abraham: clean pre-trends, decline -0.3 to -0.9 pp over 5-8 years
+- Asymmetry confirmed across all estimators: rate decreases do not reverse sorting
 - Companion outcomes: resident workers -15.3%*, total jobs -11.7%*; cannot reject equality (p=0.09)
 - Fiscal: EIT revenue +67%**, total tax +30%**, police +5%; population null; property values null
-- Heterogeneity: low/all/high earners and all age groups respond identically
-- Robust to fiscal controls, Philadelphia exclusion, sample restrictions
+- Fiscal controls (police, streets, debt, state aid) do not change estimates or SEs
+- ACS outcomes: population and income growth null (effect too small for aggregate outcomes)
+- IRS SOI: county-level migration null (sorting is sub-county, LODES detects what IRS can't)
+- DCDH confirms Sun-Abraham: staggered timing correction doesn't change qualitative conclusions
 
 ## Data
 
