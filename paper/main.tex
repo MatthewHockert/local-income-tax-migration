@@ -177,15 +177,16 @@
 \label{subsec:baseline}
 
 \begin{equation}
-    \text{share\_live\_in}_{it} = \alpha_i + \gamma_t + \beta \cdot \text{rate}_{it} + \varepsilon_{it}
+    Y_{it} = \alpha_i + \gamma_t + \beta \cdot \text{rate}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \label{eq:twfe}
 \end{equation}
 
 \noindent where:
 \begin{itemize}
-    \item[] $\text{share\_live\_in}_{it}$ = fraction of workers in municipality $i$ at time $t$ who also reside there
+    \item[] $Y_{it}$ = share\_live\_in for municipality $i$ in year $t$
     \item[] $\alpha_i$, $\gamma_t$ = municipality and year fixed effects
-    \item[] $\text{rate}_{it}$ = municipal income tax rate
+    \item[] $\text{rate}_{it}$ = municipal income tax rate (EIT in PA, municipal rate in OH)
+    \item[] $\mathbf{X}_{it}$ = vector of fiscal controls: log police expenditure, log streets expenditure, log total debt, log state intergovernmental aid
     \item[] Standard errors clustered at the municipality level
 \end{itemize}
 
@@ -193,34 +194,78 @@
 \label{subsec:dose}
 
 \begin{equation}
-    \text{share\_live\_in}_{it} = \alpha_i + \gamma_t + \delta \cdot \text{post}_{it} + \beta \cdot (\text{rate}_{it} \times \text{post}_{it}) + \varepsilon_{it}
+    Y_{it} = \alpha_i + \gamma_t + \delta \cdot \text{post}_{it} + \beta \cdot (\text{rate}_{it} \times \text{post}_{it}) + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \label{eq:dose}
 \end{equation}
 
 \noindent where:
 \begin{itemize}
-    \item[] $\text{post}_{it}$ = indicator for post-first-increase period
-    \item[] $\delta$ captures common post-treatment effects among rate-changing municipalities
-    \item[] $\beta$ captures the tax-specific channel: conditional on raising taxes, does rate magnitude predict additional sorting?
+    \item[] $\text{post}_{it} = \mathbb{1}[t \geq g_i]$, with $g_i$ the year of municipality $i$'s first rate increase
+    \item[] $\delta$ captures common post-treatment shifts among rate-changing municipalities
+    \item[] $\beta$ captures the tax-specific channel: conditional on raising taxes, does rate magnitude predict additional changes in the locally-resident share?
+    \item[] $\mathbf{X}_{it}$ = fiscal controls as in Equation~\ref{eq:twfe}
+    \item[] Sample restricted to municipalities that raised rates during the panel
 \end{itemize}
 
-% TODO: Explain why this helps: if fiscal stress alone drove outmigration,
-% rate magnitude should not matter conditional on being a treated city.
-% Soften: "conditional on city and year fixed effects and common post-treatment
-% shifts among tax-changing cities, additional rate increases are associated with
-% additional sorting."
+% TODO: Explain why this helps: conditional on city and year fixed effects and
+% common post-treatment shifts among tax-changing cities, additional rate increases
+% are associated with additional changes in share_live_in. If fiscal stress alone
+% drove the outcome, rate magnitude should not matter conditional on being a
+% treated city.
 
 \subsection{Sun-Abraham Event Study}
 \label{subsec:sunab}
-% TODO: sunab(cohort, year) from fixest (Sun and Abraham 2021).
-% Handles heterogeneous treatment effects with staggered timing.
-% Never-treated municipalities as control group.
+
+% TODO: Write prose motivation for heterogeneity-robust event study.
+
+\begin{equation}
+    Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot \mathbb{1}[t - g_i = \ell] + \varepsilon_{it}
+    \label{eq:sunab}
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item[] $g_i$ = cohort (year of first rate increase for municipality $i$; $g_i = \infty$ for never-treated)
+    \item[] $\ell = t - g_i$ = relative time to treatment
+    \item[] $\mu_\ell$ = cohort-weighted average treatment effect at relative time $\ell$, estimated via the interaction-weighted estimator of Sun and Abraham (2021)
+    \item[] $\ell = -1$ is the reference period (normalization)
+    \item[] Pre-treatment coefficients $\mu_\ell$ for $\ell < 0$ test the parallel trends assumption
+\end{itemize}
+
+% We implement this using the sunab() function in the fixest R package.
+% Never-treated municipalities serve as the control group.
+% Companion outcomes (log resident workers, log nonresident commuters,
+% log total jobs) are estimated with the same specification to decompose
+% the share_live_in effect into numerator and denominator components.
 
 \subsection{Stacked Difference-in-Differences}
 \label{subsec:stacked}
-% TODO: OH-specific. Each treated city paired with no-tax neighboring municipalities
-% within 80km. Cohort $\times$ city + cohort $\times$ year FE. Excludes neighbors
-% that also changed rates within $\pm 2$ years.
+
+% TODO: Write prose motivation for clean control group construction.
+
+\begin{equation}
+    Y_{ict} = \alpha_{ic} + \gamma_{ct} + \sum_{\ell \neq -1} \beta_\ell \cdot (\text{treated}_i \times \mathbb{1}[\ell_{ict} = \ell]) + \varepsilon_{ict}
+    \label{eq:stacked}
+\end{equation}
+
+\noindent where:
+\begin{itemize}
+    \item[] $c$ indexes cohort (one per treatment event)
+    \item[] $\alpha_{ic}$ = cohort-specific municipality fixed effects
+    \item[] $\gamma_{ct}$ = cohort-specific year fixed effects
+    \item[] $\text{treated}_i = \mathbb{1}[i \text{ is the treated municipality in cohort } c]$
+    \item[] $\ell_{ict} = t - g_c$ = relative time within cohort $c$
+    \item[] Control municipalities: neighbors within 80km of the treated municipality that did not change their rate within $\pm 2$ years of the event
+    \item[] OH specification: control group further restricted to municipalities with no income tax (unincorporated townships)
+    \item[] Event window: $\ell \in \{-5, \ldots, +5\}$
+    \item[] Standard errors clustered at the municipality level
+\end{itemize}
+
+% The stacked design avoids contamination from heterogeneous treatment timing
+% by constructing independent cohort-specific panels. Each treated municipality
+% is paired with its own set of clean controls, and cohort-specific fixed effects
+% ensure that treatment effects are not identified from comparisons across
+% differently-timed cohorts.
 
 %==========================================================
 \section{Results}
