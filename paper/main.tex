@@ -40,6 +40,11 @@
 % LODES OD contribution, fiscal incidence punchline.
 % Key framing: "employment becomes less locally resident"
 % Three contributions: (1) new measure, (2) causal evidence, (3) fiscal incidence
+%
+% Suggested reviewer framing:
+% "Local income tax increases reduce the locally resident share of city workers,
+%  implying modest residential sorting away from taxed municipalities. But the
+%  behavioral response is too small to offset the fiscal gains from higher rates."
 
 %==========================================================
 \section{Institutional Background}
@@ -49,16 +54,17 @@
 \subsection{Ohio Municipal Income Tax}
 \label{subsec:ohio}
 % TODO: 685 municipalities with rates 0--3%, unincorporated townships have no tax.
-% Rate set by municipality, varies over time. 302 increases, 45 decreases in data.
+% 302 rate increases, 45 decreases in our panel (2002--2019).
 
 \subsection{Pennsylvania Earned Income Tax}
 \label{subsec:pennsylvania}
 % TODO: Mandatory EIT for all 2,500+ municipalities under Local Tax Enabling Act.
-% Standard cap: 1% split between municipality and school district (typically 0.5% each).
-% Home Rule municipalities can exceed cap (Philadelphia at 4.3%).
-% Property tax millage cap forces municipalities to use EIT as primary revenue lever.
+% Standard cap: 1% split (typically 0.5% muni / 0.5% school district).
+% Home Rule municipalities can exceed (Philadelphia at ~4.3%).
+% Property tax millage cap forces EIT as primary revenue lever.
 % EIT and property tax changes uncorrelated (r = -0.04).
 % EIT applies to all earned income, no minimum threshold. Retirees exempt.
+% 291 rate increases, 162 decreases in panel.
 
 %==========================================================
 \section{Data}
@@ -67,16 +73,16 @@
 
 \subsection{LODES Origin-Destination Data}
 \label{subsec:lodes}
-% TODO: LEHD LODES8, 2002--2019. Tract-level residence-workplace links.
-% Aggregated to municipality level. Include cross-state aux flows.
-% Segments: S000, SE01, SE03, SA01-SA03.
-% Reference date: April 1. Noise infusion at block level, aggregation reduces it.
+% TODO: LEHD LODES8, 2002--2019 (trim 2020--2021 due to COVID).
+% Tract-level residence-workplace links. Aggregated to municipality level.
+% Cross-state aux flows included. Segments: S000, SE01, SE03, SA01--SA03.
+% Reference date: April 1. Noise infusion at block level, aggregation reduces.
 
 \subsection{Municipal Tax Rate Panels}
 \label{subsec:rates}
-% TODO: OH from Dept of Taxation "The Finder" CSV. Direct PLACEFP join.
-% PA from DCED MunStats scraped XLS (2000--2026). Name-based crosswalk to COUSUBFP (97% match).
-% April 1 alignment for LODES.
+% TODO: OH from Dept of Taxation ``The Finder'' CSV. Direct PLACEFP join.
+% PA from DCED MunStats scraped XLS (2000--2026). Name-based crosswalk to COUSUBFP (97\% match).
+% April 1 alignment: rate active on April 1 of year Y = LODES year Y.
 
 \subsection{Municipal Financial Reports}
 \label{subsec:afr}
@@ -87,7 +93,7 @@
 \label{subsec:outcome}
 % TODO: share_live_in = live_and_work / total_jobs.
 % Fraction of workers employed in municipality who also reside there.
-% Captures within-county, cross-municipal sorting invisible to IRS/ACS.
+% Captures within-county, cross-municipal sorting invisible to IRS SOI/ACS.
 
 % --- Summary Statistics Table ---
 \begin{table}[H]
@@ -99,28 +105,27 @@
         \toprule
         Variable & Mean & Median & SD & Min & Max \\
         \midrule
-        \multicolumn{6}{l}{\textit{Panel A: Ohio (2002--2019)}} \\
-        % TODO: Fill from oh_panel summary
-        share\_live\_in & & & & & \\
-        Municipal income tax rate (\%) & & & & & \\
-        Total jobs & & & & & \\
-        Resident workers & & & & & \\
+        \multicolumn{6}{l}{\textit{Panel A: Pennsylvania (2002--2019)}} \\
+        share\_live\_in              & 0.149  & 0.127  & 0.097 & 0     & 0.700 \\
+        Resident EIT rate (\%)      & 0.542  & 0.500  & 0.199 & 0     & 4.331 \\
+        Total jobs                  & 3{,}624 & 1{,}224 &       &       &       \\
+        Resident workers            & 674    & 154    &       &       &       \\
         \midrule
-        \multicolumn{6}{l}{\textit{Panel B: Pennsylvania (2002--2019)}} \\
-        % TODO: Fill from pa_panel summary
-        share\_live\_in & & & & & \\
-        Resident EIT rate (\%) & & & & & \\
-        Total jobs & & & & & \\
-        Resident workers & & & & & \\
+        \multicolumn{6}{l}{\textit{Panel B: Ohio (2002--2019)}} \\
+        share\_live\_in              & 0.119  & 0.099  & 0.085 &       &       \\
+        Municipal tax rate (\%)     & 1.222  & 1.500  & 0.821 & 0     & 3.000 \\
         \midrule
         \multicolumn{6}{l}{\textit{Panel dimensions}} \\
-        OH municipality $\times$ years & \multicolumn{5}{l}{} \\
-        PA municipality $\times$ years & \multicolumn{5}{l}{} \\
+        PA municipality $\times$ years & \multicolumn{5}{l}{24{,}528 (1{,}383 municipalities)} \\
+        OH municipality $\times$ years & \multicolumn{5}{l}{7{,}718 (430 municipalities)} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} % TODO
+        \footnotesize \textit{Notes:} Municipality-year panel, 2002--2019.
+        Sample restricted to municipalities with $>50$ total jobs.
+        share\_live\_in = workers who live and work in municipality / total workers in municipality.
+        OH municipalities are Census places; PA municipalities are county subdivisions.
     \end{minipage}
 \end{table}
 
@@ -128,14 +133,14 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/oh_map.png}
-    \caption{Ohio Municipal Income Tax Rates (2019)}
+    \caption{Ohio Municipal Income Tax Rates (2019). Bold outline = municipalities that raised rates during the sample period. Grey fill = municipalities with no municipal income tax.}
     \label{fig:oh_map}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/pa_map.png}
-    \caption{Pennsylvania EIT Rate Changes (2000--2019)}
+    \caption{Pennsylvania EIT Rate Changes (2000--2019). Red = increased; blue = decreased; purple = both; grey = no change.}
     \label{fig:pa_map}
 \end{figure}
 
@@ -158,9 +163,18 @@
 \label{sec:strategy}
 %==========================================================
 
+% TODO: Suggested reviewer framing for this section:
+% "Our baseline design exploits within-municipality changes in local income tax
+% rates in a municipality-by-year panel with municipality and year fixed effects.
+% Because tax changes may coincide with broader local shocks, we use two
+% complementary strategies. First, among municipalities that change their tax rates,
+% we estimate a dose-response specification that separates common post-change effects
+% from the marginal effect of the rate increase itself. Second, we implement
+% event-study and stacked difference-in-differences designs using nearby municipalities
+% with stable tax rates as controls."
+
 \subsection{Baseline Specification}
 \label{subsec:baseline}
-% TODO: TWFE with city and year FE, clustered at municipality.
 
 \begin{equation}
     \text{share\_live\_in}_{it} = \alpha_i + \gamma_t + \beta \cdot \text{rate}_{it} + \varepsilon_{it}
@@ -172,11 +186,11 @@
     \item[] $\text{share\_live\_in}_{it}$ = fraction of workers in municipality $i$ at time $t$ who also reside there
     \item[] $\alpha_i$, $\gamma_t$ = municipality and year fixed effects
     \item[] $\text{rate}_{it}$ = municipal income tax rate
+    \item[] Standard errors clustered at the municipality level
 \end{itemize}
 
 \subsection{Dose-Response Identification}
 \label{subsec:dose}
-% TODO: Among treated-only municipalities, separate common post-treatment from rate-specific effect.
 
 \begin{equation}
     \text{share\_live\_in}_{it} = \alpha_i + \gamma_t + \delta \cdot \text{post}_{it} + \beta \cdot (\text{rate}_{it} \times \text{post}_{it}) + \varepsilon_{it}
@@ -186,20 +200,27 @@
 \noindent where:
 \begin{itemize}
     \item[] $\text{post}_{it}$ = indicator for post-first-increase period
-    \item[] $\delta$ captures common post-treatment effects (fiscal stress)
-    \item[] $\beta$ captures the tax-specific channel: does rate magnitude matter beyond binary treatment?
+    \item[] $\delta$ captures common post-treatment effects among rate-changing municipalities
+    \item[] $\beta$ captures the tax-specific channel: conditional on raising taxes, does rate magnitude predict additional sorting?
 \end{itemize}
+
+% TODO: Explain why this helps: if fiscal stress alone drove outmigration,
+% rate magnitude should not matter conditional on being a treated city.
+% Soften: "conditional on city and year fixed effects and common post-treatment
+% shifts among tax-changing cities, additional rate increases are associated with
+% additional sorting."
 
 \subsection{Sun-Abraham Event Study}
 \label{subsec:sunab}
-% TODO: sunab(cohort, year) from fixest. Handles heterogeneous treatment timing.
-% Never-treated municipalities as control group (cohort = infinity).
-% Trimmed to 2002--2019.
+% TODO: sunab(cohort, year) from fixest (Sun and Abraham 2021).
+% Handles heterogeneous treatment effects with staggered timing.
+% Never-treated municipalities as control group.
 
 \subsection{Stacked Difference-in-Differences}
 \label{subsec:stacked}
 % TODO: OH-specific. Each treated city paired with no-tax neighboring municipalities
-% within 80km. Cohort x city + cohort x year FE.
+% within 80km. Cohort $\times$ city + cohort $\times$ year FE. Excludes neighbors
+% that also changed rates within $\pm 2$ years.
 
 %==========================================================
 \section{Results}
@@ -208,43 +229,48 @@
 
 \subsection{Main Results}
 \label{subsec:main_results}
-% TODO: PA TWFE = -0.010*; dose-response = -0.008**; post = null.
-% OH cleaned stacked = -0.011*** at t+5.
 
 % --- Main Results Table ---
 \begin{table}[H]
     \centering
-    \caption{Main Results: Effect of EIT Rate on share\_live\_in}
+    \caption{Main Results: Effect of Local Income Tax Rate on share\_live\_in}
     \label{tab:main_results}
     \small
     \begin{tabular}{lcccc}
         \toprule
         & (1) & (2) & (3) & (4) \\
-        & PA TWFE & PA Dose & PA Post + Dose & OH Stacked \\
+        & PA TWFE & PA Dose & PA Post + Dose & OH Stacked $t{+}5$ \\
         \midrule
         \multicolumn{5}{l}{\textit{Coefficients}} \\
-        rate / resident\_eit & & & & \\
-                             & & & & \\
-        rate $\times$ post   & & & & \\
-                             & & & & \\
-        post                 & & & & \\
-                             & & & & \\
+        resident\_eit          & $-0.0101^{*}$ &                &                 &                    \\
+                               & (0.0050)      &                &                 &                    \\[3pt]
+        rate $\times$ post     &               & $-0.0084^{**}$ & $-0.0099^{.}$   &                    \\
+                               &               & (0.0032)       & (0.0052)        &                    \\[3pt]
+        post                   &               &                & 0.0022          &                    \\
+                               &               &                & (0.0064)        &                    \\[3pt]
+        treated $\times$ $t{+}5$ &            &                &                 & $-0.0109^{***}$    \\
+                               &               &                &                 & (0.0026)           \\
         \midrule
         \multicolumn{5}{l}{\textit{Diagnostics}} \\
-        N & & & & \\
-        $R^2$ & & & & \\
-        Within $R^2$ & & & & \\
-        Dep.\ var.\ mean & & & & \\
-        Fixed Effects & & & & \\
-        Clusters & & & & \\
-        Sample & All & Treated & Treated & Border \\
+        N                      & 24{,}522      & 2{,}741        & 2{,}741         & 48{,}712           \\
+        $R^2$                  & 0.858         & 0.912          & 0.912           & 0.922              \\
+        Within $R^2$           & 0.0004        & 0.010          & 0.011           & 0.002              \\
+        Dep.\ var.\ mean       & 0.149         & ---            & ---             & ---                \\
+        Fixed Effects          & City, Year    & City, Year     & City, Year      & Cohort$\times$City, Cohort$\times$Year \\
+        Clusters               & Municipality  & Municipality   & Municipality    & Municipality       \\
+        Sample                 & All PA        & Treated PA     & Treated PA      & OH border (no-tax controls) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} % TODO: Fill from model output.
+        \footnotesize \textit{Notes:} Dependent variable is share\_live\_in (fraction of
+        workers in municipality who also reside there). Column (1): two-way fixed effects
+        on all PA municipalities. Columns (2)--(3): dose-response among PA municipalities
+        that raised EIT rates, testing whether rate magnitude predicts sorting beyond common
+        post-treatment shifts. Column (4): stacked difference-in-differences for Ohio,
+        comparing treated cities to neighboring municipalities with no income tax within 80km.
         Standard errors clustered at the municipality level in parentheses.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
 
@@ -252,23 +278,30 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/pa_sunab_share.png}
-    \caption{Pennsylvania: Sun-Abraham Event Study (share\_live\_in)}
+    \caption{Pennsylvania: Sun-Abraham Event Study (share\_live\_in). Cohort defined by first year of EIT rate increase. Never-treated municipalities as control group. Shaded region = 95\% confidence interval.}
     \label{fig:pa_sunab_share}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/oh_sunab_share.png}
-    \caption{Ohio: Sun-Abraham Event Study (share\_live\_in)}
+    \caption{Ohio: Sun-Abraham Event Study (share\_live\_in).}
     \label{fig:oh_sunab_share}
 \end{figure}
 
 \subsection{Companion Outcomes: Decomposition}
 \label{subsec:decomposition}
-% TODO: Resident workers fall most (-0.153*), nonresidents also fall (-0.101.),
-% total jobs fall (-0.117*). Cannot reject equality (p = 0.09).
-% Framing: "employment becomes less locally resident, with evidence of both
-% sorting and broader employment effects"
+
+% TODO: Framing: "A decline in share_live_in could reflect residential sorting,
+% compositional change in the workforce, or differential job growth among
+% nonresident commuters. To decompose the mechanism, we estimate the dose-response
+% specification separately for the numerator (resident workers), denominator
+% (total jobs), and nonresident commuters."
+%
+% Key finding: resident workers fall most, but total jobs also decline.
+% Cannot reject equality of resident vs nonresident coefficients (p = 0.09).
+% "The larger decline in resident workers is suggestive of a sorting channel,
+% though the estimates also indicate broader employment effects."
 
 % --- Companion Outcomes Table ---
 \begin{table}[H]
@@ -281,96 +314,124 @@
         & (1) & (2) & (3) & (4) \\
         & share\_live\_in & log(Resident) & log(Nonresident) & log(Total Jobs) \\
         \midrule
-        \multicolumn{5}{l}{\textit{Panel A: PA Dose-Response (treated only)}} \\
-        rate $\times$ post & & & & \\
-                           & & & & \\
-        post               & & & & \\
-                           & & & & \\
+        \multicolumn{5}{l}{\textit{PA Dose-Response (treated municipalities only)}} \\
+        rate $\times$ post     & $-0.0099^{.}$  & $-0.1530^{*}$  & $-0.1012^{.}$  & $-0.1172^{*}$  \\
+                               & (0.0052)       & (0.0720)       & (0.0548)       & (0.0549)       \\[3pt]
+        post                   & 0.0022         & $0.1226^{.}$   & $0.1113^{.}$   & $0.1173^{*}$   \\
+                               & (0.0064)       & (0.0721)       & (0.0596)       & (0.0587)       \\
         \midrule
-        % TODO: Fill diagnostics
+        \multicolumn{5}{l}{\textit{Diagnostics}} \\
+        N                      & 2{,}741        & 2{,}741        & 2{,}741        & 2{,}741        \\
+        $R^2$                  & 0.912          & 0.979          & 0.980          & 0.982          \\
+        Within $R^2$           & 0.011          & 0.015          & 0.008          & 0.011          \\
+        Fixed Effects          & \multicolumn{4}{c}{Municipality, Year} \\
+        Clusters               & \multicolumn{4}{c}{Municipality} \\
+        Equality test (2) vs (3) & \multicolumn{4}{c}{$p = 0.09$} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} % TODO
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \footnotesize \textit{Notes:} Dose-response specification estimated among PA
+        municipalities that raised EIT rates, 2002--2019. Column (1): main outcome.
+        Columns (2)--(4): log counts of resident workers (live and work in municipality),
+        nonresident commuters (work in municipality, live elsewhere), and total jobs.
+        Equality test: joint model testing whether the resident coefficient differs from
+        the nonresident coefficient.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/pa_sunab_resident.png}
-    \caption{Pennsylvania: Sun-Abraham --- log(Resident Workers)}
+    \caption{Pennsylvania: Sun-Abraham Event Study --- log(Resident Workers).}
     \label{fig:pa_sunab_resident}
 \end{figure}
 
 \subsection{Fiscal Impact}
 \label{subsec:fiscal}
-% TODO: EIT revenue +71%***, total tax +33%***, police +8.7%*.
-% Property values null, population null, debt null.
-% Revenue gain far exceeds base erosion.
-% Asymmetric: decreases lose revenue without attracting residents.
+
+% TODO: "Using PA DCED Annual Financial Reports, we estimate the fiscal
+% consequences of rate changes. The behavioral response does not offset the
+% revenue gain."
 
 % --- Fiscal Impact Table ---
 \begin{table}[H]
     \centering
-    \caption{Fiscal Impact of EIT Rate Changes}
+    \caption{Fiscal Impact of EIT Rate Changes (PA, 2002--2019)}
     \label{tab:fiscal}
     \small
     \begin{tabular}{lcccccc}
         \toprule
         & (1) & (2) & (3) & (4) & (5) & (6) \\
-        & EIT Rev & Total Tax & Total Rev & Police & Population & Mkt Value \\
+        & log(EIT Rev) & log(Total Tax) & log(Total Rev) & log(Police) & log(Pop) & log(Mkt Val) \\
         \midrule
-        resident\_eit & & & & & & \\
-                      & & & & & & \\
+        resident\_eit & $0.6710^{**}$  & $0.2957^{**}$  & 0.0643         & 0.0531         & $-0.0094$      & 0.0066         \\
+                      & (0.2106)       & (0.0948)       & (0.0429)       & (0.0461)       & (0.0137)       & (0.0218)       \\
         \midrule
-        % TODO: Fill diagnostics
+        N             & 42{,}309       & 42{,}526       & 42{,}543       & 22{,}979       & 42{,}523       & 9{,}323        \\
+        $R^2$         & 0.977          & 0.983          & 0.959          & 0.953          & 0.997          & 0.978          \\
+        Within $R^2$  & 0.027          & 0.006          & 0.0001         & 0.0001         & 0.0001         & 0.000          \\
+        Fixed Effects & \multicolumn{6}{c}{Municipality, Year} \\
+        Clusters      & \multicolumn{6}{c}{Municipality} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} % TODO
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \footnotesize \textit{Notes:} PA DCED Annual Financial Reports, 2002--2019.
+        All outcomes in logs. Column (6) limited to 2015--2019 (market value data availability).
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
 
 \subsection{Heterogeneity}
 \label{subsec:heterogeneity}
-% TODO: Earnings and age groups respond identically (-0.009** each).
-% "Little evidence of strong heterogeneity by earnings or age."
+% TODO: Earnings (SE01, SE03) and age (SA01--SA03) groups respond identically
+% (-0.009** each in dose-response).
+% "We find little evidence of strong heterogeneity by earnings or age."
+% LODES SE03 cutoff ($40K) too low for truly high earners.
 
 %==========================================================
 \section{Robustness}
 \label{sec:robustness}
 %==========================================================
-% TODO: Fiscal controls (police, streets, debt, state aid) — coefficient unchanged.
-% Philadelphia exclusion — results hold.
-% Sample restrictions (min jobs 10-500) — stable.
-% Pre-treatment balance: 5/6 observables flat. Police pre-trend addressed via controls + split sample.
-% Rate decrease mirror test.
+
+% TODO: (1) Fiscal controls (police, streets, debt, state aid) --- coefficient stable.
+% (2) Philadelphia exclusion --- results hold or strengthen.
+% (3) Sample restrictions (min jobs 10--500) --- stable.
+% (4) Pre-treatment balance: 5/6 observables flat. Police pre-trend addressed.
+% (5) Rate decrease mirror test: workers return after 8--10 years.
 
 % --- Robustness Table ---
 \begin{table}[H]
     \centering
-    \caption{Robustness: Fiscal Controls and Sample Restrictions}
+    \caption{Robustness: Fiscal Controls and Philadelphia Exclusion}
     \label{tab:robustness}
     \small
-    \begin{tabular}{lcccc}
+    \begin{tabular}{lcccccc}
         \toprule
-        & (1) & (2) & (3) & (4) \\
-        & Baseline & + Controls & No Philly & No Philly + Ctrl \\
+        & \multicolumn{3}{c}{TWFE} & \multicolumn{3}{c}{Dose-Response (treated only)} \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+        & (1) & (2) & (3) & (4) & (5) & (6) \\
+        & Baseline & + Controls & No Philly & Baseline & + Controls & No Philly \\
         \midrule
-        resident\_eit & & & & \\
-                      & & & & \\
+        resident\_eit & $-0.0126^{*}$ & $-0.0104^{*}$ & $-0.0165^{**}$ & & & \\
+                      & (0.0052)      & (0.0047)      & (0.0060)       & & & \\[3pt]
+        rate $\times$ post & & & & $-0.0089^{**}$ & $-0.0079^{**}$ & $-0.0098^{**}$ \\
+                      & & & & (0.0030)       & (0.0028)       & (0.0032)       \\
         \midrule
-        % TODO: Fill
+        N             & 27{,}277 & 14{,}174 & 27{,}257 & 3{,}058 & 2{,}173 & 3{,}038 \\
+        Controls      & No       & Yes      & No       & No      & Yes     & No      \\
+        Philadelphia  & Yes      & Yes      & No       & Yes     & Yes     & No      \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} % TODO
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \footnotesize \textit{Notes:} Controls include log police expenditure, log streets
+        expenditure, log total debt, and log state intergovernmental aid from PA DCED
+        Annual Financial Reports. Philadelphia excluded in columns (3) and (6) due to
+        its structurally different wage tax system.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
 
@@ -379,10 +440,12 @@
 \label{sec:discussion}
 %==========================================================
 % TODO: Interpret through Tiebout lens but acknowledge broader employment effects.
-% Residential sorting is real but modest.
-% Revenue still rises — behavioral response too small to offset mechanical gain.
+% "Among municipalities that change rates, post-treatment periods are associated
+% with positive employment growth on average, but larger tax increases significantly
+% attenuate that growth."
+% Revenue still rises --- behavioral response too small to offset mechanical gain.
 % Uniform response challenges high-income selective migration prediction.
-% Policy implication: municipalities can raise EIT without self-defeating base erosion.
+% Police pre-trend: acknowledged, controlled for, results robust.
 
 %==========================================================
 \section{Conclusion}
@@ -409,7 +472,6 @@
 % Young et al. (millionaire migration)
 % Kleven, Landais, Saez (top earner mobility)
 % Andersson et al. 2018 (LEHD technical paper)
-% LODES documentation
 
 \end{thebibliography}
 
@@ -424,29 +486,48 @@
 % --- Balance Table ---
 \begin{table}[H]
     \centering
-    \caption{Pre-Treatment Balance: Treated vs.\ Control Municipalities}
+    \caption{Pre-Treatment Balance: Treated vs.\ Never-Treated PA Municipalities}
     \label{tab:balance}
     \small
-    \begin{tabular}{lrrrrr}
+    \begin{tabular}{lrrrr}
         \toprule
-        Variable & Treated Mean & Control Mean & Norm.\ Diff.\ & T N & C N \\
+        Variable & Treated Mean & Control Mean & Norm.\ Diff.\ & N (T / C) \\
         \midrule
-        % TODO: Fill from pretreatment_balance.R output
-        Population & 14{,}174 & 3{,}711 & 0.139 & 1{,}265 & 39{,}688 \\
-        Total Revenue (\$) & 25.7M & 2.9M & 0.077 & 1{,}267 & 39{,}692 \\
-        EIT Revenue (\$) & 4.4M & 438K & 0.062 & & \\
-        Police Exp (\$) & 3.1M & 424K & 0.110 & & \\
-        EIT Rate (\%) & 0.5 & 0.5 & 0.055 & & \\
+        Population              & 14{,}174   & 3{,}711    & 0.139 & 1{,}265 / 39{,}688 \\
+        Total Revenue (\$)     & 25.7M      & 2.9M       & 0.077 & 1{,}267 / 39{,}692 \\
+        EIT Revenue (\$)       & 4.4M       & 438K       & 0.062 &                     \\
+        RE Tax Revenue (\$)    & 2.9M       & 538K       & 0.129 &                     \\
+        Police Expenditure (\$)& 3.1M       & 424K       & 0.110 &                     \\
+        Streets Expenditure (\$)& 1.5M      & 496K       & 0.121 &                     \\
+        EIT Rate (\%)          & 0.50       & 0.50       & 0.055 &                     \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} % TODO
+        \footnotesize \textit{Notes:} Treated = municipalities that raised EIT during the
+        sample period (pre-treatment years only). Control = municipalities that never raised
+        EIT. All normalized differences $<0.15$, within standard balance thresholds.
+        Source: PA DCED Annual Financial Reports.
     \end{minipage}
 \end{table}
 
+\section{Pre-Trend Tests on Fiscal Observables}
+\label{app:pretrends}
+
+% TODO: Sun-Abraham pre-trend tests table
+% Revenue, EIT rev, streets, population, debt: flat (no sig pre-trends)
+% Police: significant pre-trend (max t = 2.85)
+% "Pre-trends are flat for most fiscal observables. Police spending is the
+% exception, showing evidence of pre-treatment trend differences, which suggests
+% that some tax increases may have been associated with anticipated public-safety
+% expansions. The main results are robust to controlling for police expenditure
+% dynamics."
+
 \section{Additional Figures}
 \label{app:figures}
-% TODO: Add additional event studies, distance gradient, case study maps
+% TODO: Normalized event-time plots (treated vs control)
+% Distance gradient plots
+% Fiscal scatter plots
+% Case study maps
 
 \end{document}
