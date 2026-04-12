@@ -54,20 +54,224 @@
 \label{sec:background}
 %==========================================================
 
+Local income taxes are one of the few fiscal instruments available to
+municipalities in Ohio and Pennsylvania. Unlike property taxes, which
+are paid by property owners and capitalized into home values, local
+income taxes fall directly on workers and vary across municipal
+boundaries within the same metropolitan area. This creates sharp
+spatial discontinuities in tax burden that can influence where people
+choose to live and work.
+
 \subsection{Ohio Municipal Income Tax}
 \label{subsec:ohio}
-% TODO: 685 municipalities with rates 0--3%, unincorporated townships have no tax.
-% 302 rate increases, 45 decreases in our panel (2002--2019).
+
+Ohio authorizes municipalities (cities and villages) to levy a municipal
+income tax on earned income under Ohio Revised Code Chapter 718.
+Unincorporated townships cannot levy the tax, creating a clean
+extensive-margin contrast between taxed and untaxed jurisdictions
+within the same county. As of 2019, approximately 685 municipalities
+levy the tax at rates ranging from 0.5\% to 3.0\%, with 1.0\% and
+1.5\% being the most common. Our panel (2002--2019) contains 302 rate
+increases and 45 rate decreases.
+
+Ohio operates a credit system: residents who work in a municipality
+with a higher tax rate than their residence receive a credit against
+their home municipality's tax for taxes paid to the work municipality.
+However, this credit system has historically been administered at the
+municipal level without centralized enforcement, and the credit is
+often partial (capped at the home municipality's rate or a fraction
+thereof). This means that for Ohio workers, the interaction between
+home and work municipality rates determines the effective tax burden,
+but imperfect crediting can leave workers paying more than the
+statutory maximum of either rate alone.
 
 \subsection{Pennsylvania Earned Income Tax}
 \label{subsec:pennsylvania}
-% TODO: Mandatory EIT for all 2,500+ municipalities under Local Tax Enabling Act.
-% Standard cap: 1% split (typically 0.5% muni / 0.5% school district).
-% Home Rule municipalities can exceed (Philadelphia at ~4.3%).
-% Property tax millage cap forces EIT as primary revenue lever.
-% EIT and property tax changes uncorrelated (r = -0.04).
-% EIT applies to all earned income, no minimum threshold. Retirees exempt.
-% 291 rate increases, 162 decreases in panel.
+
+Pennsylvania's Earned Income Tax (EIT) is mandatory for all 2,500+
+municipalities under the Local Tax Enabling Act (Act 511 of 1965).
+The EIT applies to all earned income with no minimum threshold;
+retirees are exempt. The standard cap is 1\%, typically split
+0.5\% municipal and 0.5\% school district. Home Rule municipalities
+may exceed this cap, with Philadelphia operating under a separate
+Sterling Act authority at approximately 3.8\%. The EIT is the primary
+revenue lever for most Pennsylvania municipalities: property tax
+millage caps are binding in many jurisdictions, and EIT rate changes
+are uncorrelated with property tax changes ($r = -0.04$). Our panel
+contains 291 rate increases and 162 rate decreases.
+
+\paragraph{The Credit System.}
+A critical institutional feature is the credit mechanism governing
+how EIT is allocated between a worker's municipality of residence
+and municipality of employment. A worker's total EIT liability equals
+the \textit{higher} of the resident rate and the work (nonresident) rate:
+%
+\begin{equation}
+    \tau^{\text{total}}_w = \max\!\left(\tau^{\text{res}}_w,\; \tau^{\text{work}}_w\right)
+    \label{eq:credit}
+\end{equation}
+%
+If a worker lives and works in the same municipality, they simply
+pay that municipality's rate. If they live in a low-rate municipality
+but work in a high-rate one, the employer withholds the work rate;
+the home municipality receives nothing beyond its own rate (or the
+residual after the work municipality's claim). Crucially, if a worker
+moves from a high-rate municipality to a lower-rate one while keeping
+the same job, their \textit{total tax liability does not change}---they
+continue to pay the work municipality's rate through employer
+withholding, with the credit system ensuring the work municipality
+collects the difference.
+
+This has a direct implication for interpreting residential sorting.
+Under the credit system, a worker who changes residence but not
+workplace gains no tax savings from the move. The only way to reduce
+one's EIT burden is to change both residence and workplace to a
+lower-rate jurisdiction, or to move one's residence to a municipality
+whose rate equals or exceeds the work rate (so the residence rate
+governs and the work municipality receives nothing).
+
+\paragraph{Act 32: Tax Collection Consolidation.}
+Before 2012, EIT collection was radically decentralized: each of
+Pennsylvania's 2,500+ municipalities appointed its own tax officer.
+Nonresident EIT enforcement was weak because no centralized system
+linked employers, workers, and municipalities. A worker who moved
+out of a rate-raising municipality could, in practice, avoid paying
+the nonresident portion to the work municipality even though they
+legally owed it. The credit system described in Equation~\ref{eq:credit}
+existed on paper but was not effectively enforced.
+
+Act 32 of 2008 (effective January 1, 2012) transformed this system
+by consolidating collection into approximately 67 county-based Tax
+Collection Districts (TCDs), each with a single appointed collector.
+The law mandated standardized employer withholding at the higher of
+the employee's resident and work rate. This had two consequences.
+First, it made the EIT \textit{binding}: rate changes now mechanically
+appear in every worker's paycheck through employer withholding,
+regardless of whether they reside in the taxing municipality.
+Second, it eliminated the possibility of de facto tax avoidance
+through residential relocation. Before Act 32, moving away from a
+rate-raising city could effectively reduce a worker's tax burden
+because the work municipality lacked the enforcement capacity to
+collect from nonresidents. After Act 32, the credit system is
+fully enforced, and moving away while keeping the same job provides
+no tax relief.
+
+\paragraph{School District EIT.}
+School districts in Pennsylvania also levy an EIT under Act 511,
+typically at 0.5\% (the other half of the standard 1\% cap).
+Act 1 of 2006 (the Taxpayer Relief Act) additionally authorized
+school districts to exceed the 0.5\% cap specifically to fund
+property tax relief. This generated a wave of school district
+rate increases in 2006--2011, creating rate variation that is
+largely independent of municipal fiscal decisions: the correlation
+between municipal and school district EIT rates across our panel
+is $-0.12$. Since every census tract sits in both a municipality
+and a school district, workers face two overlapping EIT rates
+that can change independently, providing a natural decomposition
+of the residential sorting response into municipal and school
+district components.
+
+%==========================================================
+\section{Conceptual Framework}
+\label{sec:theory}
+%==========================================================
+
+We develop a framework for how local income tax changes affect the
+spatial distribution of workers across municipalities. The key
+institutional features described above---the credit system, Act 32
+enforcement, and overlapping municipal and school district taxes---generate
+distinct predictions about \textit{who} moves, \textit{where} they
+go, and \textit{why}.
+
+\subsection{Three Channels of Adjustment}
+\label{subsec:channels}
+
+Consider a municipality $A$ that raises its EIT rate. Workers
+currently employed in $A$ can respond through three channels, each
+with different implications for their tax burden:
+
+\paragraph{Channel 1: Residential relocation without job change.}
+A worker moves their residence from $A$ to another municipality $B$
+but continues working in $A$. Under the credit system
+(Equation~\ref{eq:credit}), this worker's total EIT liability is
+$\max(\tau_B, \tau_A)$. If $\tau_A > \tau_B$---the typical case
+when $A$ just raised its rate---the worker still pays $\tau_A$.
+\textit{Moving provides zero tax savings.} This channel reduces
+$A$'s share\_live\_in (our primary outcome) but does not reduce the
+worker's tax burden.
+
+\paragraph{Channel 2: Complete relocation (residence and job).}
+A worker moves both residence and job from $A$ to municipality $B$,
+where $\tau_B < \tau_A$. Their new liability is $\tau_B$, yielding
+genuine tax savings. This is the canonical Tiebout sorting response.
+This channel reduces both $A$'s resident worker count and total
+employment. In our data, it appears as a decline in the
+$(w\!=\!A, h\!=\!A)$ cell of the origin-destination matrix and an
+increase in the $(w\!=\!B, h\!=\!B)$ cell for nearby municipalities $B$.
+
+\paragraph{Channel 3: Compositional change in new hires.}
+When $A$ creates new positions or replaces departing workers, the
+new hires may choose not to live in $A$ given the higher rate. They
+take the job in $A$ but live in $B$. Under the credit system, they
+pay $\max(\tau_B, \tau_A) = \tau_A$, so this choice reflects
+non-tax considerations (housing costs, school quality, neighborhood
+preferences). This channel reduces $A$'s share\_live\_in even though
+no existing resident moved.
+
+\subsection{Predictions}
+\label{subsec:predictions}
+
+These channels generate testable predictions that differ from a
+naive Tiebout model:
+
+\paragraph{Prediction 1: Enforcement matters.}
+If the sorting response is driven by workers optimizing their tax
+burden (Channel 2), the effect should depend on whether the tax is
+actually collected. Before Act 32, when nonresident enforcement was
+weak, a rate increase was partly a paper change. After Act 32, it
+mechanically reduces take-home pay. We therefore expect the sorting
+response to be \textit{stronger} after 2012, not because moving
+became more attractive (it became less so under full credit
+enforcement), but because the rate increase itself became binding.
+Workers only respond to taxes they actually pay.
+
+\paragraph{Prediction 2: Destination rates should not matter for stayers.}
+Workers who change residence but keep the same job (Channel 1) gain
+no tax advantage from choosing a lower-rate destination. If the
+rate gap between work and home municipality predicts commuter flows,
+it reveals a non-tax channel: housing cost capitalization, amenity
+perception, or fiscal quality signaling. If destination rates are
+irrelevant to commuter flows, the credit system is operating as
+designed and workers are not confused about their tax liability.
+
+\paragraph{Prediction 3: Complete relocators should choose lower-rate destinations.}
+Workers who change both residence and job (Channel 2) \textit{can}
+reduce their tax burden by choosing a lower-rate municipality.
+If cities near a rate-raising municipality experience gains in
+resident workers, and those gains are larger for lower-rate
+destinations, this confirms tax-motivated complete relocation.
+
+\paragraph{Prediction 4: School district taxes should have opposite effects.}
+Municipal EIT rate increases are typically associated with fiscal
+stress---the municipality needs revenue. School district EIT rate
+increases, particularly those authorized under Act 1 of 2006,
+fund property tax relief and school spending. Higher school district
+EIT rates may therefore signal a \textit{valued amenity} (better
+schools, lower property taxes) rather than fiscal extraction.
+If so, school district rate increases should \textit{attract}
+residents, offsetting the repulsive effect of municipal rate
+increases. This decomposition is possible because municipal and
+school district rates vary independently ($r = -0.12$) and every
+tract sits in both jurisdictions simultaneously.
+
+\paragraph{Prediction 5: Sorting should occur at municipal boundaries.}
+If EIT rate changes cause cross-boundary residential sorting,
+the effect should be concentrated at the edges of municipalities
+where moving a short distance crosses a tax boundary. Interior
+tracts, far from any municipal boundary, should show weaker
+responses. The absence of a boundary gradient would suggest that
+the ``sorting'' is actually a city-wide population decline
+unrelated to spatial tax arbitrage.
 
 %==========================================================
 \section{Data}
@@ -166,54 +370,67 @@
 \label{sec:strategy}
 %==========================================================
 
-We organize our analysis around four questions, each building on the
-previous. All specifications use municipality and year fixed effects
-with standard errors clustered at the municipality level. For binary
-treatments under staggered timing, we use the Sun and Abraham (2021)
-interaction-weighted estimator:
+We organize the analysis in two stages. The first stage establishes
+the baseline sorting response using municipal-level outcomes, building
+from the extensive margin (tax adoption) through the intensive margin
+(rate changes) to asymmetry. The second stage uses tract-level
+origin-destination data to decompose the sorting response into the
+three channels described in Section~\ref{subsec:channels} and to
+test the predictions from Section~\ref{subsec:predictions}.
 
+All specifications include municipality (or tract, or pair) and year
+fixed effects, with standard errors clustered at the municipality
+level. The municipality fixed effects absorb time-invariant differences
+across jurisdictions; the year fixed effects absorb aggregate shocks
+common to all municipalities (e.g., business cycles, statewide policy
+changes). Identification comes from within-municipality rate variation
+over time.
+
+\subsection{Stage 1: Municipal-Level Sorting}
+\label{subsec:stage1}
+
+For binary treatments under staggered timing, we use the
+Sun and Abraham (2021) interaction-weighted estimator:
+%
 \begin{equation}
     Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot D_{it}^{\ell} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \label{eq:sunab}
 \end{equation}
-
-\noindent where $Y_{it}$ is share\_live\_in, $D_{it}^{\ell}$ indicates
-municipality $i$ being $\ell$ years from its first treatment, and
-$\mathbf{X}_{it}$ is a vector of fiscal controls (available for PA).
-Pre-treatment coefficients ($\ell < -1$) test parallel trends. For
-continuous treatments (the actual tax rate), we use the de Chaisemartin
-and D'Haultfoeuille (2024) estimator, which handles both staggered
-timing and varying treatment intensity.
+%
+\noindent where $Y_{it}$ is share\_live\_in for municipality $i$ in
+year $t$, $D_{it}^{\ell}$ indicates municipality $i$ being $\ell$
+years from its first treatment, and $\mathbf{X}_{it}$ is a vector
+of fiscal controls (police expenditures, streets, debt service, and
+state aid; available for PA). Pre-treatment coefficients
+($\ell < -1$) test parallel trends. For continuous treatments (the
+actual tax rate), we use the de Chaisemartin and D'Haultfoeuille
+(2024) estimator, which handles both staggered timing and varying
+treatment intensity.
 
 \paragraph{Q1: Does adopting a local income tax cause residential sorting?}
 Ohio municipalities can adopt a local income tax; unincorporated
-townships have no tax. We compare municipalities that adopted a tax
+townships cannot. We compare municipalities that adopted a tax
 during the panel (going from 0 to a positive rate) against no-tax
-townships. This is the cleanest Tiebout test: a discrete switch from
-no tax to having one. Only Ohio provides this extensive-margin variation;
-all Pennsylvania municipalities levy an EIT throughout the panel.
+townships using Equation~\ref{eq:sunab}. This is the cleanest test
+of the extensive margin: a discrete switch from no tax to having one.
+Only Ohio provides this variation; all Pennsylvania municipalities
+levy an EIT throughout the panel.
 
 \paragraph{Q2: Do rate increases cause additional sorting?}
 Conditional on already having a tax, does raising the rate push
 additional residents out? We estimate Equation~\ref{eq:sunab} with
-rate increasers as the treated group. For Ohio, we use no-tax townships
-as the control group (stable-rate taxed cities produce null results,
-likely because they share unobserved urban characteristics with treated
-cities). For Pennsylvania, the control group is the 2,209 municipalities
-that never changed their EIT rate. We also estimate the DCDH continuous
-treatment model, which tests whether rate \textit{magnitude} predicts
-sorting beyond the binary treatment effect.
+rate increasers as treated. For Ohio, we use no-tax townships as
+controls (stable-rate taxed cities produce null results, likely
+because they share unobserved urban characteristics with treated
+cities). For Pennsylvania, controls are the 2,209 municipalities
+that never changed their EIT rate. We also estimate the DCDH
+continuous treatment model to test whether rate \textit{magnitude}
+matters beyond binary treatment status.
 
-\paragraph{Q3: Do rate decreases reverse sorting?}
-We estimate Equation~\ref{eq:sunab} with rate decreasers as the treated
-group and never-changed municipalities as controls. If sorting is
-reversible, decreases should increase the locally-resident share.
-
-\paragraph{Q4: Is the sorting response asymmetric?}
+\paragraph{Q3: Are rate changes asymmetric?}
 We test whether increases and decreases have symmetric effects using
-a joint model with both indicators and a split cumulative dose
-specification:
-
+a split cumulative dose specification:
+%
 \begin{equation}
     Y_{it} = \alpha_i + \gamma_t
     + \beta^{+} \cdot R^{+}_{it}
@@ -221,11 +438,175 @@ specification:
     + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \label{eq:split_dose}
 \end{equation}
-
+%
 \noindent where $R^{+}_{it}$ and $R^{-}_{it}$ are cumulative rate
 increases and decreases from baseline. If $|\beta^{+}| > |\beta^{-}|$,
-residential location decisions are sticky: tax increases push residents
-out, but tax decreases do not pull them back.
+residential location decisions are sticky: rate increases push
+residents out, but rate decreases do not pull them back. We also
+estimate Equation~\ref{eq:sunab} separately for rate decreasers
+versus never-changed controls.
+
+\paragraph{Act 32 structural break.}
+Prediction 1 implies that the sorting response should differ before
+and after the 2012 consolidation of tax collection. We test this by
+interacting the treatment variable with pre- and post-Act 32
+indicators:
+%
+\begin{equation}
+    Y_{it} = \alpha_i + \gamma_t
+    + \beta^{\text{pre}} \cdot \tau_{it} \cdot \mathbf{1}[t < 2012]
+    + \beta^{\text{post}} \cdot \tau_{it} \cdot \mathbf{1}[t \geq 2012]
+    + \varepsilon_{it}
+    \label{eq:act32}
+\end{equation}
+%
+Under Prediction 1, $\beta^{\text{pre}} \approx 0$ (no response when
+the tax is not effectively collected) and $\beta^{\text{post}} < 0$
+(sorting begins when the tax becomes binding through employer withholding).
+
+\subsection{Stage 2: Tract-Level Decomposition}
+\label{subsec:stage2}
+
+The municipal-level outcome share\_live\_in captures the net effect
+of all three adjustment channels but cannot distinguish between them.
+To decompose the response, we exploit the tract-level structure of
+LODES origin-destination data, which records job counts for every
+$(w_{\text{tract}}, h_{\text{tract}}, \text{year})$ triplet. We
+aggregate these flows to the city-pair level---$(A, B, t)$ for work
+municipality $A$ and home municipality $B$---and construct three
+analytic panels.
+
+\paragraph{Q4: Do workers leave entirely, or just change where they sleep?}
+\textit{(Tests Predictions 2 and 3: destination choice and complete
+relocation.)}
+
+For each municipality $B$, we construct a \textit{resident worker
+panel} counting workers who both live and work in $B$. We then
+measure $B$'s ``exposure'' to neighboring rate increases:
+%
+\begin{equation}
+    \ln(\text{ResWorkers}_{Bt}) = \alpha_B + \gamma_t
+    + \beta_1 \cdot \tau_{Bt}
+    + \beta_2 \cdot \bar{\tau}^{\text{nbr}}_{Bt}
+    + \varepsilon_{Bt}
+    \label{eq:q4_relocation}
+\end{equation}
+%
+\noindent where $\tau_{Bt}$ is $B$'s own EIT rate and
+$\bar{\tau}^{\text{nbr}}_{Bt}$ is the average rate among $B$'s
+neighbors (within 80~km). If $\beta_1 < 0$, higher own rates reduce
+resident workers (consistent with Channels 1--3). If $\beta_2 > 0$,
+cities absorb resident workers when neighbors raise rates---evidence
+of Channel 2 (complete relocation toward the lower-rate city).
+
+To test Prediction 2 (destination rates irrelevant for stayers),
+we estimate a \textit{commuter pair model}:
+%
+\begin{equation}
+    \ln(\text{Flow}_{ABt}) = \alpha_{AB} + \gamma_t
+    + \beta_1 \cdot \tau^{w}_{At}
+    + \beta_2 \cdot \tau^{h}_{Bt}
+    + \varepsilon_{ABt}
+    \label{eq:q4_pairs}
+\end{equation}
+%
+\noindent for all commuter pairs $(A \neq B)$ within 80~km,
+where $\text{Flow}_{ABt}$ is the number of workers employed in $A$
+and living in $B$. Under the credit system, workers who keep their
+job in $A$ pay $\max(\tau_A, \tau_B) = \tau_A$ regardless of where
+they live (when $\tau_A > \tau_B$). If Prediction 2 holds,
+$\beta_2 \approx 0$: the home municipality's rate does not predict
+commuter flows, because it provides no tax savings.
+
+To test Prediction 3, we add the rate gap interaction:
+%
+\begin{equation}
+    \ln(\text{Flow}_{ABt}) = \alpha_{AB} + \gamma_t
+    + \beta_1 \cdot \tau^{w}_{At}
+    + \beta_2 \cdot \tau^{w}_{At} \times (\tau^{w}_{At} - \tau^{h}_{Bt})
+    + \varepsilon_{ABt}
+    \label{eq:q4_gap}
+\end{equation}
+%
+If $\beta_2 > 0$, flows are larger when the rate gap between work
+and home is bigger---consistent with workers choosing cheaper
+destinations. If $\beta_2 \leq 0$, destination choice is
+unrelated to the rate differential, ruling out tax optimization
+for Channel 1 stayers.
+
+\paragraph{Q5: Do school district rates have opposite effects?}
+\textit{(Tests Prediction 4: municipal versus school district
+decomposition.)}
+
+Since each municipality in our panel has both a municipal EIT rate
+($\tau^{m}_{it}$) and a school district EIT rate ($\tau^{sd}_{it}$),
+and these vary independently, we estimate:
+%
+\begin{equation}
+    Y_{it} = \alpha_i + \gamma_t
+    + \beta^{m} \cdot \tau^{m}_{it}
+    + \beta^{sd} \cdot \tau^{sd}_{it}
+    + \varepsilon_{it}
+    \label{eq:sd_decomp}
+\end{equation}
+%
+If Prediction 4 holds, $\beta^{m} < 0$ (municipal rates push
+residents out) and $\beta^{sd} > 0$ (school district rates attract
+residents, reflecting the amenity value of school spending). This
+decomposition explains why the \textit{total} EIT rate---municipal
+plus school district---may show no net sorting effect: the two
+components pull in opposite directions. We estimate
+Equation~\ref{eq:sd_decomp} separately for resident workers
+(people who both live and work in the municipality), nonresident
+commuters (people who work in the municipality but live elsewhere),
+and total employment, to identify which margin the school district
+rate operates on.
+
+We also extend the commuter pair model
+(Equation~\ref{eq:q4_pairs}) to include school district rates
+at both the work and home municipality:
+%
+\begin{equation}
+    \ln(\text{Flow}_{ABt}) = \alpha_{AB} + \gamma_t
+    + \beta^{m}_w \cdot \tau^{m}_{At}
+    + \beta^{sd}_w \cdot \tau^{sd}_{At}
+    + \beta^{m}_h \cdot \tau^{m}_{Bt}
+    + \beta^{sd}_h \cdot \tau^{sd}_{Bt}
+    + \varepsilon_{ABt}
+    \label{eq:sd_pairs}
+\end{equation}
+%
+If school district rates operate as a residential amenity, we expect
+$\beta^{sd}_h > 0$: workers are more likely to commute \textit{from}
+municipalities with higher school district rates, because people
+choose to live where schools are well-funded.
+
+\paragraph{Q6: Is sorting concentrated at municipal boundaries?}
+\textit{(Tests Prediction 5: boundary gradient.)}
+
+We build a tract-level panel within each municipality, classifying
+tracts as ``boundary'' (centroid within 1~km of the nearest municipal
+boundary) or ``interior.'' For each work tract, we compute the share
+of workers whose home tract is in the same municipality:
+%
+\begin{equation}
+    S^{\text{within}}_{jt} = \alpha_j + \gamma_t
+    + \beta_1 \cdot \tau_{it}
+    + \beta_2 \cdot \tau_{it} \times \mathbf{1}[\text{boundary}_j]
+    + \varepsilon_{jt}
+    \label{eq:boundary}
+\end{equation}
+%
+\noindent where $j$ indexes work tracts within municipality $i$.
+If $\beta_2 < 0$, boundary tracts are more sensitive to rate changes
+than interior tracts, consistent with cross-boundary sorting where
+a short residential move crosses a tax boundary. If $\beta_2
+\approx 0$, the city-level sorting result is driven by a uniform
+response across the municipality rather than boundary-specific
+sorting. We also estimate a distance gradient, binning tracts by
+distance from the nearest municipal boundary (0--0.5~km, 0.5--1~km,
+1--2~km, 2--5~km, 5+~km) to trace how the sorting response decays
+with distance from a tax boundary.
 
 
 %==========================================================
@@ -233,7 +614,16 @@ out, but tax decreases do not pull them back.
 \label{sec:results}
 %==========================================================
 
-\subsection{Q1: Does Adopting a Tax Cause Sorting?}
+We present results in two stages, following the empirical strategy.
+Stage 1 (Sections~\ref{subsec:q1}--\ref{subsec:q3_results})
+establishes the municipal-level sorting response and its asymmetry.
+Stage 2 (Sections~\ref{subsec:q4_results}--\ref{subsec:q6_results})
+decomposes the response into adjustment channels using tract-level
+origin-destination data.
+
+\subsection{Stage 1: Municipal-Level Sorting}
+
+\subsubsection{Q1: Does Adopting a Tax Cause Sorting?}
 \label{subsec:q1}
 
 We pool municipalities from both states that adopted a local income tax
@@ -289,17 +679,20 @@ cross-state differences.
     \label{fig:q1}
 \end{figure}
 
-\textbf{A1:} We cannot reject the null. The pooled ATT is $-0.004$
-(SE $0.007$), directionally consistent with sorting but statistically
-insignificant. Only 8 municipalities adopted a tax during the panel
-with sufficient LODES employment data, providing insufficient power
-for the extensive margin. The effect size is small relative to the
-intensive-margin results in Q2, though the comparison is imprecise.
-We turn to rate \textit{changes} among already-taxed municipalities,
-where sample sizes are substantially larger.
+\textbf{Result:}
+\begin{itemize}
+    \item The pooled ATT is $-0.004$ (SE $0.007$), directionally
+    consistent with sorting but statistically insignificant.
+    \item Only 8 municipalities adopted a tax during the panel with
+    sufficient LODES employment, providing insufficient power for
+    the extensive margin.
+    \item We cannot reject the null. We turn to rate \textit{changes}
+    among already-taxed municipalities, where sample sizes are
+    substantially larger.
+\end{itemize}
 
 
-\subsection{Q2: Do Rate Increases Cause Sorting?}
+\subsubsection{Q2: Do Rate Increases Cause Sorting?}
 \label{subsec:q2}
 
 \begin{table}[H]
@@ -370,86 +763,77 @@ where sample sizes are substantially larger.
     \label{fig:q2_pa_dcdh}
 \end{figure}
 
-\textbf{A2:} Yes. Rate increases reduce the locally-resident worker
-share. The effect is $-0.005$ to $-0.008$ per percentage point and
-builds gradually over 7--8 years. The result is robust across
-estimators (Sun-Abraham binary and DCDH continuous) and both states.
-The choice of control group matters for Ohio: no-tax townships produce
-a significant effect ($-0.007^{**}$) while stable-rate taxed cities
-produce a null, suggesting that the latter share confounding urban
-characteristics with treated cities.
+\textbf{Result:}
+\begin{itemize}
+    \item Rate increases reduce the locally-resident worker share by
+    $-0.005$ to $-0.008$ per percentage point, building gradually
+    over 7--8 years.
+    \item Robust across estimators (Sun-Abraham binary and DCDH
+    continuous) and both states.
+    \item Control group choice matters for Ohio: no-tax townships
+    produce a significant effect ($-0.007^{**}$) while stable-rate
+    taxed cities produce a null, suggesting the latter share
+    confounding urban characteristics with treated cities.
+\end{itemize}
 
-
-\subsection{Q3: Do Rate Decreases Reverse Sorting?}
-\label{subsec:q3}
+\paragraph{Act 32 structural break.} Consistent with Prediction 1,
+the municipal-level sorting response is \textit{entirely}
+concentrated in the post-Act 32 period (Table~\ref{tab:act32}).
 
 \begin{table}[H]
     \centering
-    \caption{Q3: Effect of Rate Decreases on share\_live\_in}
-    \label{tab:q3}
+    \caption{Act 32 Structural Break: PA Municipal EIT Effect on share\_live\_in}
+    \label{tab:act32}
     \small
-    \begin{tabular}{lccc}
+    \begin{tabular}{lcc}
         \toprule
-        & (1) & (2) & (3) \\
-        & PA: Dec vs & PA: Dec & OH: Dec vs \\
-        & Stable-Rate & DCDH & No-Tax \\
+        & (1) Split Periods & (2) Interaction \\
         \midrule
-        Sun-Abraham ATT        & $0.0048$     &              & $-0.0042$    \\
-                               & (0.0057)     &              & (0.0064)     \\[3pt]
-        DCDH Avg Total Effect  &              & $-0.0077$    &              \\
-                               &              & (0.0090)     &              \\
+        $\tau \times \mathbf{1}[t < 2012]$   & $-0.0021$ (0.0044) & \\
+        $\tau \times \mathbf{1}[t \geq 2012]$ & $-0.0179^{***}$ (0.0051) & \\
+        $\tau$ (baseline)                      & & $-0.0021$ (0.0044) \\
+        $\tau \times \text{Post-2012}$         & & $-0.0158^{***}$ (0.0034) \\
         \midrule
-        Treated / Switchers    & 94           & 60           & 36           \\
-        Control                & 2{,}209 NC   & NC           & 104 no-tax   \\
-        Placebo $p$            & ---          & 0.408        & ---          \\
+        $N$                 & 27{,}273 & 27{,}273 \\
+        Fixed Effects       & \multicolumn{2}{c}{Municipality, Year} \\
+        Clusters            & \multicolumn{2}{c}{Municipality} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Column (1): PA Sun-Abraham ATT for
-        decreasers vs stable-rate municipalities (null). Column (2): PA
-        DCDH continuous among decreasers (negative ATE --- decreases do
-        not increase share\_live\_in). Column (3): OH decreasers vs
-        no-tax townships (null, 36 treated).
-        \sym{.}$p<0.10$, \sym{*}$p<0.05$, \sym{**}$p<0.01$, \sym{***}$p<0.001$.
+        \footnotesize \textit{Notes:} Column (1) estimates separate
+        coefficients for each period. Column (2) tests the difference
+        directly: the post-2012 interaction ($-0.016^{***}$) is the
+        additional effect of Act 32 enforcement.
+        Before 2012, the effect is a precise zero ($-0.002$, SE 0.004).
+        The sorting response only appears when consolidated employer
+        withholding makes the tax binding.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../figures/q3_pa_decrease.png}
-    \caption{Q3 col (1): PA Rate Decreases vs Stable-Rate. No evidence of reversal.}
-    \label{fig:q3_pa}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../figures/pa_dcdh_dec.png}
-    \caption{Q3 col (2): PA DCDH Continuous, Decreasers vs Stable-Rate.}
-    \label{fig:q3_pa_dcdh}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../figures/oh_es_decrease_notax.png}
-    \caption{Q3 col (3): OH Rate Decreases vs No-Tax. Wide confidence intervals.}
-    \label{fig:q3_oh}
-\end{figure}
-
-\textbf{A3:} No. Rate decreases do not reverse sorting. All decrease
-estimates are statistically indistinguishable from zero in both states.
-The PA DCDH estimate is actually negative ($-0.008$), suggesting that
-municipalities that cut their rates continue to lose locally-resident
-workers, possibly because rate cuts signal fiscal distress.
+\begin{itemize}
+    \item Pre-Act 32 (2002--2011): $\hat{\beta}^{\text{pre}} = -0.002$
+    (SE 0.004) --- a precise zero. When nonresident EIT collection
+    was fragmented and poorly enforced, rate changes had no
+    detectable effect on residential sorting.
+    \item Post-Act 32 (2012--2019): $\hat{\beta}^{\text{post}} =
+    -0.018^{***}$ (SE 0.005). After consolidated employer
+    withholding made the tax binding, each percentage point of
+    municipal EIT reduces the locally-resident share by 1.8 points.
+    \item The difference is highly significant ($-0.016^{***}$,
+    SE 0.003). This confirms Prediction 1: workers only respond to
+    taxes they actually pay.
+\end{itemize}
 
 
-\subsection{Q4: Is the Response Asymmetric?}
-\label{subsec:q4}
+\subsubsection{Q3: Are Rate Changes Asymmetric?}
+\label{subsec:q3_results}
 
 \begin{table}[H]
     \centering
-    \caption{Q4: Asymmetry Test --- Joint Increases and Decreases}
-    \label{tab:q4}
+    \caption{Q3: Asymmetry Test --- Joint Increases and Decreases}
+    \label{tab:q3}
     \small
     \begin{tabular}{lcccc}
         \toprule
@@ -482,32 +866,27 @@ workers, possibly because rate cuts signal fiscal distress.
     \end{minipage}
 \end{table}
 
-\textbf{A4:} Yes, the response is asymmetric. Rate increases reduce
-the locally-resident share ($\delta^{+} = -0.007^{*}$ in PA,
-$-0.006^{**}$ in OH; $\beta^{+} = -0.018^{*}$ per pp in the split
-dose), but rate decreases have no effect ($\delta^{-} \approx 0$,
-$\beta^{-} \approx 0$). This pattern is consistent across both states,
-both estimators (joint model and split dose), and the DCDH results
-from Q3. Residential location decisions are sticky: once a tax
-increase pushes workers to relocate their residence outside the
-taxing municipality, cutting the rate does not bring them back.
+\textbf{Result:}
+\begin{itemize}
+    \item Rate increases reduce the locally-resident share:
+    $\delta^{+} = -0.007^{*}$ in PA, $-0.006^{**}$ in OH;
+    $\beta^{+} = -0.018^{*}$ per pp in the PA split dose.
+    \item Rate decreases have no effect: $\delta^{-} \approx 0$,
+    $\beta^{-} \approx 0$ across all specifications and both states.
+    \item The PA DCDH estimate for decreasers is actually negative
+    ($-0.008$), suggesting rate cuts may signal fiscal distress.
+    \item Residential location decisions are sticky: rate increases
+    push workers out, but rate decreases do not bring them back.
+\end{itemize}
 
+\paragraph{Companion outcomes.}
+A decline in share\_live\_in could reflect residential sorting,
+compositional change in the workforce, or differential job growth.
+To decompose the mechanism, we estimate the dose-response
+specification separately for the numerator (resident workers),
+denominator (total jobs), and nonresident commuters
+(Table~\ref{tab:companion}).
 
-\subsection{Companion Outcomes: Decomposition}
-\label{subsec:decomposition}
-
-% TODO: Framing: "A decline in share_live_in could reflect residential sorting,
-% compositional change in the workforce, or differential job growth among
-% nonresident commuters. To decompose the mechanism, we estimate the dose-response
-% specification separately for the numerator (resident workers), denominator
-% (total jobs), and nonresident commuters."
-%
-% Key finding: resident workers fall most, but total jobs also decline.
-% Cannot reject equality of resident vs nonresident coefficients (p = 0.09).
-% "The larger decline in resident workers is suggestive of a sorting channel,
-% though the estimates also indicate broader employment effects."
-
-% --- Companion Outcomes Table ---
 \begin{table}[H]
     \centering
     \caption{Companion Outcomes: Decomposing the share\_live\_in Effect}
@@ -524,42 +903,36 @@ taxing municipality, cutting the rate does not bring them back.
         post                   & 0.0022         & $0.1226^{.}$   & $0.1113^{.}$   & $0.1173^{*}$   \\
                                & (0.0064)       & (0.0721)       & (0.0596)       & (0.0587)       \\
         \midrule
-        \multicolumn{5}{l}{\textit{Diagnostics}} \\
         N                      & 2{,}741        & 2{,}741        & 2{,}741        & 2{,}741        \\
-        $R^2$                  & 0.912          & 0.979          & 0.980          & 0.982          \\
-        Within $R^2$           & 0.011          & 0.015          & 0.008          & 0.011          \\
-        Fixed Effects          & \multicolumn{4}{c}{Municipality, Year} \\
-        Clusters               & \multicolumn{4}{c}{Municipality} \\
         Equality test (2) vs (3) & \multicolumn{4}{c}{$p = 0.09$} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Dose-response specification estimated among PA
+        \footnotesize \textit{Notes:} Dose-response specification among PA
         municipalities that raised EIT rates, 2002--2019. Column (1): main outcome.
-        Columns (2)--(4): log counts of resident workers (live and work in municipality),
-        nonresident commuters (work in municipality, live elsewhere), and total jobs.
-        Equality test: joint model testing whether the resident coefficient differs from
-        the nonresident coefficient.
+        Columns (2)--(4): log counts. Equality test: whether the resident
+        coefficient differs from the nonresident coefficient.
         $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../figures/pa_sunab_resident.png}
-    \caption{Pennsylvania: Sun-Abraham Event Study --- log(Resident Workers).}
-    \label{fig:pa_sunab_resident}
-\end{figure}
+\begin{itemize}
+    \item Resident workers decline most ($-15.3\%^{*}$), but total
+    jobs also fall ($-11.7\%^{*}$).
+    \item We cannot reject equality of resident and nonresident
+    coefficients ($p = 0.09$), suggesting both residential sorting
+    and broader employment effects.
+    \item The fact that total employment declines---not just the
+    share of locally-resident workers---indicates some workers are
+    leaving entirely (Channel 2), not merely relocating their
+    residence while keeping the same job (Channel 1).
+\end{itemize}
 
-\subsection{Fiscal Impact}
-\label{subsec:fiscal}
+\paragraph{Fiscal impact.}
+Using PA DCED Annual Financial Reports (Table~\ref{tab:fiscal}), we
+estimate fiscal consequences of rate changes.
 
-% TODO: "Using PA DCED Annual Financial Reports, we estimate the fiscal
-% consequences of rate changes. The behavioral response does not offset the
-% revenue gain."
-
-% --- Fiscal Impact Table ---
 \begin{table}[H]
     \centering
     \caption{Fiscal Impact of EIT Rate Changes (PA, 2002--2019)}
@@ -574,19 +947,447 @@ taxing municipality, cutting the rate does not bring them back.
                       & (0.2106)       & (0.0948)       & (0.0429)       & (0.0461)       & (0.0137)       & (0.0218)       \\
         \midrule
         N             & 42{,}309       & 42{,}526       & 42{,}543       & 22{,}979       & 42{,}523       & 9{,}323        \\
-        $R^2$         & 0.977          & 0.983          & 0.959          & 0.953          & 0.997          & 0.978          \\
-        Within $R^2$  & 0.027          & 0.006          & 0.0001         & 0.0001         & 0.0001         & 0.000          \\
-        Fixed Effects & \multicolumn{6}{c}{Municipality, Year} \\
-        Clusters      & \multicolumn{6}{c}{Municipality} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
         \footnotesize \textit{Notes:} PA DCED Annual Financial Reports, 2002--2019.
-        All outcomes in logs. Column (6) limited to 2015--2019 (market value data availability).
+        All outcomes in logs. Municipality and year FE, clustered by municipality.
+        Column (6) limited to 2015--2019 (market value data availability).
         $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
     \end{minipage}
 \end{table}
+
+\begin{itemize}
+    \item EIT revenue rises $67\%^{**}$ and total tax revenue rises
+    $30\%^{**}$ per percentage point of rate increase.
+    \item Population, property values, police expenditures, and
+    total revenue are unaffected.
+    \item The behavioral response (sorting) is too small to offset
+    the mechanical revenue gain from higher rates. Rate increases
+    are fiscally productive despite the residential sorting they
+    induce.
+\end{itemize}
+
+
+%------------------------------------------------------------------
+\subsection{Stage 2: Tract-Level Decomposition}
+%------------------------------------------------------------------
+
+Stage 2 exploits the tract-level structure of LODES origin-destination
+data to decompose the sorting response into the three adjustment
+channels identified in the conceptual framework. We aggregate 21.6
+million tract-level OD records into a city-pair panel of 7.0 million
+$(A, B, t)$ observations (1.15 million unique pairs), where $A$ is the
+work municipality and $B$ is the home municipality. We also construct
+a tract-level panel of 55{,}831 observations for the boundary analysis.
+
+\subsubsection{Q4: Do Workers Leave Entirely, or Just Change Where They Sleep?}
+\label{subsec:q4_results}
+
+\paragraph{Own rate and neighbor exposure (Equation~\ref{eq:q4_relocation}).}
+
+\begin{table}[H]
+    \centering
+    \caption{Q4: Complete Relocation --- Own Rate and Neighbor Exposure}
+    \label{tab:q4_relocation}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & (1) & (2) & (3) \\
+        & Own Rate & Own + Neighbor & Pre/Post Act 32 \\
+        \midrule
+        Own EIT ($\hat{\beta}_1$) & $-0.134^{*}$ &  $-0.140^{*}$ & \\
+                                  & (0.063) & (0.063) & \\[3pt]
+        Neighbor avg rate ($\hat{\beta}_2$) & & $1.069^{.}$ & \\
+                                  & & (0.593) & \\[3pt]
+        Own EIT $\times$ Post-2012 & & & $-0.210^{***}$ \\
+                                   & & & (0.062) \\[3pt]
+        Own EIT $\times$ Pre-2012  & & & $-0.042$ \\
+                                   & & & (0.044) \\[3pt]
+        Nbr rate $\times$ Post-2012 & & & $1.243^{*}$ \\
+                                    & & & (0.565) \\[3pt]
+        Nbr rate $\times$ Pre-2012  & & & $1.453^{**}$ \\
+                                    & & & (0.492) \\
+        \midrule
+        Outcome                & \multicolumn{3}{c}{log(Resident Workers)} \\
+        $N$                    & 24{,}448 & 24{,}448 & 24{,}448 \\
+        Fixed Effects          & \multicolumn{3}{c}{Municipality, Year} \\
+        Clusters               & \multicolumn{3}{c}{Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Resident workers = workers who both
+        live and work in municipality $B$. Neighbor average rate computed
+        over all municipalities within 80~km. Column (3) interacts both
+        variables with pre/post-Act 32 indicators.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item A 1~pp increase in own EIT reduces log resident workers
+    by $-0.134^{*}$ (SE 0.063), confirming that higher rates reduce
+    the stock of workers who both live and work locally (Channel 2).
+    \item Neighbor rate increases have a positive effect ($+1.07^{.}$),
+    indicating that cities absorb resident workers when neighboring
+    municipalities raise rates. This is direct evidence of
+    \textit{complete relocation}: workers leaving a rate-raising
+    city are settling in nearby lower-rate municipalities and
+    finding (or bringing) jobs there.
+    \item The own-rate effect is five times larger post-Act 32
+    ($-0.210^{***}$ vs $-0.042$), consistent with Prediction 1:
+    the sorting response requires binding tax enforcement.
+\end{itemize}
+
+\paragraph{Commuter pair models (Equations~\ref{eq:q4_pairs}--\ref{eq:q4_gap}).}
+
+\begin{table}[H]
+    \centering
+    \caption{Q4: Commuter Flow Determinants --- City-Pair Panel}
+    \label{tab:q4_pairs}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & (1) & (2) & (3) & (4) \\
+        & Work Rate & Rate Gap & Work + Home & Pre/Post Act 32 \\
+        \midrule
+        Work EIT ($\tau^{w}$) & $-0.043$ & $-0.092^{**}$ & $-0.043$ & \\
+                              & (0.031) & (0.029) & (0.031) & \\[3pt]
+        $\tau^{w} \times (\tau^{w} - \tau^{h})$ & & $0.022^{.}$ & & \\
+                              & & (0.011) & & \\[3pt]
+        Home EIT ($\tau^{h}$) & & & $-0.001$ & \\
+                              & & & (0.006) & \\[3pt]
+        Work EIT $\times$ Post-2012 & & & & $-0.059^{.}$ \\
+                                    & & & & (0.034) \\[3pt]
+        Work EIT $\times$ Pre-2012  & & & & $-0.020$ \\
+                                    & & & & (0.023) \\[3pt]
+        Home EIT $\times$ Post-2012 & & & & $-0.004$ \\
+                                    & & & & (0.007) \\[3pt]
+        Home EIT $\times$ Pre-2012  & & & & $0.002$ \\
+                                    & & & & (0.006) \\
+        \midrule
+        Outcome                & \multicolumn{4}{c}{log(Commuter Flow)} \\
+        Sample                 & \multicolumn{4}{c}{Commuter pairs ($A \neq B$), $\leq 80$~km} \\
+        $N$                    & 3{,}060{,}222 & 3{,}060{,}222 & 3{,}060{,}222 & 3{,}060{,}222 \\
+        Fixed Effects          & \multicolumn{4}{c}{Pair, Year} \\
+        Clusters               & \multicolumn{4}{c}{Work Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Each observation is a directed
+        work-municipality $\times$ home-municipality $\times$ year triplet.
+        Commuter pairs only ($A \neq B$) within 80~km.
+        Column (2) adds the rate gap interaction: positive $\hat{\beta}_2$
+        means flows are larger when the work-home rate gap is bigger.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Prediction 2 confirmed:} The home municipality's
+    EIT rate has \textit{no effect} on commuter flows
+    ($\hat{\beta}_2 = -0.001$, SE 0.006). Workers who keep their
+    job in city $A$ do not select destinations based on the
+    destination's EIT rate. This is exactly what the credit system
+    predicts: since $\max(\tau_A, \tau_B) = \tau_A$ when $\tau_A >
+    \tau_B$, the destination rate is irrelevant.
+    \item The rate gap interaction is marginally positive
+    ($+0.022^{.}$), suggesting a weak tendency for flows to be
+    larger when the work-home gap is wider. This weak effect is
+    consistent with Channel 1 stayers not optimizing on tax rates.
+    \item The work rate effect is concentrated post-Act 32
+    ($-0.059^{.}$ vs $-0.020$), again confirming that enforcement
+    matters.
+\end{itemize}
+
+\paragraph{Event studies.}
+Figure~\ref{fig:q4_sunab} presents the Sun-Abraham event study for
+log(resident workers), comparing rate-increasing municipalities to
+never-changed controls. The ATT is $-0.048^{*}$ (SE 0.024),
+confirming that rate increases reduce the stock of workers who both
+live and work in a municipality. Figure~\ref{fig:q4_commuter_es}
+shows the corresponding event study for commuter flows around the
+work city's first rate increase. Pre-trends are clean; flows decline
+gradually post-treatment, reaching significance at $t+4$.
+Figure~\ref{fig:q4_by_era} splits the resident worker event study
+by adoption era: post-Act 32 adopters show a sharper decline than
+pre-Act 32 adopters, consistent with Prediction 1.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/q4_resident_sunab.png}
+    \caption{Q4: Sun-Abraham Event Study --- log(Resident Workers).
+    ATT = $-0.048^{*}$ (SE 0.024). Rate increasers vs never-changed
+    controls. Municipality and year FE.}
+    \label{fig:q4_sunab}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/q4_commuter_event_study.png}
+    \caption{Q4: Commuter Flow Event Study. log(commuter flow) around
+    work municipality's first rate increase. Pair and year FE.
+    Pre-trends are clean; flows decline post-treatment.}
+    \label{fig:q4_commuter_es}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/q4_resident_by_era.png}
+    \caption{Q4: Resident Worker Event Study by Adoption Era. Pre-Act 32
+    adopters (blue, $N=111$) show a muted response; post-Act 32 adopters
+    (red, $N=46$) show a sharper decline, consistent with Prediction 1.}
+    \label{fig:q4_by_era}
+\end{figure}
+
+
+\subsubsection{Q5: Do School District Rates Have Opposite Effects?}
+\label{subsec:q5_results}
+
+\paragraph{Municipal vs school district decomposition (Equation~\ref{eq:sd_decomp}).}
+
+\begin{table}[H]
+    \centering
+    \caption{Q5: Municipal vs School District EIT --- Resident Workers}
+    \label{tab:q5_resident}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & (1) & (2) & (3) & (4) \\
+        & Muni Only & Muni + SD & SD Only & Total EIT \\
+        \midrule
+        \multicolumn{5}{l}{\textit{Outcome: log(Resident Workers)}} \\
+        Municipal EIT ($\tau^{m}$) & $-0.144^{*}$ & $-0.136^{*}$ & & \\
+                                   & (0.067) & (0.066) & & \\[3pt]
+        School District EIT ($\tau^{sd}$) & & $0.143^{**}$ & & \\
+                                  & & (0.045) & & \\[3pt]
+        Total EIT ($\tau^{m} + \tau^{sd}$) & & & & $0.001$ \\
+                                   & & & & (0.034) \\
+        \midrule
+        $N$                    & 24{,}448 & 24{,}448 & & 24{,}448 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Municipality and year FE, clustered
+        by municipality. Resident workers = live and work in municipality.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Q5: Municipal vs School District EIT --- By Outcome}
+    \label{tab:q5_outcomes}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & (1) log(Resident) & (2) log(Nonresident) & (3) log(Total Jobs) \\
+        \midrule
+        Municipal EIT ($\tau^{m}$) & $-0.129^{*}$ & $-0.073^{.}$ & $-0.091^{*}$ \\
+                                   & (0.060) & (0.042) & (0.042) \\[3pt]
+        School District EIT ($\tau^{sd}$) & $0.161^{**}$ & $0.080$ & $0.080$ \\
+                                  & (0.049) & (0.055) & (0.050) \\
+        \midrule
+        $N$                    & 27{,}250 & 27{,}273 & 27{,}273 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Municipality and year FE, clustered
+        by municipality. Correlation between municipal and SD rates: $r = -0.12$.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Prediction 4 confirmed:} Municipal and school
+    district EIT rates have \textit{opposite} effects on resident
+    workers. A 1~pp municipal rate increase reduces log resident
+    workers by $-0.136^{*}$ (SE 0.066), while a 1~pp school district
+    rate increase \textit{raises} log resident workers by
+    $+0.143^{**}$ (SE 0.045).
+    \item The SD effect operates specifically on resident workers
+    ($+0.161^{**}$), not nonresident commuters ($+0.080$, null) or
+    total jobs ($+0.080$, null). Higher SD EIT rates attract people
+    to \textit{live} in a municipality---consistent with a school
+    quality amenity channel---without affecting where they work.
+    \item Total EIT (municipal + school district combined) has
+    \textit{zero} net effect ($+0.001$, SE 0.034) on resident
+    workers. The two components cancel almost exactly. This explains
+    why aggregate EIT rate studies may find null results: they
+    conflate two taxes with opposite behavioral effects.
+    \item The municipal rate coefficient is stable when controlling
+    for SD rate ($-0.144$ vs $-0.136$), confirming that the two
+    sources of variation are empirically independent.
+\end{itemize}
+
+\paragraph{Commuter pair decomposition (Equation~\ref{eq:sd_pairs}).}
+
+\begin{table}[H]
+    \centering
+    \caption{Q5: Full Decomposition of Commuter Flows}
+    \label{tab:q5_pairs}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & (1) Muni Only & (2) Muni + SD & (3) Total & (4) Full Decomp \\
+        \midrule
+        Work muni EIT ($\tau^{m}_w$) & $-0.043$ & $-0.043$ & & $-0.043$ \\
+                      & (0.031) & (0.032) & & (0.031) \\[3pt]
+        Work SD EIT ($\tau^{sd}_w$) & & $0.037$ & & $0.030$ \\
+                      & & (0.028) & & (0.028) \\[3pt]
+        Total work EIT & & & $-0.017$ & \\
+                      & & & (0.018) & \\[3pt]
+        Home muni EIT ($\tau^{m}_h$) & & & & $-0.002$ \\
+                      & & & & (0.006) \\[3pt]
+        Home SD EIT ($\tau^{sd}_h$) & & & & $0.088^{***}$ \\
+                      & & & & (0.012) \\
+        \midrule
+        $N$           & 3{,}054k & 3{,}054k & 3{,}054k & 3{,}054k \\
+        Fixed Effects & \multicolumn{4}{c}{Pair, Year} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} City-pair panel, commuter pairs
+        ($A \neq B$) within 80~km. Column (4) is the full decomposition
+        from Equation~\ref{eq:sd_pairs}.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Home SD rate strongly predicts commuter origin:}
+    $\hat{\beta}^{sd}_h = +0.088^{***}$ (SE 0.012). Workers are
+    significantly more likely to commute \textit{from} municipalities
+    with higher school district EIT rates. This is the residential
+    amenity channel: people choose to live in high-SD-rate
+    jurisdictions (better schools) and commute elsewhere to work.
+    \item Home municipal EIT rate: null ($-0.002$, SE 0.006).
+    Where you live's municipal rate doesn't predict commuter flows,
+    consistent with the credit system.
+    \item Work SD rate: null ($+0.030$, SE 0.028). The school
+    district rate at the \textit{workplace} doesn't matter, as
+    expected---workers don't benefit from the work city's schools.
+    \item Total work EIT: null ($-0.017$, SE 0.018). Aggregating
+    municipal and SD rates at the work city washes out the signal.
+\end{itemize}
+
+\paragraph{SD event studies.}
+Figure~\ref{fig:q5_sd_sunab} presents the Sun-Abraham event study
+for the effect of SD rate increases on log(resident workers), comparing
+167 SD rate-increasing municipalities against 1{,}069 SD never-changed
+controls. The ATT is $+0.084^{**}$ (SE 0.026): school district rate
+increases \textit{attract} resident workers. This is the mirror image
+of the municipal rate result ($-0.048^{*}$) and confirms Prediction~4.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/q5_sd_sunab_resident.png}
+    \caption{Q5: Sun-Abraham Event Study --- SD Rate Increase on
+    log(Resident Workers). ATT = $+0.084^{**}$ (SE 0.026).
+    167 SD rate-increasing municipalities vs 1{,}069 SD never-changed
+    controls.}
+    \label{fig:q5_sd_sunab}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/q5_sd_sunab_share.png}
+    \caption{Q5: Sun-Abraham Event Study --- SD Rate Increase on
+    share\_live\_in. ATT = $+0.005$ (SE 0.004). Positive but not
+    statistically significant on the share measure.}
+    \label{fig:q5_sd_share}
+\end{figure}
+
+
+\subsubsection{Q6: Is Sorting Concentrated at Municipal Boundaries?}
+\label{subsec:q6_results}
+
+\begin{table}[H]
+    \centering
+    \caption{Q6: Within-City Tract-Level Effects --- Boundary vs Interior}
+    \label{tab:q6}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & (1) & (2) & (3) \\
+        & Within-City Share & Boundary Interaction & Total Workers $\times$ Boundary \\
+        \midrule
+        Municipal EIT & $0.0008^{.}$ & $0.0006^{*}$ & $0.0217^{***}$ \\
+                      & (0.0004) & (0.0003) & (0.0027) \\[3pt]
+        Muni EIT $\times$ Boundary & & $0.0008$ & $-0.0449^{.}$ \\
+                      & & (0.0013) & (0.0266) \\
+        \midrule
+        Outcome       & share within city & share within city & log(total workers) \\
+        $N$           & 55{,}831 & 55{,}831 & 55{,}831 \\
+        Boundary tracts & \multicolumn{3}{c}{1{,}803 of 3{,}446 (52\%)} \\
+        Fixed Effects & \multicolumn{3}{c}{Tract, Year} \\
+        Clusters      & \multicolumn{3}{c}{Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Tract-level panel within PA
+        municipalities. ``Within-city share'' = workers at tract $j$
+        whose home is also in municipality $i$. Boundary = tract centroid
+        within 1~km of nearest municipal boundary.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Q6: Distance-to-Boundary Gradient}
+    \label{tab:q6_gradient}
+    \small
+    \begin{tabular}{lc}
+        \toprule
+        Distance bin & Muni EIT $\times$ distance bin \\
+        \midrule
+        0--0.5~km   & $0.0022^{*}$ (0.0011) \\
+        0.5--1~km   & $0.0010$ (0.0016) \\
+        1--2~km     & $0.0002$ (0.0005) \\
+        2--5~km     & $0.0008^{**}$ (0.0003) \\
+        5+~km       & $-0.0437^{***}$ (0.0020) \\
+        \midrule
+        $N$         & 55{,}831 \\
+        Outcome     & share within city \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.70\textwidth}
+        \footnotesize \textit{Notes:} Distance from tract centroid
+        to nearest municipal boundary. Tract and year FE.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item The within-city share of workers is essentially unaffected
+    by rate changes: $+0.0008^{.}$ (SE 0.0004). This confirms that
+    the city-level sorting result is not driven by within-city
+    reshuffling---people are crossing municipal boundaries, not
+    merely moving to a different neighborhood.
+    \item The boundary interaction on the share outcome is null
+    ($+0.0008$, SE 0.0013): boundary and interior tracts respond
+    similarly. The sorting effect is not concentrated at municipal
+    edges.
+    \item However, boundary tracts show a marginally significant
+    \textit{decline in total workers} relative to interior tracts
+    ($-0.045^{.}$, SE 0.027). This suggests that boundary tracts
+    may lose workers to adjacent municipalities, while interior
+    tract employment remains stable.
+    \item The distance gradient reveals a large negative effect at
+    5+ km ($-0.044^{***}$), likely reflecting composition: interior
+    tracts in large cities (e.g., Philadelphia) respond differently
+    from the typical small municipality tract. Tracts within 0--5~km
+    of a boundary show small positive or null effects.
+\end{itemize}
 
 \subsection{Heterogeneity}
 \label{subsec:heterogeneity}
@@ -639,7 +1440,71 @@ taxing municipality, cutting the rate does not bring them back.
     \end{minipage}
 \end{table}
 
-% DCDH robustness section removed — results integrated into Q2 and Q3 tables.
+\paragraph{Act 32 structural break across all outcomes.}
+Table~\ref{tab:act32_robustness} reports the pre- vs post-Act 32 split
+across all key outcomes. The pattern is consistent: municipal EIT effects
+are concentrated in the post-2012 period when consolidated employer
+withholding made the tax binding. The school district decomposition
+reveals that the SD residential amenity effect ($\tau^{sd}$ on resident
+workers) is significant in both periods but \textit{stronger} post-Act 32
+($+0.216^{***}$ vs $+0.101^{*}$), consistent with Act 32 making all EIT
+variation more salient.
+
+\begin{table}[H]
+    \centering
+    \caption{Act 32 Robustness: Pre/Post-2012 Split Across Outcomes}
+    \label{tab:act32_robustness}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & (1) share\_live\_in & (2) log(Resident) & (3) log(Total Jobs) \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Panel A: Municipal EIT only}} \\
+        $\tau^{m} \times$ Pre-2012  & $-0.002$ (0.004)     & $-0.010$ (0.041)      & $-0.032$ (0.033) \\
+        $\tau^{m} \times$ Post-2012 & $-0.018^{***}$ (0.005) & $-0.198^{***}$ (0.057) & $-0.127^{**}$ (0.043) \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Panel B: Municipal + School District EIT}} \\
+        $\tau^{m} \times$ Pre-2012  & $-0.002$ (0.004)     & $-0.008$ (0.041) \\
+        $\tau^{m} \times$ Post-2012 & $-0.017^{***}$ (0.005) & $-0.181^{**}$ (0.058) \\
+        $\tau^{sd} \times$ Pre-2012  & $-0.001$ (0.006)     & $0.101^{*}$ (0.048) \\
+        $\tau^{sd} \times$ Post-2012 & $0.007$ (0.007)      & $0.216^{***}$ (0.055) \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Panel C: Total EIT (municipal + school district)}} \\
+        $\tau^{\text{total}} \times$ Pre-2012  & $-0.006$ (0.004) \\
+        $\tau^{\text{total}} \times$ Post-2012 & $-0.005$ (0.004) \\
+        \midrule
+        $N$             & 27{,}273  & 27{,}273  & 27{,}273 \\
+        Fixed Effects   & \multicolumn{3}{c}{Municipality, Year} \\
+        Clusters        & \multicolumn{3}{c}{Municipality} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Each cell is from a separate regression.
+        Panel A: municipal EIT rate interacted with pre/post-2012 indicators.
+        Panel B: both municipal and SD rates interacted with period indicators.
+        Panel C: combined total EIT rate. The municipal effect is
+        entirely post-2012; the SD amenity effect is present in both
+        periods but stronger post-2012. Total EIT is null in both
+        periods because the opposing municipal and SD effects cancel.
+        $^{.}p<0.10$, $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.
+    \end{minipage}
+\end{table}
+
+\begin{itemize}
+    \item \textbf{Municipal EIT:} the pre-2012 coefficient is a precise
+    zero across all outcomes. The post-2012 effect is significant for
+    share\_live\_in ($-0.018^{***}$), resident workers ($-0.198^{***}$),
+    and total jobs ($-0.127^{**}$). Enforcement is the mechanism.
+    \item \textbf{School district EIT:} the resident worker amenity
+    effect is positive and significant in both periods, but roughly
+    doubles from $+0.101^{*}$ to $+0.216^{***}$ after Act 32. This
+    suggests Act 32 made SD rate variation more salient alongside
+    municipal rates.
+    \item \textbf{Total EIT:} null in both periods ($-0.006$ and
+    $-0.005$). The opposing municipal and SD components cancel
+    regardless of the enforcement regime.
+\end{itemize}
 
 %==========================================================
 \section{Discussion}

@@ -3311,4 +3311,724 @@ cat("  OH counties without treated munis: net rate =",
   round(oh_net[has_treated_muni == FALSE, mean(net_rate, na.rm = TRUE)], 4), "\n")
 cat("  Difference not statistically significant — sorting is sub-county\n")
 
+# 20. PA Institutional Robustness: Act 32, Total EIT, School District Rates ----
+# (See Section 21 for the full tract-level analysis)
+# Act 32 (2008, effective Jan 2012) consolidated EIT collection into county-based
+# Tax Collection Districts. Before 2012, nonresident enforcement was weak —
+# moving away from a high-rate work municipality could effectively reduce tax burden.
+# After 2012, mandatory employer withholding at max(resident, work) rate meant
+# moving provided no tax relief. This tests whether sorting effects differ.
+
+pa_samp_inst <- pa_panel[total_jobs > 50 & !is.na(resident_eit)]
+pa_samp_inst[, post_act32 := as.integer(year >= 2012)]
+pa_samp_inst[, pre_act32 := as.integer(year < 2012)]
+
+## 20a. Pre- vs Post-Act 32: Municipal EIT ----
+# Interact rate with pre/post period indicators
+pa_act32_m1 <- feols(share_live_in ~ resident_eit:pre_act32 + resident_eit:post_act32
+  | work_city + year,
+  data = pa_samp_inst, cluster = ~work_city)
+
+# Test equality of pre vs post coefficients
+pa_act32_m2 <- feols(share_live_in ~ resident_eit + resident_eit:post_act32
+  | work_city + year,
+  data = pa_samp_inst, cluster = ~work_city)
+
+cat("\n=== 20a. Act 32 Structural Break (Municipal EIT) ===\n")
+etable(pa_act32_m1, pa_act32_m2,
+  headers = c("Split Pre/Post 2012", "Base + Post Interaction"),
+  keep = c("resident_eit", "pre_act32", "post_act32"))
+
+# Event study version: pre/post split for treated municipalities
+pa_first_change_inst <- pa_samp_inst[!is.na(rate_change) & abs(rate_change) > 1e-6,
+  .(event_year = min(year)), by = work_city]
+pa_event_inst <- merge(pa_samp_inst, pa_first_change_inst, by = "work_city")
+pa_event_inst[, rel_year := year - event_year]
+
+# Pre-Act 32 adopters vs post-Act 32 adopters
+pa_event_inst[, adopt_era := fifelse(event_year < 2012, "pre_act32", "post_act32")]
+pa_act32_event_pre <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city + year,
+  data = pa_event_inst[abs(rel_year) <= 5 & adopt_era == "pre_act32"],
+  cluster = ~work_city)
+pa_act32_event_post <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city + year,
+  data = pa_event_inst[abs(rel_year) <= 5 & adopt_era == "post_act32"],
+  cluster = ~work_city)
+
+cat("\n--- Event Study by Adoption Era ---\n")
+cat("Pre-Act 32 adopters (event_year < 2012): N cities =",
+  uniqueN(pa_event_inst[adopt_era == "pre_act32"]$work_city), "\n")
+cat("Post-Act 32 adopters (event_year >= 2012): N cities =",
+  uniqueN(pa_event_inst[adopt_era == "post_act32"]$work_city), "\n")
+etable(pa_act32_event_pre, pa_act32_event_post,
+  headers = c("Pre-Act 32 Adopters", "Post-Act 32 Adopters"),
+  keep = c("rel_year"))
+
+## 20b. Total EIT (Municipal + School District) as Treatment ----
+# Workers face the combined rate, not just the municipal portion.
+# If school district rate changes also drive sorting, using only muni rate
+# understates the true tax effect.
+
+pa_total_m1 <- feols(share_live_in ~ total_eit | work_city + year,
+  data = pa_samp_inst[!is.na(total_eit)], cluster = ~work_city)
+
+# Side by side: muni-only vs total
+pa_muni_m1 <- feols(share_live_in ~ resident_eit | work_city + year,
+  data = pa_samp_inst, cluster = ~work_city)
+
+cat("\n=== 20b. Municipal vs Total EIT Rate ===\n")
+etable(pa_muni_m1, pa_total_m1,
+  headers = c("Municipal EIT Only", "Total EIT (Muni + SD)"))
+
+# Log outcomes with total EIT
+pa_total_m2 <- feols(log_live_in ~ total_eit | work_city + year,
+  data = pa_samp_inst[!is.na(total_eit)], cluster = ~work_city)
+pa_total_m3 <- feols(log_live_out ~ total_eit | work_city + year,
+  data = pa_samp_inst[!is.na(total_eit)], cluster = ~work_city)
+pa_total_m4 <- feols(log_total_jobs ~ total_eit | work_city + year,
+  data = pa_samp_inst[!is.na(total_eit)], cluster = ~work_city)
+
+etable(pa_total_m1, pa_total_m2, pa_total_m3, pa_total_m4,
+  headers = c("Share Live In", "log(Live In)", "log(Live Outside)", "log(Total Jobs)"),
+  keep = c("total_eit"))
+
+# Total EIT with Act 32 split
+pa_total_act32 <- feols(share_live_in ~ total_eit:pre_act32 + total_eit:post_act32
+  | work_city + year,
+  data = pa_samp_inst[!is.na(total_eit)], cluster = ~work_city)
+
+cat("\n--- Total EIT x Act 32 Split ---\n")
+etable(pa_total_act32,
+  headers = "Total EIT: Pre vs Post Act 32",
+  keep = c("total_eit", "pre_act32", "post_act32"))
+
+## 20c. School District vs Municipal EIT Decomposition ----
+# Decompose: do municipal and school district rate changes drive sorting
+# independently? Negative correlation (-0.12) means they vary independently.
+
+pa_decomp_m1 <- feols(share_live_in ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp_inst[!is.na(sd_eit)], cluster = ~work_city)
+
+cat("\n=== 20c. Municipal vs School District EIT Decomposition ===\n")
+cat("Correlation between muni and SD rates:",
+  round(cor(pa_samp_inst$resident_eit, pa_samp_inst$sd_eit, use = "complete"), 3), "\n")
+etable(pa_muni_m1, pa_decomp_m1,
+  headers = c("Municipal Only", "Municipal + School District"),
+  keep = c("resident_eit", "sd_eit"))
+
+# Log outcomes decomposed
+pa_decomp_m2 <- feols(log_live_in ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp_inst[!is.na(sd_eit)], cluster = ~work_city)
+pa_decomp_m3 <- feols(log_live_out ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp_inst[!is.na(sd_eit)], cluster = ~work_city)
+
+etable(pa_decomp_m1, pa_decomp_m2, pa_decomp_m3,
+  headers = c("Share Live In", "log(Live In)", "log(Live Outside)"),
+  keep = c("resident_eit", "sd_eit"))
+
+# School district rate with Act 32 split
+pa_sd_act32 <- feols(share_live_in ~ resident_eit + sd_eit:pre_act32 + sd_eit:post_act32
+  | work_city + year,
+  data = pa_samp_inst[!is.na(sd_eit)], cluster = ~work_city)
+
+cat("\n--- SD Rate x Act 32 Split (controlling for muni rate) ---\n")
+etable(pa_sd_act32,
+  headers = "SD EIT: Pre vs Post Act 32 (controlling for muni)",
+  keep = c("resident_eit", "sd_eit", "pre_act32", "post_act32"))
+
+## 20d. Summary statistics ----
+cat("\n=== Rate Summary Statistics ===\n")
+cat("Municipal EIT: mean =", round(mean(pa_samp_inst$resident_eit, na.rm = TRUE), 3),
+  ", sd =", round(sd(pa_samp_inst$resident_eit, na.rm = TRUE), 3), "\n")
+cat("School District EIT: mean =", round(mean(pa_samp_inst$sd_eit, na.rm = TRUE), 3),
+  ", sd =", round(sd(pa_samp_inst$sd_eit, na.rm = TRUE), 3), "\n")
+cat("Total EIT: mean =", round(mean(pa_samp_inst$total_eit, na.rm = TRUE), 3),
+  ", sd =", round(sd(pa_samp_inst$total_eit, na.rm = TRUE), 3), "\n")
+cat("Pre-Act 32 obs:", sum(pa_samp_inst$pre_act32), "\n")
+cat("Post-Act 32 obs:", sum(pa_samp_inst$post_act32), "\n")
+
+# Rate changes by era
+pa_changes <- pa_samp_inst[!is.na(rate_change) & abs(rate_change) > 1e-6]
+cat("\nRate changes pre-Act 32:", nrow(pa_changes[pre_act32 == 1]),
+  "(", sum(pa_changes[pre_act32 == 1]$rate_change > 0), "inc,",
+  sum(pa_changes[pre_act32 == 1]$rate_change < 0), "dec)\n")
+cat("Rate changes post-Act 32:", nrow(pa_changes[post_act32 == 1]),
+  "(", sum(pa_changes[post_act32 == 1]$rate_change > 0), "inc,",
+  sum(pa_changes[post_act32 == 1]$rate_change < 0), "dec)\n")
+
+
+# =============================================================================
+# 21. Tract-Level OD Analysis: Channels of Tax-Motivated Sorting ----
+# =============================================================================
+#
+# INSTITUTIONAL CONTEXT
+# ---------------------
+# Pennsylvania levies an Earned Income Tax (EIT) at TWO levels: municipalities
+# (~2,500) and school districts (~500). The standard cap is 1% total, typically
+# split 0.5% municipal / 0.5% school district, though Act 1 of 2006 allowed SDs
+# to exceed their 0.5% cap for property tax relief.
+#
+# The CREDIT SYSTEM determines who pays what:
+#   Total liability = max(resident_rate, work_rate)
+#   - If you live and work in city A paying rate 1.0%, you pay 1.0%
+#   - City A raises to 1.5%. You now pay 1.5%.
+#   - You move to city B (rate 0.5%) but keep working in A:
+#     you STILL pay 1.5% — max(0.5%, 1.5%) = 1.5%. Moving saved nothing.
+#   - You move to city C (rate 2.0%) but keep working in A:
+#     you pay 2.0% — max(2.0%, 1.5%) = 2.0%. Moving COST you more.
+#
+# ACT 32 (effective January 2012) consolidated EIT collection into county-based
+# Tax Collection Districts with mandatory employer withholding at the max rate.
+# Before 2012, nonresident enforcement was weak — the credit system existed on
+# paper but wasn't effectively enforced. Section 20 confirms: the sorting effect
+# on share_live_in only appears post-2012 (-0.018*** vs -0.002 pre-2012).
+#
+# WHAT WE KNOW (Section 20)
+# --------------------------
+# Q1 (ANSWERED): Do existing workers sort their residence away from rate-raising
+#   cities while keeping their jobs?
+#   YES: share_live_in drops by -0.018*** per pp post-Act 32. But under the
+#   credit system, these workers STILL PAY the work city's rate. Moving their
+#   residence while keeping the same job provides zero tax savings.
+#
+# WHAT WE NEED TO ANSWER
+# ----------------------
+# Q2: COMPLETE RELOCATION — Do workers leave rate-raising cities entirely
+#   (residence + job)? Do they move to lower-rate cities? These are the workers
+#   who CAN actually reduce their tax burden. When city A raises its rate,
+#   workers who relocate to (work=B, home=B) with rate_B < rate_A pay less.
+#   Test: Do nearby cities see gains in resident workers when a neighbor raises?
+#   Does the gain concentrate in lower-rate destinations?
+#
+# Q3: DESTINATION CHOICE — Conditional on still working in city A, do workers
+#   who move their residence systematically choose lower-rate cities?
+#   Under the credit system this provides no tax savings, so if they DO prefer
+#   lower-rate destinations, it reveals a non-tax channel (housing costs,
+#   amenity signaling, fiscal quality perception).
+#   Test: city-pair panel — does the rate gap predict which destinations gain?
+#
+# Q4: SCHOOL DISTRICT RATES — Do SD rate changes cause the same sorting
+#   patterns? Controlling for SD rates, does the municipal story change?
+#   SDs and municipalities have independent rate variation (corr = -0.12).
+#   Each tract sits in one municipality AND one SD, giving cross-cutting
+#   variation. Test: add SD rate to all models; decompose municipal vs SD.
+#
+# Q5: WITHIN-CITY ROBUSTNESS — When a city raises its rate, do we see
+#   tract-level redistribution WITHIN the city? If boundary tracts lose
+#   residents but interior tracts don't, the sorting is cross-boundary.
+#   If ALL tracts lose residents equally, it's a city-wide population decline.
+#   If no tract-level change, the city-level result is clean.
+# =============================================================================
+
+## 21a. Data Build: Tract-Level Panel with Municipal + SD Rates ----
+
+cat("\n\n========== SECTION 21: TRACT-LEVEL SORTING ANALYSIS ==========\n")
+
+# Load tract-level OD data (24M rows: w_tract × h_tract × year)
+pa_od_raw <- as.data.table(readRDS(file.path(data_dir, "lodes", "pa_od_S000_main.rds")))
+pa_od_raw[, year := as.integer(year)]
+pa_od_raw <- pa_od_raw[year <= max_year]  # trim to 2019
+
+# Load tract → municipality crosswalk
+pa_xw <- as.data.table(readRDS(file.path(data_dir, "pa_tract_xwalk.rds")))
+
+# Assign municipalities to home and work tracts
+home_xw <- pa_xw[, .(h_tract = tract_geoid, home_city = cousub_fips)]
+work_xw <- pa_xw[, .(w_tract = tract_geoid, work_city = cousub_fips)]
+pa_od_raw <- merge(pa_od_raw, work_xw, by = "w_tract", all.x = TRUE)
+pa_od_raw <- merge(pa_od_raw, home_xw, by = "h_tract", all.x = TRUE)
+
+# Flag home location relative to work city
+pa_od_raw[, `:=`(
+  same_city     = (home_city == work_city),
+  diff_city     = (!is.na(home_city) & !is.na(work_city) & home_city != work_city),
+  out_of_state  = (substr(h_tract, 1, 2) != "42")
+)]
+
+# Load rate panel — rates for both work and home municipalities
+pa_rp <- as.data.table(readRDS(file.path(data_dir, "pa_rate_panel.rds")))
+pa_rp <- pa_rp[!is.na(cousub_fips)]
+
+# Work city rates
+work_rates <- unique(pa_rp[, .(cousub_fips, year, w_muni_eit = resident_eit,
+  w_sd_eit = sd_eit, w_total_eit = total_eit,
+  w_rate_change = rate_change, w_event_type = event_type,
+  w_first_inc = first_increase_year)])
+pa_od_raw <- merge(pa_od_raw, work_rates,
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+
+# Home city rates
+home_rates <- unique(pa_rp[, .(cousub_fips, year, h_muni_eit = resident_eit,
+  h_sd_eit = sd_eit, h_total_eit = total_eit)])
+pa_od_raw <- merge(pa_od_raw, home_rates,
+  by.x = c("home_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+
+# Rate differentials
+pa_od_raw[, `:=`(
+  muni_rate_gap  = w_muni_eit - h_muni_eit,   # positive = work rate > home rate
+  total_rate_gap = w_total_eit - h_total_eit,
+  max_rate       = pmax(w_total_eit, h_total_eit, na.rm = TRUE)  # what worker actually pays
+)]
+
+# Act 32 indicator
+pa_od_raw[, post_act32 := as.integer(year >= 2012)]
+
+cat("Tract-level OD loaded:", nrow(pa_od_raw), "rows\n")
+cat("With work city assigned:", sum(!is.na(pa_od_raw$work_city)), "\n")
+cat("With both cities assigned:", sum(!is.na(pa_od_raw$work_city) & !is.na(pa_od_raw$home_city)), "\n")
+
+# --- Build city-pair panel ---
+# Aggregate tract-level OD to (work_city, home_city, year) pairs
+pa_pair <- pa_od_raw[!is.na(work_city) & !is.na(home_city),
+  .(workers = sum(S000, na.rm = TRUE)),
+  by = .(work_city, home_city, year)]
+
+# Add rates for both sides of each pair
+pa_pair <- merge(pa_pair,
+  unique(pa_rp[, .(cousub_fips, year, w_eit = resident_eit, w_sd = sd_eit,
+    w_total = total_eit, w_rate_change = rate_change,
+    w_first_inc = first_increase_year)]),
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+
+pa_pair <- merge(pa_pair,
+  unique(pa_rp[, .(cousub_fips, year, h_eit = resident_eit, h_sd = sd_eit,
+    h_total = total_eit)]),
+  by.x = c("home_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+
+pa_pair[, `:=`(
+  log_workers   = log(workers + 1),
+  pair_id       = paste0(work_city, "_", home_city),
+  is_resident   = (work_city == home_city),
+  rate_gap      = w_eit - h_eit,
+  total_gap     = w_total - h_total,
+  post_act32    = as.integer(year >= 2012)
+)]
+
+# Merge neighbor distances
+pa_pair <- merge(pa_pair, pa_neighbors,
+  by.x = c("work_city", "home_city"), by.y = c("city_fips", "neighbor_fips"),
+  all.x = TRUE)
+
+cat("City-pair panel:", nrow(pa_pair), "rows,",
+  uniqueN(pa_pair$pair_id), "unique pairs\n")
+cat("Resident pairs (work=home):", sum(pa_pair$is_resident), "\n")
+cat("Commuter pairs (work≠home):", sum(!pa_pair$is_resident), "\n")
+
+
+# =============================================================================
+## 21b. Q2: Complete Relocation — Do Workers Leave Entirely? ----
+# =============================================================================
+# When city A raises its rate, do nearby city B's gain resident workers
+# (work=B, home=B)? These are workers who relocated both residence and job
+# and can actually reduce their tax burden if rate_B < rate_A.
+#
+# Strategy: For each city B, measure "exposure" to neighboring rate increases.
+# If a nearby city A raised its rate, city B might absorb relocated workers.
+# Test whether the gain depends on the rate differential (rate_A - rate_B).
+
+cat("\n\n========== Q2: COMPLETE RELOCATION ==========\n")
+
+# Build exposure measure: for each city B × year, how much did neighbors raise?
+pa_nbr_rates <- merge(
+  pa_neighbors,
+  unique(pa_rp[, .(cousub_fips, year, resident_eit, rate_change, first_increase_year)]),
+  by.x = "neighbor_fips", by.y = "cousub_fips", allow.cartesian = TRUE)
+
+# For each city B (city_fips), compute neighbor exposure
+pa_nbr_exposure <- pa_nbr_rates[, .(
+  nbr_avg_rate     = mean(resident_eit, na.rm = TRUE),
+  nbr_max_rate     = max(resident_eit, na.rm = TRUE),
+  nbr_avg_change   = mean(rate_change, na.rm = TRUE),
+  nbr_sum_increase = sum(pmax(rate_change, 0), na.rm = TRUE),
+  nbr_n_increased  = sum(rate_change > 1e-6, na.rm = TRUE),
+  nbr_n            = .N
+), by = .(city_fips, year)]
+
+# Resident worker panel: (work=B, home=B) count for each city B
+pa_resident_panel <- pa_pair[is_resident == TRUE,
+  .(resident_workers = sum(workers)), by = .(work_city, year)]
+pa_resident_panel[, log_res_workers := log(resident_workers + 1)]
+
+# Merge own rates and neighbor exposure
+pa_resident_panel <- merge(pa_resident_panel,
+  unique(pa_rp[, .(cousub_fips, year, own_eit = resident_eit, own_sd = sd_eit,
+    own_total = total_eit)]),
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+pa_resident_panel <- merge(pa_resident_panel, pa_nbr_exposure,
+  by.x = c("work_city", "year"), by.y = c("city_fips", "year"), all.x = TRUE)
+
+pa_resident_panel[, post_act32 := as.integer(year >= 2012)]
+
+# Also get total jobs in each city (to compare)
+pa_total_panel <- pa_pair[, .(total_jobs = sum(workers)), by = .(work_city, year)]
+pa_resident_panel <- merge(pa_resident_panel, pa_total_panel,
+  by = c("work_city", "year"), all.x = TRUE)
+pa_resident_panel[, log_total_jobs := log(total_jobs + 1)]
+
+pa_res_samp <- pa_resident_panel[total_jobs > 50 & !is.na(own_eit)]
+
+# Q2a: Does own rate increase reduce resident workers?
+q2_own <- feols(log_res_workers ~ own_eit | work_city + year,
+  data = pa_res_samp, cluster = ~work_city)
+
+# Q2b: Does exposure to neighbor rate increases boost resident workers?
+# (i.e., do displaced workers show up as new residents in nearby cities?)
+q2_nbr <- feols(log_res_workers ~ own_eit + nbr_avg_rate | work_city + year,
+  data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
+
+# Q2c: Rate differential — does the gain depend on being cheaper than neighbors?
+pa_res_samp[, cheaper_than_nbrs := own_eit < nbr_avg_rate]
+q2_diff <- feols(log_res_workers ~ own_eit + nbr_avg_rate +
+  i(cheaper_than_nbrs, nbr_sum_increase) | work_city + year,
+  data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
+
+# Q2d: Post-Act 32 interaction — does the channel differ pre/post enforcement?
+q2_act32 <- feols(log_res_workers ~ own_eit:post_act32 + own_eit:I(1 - post_act32) +
+  nbr_avg_rate:post_act32 + nbr_avg_rate:I(1 - post_act32) | work_city + year,
+  data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
+
+cat("\n--- Q2: Own Rate Effect on Resident Workers ---\n")
+etable(q2_own, q2_nbr, q2_diff,
+  headers = c("Own Rate", "Own + Neighbor Rate", "Rate Differential"))
+
+cat("\n--- Q2: Pre/Post Act 32 ---\n")
+etable(q2_act32, headers = "Own + Neighbor Rate × Act 32 Split")
+
+# Q2 Visualization: resident worker response to own rate
+p_q2 <- ggplot(pa_res_samp[!is.na(own_eit)],
+  aes(x = own_eit, y = log_res_workers)) +
+  geom_point(alpha = 0.05, size = 0.5) +
+  geom_smooth(method = "lm", color = "firebrick") +
+  facet_wrap(~fifelse(post_act32 == 1, "Post-Act 32 (2012-2019)", "Pre-Act 32 (2002-2011)")) +
+  labs(x = "Own Municipal EIT Rate (%)", y = "log(Resident Workers)",
+    title = "Q2: Do Higher Own Rates Reduce Resident Workers?",
+    subtitle = "Each dot = city-year; fitted line from within-city variation") +
+  theme_minimal()
+ggsave(file.path(fig_dir, "q2_own_rate_resident_workers.png"), p_q2,
+  width = 10, height = 5, dpi = 300)
+print(p_q2)
+
+
+# =============================================================================
+## 21c. Q3: Destination Choice — Where Do Commuters Come From? ----
+# =============================================================================
+# Conditional on working in city A, do workers who live elsewhere
+# systematically live in lower-rate cities? Under the credit system,
+# this provides no tax savings — so if we see rate-sorting in destination
+# choice, it reveals a NON-TAX channel (housing capitalization, amenities).
+#
+# Strategy: city-pair panel (work=A, home=B) for A≠B. When A raises rate,
+# do flows shift toward B's with specific rate characteristics?
+
+cat("\n\n========== Q3: DESTINATION CHOICE ==========\n")
+
+# Commuter pairs only: work in A, live in B (A≠B), within 80km
+pa_commuter <- pa_pair[is_resident == FALSE & !is.na(dist_km) & dist_km <= 80 &
+  !is.na(w_eit) & !is.na(h_eit) & workers > 0]
+
+# Treatment: first rate increase at work city
+pa_commuter <- merge(pa_commuter,
+  unique(pa_rp[!is.na(first_increase_year) & !is.na(cousub_fips),
+    .(cousub_fips, first_increase_year)])[, first := TRUE],
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_commuter[, post_increase := as.integer(!is.na(w_first_inc) & year >= w_first_inc)]
+
+# Rate gap bins for interpretability
+pa_commuter[, gap_bin := cut(rate_gap,
+  breaks = c(-Inf, -0.25, -0.01, 0.01, 0.25, Inf),
+  labels = c("Work much lower", "Work slightly lower", "Same rate",
+    "Work slightly higher", "Work much higher"))]
+
+# Q3a: When work city raises rate, do commuter flows increase?
+# (Higher share_live_in drop should correspond to more commuters)
+q3_flow <- feols(log_workers ~ w_eit | pair_id + year,
+  data = pa_commuter, cluster = ~work_city)
+
+# Q3b: Does the flow increase depend on the rate gap?
+# If workers prefer lower-rate home cities: rate_gap coefficient positive
+# (bigger gap = more flow to that destination)
+q3_gap <- feols(log_workers ~ w_eit + w_eit:rate_gap | pair_id + year,
+  data = pa_commuter, cluster = ~work_city)
+
+# Q3c: Does the home city rate independently matter?
+# Under credit system it shouldn't (you pay work rate if it's higher)
+q3_home <- feols(log_workers ~ w_eit + h_eit | pair_id + year,
+  data = pa_commuter, cluster = ~work_city)
+
+# Q3d: Post-Act 32 — does destination choice change with enforcement?
+q3_act32 <- feols(log_workers ~ w_eit:post_act32 + w_eit:I(1 - post_act32) +
+  h_eit:post_act32 + h_eit:I(1 - post_act32) | pair_id + year,
+  data = pa_commuter, cluster = ~work_city)
+
+cat("\n--- Q3: Commuter Flow Determinants ---\n")
+etable(q3_flow, q3_gap, q3_home,
+  headers = c("Work Rate", "Rate Gap Interaction", "Work + Home Rate"))
+
+cat("\n--- Q3: Pre/Post Act 32 ---\n")
+etable(q3_act32, headers = "Work + Home Rate × Act 32 Split")
+
+# Q3 Visualization: flow distribution by rate gap
+q3_means <- pa_commuter[!is.na(gap_bin),
+  .(mean_workers = mean(workers), median_workers = median(workers), n = .N),
+  by = .(gap_bin, post_act32)]
+
+p_q3 <- ggplot(q3_means, aes(x = gap_bin, y = mean_workers,
+  fill = factor(post_act32, labels = c("Pre-Act 32", "Post-Act 32")))) +
+  geom_col(position = "dodge") +
+  labs(x = "Work Rate - Home Rate Gap", y = "Mean Workers per Pair",
+    title = "Q3: Commuter Flows by Rate Gap",
+    subtitle = "Do commuters come more from lower-rate cities?",
+    fill = "") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+ggsave(file.path(fig_dir, "q3_commuter_rate_gap.png"), p_q3,
+  width = 8, height = 5, dpi = 300)
+print(p_q3)
+
+# Event study: commuter flows around work-city rate increases
+pa_commuter_event <- pa_commuter[!is.na(w_first_inc)]
+pa_commuter_event[, rel_year := year - w_first_inc]
+
+q3_event <- feols(log_workers ~ i(rel_year, ref = -1) | pair_id + year,
+  data = pa_commuter_event[abs(rel_year) <= 5], cluster = ~work_city)
+
+cat("\n--- Q3: Event Study — Commuter Flows Around Work-City Rate Increase ---\n")
+etable(q3_event, headers = "Commuter Flows", keep = "rel_year")
+
+p_q3_event <- iplot(q3_event, main = "Q3: Commuter Flows After Work-City Rate Increase",
+  xlab = "Years Relative to Rate Increase", ylab = "log(Workers)")
+ggsave(file.path(fig_dir, "q3_commuter_event_study.png"), width = 8, height = 5, dpi = 300)
+
+
+# =============================================================================
+## 21d. Q4: School District Rate Effects ----
+# =============================================================================
+# Municipalities and SDs have independent rate variation (corr = -0.12).
+# Each tract sits in one municipality AND one SD. We assigned SD rates via
+# the municipality (DCED reports sd_eit_rate for each municipality).
+#
+# Key tests:
+# - Do SD rate changes cause sorting independently of municipal rates?
+# - Does controlling for SD rates change the municipal coefficient?
+# - Is the total rate (muni + SD) or only the municipal component driving results?
+
+cat("\n\n========== Q4: SCHOOL DISTRICT RATE EFFECTS ==========\n")
+
+# City-pair models with SD rates
+q4_muni_only <- feols(log_workers ~ w_eit | pair_id + year,
+  data = pa_commuter, cluster = ~work_city)
+
+q4_muni_sd <- feols(log_workers ~ w_eit + w_sd | pair_id + year,
+  data = pa_commuter[!is.na(w_sd)], cluster = ~work_city)
+
+q4_total <- feols(log_workers ~ w_total | pair_id + year,
+  data = pa_commuter[!is.na(w_total)], cluster = ~work_city)
+
+# Home city SD rate: does it attract/repel commuters?
+q4_home_sd <- feols(log_workers ~ w_eit + w_sd + h_eit + h_sd | pair_id + year,
+  data = pa_commuter[!is.na(w_sd) & !is.na(h_sd)], cluster = ~work_city)
+
+cat("\n--- Q4: Municipal vs SD Rate in Commuter Flows ---\n")
+etable(q4_muni_only, q4_muni_sd, q4_total, q4_home_sd,
+  headers = c("Muni Only", "Muni + SD", "Total EIT", "Full Decomposition"))
+
+# Resident worker panel: SD effects
+q4_res_muni <- feols(log_res_workers ~ own_eit | work_city + year,
+  data = pa_res_samp, cluster = ~work_city)
+q4_res_sd <- feols(log_res_workers ~ own_eit + own_sd | work_city + year,
+  data = pa_res_samp[!is.na(own_sd)], cluster = ~work_city)
+q4_res_total <- feols(log_res_workers ~ own_total | work_city + year,
+  data = pa_res_samp[!is.na(own_total)], cluster = ~work_city)
+
+cat("\n--- Q4: Municipal vs SD Rate on Resident Workers ---\n")
+etable(q4_res_muni, q4_res_sd, q4_res_total,
+  headers = c("Muni Only", "Muni + SD", "Total EIT"))
+
+# SD rate changes: do they independently cause sorting?
+# Compute SD rate change in the panel
+pa_res_samp <- merge(pa_res_samp,
+  unique(pa_rp[, .(cousub_fips, year, sd_rate_change)])[!is.na(sd_rate_change)],
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+
+q4_changes <- feols(log_res_workers ~ own_eit + I(own_sd > shift(own_sd, 1)) | work_city + year,
+  data = pa_res_samp[!is.na(own_sd)], cluster = ~work_city)
+
+# Visualization: municipal vs SD rate scatter
+p_q4 <- ggplot(pa_res_samp[!is.na(own_eit) & !is.na(own_sd)],
+  aes(x = own_eit, y = own_sd)) +
+  geom_jitter(aes(color = log_res_workers), alpha = 0.1, size = 0.5, width = 0.02, height = 0.02) +
+  scale_color_viridis_c() +
+  labs(x = "Municipal EIT Rate (%)", y = "School District EIT Rate (%)",
+    title = "Q4: Municipal vs School District Rates",
+    subtitle = paste("Correlation:", round(cor(pa_res_samp$own_eit,
+      pa_res_samp$own_sd, use = "complete"), 3)),
+    color = "log(Resident\nWorkers)") +
+  theme_minimal()
+ggsave(file.path(fig_dir, "q4_muni_vs_sd_rates.png"), p_q4,
+  width = 8, height = 6, dpi = 300)
+print(p_q4)
+
+
+# =============================================================================
+## 21e. Q5: Within-City Robustness ----
+# =============================================================================
+# When city A raises its EIT, do we see tract-level redistribution WITHIN
+# the city? If boundary tracts lose more than interior tracts, the sorting
+# is specifically cross-boundary. If ALL tracts lose equally, it's a general
+# population decline. If NO tract-level change, the city-level result is clean.
+#
+# Strategy:
+# - Build tract-level panel within each city (residents who live AND work there)
+# - Classify tracts as "boundary" (touches city border) or "interior"
+# - Test whether the rate increase effect differs by boundary status
+
+cat("\n\n========== Q5: WITHIN-CITY ROBUSTNESS ==========\n")
+
+# Tract-level within-city panel: for each work_tract within city A,
+# count workers who also LIVE in city A (any tract within A)
+pa_within <- pa_od_raw[same_city == TRUE & !is.na(work_city),
+  .(within_city_workers = sum(S000, na.rm = TRUE)),
+  by = .(w_tract, work_city, year)]
+
+# Also: same-tract workers (live and work in SAME tract)
+pa_same_tract <- pa_od_raw[w_tract == h_tract & !is.na(work_city),
+  .(same_tract_workers = sum(S000, na.rm = TRUE)),
+  by = .(w_tract, work_city, year)]
+
+# Total workers at each work tract
+pa_tract_total <- pa_od_raw[!is.na(work_city),
+  .(total_workers = sum(S000, na.rm = TRUE)),
+  by = .(w_tract, work_city, year)]
+
+# Merge
+pa_tract_panel <- merge(pa_tract_total, pa_within,
+  by = c("w_tract", "work_city", "year"), all.x = TRUE)
+pa_tract_panel <- merge(pa_tract_panel, pa_same_tract,
+  by = c("w_tract", "work_city", "year"), all.x = TRUE)
+pa_tract_panel[is.na(within_city_workers), within_city_workers := 0]
+pa_tract_panel[is.na(same_tract_workers), same_tract_workers := 0]
+
+pa_tract_panel[, `:=`(
+  share_within_city = within_city_workers / total_workers,
+  share_same_tract  = same_tract_workers / total_workers,
+  log_within        = log(within_city_workers + 1),
+  log_total         = log(total_workers + 1)
+)]
+
+# Add rates via work_city
+pa_tract_panel <- merge(pa_tract_panel,
+  unique(pa_rp[, .(cousub_fips, year, muni_eit = resident_eit, sd_eit,
+    total_eit, rate_change, first_increase_year)]),
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+pa_tract_panel[, post_act32 := as.integer(year >= 2012)]
+
+# Classify boundary vs interior tracts using spatial data
+pa_tracts_sf <- tracts(state = "PA", year = 2020) %>% st_transform(4326)
+pa_cousub_sf <- county_subdivisions(state = "PA", year = 2020) %>% st_transform(4326)
+
+# A boundary tract is one whose geometry touches the boundary of its municipality
+# (i.e., it's not fully contained in the interior)
+pa_tracts_sf$tract_geoid <- pa_tracts_sf$GEOID
+pa_tracts_xw <- merge(st_drop_geometry(pa_tracts_sf[, "tract_geoid"]),
+  pa_xw, by = "tract_geoid")
+
+# For each tract, check if it touches the municipality boundary
+# Boundary = tract intersects the border of its municipality but is not fully interior
+# Simpler approach: tract centroid distance to nearest municipality boundary
+tract_centroids <- st_centroid(pa_tracts_sf)
+tract_centroids <- merge(tract_centroids, pa_xw, by.x = "tract_geoid", by.y = "tract_geoid")
+
+# Get municipality boundaries (as lines, not polygons)
+cousub_boundaries <- st_boundary(pa_cousub_sf)
+
+# For each tract, compute distance from centroid to nearest municipal boundary
+# This is memory-intensive; do it in chunks by county
+tract_centroids$county <- substr(tract_centroids$tract_geoid, 1, 5)
+counties_list <- unique(tract_centroids$county)
+
+boundary_results <- list()
+for (cty in counties_list) {
+  tc <- tract_centroids[tract_centroids$county == cty, ]
+  # Get boundaries of municipalities in this county and adjacent counties
+  county_fips <- substr(cty, 3, 5)
+  cb <- pa_cousub_sf[pa_cousub_sf$COUNTYFP == county_fips, ]
+  if (nrow(cb) > 0 && nrow(tc) > 0) {
+    cb_boundary <- st_boundary(cb)
+    dists <- st_distance(tc, cb_boundary)
+    min_dist <- apply(dists, 1, min)
+    boundary_results[[cty]] <- data.table(
+      tract_geoid = tc$tract_geoid,
+      dist_to_boundary_m = as.numeric(min_dist)
+    )
+  }
+}
+boundary_dt <- rbindlist(boundary_results)
+
+# Classify: boundary tract = centroid within 1km of any municipal boundary
+boundary_dt[, is_boundary := dist_to_boundary_m <= 1000]
+
+cat("Boundary tracts:", sum(boundary_dt$is_boundary), "of", nrow(boundary_dt), "\n")
+
+# Merge boundary classification into tract panel
+pa_tract_panel <- merge(pa_tract_panel, boundary_dt,
+  by.x = "w_tract", by.y = "tract_geoid", all.x = TRUE)
+
+# Filter to tracts with meaningful employment
+pa_tract_samp <- pa_tract_panel[total_workers > 10 & !is.na(muni_eit)]
+
+# Q5a: Does within-city worker share change after a rate increase?
+# If people just shuffle within the city, this should be stable
+q5_within <- feols(share_within_city ~ muni_eit | w_tract + year,
+  data = pa_tract_samp, cluster = ~work_city)
+
+# Q5b: Does it differ for boundary vs interior tracts?
+q5_boundary <- feols(share_within_city ~ muni_eit + muni_eit:is_boundary | w_tract + year,
+  data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
+
+# Q5c: Total worker count — do boundary tracts lose more workers overall?
+q5_total_boundary <- feols(log_total ~ muni_eit + muni_eit:is_boundary | w_tract + year,
+  data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
+
+# Q5d: Post-Act 32 split
+q5_act32 <- feols(share_within_city ~ muni_eit:post_act32 + muni_eit:I(1 - post_act32) +
+  muni_eit:is_boundary:post_act32 + muni_eit:is_boundary:I(1 - post_act32) | w_tract + year,
+  data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
+
+cat("\n--- Q5: Within-City Tract-Level Effects ---\n")
+etable(q5_within, q5_boundary, q5_total_boundary,
+  headers = c("Within-City Share", "Boundary Interaction", "Total Workers × Boundary"))
+
+cat("\n--- Q5: Boundary Effects × Act 32 ---\n")
+etable(q5_act32, headers = "Boundary × Act 32 Split")
+
+# Q5 Visualization: boundary vs interior response
+p_q5_dist <- ggplot(boundary_dt, aes(x = dist_to_boundary_m / 1000)) +
+  geom_histogram(bins = 50, fill = "steelblue", alpha = 0.7) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "firebrick") +
+  labs(x = "Distance from Tract Centroid to Nearest Municipal Boundary (km)",
+    y = "Count of Tracts",
+    title = "Q5: Tract Classification — Boundary vs Interior",
+    subtitle = "Dashed line at 1km threshold") +
+  theme_minimal()
+ggsave(file.path(fig_dir, "q5_boundary_classification.png"), p_q5_dist,
+  width = 8, height = 5, dpi = 300)
+print(p_q5_dist)
+
+# Binned distance gradient: does the rate effect decay with distance to boundary?
+pa_tract_samp[, dist_bin := cut(dist_to_boundary_m / 1000,
+  breaks = c(0, 0.5, 1, 2, 5, Inf),
+  labels = c("0-0.5km", "0.5-1km", "1-2km", "2-5km", "5+km"))]
+
+q5_gradient <- feols(share_within_city ~ muni_eit:dist_bin | w_tract + year,
+  data = pa_tract_samp[!is.na(dist_bin)], cluster = ~work_city)
+
+cat("\n--- Q5: Distance-to-Boundary Gradient ---\n")
+etable(q5_gradient, headers = "Rate Effect by Distance to Municipal Boundary")
+
+# Summary table
+cat("\n\n========== SECTION 21 SUMMARY ==========\n")
+cat("Q2: Do workers leave entirely? Check coefficients on own_eit and nbr_avg_rate\n")
+cat("Q3: Do commuters come from lower-rate cities? Check rate_gap interaction\n")
+cat("Q4: Do SD rates matter? Compare muni-only vs muni+SD coefficients\n")
+cat("Q5: Is sorting at the boundary? Check is_boundary interaction\n")
+
 beepr::beep()

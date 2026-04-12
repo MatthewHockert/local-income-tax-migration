@@ -87,11 +87,12 @@ if (!file.exists(pa_eit_file)) stop("Run: python3 scrape_pa_dced_eit.py first")
 
 pa_raw <- fread(pa_eit_file)
 pa_resident <- pa_raw[is_resident == TRUE,
-  .(municipality_id, municipality, county, year, muni_eit_rate, total_eit_rate)]
+  .(municipality_id, municipality, county, year, muni_eit_rate, sd_eit_rate, total_eit_rate)]
 
 # EIT rates are percentages (0-4% range); values > 5 are LST dollar amounts
 # that leaked into the rate field — filter them out before aggregating
 pa_resident <- pa_resident[is.na(muni_eit_rate) | muni_eit_rate <= 5]
+pa_resident <- pa_resident[is.na(sd_eit_rate) | sd_eit_rate <= 5]
 pa_resident <- pa_resident[is.na(total_eit_rate) | total_eit_rate <= 10]
 
 # Note: Philadelphia has a separate wage tax (4%+), not standard Act 511 EIT.
@@ -100,13 +101,19 @@ pa_resident <- pa_resident[is.na(total_eit_rate) | total_eit_rate <= 10]
 
 pa_rate_panel <- pa_resident[, .(
   resident_eit = max(muni_eit_rate, na.rm = TRUE),
+  sd_eit = max(sd_eit_rate, na.rm = TRUE),
   total_eit = max(total_eit_rate, na.rm = TRUE)
 ), by = .(municipality_id, municipality, county, year)]
 pa_rate_panel[is.infinite(resident_eit), resident_eit := NA]
+pa_rate_panel[is.infinite(sd_eit), sd_eit := NA]
 pa_rate_panel[is.infinite(total_eit), total_eit := NA]
 pa_rate_panel <- pa_rate_panel[order(municipality_id, year)]
 pa_rate_panel[, rate_lag := shift(resident_eit, 1), by = municipality_id]
 pa_rate_panel[, rate_change := resident_eit - rate_lag]
+pa_rate_panel[, total_eit_lag := shift(total_eit, 1), by = municipality_id]
+pa_rate_panel[, total_rate_change := total_eit - total_eit_lag]
+pa_rate_panel[, sd_eit_lag := shift(sd_eit, 1), by = municipality_id]
+pa_rate_panel[, sd_rate_change := sd_eit - sd_eit_lag]
 pa_rate_panel[, event_type := fcase(
   is.na(rate_change), NA_character_,
   abs(rate_change) < 1e-6, "no_change",
@@ -336,7 +343,7 @@ saveRDS(oh_panel_high, file.path(data_dir, "oh_panel_high.rds"))
 
 ## PA
 pa_rate_merge <- pa_rate_panel[!is.na(cousub_fips),
-  .(cousub_fips, year, resident_eit, rate_change, event_type, first_increase_year)] %>%
+  .(cousub_fips, year, resident_eit, sd_eit, total_eit, rate_change, event_type, first_increase_year)] %>%
   unique()
 pa_panel <- merge(pa_city_od, pa_rate_merge,
   by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
