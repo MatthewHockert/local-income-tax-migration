@@ -8,7 +8,6 @@
 #   2. Rscript download_lodes.R
 #   3. Rscript build_data.R
 #   4. This script (loads pre-built RDS files)
-# ============================================================================
 
 library(sf)
 library(dplyr)
@@ -19,6 +18,8 @@ library(tigris)
 library(stringr)
 
 options(tigris_use_cache = TRUE)
+setFixest_dict(c("*" = "p < .1", "**" = "p < .05", "***" = "p < .01"))
+setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"
 data_dir <- file.path(project_dir, "data")
@@ -47,22 +48,22 @@ pa_afr_file <- file.path(data_dir, "pa_afr_panel.csv")
 if (file.exists(pa_afr_file)) {
   pa_afr_raw <- fread(pa_afr_file)
   pa_xwalk_afr <- unique(pa_rate_panel[!is.na(cousub_fips), .(municipality_id, cousub_fips)])
-  pa_afr_raw[, muni_id := fifelse(!is.na(municipality_id), municipality_id, municipal_code)]
+  pa_afr_raw[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
   pa_afr_raw <- merge(pa_afr_raw, pa_xwalk_afr, by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
-  pa_afr_raw[, yr := fifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
+  pa_afr_raw[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
 
   fiscal_controls <- pa_afr_raw[!is.na(cousub_fips), .(
     cousub_fips, year = yr,
-    log_police = fifelse(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)) > 0,
-      log(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police))), NA_real_),
-    log_streets = fifelse(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+    log_police = ifelse(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)) > 0,
+      log(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police))), NA_real_),
+    log_streets = ifelse(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)) > 0,
-      log(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+      log(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads))), NA_real_),
-    log_debt = fifelse(as.numeric(total_debt) > 0, log(as.numeric(total_debt)), NA_real_),
-    log_state_aid = fifelse(as.numeric(fifelse(!is.na(`intergovernmental_revenues-state_government`),
+    log_debt = ifelse(as.numeric(total_debt) > 0, log(as.numeric(total_debt)), NA_real_),
+    log_state_aid = ifelse(as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
       `intergovernmental_revenues-state_government`, state_govt)) > 0,
-      log(as.numeric(fifelse(!is.na(`intergovernmental_revenues-state_government`),
+      log(as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
       `intergovernmental_revenues-state_government`, state_govt))), NA_real_)
   )]
 
@@ -72,6 +73,9 @@ if (file.exists(pa_afr_file)) {
     by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
 
   print(paste("PA panel with fiscal controls:", sum(!is.na(pa_panel$log_police)), "of", nrow(pa_panel)))
+
+  # Save fiscal controls for Stage 2 models (re-used in Section 21)
+  saveRDS(fiscal_controls, file.path(data_dir, "pa_fiscal_controls.rds"))
   rm(pa_afr_raw, fiscal_controls)
 }
 
@@ -453,7 +457,7 @@ print(p_pa_norm)
 oh_ever_taxed <- oh_rate_panel[rate > 0, unique(muni_fips)]
 
 oh_control_events[, nbr_has_tax := neighbor_fips %in% oh_ever_taxed]
-oh_control_events[, ctrl_type := fifelse(nbr_has_tax,
+oh_control_events[, ctrl_type := ifelse(nbr_has_tax,
   "Control: has tax", "Control: no tax")]
 
 oh_ctrl_split_agg <- oh_control_events[, .(
@@ -518,7 +522,7 @@ pa_control_events_rated <- merge(
   all.x = TRUE
 )
 
-pa_control_events_rated[, ctrl_type := fifelse(
+pa_control_events_rated[, ctrl_type := ifelse(
   !is.na(resident_eit) & !is.na(treated_rate) & resident_eit < treated_rate,
   "Control: lower rate", "Control: higher/same rate")]
 
@@ -895,7 +899,7 @@ oh_dist_decomp_long <- melt(oh_dist_decomp_all,
   measure.vars = c("mean_lw", "mean_tj"),
   variable.name = "outcome",
   value.name = "value")
-oh_dist_decomp_long[, outcome := fifelse(outcome == "mean_lw",
+oh_dist_decomp_long[, outcome := ifelse(outcome == "mean_lw",
   "Live & Work (numerator)", "Total Jobs (denominator)")]
 
 p_oh_dist_decomp <- ggplot(oh_dist_decomp_long,
@@ -964,7 +968,7 @@ pa_dist_decomp_long <- melt(pa_dist_decomp_all,
   id.vars = c("rel_year", "dist_bin"),
   measure.vars = c("mean_lw", "mean_tj"),
   variable.name = "outcome", value.name = "value")
-pa_dist_decomp_long[, outcome := fifelse(outcome == "mean_lw",
+pa_dist_decomp_long[, outcome := ifelse(outcome == "mean_lw",
   "Live & Work (numerator)", "Total Jobs (denominator)")]
 
 p_pa_dist_decomp <- ggplot(pa_dist_decomp_long,
@@ -1482,11 +1486,11 @@ if (file.exists(file.path(data_dir, "pa_fiscal_panel.rds"))) {
   pa_fisc[, `:=`(
     d_eit_rev = eit_rev - shift(eit_rev, 1),
     d_re_rev = re_rev - shift(re_rev, 1),
-    d_police = as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)) -
-      shift(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)), 1),
-    d_streets = as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+    d_police = as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)) -
+      shift(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)), 1),
+    d_streets = as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)) -
-      shift(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+      shift(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)), 1),
     d_tot_rev = tot_rev - shift(tot_rev, 1),
     d_tot_exp = tot_exp - shift(tot_exp, 1),
@@ -1504,9 +1508,9 @@ if (file.exists(file.path(data_dir, "pa_fiscal_panel.rds"))) {
   # Pct changes for better comparability
   fisc_scatter[, `:=`(
     pct_eit = d_eit_rev / shift(eit_rev, 1) * 100,
-    pct_police = d_police / (as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)) - d_police) * 100,
+    pct_police = d_police / (as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)) - d_police) * 100,
     pct_tot_rev = d_tot_rev / (tot_rev - d_tot_rev) * 100,
-    pct_streets = d_streets / (as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+    pct_streets = d_streets / (as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)) - d_streets) * 100
   ), by = cousub_fips]
 
@@ -1580,12 +1584,12 @@ if (file.exists(file.path(data_dir, "pa_fiscal_panel.rds"))) {
   # Use log(t+1) - log(t-1) for 2-year change around the event
   fisc_scatter[, `:=`(
     dlog_eit = log(eit_rev + 1) - log(shift(eit_rev, 1) + 1),
-    dlog_police = log(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)) + 1) -
-      log(shift(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)), 1) + 1),
+    dlog_police = log(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)) + 1) -
+      log(shift(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)), 1) + 1),
     dlog_tot_rev = log(tot_rev + 1) - log(shift(tot_rev, 1) + 1),
-    dlog_streets = log(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+    dlog_streets = log(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)) + 1) -
-      log(shift(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+      log(shift(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)), 1) + 1)
   ), by = cousub_fips]
 
@@ -1913,7 +1917,7 @@ etable(oh_m_asym, pa_m_asym, headers = c("OH: Asymmetry", "PA: Asymmetry"))
 
 ## 7d. Dose-response: bigger changes -> bigger effects ----
 # Interact post with size of rate change
-oh_samp[, increase_size := fifelse(!is.na(first_increase_year),
+oh_samp[, increase_size := ifelse(!is.na(first_increase_year),
   oh_rate_panel[event_type == "increase",
     .(size = max(rate_change)), by = muni_fips][
     match(oh_samp$work_city, muni_fips), size],
@@ -1932,7 +1936,7 @@ etable(oh_m1, oh_m_dose, headers = c("OH: Rate Level", "OH: Dose-Response"))
 
 # OH Sun-Abraham
 oh_sunab_samp <- oh_samp[total_jobs > 50]
-oh_sunab_samp[, cohort := fifelse(is.na(first_increase_year), 10000L,
+oh_sunab_samp[, cohort := ifelse(is.na(first_increase_year), 10000L,
   as.integer(first_increase_year))]
 
 oh_m_sunab <- feols(
@@ -1944,7 +1948,7 @@ etable(oh_m_sunab, headers = "OH: Sun-Abraham Event Study")
 
 # PA Sun-Abraham
 pa_sunab_samp <- pa_samp[total_jobs > 50]
-pa_sunab_samp[, cohort := fifelse(is.na(first_increase_year), 10000L,
+pa_sunab_samp[, cohort := ifelse(is.na(first_increase_year), 10000L,
   as.integer(first_increase_year))]
 
 pa_m_sunab <- feols(
@@ -1960,7 +1964,7 @@ etable(pa_m_event, pa_m_sunab, headers = c("PA: TWFE Event Study", "PA: Sun-Abra
 
 ## 7f. Sun-Abraham for decreases ----
 oh_sunab_dec <- oh_samp[total_jobs > 50]
-oh_sunab_dec[, cohort_dec := fifelse(is.na(first_decrease_year), 10000L,
+oh_sunab_dec[, cohort_dec := ifelse(is.na(first_decrease_year), 10000L,
   as.integer(first_decrease_year))]
 
 if (oh_sunab_dec[cohort_dec < 10000, uniqueN(work_city)] > 10) {
@@ -1973,7 +1977,7 @@ if (oh_sunab_dec[cohort_dec < 10000, uniqueN(work_city)] > 10) {
 }
 
 pa_sunab_dec <- pa_samp[total_jobs > 50]
-pa_sunab_dec[, cohort_dec := fifelse(is.na(first_decrease_year), 10000L,
+pa_sunab_dec[, cohort_dec := ifelse(is.na(first_decrease_year), 10000L,
   as.integer(first_decrease_year))]
 
 if (pa_sunab_dec[cohort_dec < 10000, uniqueN(work_city)] > 10) {
@@ -2015,8 +2019,8 @@ oh_baseline_rate <- oh_rate_panel[, .(baseline_rate = first(rate)), by = muni_fi
 oh_samp <- merge(oh_samp, oh_baseline_rate,
   by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
 oh_samp[, `:=`(
-  rate_vs_baseline = rate - fifelse(is.na(baseline_rate), 0, baseline_rate),
-  cumul_change = rate - fifelse(is.na(baseline_rate), 0, baseline_rate)
+  rate_vs_baseline = rate - ifelse(is.na(baseline_rate), 0, baseline_rate),
+  cumul_change = rate - ifelse(is.na(baseline_rate), 0, baseline_rate)
 )]
 
 # PA: same
@@ -2025,8 +2029,8 @@ pa_baseline_rate <- pa_rate_panel[!is.na(cousub_fips),
 pa_samp <- merge(pa_samp, pa_baseline_rate,
   by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
 pa_samp[, `:=`(
-  rate_vs_baseline = resident_eit - fifelse(is.na(baseline_rate), 0, baseline_rate),
-  cumul_change = resident_eit - fifelse(is.na(baseline_rate), 0, baseline_rate)
+  rate_vs_baseline = resident_eit - ifelse(is.na(baseline_rate), 0, baseline_rate),
+  cumul_change = resident_eit - ifelse(is.na(baseline_rate), 0, baseline_rate)
 )]
 
 ## Model 1: Cumulative rate change (captures all increases/decreases) ----
@@ -2101,7 +2105,7 @@ etable(oh_m_bins, headers = "OH: Rate Bins")
 
 ## Model 6: Interact cumulative change with time since change ----
 # Does the effect grow over time? (matches what Sun-Abraham shows)
-oh_samp[, years_since_first_increase := fifelse(
+oh_samp[, years_since_first_increase := ifelse(
   !is.na(first_increase_year) & year >= first_increase_year,
   year - first_increase_year, 0L)]
 
@@ -2111,7 +2115,7 @@ oh_m_time_interact <- feols(
   cluster = ~work_city
 )
 
-pa_samp[, years_since_first_increase := fifelse(
+pa_samp[, years_since_first_increase := ifelse(
   !is.na(first_increase_year) & year >= first_increase_year,
   year - first_increase_year, 0L)]
 
@@ -2329,14 +2333,14 @@ if (file.exists(pa_afr_file)) {
   pa_afr <- fread(pa_afr_file)
 
   # Use municipality_id column (municipal_code has NAs in some years)
-  pa_afr[, muni_id := fifelse(!is.na(municipality_id), municipality_id, municipal_code)]
+  pa_afr[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
 
   # Crosswalk to cousub_fips
   pa_xwalk_afr <- unique(pa_rate_panel[!is.na(cousub_fips), .(municipality_id, cousub_fips)])
   pa_afr <- merge(pa_afr, pa_xwalk_afr, by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
 
   # Year column
-  pa_afr[, yr := fifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
+  pa_afr[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
 
   # Merge EIT rate
   pa_rate_fiscal <- unique(pa_rate_panel[!is.na(cousub_fips),
@@ -2346,34 +2350,34 @@ if (file.exists(pa_afr_file)) {
 
   # Revenue columns (use longer-named versions where available)
   pa_afr[, `:=`(
-    eit_rev = as.numeric(fifelse(!is.na(earned_income_tax_revenues),
+    eit_rev = as.numeric(ifelse(!is.na(earned_income_tax_revenues),
       earned_income_tax_revenues, earned_income_tax)),
-    re_rev = as.numeric(fifelse(!is.na(real_estate_tax_revenues),
+    re_rev = as.numeric(ifelse(!is.na(real_estate_tax_revenues),
       real_estate_tax_revenues, real_estate_tax)),
-    tot_rev = as.numeric(fifelse(!is.na(total_revenues), total_revenues, total_revenue)),
+    tot_rev = as.numeric(ifelse(!is.na(total_revenues), total_revenues, total_revenue)),
     tot_exp = as.numeric(total_expenditures),
-    tot_tax = as.numeric(fifelse(!is.na(total_taxes_revenues), total_taxes_revenues, total_taxes))
+    tot_tax = as.numeric(ifelse(!is.na(total_taxes_revenues), total_taxes_revenues, total_taxes))
   )]
 
   pa_afr[, `:=`(
-    log_eit = fifelse(eit_rev > 0, log(eit_rev), NA_real_),
-    log_rev = fifelse(tot_rev > 0, log(tot_rev), NA_real_),
-    log_re = fifelse(re_rev > 0, log(re_rev), NA_real_),
-    log_exp = fifelse(tot_exp > 0, log(tot_exp), NA_real_),
-    log_tax = fifelse(tot_tax > 0, log(tot_tax), NA_real_),
-    log_police = fifelse(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police)) > 0,
-      log(as.numeric(fifelse(!is.na(police_expenditures), police_expenditures, police))), NA_real_),
-    log_streets = fifelse(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+    log_eit = ifelse(eit_rev > 0, log(eit_rev), NA_real_),
+    log_rev = ifelse(tot_rev > 0, log(tot_rev), NA_real_),
+    log_re = ifelse(re_rev > 0, log(re_rev), NA_real_),
+    log_exp = ifelse(tot_exp > 0, log(tot_exp), NA_real_),
+    log_tax = ifelse(tot_tax > 0, log(tot_tax), NA_real_),
+    log_police = ifelse(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)) > 0,
+      log(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police))), NA_real_),
+    log_streets = ifelse(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads)) > 0,
-      log(as.numeric(fifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+      log(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
       `public_works-highways_and_streets_expenditures`, streets_and_roads))), NA_real_),
-    log_debt = fifelse(as.numeric(total_debt) > 0, log(as.numeric(total_debt)), NA_real_),
-    log_state_aid = fifelse(as.numeric(fifelse(!is.na(`intergovernmental_revenues-state_government`),
+    log_debt = ifelse(as.numeric(total_debt) > 0, log(as.numeric(total_debt)), NA_real_),
+    log_state_aid = ifelse(as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
       `intergovernmental_revenues-state_government`, state_govt)) > 0,
-      log(as.numeric(fifelse(!is.na(`intergovernmental_revenues-state_government`),
+      log(as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
       `intergovernmental_revenues-state_government`, state_govt))), NA_real_),
-    log_pop = fifelse(as.numeric(population) > 0, log(as.numeric(population)), NA_real_),
-    log_mkt_val = fifelse(as.numeric(market_val_real_estate) > 0,
+    log_pop = ifelse(as.numeric(population) > 0, log(as.numeric(population)), NA_real_),
+    log_mkt_val = ifelse(as.numeric(market_val_real_estate) > 0,
       log(as.numeric(market_val_real_estate)), NA_real_),
     pop = as.numeric(population)
   )]
@@ -2399,7 +2403,7 @@ if (file.exists(pa_afr_file)) {
       "log(RE Tax)", "log(Expenditure)"))
 
   ## 12b. Sun-Abraham: EIT Revenue ----
-  afr_samp[, cohort := fifelse(is.na(first_increase_year), 10000L,
+  afr_samp[, cohort := ifelse(is.na(first_increase_year), 10000L,
     as.integer(first_increase_year))]
 
   fisc_sa <- feols(log_eit ~ sunab(cohort, yr) | cousub_fips + yr,
@@ -2564,7 +2568,7 @@ if (file.exists(pa_fed_file)) {
     headers = c("All Workers", "Federal Workers (placebo)"))
 
   # Sun-Abraham comparison
-  pa_fed_panel[, cohort := fifelse(is.na(
+  pa_fed_panel[, cohort := ifelse(is.na(
     pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
       .(fiy = min(year)), by = cousub_fips][
       match(pa_fed_panel$work_city, cousub_fips), fiy]),
@@ -2593,13 +2597,13 @@ if (file.exists(pa_fed_file)) {
 
 # 15. Sample Sensitivity ----
 
-cat("\n=== SENSITIVITY: PA TWFE BY MINIMUM TOTAL JOBS ===\n")
+# Sensitivity: PA TWFE by minimum total jobs
 for (min_j in c(10, 50, 100, 200, 500)) {
   s <- pa_panel[total_jobs > min_j & !is.na(resident_eit)]
   m <- feols(share_live_in ~ resident_eit | work_city + year, data = s, cluster = ~work_city)
-  cat(sprintf("  Min jobs > %4d: coef = %8.5f (SE %7.5f) N = %5d %s\n",
-    min_j, coef(m), se(m), nobs(m),
-    fifelse(abs(coef(m)) / se(m) > 1.96, "**", fifelse(abs(coef(m)) / se(m) > 1.65, "*", ""))))
+  sig <- ifelse(abs(coef(m)) / se(m) > 1.96, "**", ifelse(abs(coef(m)) / se(m) > 1.65, "*", ""))
+  print(paste("Min jobs >", min_j, ": coef =", round(coef(m), 5),
+    "(SE", round(se(m), 5), ") N =", nobs(m), sig))
 }
 
 # 16. Full Dose-Response: Both Directions ----
@@ -2630,7 +2634,7 @@ pa_baseline_rate2 <- pa_rate_panel[!is.na(cousub_fips),
   .(base_rate = first(na.omit(resident_eit))), by = cousub_fips]
 pa_samp <- merge(pa_samp, pa_baseline_rate2,
   by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
-pa_samp[, cumul_change2 := resident_eit - fifelse(is.na(base_rate), 0, base_rate)]
+pa_samp[, cumul_change2 := resident_eit - ifelse(is.na(base_rate), 0, base_rate)]
 
 m_cumul <- feols(share_live_in ~ cumul_change2 | work_city + year,
   data = pa_samp, cluster = ~work_city)
@@ -2638,8 +2642,8 @@ etable(m_cumul, headers = "PA: Cumulative Change (all municipalities)")
 
 ## 16c. Split positive / negative dose ----
 pa_samp[, `:=`(
-  pos_change = fifelse(cumul_change2 > 0, cumul_change2, 0),
-  neg_change = fifelse(cumul_change2 < 0, abs(cumul_change2), 0)
+  pos_change = ifelse(cumul_change2 > 0, cumul_change2, 0),
+  neg_change = ifelse(cumul_change2 < 0, abs(cumul_change2), 0)
 )]
 
 m_split_dose <- feols(share_live_in ~ pos_change + neg_change | work_city + year,
@@ -2647,8 +2651,8 @@ m_split_dose <- feols(share_live_in ~ pos_change + neg_change | work_city + year
 etable(m_split_dose, headers = "PA: Split Dose (positive / negative)")
 
 ## 16d. Sun-Abraham: increase vs decrease cohorts ----
-pa_samp[, cohort_inc := fifelse(is.na(first_increase_year), 10000L, as.integer(first_increase_year))]
-pa_samp[, cohort_dec := fifelse(is.na(first_dec_yr), 10000L, as.integer(first_dec_yr))]
+pa_samp[, cohort_inc := ifelse(is.na(first_increase_year), 10000L, as.integer(first_increase_year))]
+pa_samp[, cohort_dec := ifelse(is.na(first_dec_yr), 10000L, as.integer(first_dec_yr))]
 
 sa_inc_full <- feols(share_live_in ~ sunab(cohort_inc, year) | work_city + year,
   data = pa_samp, cluster = ~work_city)
@@ -2660,11 +2664,9 @@ etable(sa_inc_full, sa_dec_full,
   keep = "year::-?[0-5]$")
 
 
-# ============================================================================
 # 17. Paper-Ready Models ----
 # Unified estimation for the paper. Clean treated/control definitions,
 # consistent Sun-Abraham event studies, dose-response, and figures.
-# ============================================================================
 
 fig_dir <- file.path(project_dir, "figures")
 
@@ -2700,7 +2702,7 @@ plot_sa <- function(model, title, subtitle = NULL, window = c(-5, 8),
   p
 }
 
-# ---- Define treatment groups ----
+## Define treatment groups ----
 
 # PA groups
 pa_inc_cities <- pa_rate_panel[event_type == "increase" & !is.na(cousub_fips),
@@ -2738,16 +2740,14 @@ print(paste("OH:", length(oh_inc_cities), "inc,", length(oh_dec_cities),
   "dec,", length(oh_never_changed), "NC,", length(oh_no_tax_cities), "no-tax"))
 
 
-# ============================================================================
-# 17a. PA Binary DiD ----
-# ============================================================================
+## 17a. PA Binary DiD ----
 
 ## (1) Increasers vs never-changed (exclude decreasers) ----
 pa_inc_samp <- pa_panel[work_city %in% c(pa_inc_cities, pa_never_changed) &
   total_jobs > 50 & !is.na(resident_eit)]
 pa_inc_samp <- merge(pa_inc_samp, pa_first_inc,
   by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
-pa_inc_samp[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+pa_inc_samp[, cohort := ifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
 
 pa_sa_inc <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
   data = pa_inc_samp, cluster = ~work_city)
@@ -2757,7 +2757,7 @@ pa_dec_samp <- pa_panel[work_city %in% c(pa_dec_cities, pa_never_changed) &
   total_jobs > 50 & !is.na(resident_eit)]
 pa_dec_samp <- merge(pa_dec_samp, pa_first_dec,
   by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
-pa_dec_samp[, cohort := fifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
+pa_dec_samp[, cohort := ifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
 
 pa_sa_dec <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
   data = pa_dec_samp, cluster = ~work_city)
@@ -2784,13 +2784,13 @@ pa_asym <- feols(
 pa_att_inc <- summary(pa_sa_inc, agg = "ATT")
 pa_att_dec <- summary(pa_sa_dec, agg = "ATT")
 
-cat("\n=== PA BINARY DiD ===\n")
+# PA Binary DiD results
 etable(pa_sa_inc, pa_sa_dec, pa_asym,
   headers = c("Increasers vs NC", "Decreasers vs NC", "Both vs NC"),
   keep = c("ATT|has_inc|has_dec"),
   notes = "NC = never changed. Sun-Abraham ATT for cols 1-2.")
-cat("PA Increase ATT:", round(coef(pa_att_inc), 5), "(SE", round(se(pa_att_inc), 5), ")\n")
-cat("PA Decrease ATT:", round(coef(pa_att_dec), 5), "(SE", round(se(pa_att_dec), 5), ")\n")
+print(paste("PA Increase ATT:", round(coef(pa_att_inc), 5), "(SE", round(se(pa_att_inc), 5), ")"))
+print(paste("PA Decrease ATT:", round(coef(pa_att_dec), 5), "(SE", round(se(pa_att_dec), 5), ")"))
 
 ## PA event study figures ----
 p_pa_es_inc <- plot_sa(pa_sa_inc,
@@ -2798,8 +2798,6 @@ p_pa_es_inc <- plot_sa(pa_sa_inc,
   subtitle = paste0("N = ", uniqueN(pa_inc_samp[cohort < 10000, work_city]),
     " treated, ", uniqueN(pa_inc_samp[cohort == 10000, work_city]), " controls"),
   color = "firebrick")
-ggsave(file.path(fig_dir, "pa_es_increase.png"), p_pa_es_inc,
-  width = 7, height = 4.5, dpi = 300)
 print(p_pa_es_inc)
 
 p_pa_es_dec <- plot_sa(pa_sa_dec,
@@ -2807,21 +2805,17 @@ p_pa_es_dec <- plot_sa(pa_sa_dec,
   subtitle = paste0("N = ", uniqueN(pa_dec_samp[cohort < 10000, work_city]),
     " treated, ", uniqueN(pa_dec_samp[cohort == 10000, work_city]), " controls"),
   color = "steelblue")
-ggsave(file.path(fig_dir, "pa_es_decrease.png"), p_pa_es_dec,
-  width = 7, height = 4.5, dpi = 300)
 print(p_pa_es_dec)
 
 
-# ============================================================================
-# 17b. OH Binary DiD — No-Tax Controls ----
-# ============================================================================
+## 17b. OH Binary DiD — No-Tax Controls ----
 
 ## (1) Increasers vs no-tax ----
 oh_inc_notax_samp <- oh_panel[work_city %in% c(oh_inc_cities, oh_no_tax_cities) &
   total_jobs > 50][year <= max_year]
 oh_inc_notax_samp <- merge(oh_inc_notax_samp, oh_first_inc,
   by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
-oh_inc_notax_samp[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+oh_inc_notax_samp[, cohort := ifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
 
 oh_sa_inc_notax <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
   data = oh_inc_notax_samp, cluster = ~work_city)
@@ -2831,7 +2825,7 @@ oh_dec_notax_samp <- oh_panel[work_city %in% c(oh_dec_cities, oh_no_tax_cities) 
   total_jobs > 50][year <= max_year]
 oh_dec_notax_samp <- merge(oh_dec_notax_samp, oh_first_dec,
   by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
-oh_dec_notax_samp[, cohort := fifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
+oh_dec_notax_samp[, cohort := ifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
 
 oh_sa_dec_notax <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
   data = oh_dec_notax_samp, cluster = ~work_city)
@@ -2857,14 +2851,14 @@ oh_asym_notax <- feols(
 oh_att_inc_notax <- summary(oh_sa_inc_notax, agg = "ATT")
 oh_att_dec_notax <- summary(oh_sa_dec_notax, agg = "ATT")
 
-cat("\n=== OH BINARY DiD — NO-TAX CONTROLS ===\n")
+# OH Binary DiD No-Tax Controls results
 etable(oh_sa_inc_notax, oh_sa_dec_notax, oh_asym_notax,
   headers = c("Increasers vs No-Tax", "Decreasers vs No-Tax", "Both vs No-Tax"),
   keep = c("ATT|has_inc|has_dec"))
-cat("OH Inc vs No-Tax ATT:", round(coef(oh_att_inc_notax), 5),
-  "(SE", round(se(oh_att_inc_notax), 5), ")\n")
-cat("OH Dec vs No-Tax ATT:", round(coef(oh_att_dec_notax), 5),
-  "(SE", round(se(oh_att_dec_notax), 5), ")\n")
+print(paste("OH Inc vs No-Tax ATT:", round(coef(oh_att_inc_notax), 5),
+  "(SE", round(se(oh_att_inc_notax), 5), ")"))
+print(paste("OH Dec vs No-Tax ATT:", round(coef(oh_att_dec_notax), 5),
+  "(SE", round(se(oh_att_dec_notax), 5), ")"))
 
 ## OH no-tax event study figures ----
 p_oh_es_inc_notax <- plot_sa(oh_sa_inc_notax,
@@ -2872,8 +2866,6 @@ p_oh_es_inc_notax <- plot_sa(oh_sa_inc_notax,
   subtitle = paste0("N = ", uniqueN(oh_inc_notax_samp[cohort < 10000, work_city]),
     " treated, ", uniqueN(oh_inc_notax_samp[cohort == 10000, work_city]), " no-tax controls"),
   color = "steelblue")
-ggsave(file.path(fig_dir, "oh_es_increase_notax.png"), p_oh_es_inc_notax,
-  width = 7, height = 4.5, dpi = 300)
 print(p_oh_es_inc_notax)
 
 p_oh_es_dec_notax <- plot_sa(oh_sa_dec_notax,
@@ -2881,21 +2873,17 @@ p_oh_es_dec_notax <- plot_sa(oh_sa_dec_notax,
   subtitle = paste0("N = ", uniqueN(oh_dec_notax_samp[cohort < 10000, work_city]),
     " treated, ", uniqueN(oh_dec_notax_samp[cohort == 10000, work_city]), " no-tax controls"),
   color = "steelblue")
-ggsave(file.path(fig_dir, "oh_es_decrease_notax.png"), p_oh_es_dec_notax,
-  width = 7, height = 4.5, dpi = 300)
 print(p_oh_es_dec_notax)
 
 
-# ============================================================================
-# 17c. OH Binary DiD — Never-Changed Controls ----
-# ============================================================================
+## 17c. OH Binary DiD — Never-Changed Controls ----
 
 ## (1) Increasers vs never-changed ----
 oh_inc_nc_samp <- oh_panel[work_city %in% c(oh_inc_cities, oh_never_changed) &
   total_jobs > 50][year <= max_year]
 oh_inc_nc_samp <- merge(oh_inc_nc_samp, oh_first_inc,
   by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
-oh_inc_nc_samp[, cohort := fifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
+oh_inc_nc_samp[, cohort := ifelse(is.na(first_inc), 10000L, as.integer(first_inc))]
 
 oh_sa_inc_nc <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
   data = oh_inc_nc_samp, cluster = ~work_city)
@@ -2905,7 +2893,7 @@ oh_dec_nc_samp <- oh_panel[work_city %in% c(oh_dec_cities, oh_never_changed) &
   total_jobs > 50][year <= max_year]
 oh_dec_nc_samp <- merge(oh_dec_nc_samp, oh_first_dec,
   by.x = "work_city", by.y = "muni_fips", all.x = TRUE)
-oh_dec_nc_samp[, cohort := fifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
+oh_dec_nc_samp[, cohort := ifelse(is.na(first_dec), 10000L, as.integer(first_dec))]
 
 oh_sa_dec_nc <- feols(share_live_in ~ sunab(cohort, year) | work_city + year,
   data = oh_dec_nc_samp, cluster = ~work_city)
@@ -2931,14 +2919,14 @@ oh_asym_nc <- feols(
 oh_att_inc_nc <- summary(oh_sa_inc_nc, agg = "ATT")
 oh_att_dec_nc <- summary(oh_sa_dec_nc, agg = "ATT")
 
-cat("\n=== OH BINARY DiD — NEVER-CHANGED CONTROLS ===\n")
+# OH Binary DiD Never-Changed Controls results
 etable(oh_sa_inc_nc, oh_sa_dec_nc, oh_asym_nc,
   headers = c("Increasers vs NC", "Decreasers vs NC", "Both vs NC"),
   keep = c("ATT|has_inc|has_dec"))
-cat("OH Inc vs NC ATT:", round(coef(oh_att_inc_nc), 5),
-  "(SE", round(se(oh_att_inc_nc), 5), ")\n")
-cat("OH Dec vs NC ATT:", round(coef(oh_att_dec_nc), 5),
-  "(SE", round(se(oh_att_dec_nc), 5), ")\n")
+print(paste("OH Inc vs NC ATT:", round(coef(oh_att_inc_nc), 5),
+  "(SE", round(se(oh_att_inc_nc), 5), ")"))
+print(paste("OH Dec vs NC ATT:", round(coef(oh_att_dec_nc), 5),
+  "(SE", round(se(oh_att_dec_nc), 5), ")"))
 
 ## OH never-changed event study figures ----
 p_oh_es_inc_nc <- plot_sa(oh_sa_inc_nc,
@@ -2947,8 +2935,6 @@ p_oh_es_inc_nc <- plot_sa(oh_sa_inc_nc,
     " treated, ", uniqueN(oh_inc_nc_samp[cohort == 10000, work_city]),
     " never-changed controls"),
   color = "steelblue")
-ggsave(file.path(fig_dir, "oh_es_increase_nc.png"), p_oh_es_inc_nc,
-  width = 7, height = 4.5, dpi = 300)
 print(p_oh_es_inc_nc)
 
 p_oh_es_dec_nc <- plot_sa(oh_sa_dec_nc,
@@ -2957,14 +2943,10 @@ p_oh_es_dec_nc <- plot_sa(oh_sa_dec_nc,
     " treated, ", uniqueN(oh_dec_nc_samp[cohort == 10000, work_city]),
     " never-changed controls"),
   color = "steelblue")
-ggsave(file.path(fig_dir, "oh_es_decrease_nc.png"), p_oh_es_dec_nc,
-  width = 7, height = 4.5, dpi = 300)
 print(p_oh_es_dec_nc)
 
 
-# ============================================================================
-# 17d. Dose-Response ----
-# ============================================================================
+## 17d. Dose-Response ----
 
 ## (1) Rate change × post among changers (treated-only) ----
 
@@ -2998,10 +2980,10 @@ pa_base <- pa_rate_panel[!is.na(cousub_fips),
   .(base_rate = first(na.omit(resident_eit))), by = cousub_fips]
 pa_full_dose <- merge(pa_full_dose, pa_base,
   by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
-pa_full_dose[, cumul := resident_eit - fifelse(is.na(base_rate), 0, base_rate)]
+pa_full_dose[, cumul := resident_eit - ifelse(is.na(base_rate), 0, base_rate)]
 pa_full_dose[, `:=`(
-  pos_change = fifelse(cumul > 0, cumul, 0),
-  neg_change = fifelse(cumul < 0, abs(cumul), 0)
+  pos_change = ifelse(cumul > 0, cumul, 0),
+  neg_change = ifelse(cumul < 0, abs(cumul), 0)
 )]
 
 pa_dose_cumul <- feols(share_live_in ~ cumul | work_city + year,
@@ -3017,8 +2999,8 @@ oh_full_dose <- merge(oh_full_dose, oh_base,
 oh_full_dose[is.na(base_rate), base_rate := 0]
 oh_full_dose[, cumul := rate - base_rate]
 oh_full_dose[, `:=`(
-  pos_change = fifelse(cumul > 0, cumul, 0),
-  neg_change = fifelse(cumul < 0, abs(cumul), 0)
+  pos_change = ifelse(cumul > 0, cumul, 0),
+  neg_change = ifelse(cumul < 0, abs(cumul), 0)
 )]
 
 oh_dose_cumul <- feols(share_live_in ~ cumul | work_city + year,
@@ -3026,25 +3008,23 @@ oh_dose_cumul <- feols(share_live_in ~ cumul | work_city + year,
 oh_dose_split <- feols(share_live_in ~ pos_change + neg_change | work_city + year,
   data = oh_full_dose, cluster = ~work_city)
 
-cat("\n=== DOSE-RESPONSE ===\n")
-cat("\n--- PA: Treated-Only Dose ---\n")
+# PA: Treated-Only Dose
 etable(pa_dose_m1, pa_dose_m2,
   headers = c("Post Only", "Post + Rate x Post"))
 
-cat("\n--- OH: Treated-Only Dose ---\n")
+# OH: Treated-Only Dose
 etable(oh_dose_m1, oh_dose_m2,
   headers = c("Post Only", "Post + Rate x Post"))
 
-cat("\n--- PA: Full Sample Split Dose ---\n")
+# PA: Full Sample Split Dose
 etable(pa_dose_cumul, pa_dose_split,
   headers = c("Cumulative Change", "Split + / -"))
 
-cat("\n--- OH: Full Sample Split Dose ---\n")
+# OH: Full Sample Split Dose
 etable(oh_dose_cumul, oh_dose_split,
   headers = c("Cumulative Change", "Split + / -"))
 
 ## Combined dose table for paper ----
-cat("\n--- DOSE-RESPONSE: COMBINED TABLE ---\n")
 etable(pa_dose_m1, pa_dose_m2, pa_dose_split, oh_dose_m1, oh_dose_m2, oh_dose_split,
   headers = c("PA: Post", "PA: Post+Dose", "PA: Split",
     "OH: Post", "OH: Post+Dose", "OH: Split"))
@@ -3062,14 +3042,13 @@ oh_acs <- oh_acs[population_2010 > 0 & population_2021 > 0]
 pa_acs <- pa_acs[population_2010 > 0 & population_2021 > 0]
 
 ## 17a. OH: Treated vs Untreated balance ----
-cat("\n=== ACS OUTCOMES: OHIO ===\n")
-cat("\n--- Population Growth (2010-2021) ---\n")
+# ACS Outcomes: Ohio - Population Growth (2010-2021)
 oh_acs[, .(mean_pop_growth = mean(pop_growth, na.rm = TRUE),
   median_pop_growth = median(pop_growth, na.rm = TRUE),
   mean_pop_2010 = mean(population_2010, na.rm = TRUE),
   n = .N), by = treated] %>% print()
 
-cat("\n--- Income Growth (2010-2021) ---\n")
+# Income Growth (2010-2021)
 oh_acs[, .(mean_inc_growth = mean(income_growth, na.rm = TRUE),
   median_inc_growth = median(income_growth, na.rm = TRUE),
   mean_inc_2010 = mean(median_income_2010, na.rm = TRUE),
@@ -3084,7 +3063,7 @@ oh_acs_inc <- oh_acs[!is.na(income_growth) & is.finite(income_growth)]
 oh_acs_m3 <- feols(income_growth ~ treated, data = oh_acs_inc)
 oh_acs_m4 <- feols(income_growth ~ treated + log(median_income_2010), data = oh_acs_inc)
 
-cat("\n--- OH: Growth Regressions ---\n")
+# OH: Growth Regressions
 etable(oh_acs_m1, oh_acs_m2, oh_acs_m3, oh_acs_m4,
   headers = c("Pop Growth", "Pop Growth + Ctrl", "Inc Growth", "Inc Growth + Ctrl"))
 
@@ -3102,19 +3081,18 @@ oh_acs_dose_inc <- oh_acs_dose[!is.na(income_growth) & is.finite(income_growth)]
 oh_dose_m3 <- feols(income_growth ~ total_increase, data = oh_acs_dose_inc)
 oh_dose_m4 <- feols(income_growth ~ total_increase + log(median_income_2010), data = oh_acs_dose_inc)
 
-cat("\n--- OH: Dose-Response (total rate increase in pp) ---\n")
+# OH: Dose-Response (total rate increase in pp)
 etable(oh_dose_m1, oh_dose_m2, oh_dose_m3, oh_dose_m4,
   headers = c("Pop ~ Dose", "Pop ~ Dose + Ctrl", "Inc ~ Dose", "Inc ~ Dose + Ctrl"))
 
 ## 17d. PA: Treated vs Untreated balance ----
-cat("\n\n=== ACS OUTCOMES: PENNSYLVANIA ===\n")
-cat("\n--- Population Growth (2010-2021) ---\n")
+# ACS Outcomes: Pennsylvania - Population Growth (2010-2021)
 pa_acs[, .(mean_pop_growth = mean(pop_growth, na.rm = TRUE),
   median_pop_growth = median(pop_growth, na.rm = TRUE),
   mean_pop_2010 = mean(population_2010, na.rm = TRUE),
   n = .N), by = treated] %>% print()
 
-cat("\n--- Income Growth (2010-2021) ---\n")
+# Income Growth (2010-2021)
 pa_acs[, .(mean_inc_growth = mean(income_growth, na.rm = TRUE),
   median_inc_growth = median(income_growth, na.rm = TRUE),
   mean_inc_2010 = mean(median_income_2010, na.rm = TRUE),
@@ -3129,7 +3107,7 @@ pa_acs_inc <- pa_acs[!is.na(income_growth) & is.finite(income_growth)]
 pa_acs_m3 <- feols(income_growth ~ treated, data = pa_acs_inc)
 pa_acs_m4 <- feols(income_growth ~ treated + log(median_income_2010), data = pa_acs_inc)
 
-cat("\n--- PA: Growth Regressions ---\n")
+# PA: Growth Regressions
 etable(pa_acs_m1, pa_acs_m2, pa_acs_m3, pa_acs_m4,
   headers = c("Pop Growth", "Pop Growth + Ctrl", "Inc Growth", "Inc Growth + Ctrl"))
 
@@ -3147,7 +3125,7 @@ pa_acs_dose_inc <- pa_acs_dose[!is.na(income_growth) & is.finite(income_growth)]
 pa_dose_m3 <- feols(income_growth ~ total_increase, data = pa_acs_dose_inc)
 pa_dose_m4 <- feols(income_growth ~ total_increase + log(median_income_2010), data = pa_acs_dose_inc)
 
-cat("\n--- PA: Dose-Response (total rate increase in pp) ---\n")
+# PA: Dose-Response (total rate increase in pp)
 etable(pa_dose_m1, pa_dose_m2, pa_dose_m3, pa_dose_m4,
   headers = c("Pop ~ Dose", "Pop ~ Dose + Ctrl", "Inc ~ Dose", "Inc ~ Dose + Ctrl"))
 
@@ -3163,8 +3141,8 @@ soi_dir <- file.path(data_dir, "irs_soi")
 soi_inflow <- fread(file.path(soi_dir, "countyinflow1819.csv"))
 soi_outflow <- fread(file.path(soi_dir, "countyoutflow1819.csv"))
 
-cat("\n\n=== IRS SOI COUNTY MIGRATION (2018-2019) ===\n")
-cat("Inflow rows:", nrow(soi_inflow), "  Outflow rows:", nrow(soi_outflow), "\n")
+# IRS SOI County Migration (2018-2019)
+print(paste("Inflow rows:", nrow(soi_inflow), " Outflow rows:", nrow(soi_outflow)))
 
 ## 18a. OH counties: net migration ----
 # Filter to OH (FIPS 39), exclude aggregate rows (county FIPS 000)
@@ -3211,7 +3189,7 @@ oh_treated_counties <- oh_place_to_county[place_fips %in% oh_treated_places, uni
 
 oh_net[, has_treated_muni := county_fips %in% oh_treated_counties]
 
-cat("\n--- OH: Net Migration by County Treatment Status ---\n")
+# OH: Net Migration by County Treatment Status
 oh_net[, .(mean_net_returns = mean(net_returns, na.rm = TRUE),
   mean_net_rate = mean(net_rate, na.rm = TRUE),
   mean_net_agi = mean(net_agi, na.rm = TRUE),
@@ -3221,7 +3199,7 @@ oh_soi_m1 <- feols(net_returns ~ has_treated_muni, data = oh_net)
 oh_soi_m2 <- feols(net_rate ~ has_treated_muni, data = oh_net)
 oh_soi_m3 <- feols(net_agi ~ has_treated_muni, data = oh_net)
 
-cat("\n--- OH: SOI Regressions (county-level, single cross-section) ---\n")
+# OH: SOI Regressions (county-level, single cross-section)
 etable(oh_soi_m1, oh_soi_m2, oh_soi_m3,
   headers = c("Net Returns", "Net Rate", "Net AGI ($K)"))
 
@@ -3268,7 +3246,7 @@ pa_treated_counties <- pa_cousub_to_county[cousub_fips %in% pa_treated_cousubs, 
 
 pa_net[, has_treated_muni := county_fips %in% pa_treated_counties]
 
-cat("\n--- PA: Net Migration by County Treatment Status ---\n")
+# PA: Net Migration by County Treatment Status
 pa_net[, .(mean_net_returns = mean(net_returns, na.rm = TRUE),
   mean_net_rate = mean(net_rate, na.rm = TRUE),
   mean_net_agi = mean(net_agi, na.rm = TRUE),
@@ -3278,7 +3256,7 @@ pa_soi_m1 <- feols(net_returns ~ has_treated_muni, data = pa_net)
 pa_soi_m2 <- feols(net_rate ~ has_treated_muni, data = pa_net)
 pa_soi_m3 <- feols(net_agi ~ has_treated_muni, data = pa_net)
 
-cat("\n--- PA: SOI Regressions (county-level, single cross-section) ---\n")
+# PA: SOI Regressions (county-level, single cross-section)
 etable(pa_soi_m1, pa_soi_m2, pa_soi_m3,
   headers = c("Net Returns", "Net Rate", "Net AGI ($K)"))
 
@@ -3292,7 +3270,7 @@ oh_within[, `:=`(
   dest_treated = y2_countyfips %in% oh_treated_counties
 )]
 
-cat("\n--- OH Within-State Flows: Treated vs Untreated Origin Counties ---\n")
+# OH Within-State Flows: Treated vs Untreated Origin Counties
 oh_within[, .(
   mean_returns = mean(n1, na.rm = TRUE),
   total_returns = sum(n1, na.rm = TRUE),
@@ -3301,15 +3279,15 @@ oh_within[, .(
 ), by = origin_treated] %>% print()
 
 ## 18d. Summary: LODES vs IRS detection ----
-cat("\n=== COMPARISON: LODES vs IRS SOI ===\n")
-cat("LODES (municipality level): PA dose-response = -0.008** (SE 0.003)\n")
-cat("  Detects within-county, cross-municipal residential sorting\n")
-cat("IRS SOI (county level): Cannot detect within-county sorting\n")
-cat("  OH counties with treated munis: net rate =",
-  round(oh_net[has_treated_muni == TRUE, mean(net_rate, na.rm = TRUE)], 4), "\n")
-cat("  OH counties without treated munis: net rate =",
-  round(oh_net[has_treated_muni == FALSE, mean(net_rate, na.rm = TRUE)], 4), "\n")
-cat("  Difference not statistically significant — sorting is sub-county\n")
+# Comparison: LODES vs IRS SOI
+print(paste("LODES (municipality level): PA dose-response = -0.008** (SE 0.003)"))
+print(paste("Detects within-county, cross-municipal residential sorting"))
+print(paste("IRS SOI (county level): Cannot detect within-county sorting"))
+print(paste("OH counties with treated munis: net rate =",
+  round(oh_net[has_treated_muni == TRUE, mean(net_rate, na.rm = TRUE)], 4)))
+print(paste("OH counties without treated munis: net rate =",
+  round(oh_net[has_treated_muni == FALSE, mean(net_rate, na.rm = TRUE)], 4)))
+print(paste("Difference not statistically significant - sorting is sub-county"))
 
 # 20. PA Institutional Robustness: Act 32, Total EIT, School District Rates ----
 # (See Section 21 for the full tract-level analysis)
@@ -3334,7 +3312,7 @@ pa_act32_m2 <- feols(share_live_in ~ resident_eit + resident_eit:post_act32
   | work_city + year,
   data = pa_samp_inst, cluster = ~work_city)
 
-cat("\n=== 20a. Act 32 Structural Break (Municipal EIT) ===\n")
+# 20a. Act 32 Structural Break (Municipal EIT)
 etable(pa_act32_m1, pa_act32_m2,
   headers = c("Split Pre/Post 2012", "Base + Post Interaction"),
   keep = c("resident_eit", "pre_act32", "post_act32"))
@@ -3346,7 +3324,7 @@ pa_event_inst <- merge(pa_samp_inst, pa_first_change_inst, by = "work_city")
 pa_event_inst[, rel_year := year - event_year]
 
 # Pre-Act 32 adopters vs post-Act 32 adopters
-pa_event_inst[, adopt_era := fifelse(event_year < 2012, "pre_act32", "post_act32")]
+pa_event_inst[, adopt_era := ifelse(event_year < 2012, "pre_act32", "post_act32")]
 pa_act32_event_pre <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city + year,
   data = pa_event_inst[abs(rel_year) <= 5 & adopt_era == "pre_act32"],
   cluster = ~work_city)
@@ -3354,11 +3332,11 @@ pa_act32_event_post <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city +
   data = pa_event_inst[abs(rel_year) <= 5 & adopt_era == "post_act32"],
   cluster = ~work_city)
 
-cat("\n--- Event Study by Adoption Era ---\n")
-cat("Pre-Act 32 adopters (event_year < 2012): N cities =",
-  uniqueN(pa_event_inst[adopt_era == "pre_act32"]$work_city), "\n")
-cat("Post-Act 32 adopters (event_year >= 2012): N cities =",
-  uniqueN(pa_event_inst[adopt_era == "post_act32"]$work_city), "\n")
+# Event Study by Adoption Era
+print(paste("Pre-Act 32 adopters (event_year < 2012): N cities =",
+  uniqueN(pa_event_inst[adopt_era == "pre_act32"]$work_city)))
+print(paste("Post-Act 32 adopters (event_year >= 2012): N cities =",
+  uniqueN(pa_event_inst[adopt_era == "post_act32"]$work_city)))
 etable(pa_act32_event_pre, pa_act32_event_post,
   headers = c("Pre-Act 32 Adopters", "Post-Act 32 Adopters"),
   keep = c("rel_year"))
@@ -3375,7 +3353,7 @@ pa_total_m1 <- feols(share_live_in ~ total_eit | work_city + year,
 pa_muni_m1 <- feols(share_live_in ~ resident_eit | work_city + year,
   data = pa_samp_inst, cluster = ~work_city)
 
-cat("\n=== 20b. Municipal vs Total EIT Rate ===\n")
+# 20b. Municipal vs Total EIT Rate
 etable(pa_muni_m1, pa_total_m1,
   headers = c("Municipal EIT Only", "Total EIT (Muni + SD)"))
 
@@ -3396,7 +3374,7 @@ pa_total_act32 <- feols(share_live_in ~ total_eit:pre_act32 + total_eit:post_act
   | work_city + year,
   data = pa_samp_inst[!is.na(total_eit)], cluster = ~work_city)
 
-cat("\n--- Total EIT x Act 32 Split ---\n")
+# Total EIT x Act 32 Split
 etable(pa_total_act32,
   headers = "Total EIT: Pre vs Post Act 32",
   keep = c("total_eit", "pre_act32", "post_act32"))
@@ -3408,9 +3386,9 @@ etable(pa_total_act32,
 pa_decomp_m1 <- feols(share_live_in ~ resident_eit + sd_eit | work_city + year,
   data = pa_samp_inst[!is.na(sd_eit)], cluster = ~work_city)
 
-cat("\n=== 20c. Municipal vs School District EIT Decomposition ===\n")
-cat("Correlation between muni and SD rates:",
-  round(cor(pa_samp_inst$resident_eit, pa_samp_inst$sd_eit, use = "complete"), 3), "\n")
+# 20c. Municipal vs School District EIT Decomposition
+print(paste("Correlation between muni and SD rates:",
+  round(cor(pa_samp_inst$resident_eit, pa_samp_inst$sd_eit, use = "complete"), 3)))
 etable(pa_muni_m1, pa_decomp_m1,
   headers = c("Municipal Only", "Municipal + School District"),
   keep = c("resident_eit", "sd_eit"))
@@ -3430,38 +3408,35 @@ pa_sd_act32 <- feols(share_live_in ~ resident_eit + sd_eit:pre_act32 + sd_eit:po
   | work_city + year,
   data = pa_samp_inst[!is.na(sd_eit)], cluster = ~work_city)
 
-cat("\n--- SD Rate x Act 32 Split (controlling for muni rate) ---\n")
+# SD Rate x Act 32 Split (controlling for muni rate)
 etable(pa_sd_act32,
   headers = "SD EIT: Pre vs Post Act 32 (controlling for muni)",
   keep = c("resident_eit", "sd_eit", "pre_act32", "post_act32"))
 
 ## 20d. Summary statistics ----
-cat("\n=== Rate Summary Statistics ===\n")
-cat("Municipal EIT: mean =", round(mean(pa_samp_inst$resident_eit, na.rm = TRUE), 3),
-  ", sd =", round(sd(pa_samp_inst$resident_eit, na.rm = TRUE), 3), "\n")
-cat("School District EIT: mean =", round(mean(pa_samp_inst$sd_eit, na.rm = TRUE), 3),
-  ", sd =", round(sd(pa_samp_inst$sd_eit, na.rm = TRUE), 3), "\n")
-cat("Total EIT: mean =", round(mean(pa_samp_inst$total_eit, na.rm = TRUE), 3),
-  ", sd =", round(sd(pa_samp_inst$total_eit, na.rm = TRUE), 3), "\n")
-cat("Pre-Act 32 obs:", sum(pa_samp_inst$pre_act32), "\n")
-cat("Post-Act 32 obs:", sum(pa_samp_inst$post_act32), "\n")
+# Rate Summary Statistics
+print(paste("Municipal EIT: mean =", round(mean(pa_samp_inst$resident_eit, na.rm = TRUE), 3),
+  ", sd =", round(sd(pa_samp_inst$resident_eit, na.rm = TRUE), 3)))
+print(paste("School District EIT: mean =", round(mean(pa_samp_inst$sd_eit, na.rm = TRUE), 3),
+  ", sd =", round(sd(pa_samp_inst$sd_eit, na.rm = TRUE), 3)))
+print(paste("Total EIT: mean =", round(mean(pa_samp_inst$total_eit, na.rm = TRUE), 3),
+  ", sd =", round(sd(pa_samp_inst$total_eit, na.rm = TRUE), 3)))
+print(paste("Pre-Act 32 obs:", sum(pa_samp_inst$pre_act32)))
+print(paste("Post-Act 32 obs:", sum(pa_samp_inst$post_act32)))
 
 # Rate changes by era
 pa_changes <- pa_samp_inst[!is.na(rate_change) & abs(rate_change) > 1e-6]
-cat("\nRate changes pre-Act 32:", nrow(pa_changes[pre_act32 == 1]),
+print(paste("Rate changes pre-Act 32:", nrow(pa_changes[pre_act32 == 1]),
   "(", sum(pa_changes[pre_act32 == 1]$rate_change > 0), "inc,",
-  sum(pa_changes[pre_act32 == 1]$rate_change < 0), "dec)\n")
-cat("Rate changes post-Act 32:", nrow(pa_changes[post_act32 == 1]),
+  sum(pa_changes[pre_act32 == 1]$rate_change < 0), "dec)"))
+print(paste("Rate changes post-Act 32:", nrow(pa_changes[post_act32 == 1]),
   "(", sum(pa_changes[post_act32 == 1]$rate_change > 0), "inc,",
-  sum(pa_changes[post_act32 == 1]$rate_change < 0), "dec)\n")
+  sum(pa_changes[post_act32 == 1]$rate_change < 0), "dec)"))
 
 
-# =============================================================================
 # 21. Tract-Level OD Analysis: Channels of Tax-Motivated Sorting ----
-# =============================================================================
 #
 # INSTITUTIONAL CONTEXT
-# ---------------------
 # Pennsylvania levies an Earned Income Tax (EIT) at TWO levels: municipalities
 # (~2,500) and school districts (~500). The standard cap is 1% total, typically
 # split 0.5% municipal / 0.5% school district, though Act 1 of 2006 allowed SDs
@@ -3483,7 +3458,6 @@ cat("Rate changes post-Act 32:", nrow(pa_changes[post_act32 == 1]),
 # on share_live_in only appears post-2012 (-0.018*** vs -0.002 pre-2012).
 #
 # WHAT WE KNOW (Section 20)
-# --------------------------
 # Q1 (ANSWERED): Do existing workers sort their residence away from rate-raising
 #   cities while keeping their jobs?
 #   YES: share_live_in drops by -0.018*** per pp post-Act 32. But under the
@@ -3491,7 +3465,6 @@ cat("Rate changes post-Act 32:", nrow(pa_changes[post_act32 == 1]),
 #   residence while keeping the same job provides zero tax savings.
 #
 # WHAT WE NEED TO ANSWER
-# ----------------------
 # Q2: COMPLETE RELOCATION — Do workers leave rate-raising cities entirely
 #   (residence + job)? Do they move to lower-rate cities? These are the workers
 #   who CAN actually reduce their tax burden. When city A raises its rate,
@@ -3517,11 +3490,7 @@ cat("Rate changes post-Act 32:", nrow(pa_changes[post_act32 == 1]),
 #   residents but interior tracts don't, the sorting is cross-boundary.
 #   If ALL tracts lose residents equally, it's a city-wide population decline.
 #   If no tract-level change, the city-level result is clean.
-# =============================================================================
-
 ## 21a. Data Build: Tract-Level Panel with Municipal + SD Rates ----
-
-cat("\n\n========== SECTION 21: TRACT-LEVEL SORTING ANALYSIS ==========\n")
 
 # Load tract-level OD data (24M rows: w_tract × h_tract × year)
 pa_od_raw <- as.data.table(readRDS(file.path(data_dir, "lodes", "pa_od_S000_main.rds")))
@@ -3572,11 +3541,11 @@ pa_od_raw[, `:=`(
 # Act 32 indicator
 pa_od_raw[, post_act32 := as.integer(year >= 2012)]
 
-cat("Tract-level OD loaded:", nrow(pa_od_raw), "rows\n")
-cat("With work city assigned:", sum(!is.na(pa_od_raw$work_city)), "\n")
-cat("With both cities assigned:", sum(!is.na(pa_od_raw$work_city) & !is.na(pa_od_raw$home_city)), "\n")
+print(paste("Tract-level OD loaded:", nrow(pa_od_raw), "rows"))
+print(paste("With work city assigned:", sum(!is.na(pa_od_raw$work_city))))
+print(paste("With both cities assigned:", sum(!is.na(pa_od_raw$work_city) & !is.na(pa_od_raw$home_city))))
 
-# --- Build city-pair panel ---
+# Build city-pair panel
 # Aggregate tract-level OD to (work_city, home_city, year) pairs
 pa_pair <- pa_od_raw[!is.na(work_city) & !is.na(home_city),
   .(workers = sum(S000, na.rm = TRUE)),
@@ -3608,15 +3577,31 @@ pa_pair <- merge(pa_pair, pa_neighbors,
   by.x = c("work_city", "home_city"), by.y = c("city_fips", "neighbor_fips"),
   all.x = TRUE)
 
-cat("City-pair panel:", nrow(pa_pair), "rows,",
-  uniqueN(pa_pair$pair_id), "unique pairs\n")
-cat("Resident pairs (work=home):", sum(pa_pair$is_resident), "\n")
-cat("Commuter pairs (work≠home):", sum(!pa_pair$is_resident), "\n")
+print(paste("City-pair panel:", nrow(pa_pair), "rows,",
+  uniqueN(pa_pair$pair_id), "unique pairs"))
+print(paste("Resident pairs (work=home):", sum(pa_pair$is_resident)))
+print(paste("Commuter pairs (work!=home):", sum(!pa_pair$is_resident)))
+
+# Merge fiscal controls for both work and home cities
+fiscal_controls <- readRDS(file.path(data_dir, "pa_fiscal_controls.rds"))
+# Work city controls
+w_fiscal <- copy(fiscal_controls)
+setnames(w_fiscal, c("log_police", "log_streets", "log_debt", "log_state_aid"),
+  c("w_log_police", "w_log_streets", "w_log_debt", "w_log_state_aid"))
+pa_pair <- merge(pa_pair, w_fiscal,
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+# Home city controls
+h_fiscal <- copy(fiscal_controls)
+setnames(h_fiscal, c("log_police", "log_streets", "log_debt", "log_state_aid"),
+  c("h_log_police", "h_log_streets", "h_log_debt", "h_log_state_aid"))
+pa_pair <- merge(pa_pair, h_fiscal,
+  by.x = c("home_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+rm(fiscal_controls, w_fiscal, h_fiscal)
+
+saveRDS(pa_pair, file.path(data_dir, "pa_city_pair_od.rds"))
 
 
-# =============================================================================
 ## 21b. Q2: Complete Relocation — Do Workers Leave Entirely? ----
-# =============================================================================
 # When city A raises its rate, do nearby city B's gain resident workers
 # (work=B, home=B)? These are workers who relocated both residence and job
 # and can actually reduce their tax burden if rate_B < rate_A.
@@ -3625,7 +3610,7 @@ cat("Commuter pairs (work≠home):", sum(!pa_pair$is_resident), "\n")
 # If a nearby city A raised its rate, city B might absorb relocated workers.
 # Test whether the gain depends on the rate differential (rate_A - rate_B).
 
-cat("\n\n========== Q2: COMPLETE RELOCATION ==========\n")
+# Q2: Complete Relocation
 
 # Build exposure measure: for each city B × year, how much did neighbors raise?
 pa_nbr_rates <- merge(
@@ -3664,6 +3649,14 @@ pa_resident_panel <- merge(pa_resident_panel, pa_total_panel,
   by = c("work_city", "year"), all.x = TRUE)
 pa_resident_panel[, log_total_jobs := log(total_jobs + 1)]
 
+# Merge fiscal controls into resident panel
+fiscal_controls <- readRDS(file.path(data_dir, "pa_fiscal_controls.rds"))
+pa_resident_panel <- merge(pa_resident_panel, fiscal_controls,
+  by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+rm(fiscal_controls)
+
+saveRDS(pa_resident_panel, file.path(data_dir, "pa_resident_panel.rds"))
+
 pa_res_samp <- pa_resident_panel[total_jobs > 50 & !is.na(own_eit)]
 
 # Q2a: Does own rate increase reduce resident workers?
@@ -3686,31 +3679,35 @@ q2_act32 <- feols(log_res_workers ~ own_eit:post_act32 + own_eit:I(1 - post_act3
   nbr_avg_rate:post_act32 + nbr_avg_rate:I(1 - post_act32) | work_city + year,
   data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
 
-cat("\n--- Q2: Own Rate Effect on Resident Workers ---\n")
-etable(q2_own, q2_nbr, q2_diff,
-  headers = c("Own Rate", "Own + Neighbor Rate", "Rate Differential"))
+# Q2e: With fiscal controls — does controlling for city spending change the result?
+pa_res_ctrl <- pa_res_samp[!is.na(nbr_avg_rate) & !is.na(log_police) &
+  !is.na(log_streets) & !is.na(log_debt) & !is.na(log_state_aid)]
 
-cat("\n--- Q2: Pre/Post Act 32 ---\n")
-etable(q2_act32, headers = "Own + Neighbor Rate × Act 32 Split")
+q2_nbr_ctrl <- feols(log_res_workers ~ own_eit + nbr_avg_rate +
+  log_police + log_streets + log_debt + log_state_aid | work_city + year,
+  data = pa_res_ctrl, cluster = ~work_city)
+
+# Q2: Own Rate Effect on Resident Workers
+etable(q2_own, q2_nbr, q2_nbr_ctrl, q2_diff,
+  headers = c("Own Rate", "Own + Neighbor", "Own + Neighbor + Controls", "Rate Differential"))
+
+# Q2: Pre/Post Act 32
+etable(q2_act32, headers = "Own + Neighbor Rate x Act 32 Split")
 
 # Q2 Visualization: resident worker response to own rate
 p_q2 <- ggplot(pa_res_samp[!is.na(own_eit)],
   aes(x = own_eit, y = log_res_workers)) +
   geom_point(alpha = 0.05, size = 0.5) +
   geom_smooth(method = "lm", color = "firebrick") +
-  facet_wrap(~fifelse(post_act32 == 1, "Post-Act 32 (2012-2019)", "Pre-Act 32 (2002-2011)")) +
+  facet_wrap(~ifelse(post_act32 == 1, "Post-Act 32 (2012-2019)", "Pre-Act 32 (2002-2011)")) +
   labs(x = "Own Municipal EIT Rate (%)", y = "log(Resident Workers)",
     title = "Q2: Do Higher Own Rates Reduce Resident Workers?",
     subtitle = "Each dot = city-year; fitted line from within-city variation") +
   theme_minimal()
-ggsave(file.path(fig_dir, "q2_own_rate_resident_workers.png"), p_q2,
-  width = 10, height = 5, dpi = 300)
 print(p_q2)
 
 
-# =============================================================================
 ## 21c. Q3: Destination Choice — Where Do Commuters Come From? ----
-# =============================================================================
 # Conditional on working in city A, do workers who live elsewhere
 # systematically live in lower-rate cities? Under the credit system,
 # this provides no tax savings — so if we see rate-sorting in destination
@@ -3719,7 +3716,7 @@ print(p_q2)
 # Strategy: city-pair panel (work=A, home=B) for A≠B. When A raises rate,
 # do flows shift toward B's with specific rate characteristics?
 
-cat("\n\n========== Q3: DESTINATION CHOICE ==========\n")
+# Q3: Destination Choice
 
 # Commuter pairs only: work in A, live in B (A≠B), within 80km
 pa_commuter <- pa_pair[is_resident == FALSE & !is.na(dist_km) & dist_km <= 80 &
@@ -3759,12 +3756,22 @@ q3_act32 <- feols(log_workers ~ w_eit:post_act32 + w_eit:I(1 - post_act32) +
   h_eit:post_act32 + h_eit:I(1 - post_act32) | pair_id + year,
   data = pa_commuter, cluster = ~work_city)
 
-cat("\n--- Q3: Commuter Flow Determinants ---\n")
-etable(q3_flow, q3_gap, q3_home,
-  headers = c("Work Rate", "Rate Gap Interaction", "Work + Home Rate"))
+# Q3e: With fiscal controls for both work and home city
+pa_commuter_ctrl <- pa_commuter[!is.na(w_log_police) & !is.na(h_log_police) &
+  !is.na(w_log_streets) & !is.na(h_log_streets) &
+  !is.na(w_log_debt) & !is.na(h_log_debt)]
 
-cat("\n--- Q3: Pre/Post Act 32 ---\n")
-etable(q3_act32, headers = "Work + Home Rate × Act 32 Split")
+q3_home_ctrl <- feols(log_workers ~ w_eit + h_eit +
+  w_log_police + w_log_streets + w_log_debt +
+  h_log_police + h_log_streets + h_log_debt | pair_id + year,
+  data = pa_commuter_ctrl, cluster = ~work_city)
+
+# Q3: Commuter Flow Determinants
+etable(q3_flow, q3_gap, q3_home, q3_home_ctrl,
+  headers = c("Work Rate", "Rate Gap", "Work + Home", "Work + Home + Controls"))
+
+# Q3: Pre/Post Act 32
+etable(q3_act32, headers = "Work + Home Rate x Act 32 Split")
 
 # Q3 Visualization: flow distribution by rate gap
 q3_means <- pa_commuter[!is.na(gap_bin),
@@ -3780,8 +3787,6 @@ p_q3 <- ggplot(q3_means, aes(x = gap_bin, y = mean_workers,
     fill = "") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
-ggsave(file.path(fig_dir, "q3_commuter_rate_gap.png"), p_q3,
-  width = 8, height = 5, dpi = 300)
 print(p_q3)
 
 # Event study: commuter flows around work-city rate increases
@@ -3791,17 +3796,15 @@ pa_commuter_event[, rel_year := year - w_first_inc]
 q3_event <- feols(log_workers ~ i(rel_year, ref = -1) | pair_id + year,
   data = pa_commuter_event[abs(rel_year) <= 5], cluster = ~work_city)
 
-cat("\n--- Q3: Event Study — Commuter Flows Around Work-City Rate Increase ---\n")
+# Q3: Event Study - Commuter Flows Around Work-City Rate Increase
 etable(q3_event, headers = "Commuter Flows", keep = "rel_year")
 
 p_q3_event <- iplot(q3_event, main = "Q3: Commuter Flows After Work-City Rate Increase",
   xlab = "Years Relative to Rate Increase", ylab = "log(Workers)")
-ggsave(file.path(fig_dir, "q3_commuter_event_study.png"), width = 8, height = 5, dpi = 300)
+print(p_q3_event)
 
 
-# =============================================================================
 ## 21d. Q4: School District Rate Effects ----
-# =============================================================================
 # Municipalities and SDs have independent rate variation (corr = -0.12).
 # Each tract sits in one municipality AND one SD. We assigned SD rates via
 # the municipality (DCED reports sd_eit_rate for each municipality).
@@ -3811,7 +3814,7 @@ ggsave(file.path(fig_dir, "q3_commuter_event_study.png"), width = 8, height = 5,
 # - Does controlling for SD rates change the municipal coefficient?
 # - Is the total rate (muni + SD) or only the municipal component driving results?
 
-cat("\n\n========== Q4: SCHOOL DISTRICT RATE EFFECTS ==========\n")
+# Q4: School District Rate Effects
 
 # City-pair models with SD rates
 q4_muni_only <- feols(log_workers ~ w_eit | pair_id + year,
@@ -3827,7 +3830,7 @@ q4_total <- feols(log_workers ~ w_total | pair_id + year,
 q4_home_sd <- feols(log_workers ~ w_eit + w_sd + h_eit + h_sd | pair_id + year,
   data = pa_commuter[!is.na(w_sd) & !is.na(h_sd)], cluster = ~work_city)
 
-cat("\n--- Q4: Municipal vs SD Rate in Commuter Flows ---\n")
+# Q4: Municipal vs SD Rate in Commuter Flows
 etable(q4_muni_only, q4_muni_sd, q4_total, q4_home_sd,
   headers = c("Muni Only", "Muni + SD", "Total EIT", "Full Decomposition"))
 
@@ -3839,7 +3842,7 @@ q4_res_sd <- feols(log_res_workers ~ own_eit + own_sd | work_city + year,
 q4_res_total <- feols(log_res_workers ~ own_total | work_city + year,
   data = pa_res_samp[!is.na(own_total)], cluster = ~work_city)
 
-cat("\n--- Q4: Municipal vs SD Rate on Resident Workers ---\n")
+# Q4: Municipal vs SD Rate on Resident Workers
 etable(q4_res_muni, q4_res_sd, q4_res_total,
   headers = c("Muni Only", "Muni + SD", "Total EIT"))
 
@@ -3863,14 +3866,10 @@ p_q4 <- ggplot(pa_res_samp[!is.na(own_eit) & !is.na(own_sd)],
       pa_res_samp$own_sd, use = "complete"), 3)),
     color = "log(Resident\nWorkers)") +
   theme_minimal()
-ggsave(file.path(fig_dir, "q4_muni_vs_sd_rates.png"), p_q4,
-  width = 8, height = 6, dpi = 300)
 print(p_q4)
 
 
-# =============================================================================
 ## 21e. Q5: Within-City Robustness ----
-# =============================================================================
 # When city A raises its EIT, do we see tract-level redistribution WITHIN
 # the city? If boundary tracts lose more than interior tracts, the sorting
 # is specifically cross-boundary. If ALL tracts lose equally, it's a general
@@ -3881,7 +3880,7 @@ print(p_q4)
 # - Classify tracts as "boundary" (touches city border) or "interior"
 # - Test whether the rate increase effect differs by boundary status
 
-cat("\n\n========== Q5: WITHIN-CITY ROBUSTNESS ==========\n")
+# Q5: Within-City Robustness
 
 # Tract-level within-city panel: for each work_tract within city A,
 # count workers who also LIVE in city A (any tract within A)
@@ -3966,11 +3965,13 @@ boundary_dt <- rbindlist(boundary_results)
 # Classify: boundary tract = centroid within 1km of any municipal boundary
 boundary_dt[, is_boundary := dist_to_boundary_m <= 1000]
 
-cat("Boundary tracts:", sum(boundary_dt$is_boundary), "of", nrow(boundary_dt), "\n")
+print(paste("Boundary tracts:", sum(boundary_dt$is_boundary), "of", nrow(boundary_dt)))
 
 # Merge boundary classification into tract panel
 pa_tract_panel <- merge(pa_tract_panel, boundary_dt,
   by.x = "w_tract", by.y = "tract_geoid", all.x = TRUE)
+
+saveRDS(pa_tract_panel, file.path(data_dir, "pa_tract_panel.rds"))
 
 # Filter to tracts with meaningful employment
 pa_tract_samp <- pa_tract_panel[total_workers > 10 & !is.na(muni_eit)]
@@ -3993,11 +3994,11 @@ q5_act32 <- feols(share_within_city ~ muni_eit:post_act32 + muni_eit:I(1 - post_
   muni_eit:is_boundary:post_act32 + muni_eit:is_boundary:I(1 - post_act32) | w_tract + year,
   data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
 
-cat("\n--- Q5: Within-City Tract-Level Effects ---\n")
+# Q5: Within-City Tract-Level Effects
 etable(q5_within, q5_boundary, q5_total_boundary,
   headers = c("Within-City Share", "Boundary Interaction", "Total Workers × Boundary"))
 
-cat("\n--- Q5: Boundary Effects × Act 32 ---\n")
+# Q5: Boundary Effects x Act 32
 etable(q5_act32, headers = "Boundary × Act 32 Split")
 
 # Q5 Visualization: boundary vs interior response
@@ -4009,8 +4010,6 @@ p_q5_dist <- ggplot(boundary_dt, aes(x = dist_to_boundary_m / 1000)) +
     title = "Q5: Tract Classification — Boundary vs Interior",
     subtitle = "Dashed line at 1km threshold") +
   theme_minimal()
-ggsave(file.path(fig_dir, "q5_boundary_classification.png"), p_q5_dist,
-  width = 8, height = 5, dpi = 300)
 print(p_q5_dist)
 
 # Binned distance gradient: does the rate effect decay with distance to boundary?
@@ -4021,14 +4020,14 @@ pa_tract_samp[, dist_bin := cut(dist_to_boundary_m / 1000,
 q5_gradient <- feols(share_within_city ~ muni_eit:dist_bin | w_tract + year,
   data = pa_tract_samp[!is.na(dist_bin)], cluster = ~work_city)
 
-cat("\n--- Q5: Distance-to-Boundary Gradient ---\n")
+# Q5: Distance-to-Boundary Gradient
 etable(q5_gradient, headers = "Rate Effect by Distance to Municipal Boundary")
 
 # Summary table
-cat("\n\n========== SECTION 21 SUMMARY ==========\n")
-cat("Q2: Do workers leave entirely? Check coefficients on own_eit and nbr_avg_rate\n")
-cat("Q3: Do commuters come from lower-rate cities? Check rate_gap interaction\n")
-cat("Q4: Do SD rates matter? Compare muni-only vs muni+SD coefficients\n")
-cat("Q5: Is sorting at the boundary? Check is_boundary interaction\n")
+# Section 21 Summary
+print(paste("Q2: Do workers leave entirely? Check coefficients on own_eit and nbr_avg_rate"))
+print(paste("Q3: Do commuters come from lower-rate cities? Check rate_gap interaction"))
+print(paste("Q4: Do SD rates matter? Compare muni-only vs muni+SD coefficients"))
+print(paste("Q5: Is sorting at the boundary? Check is_boundary interaction"))
 
 beepr::beep()

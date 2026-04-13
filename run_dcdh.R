@@ -8,6 +8,7 @@ library(data.table)
 library(dplyr)
 library(DIDmultiplegtDYN)
 library(fixest)
+setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 library(ggplot2)
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"

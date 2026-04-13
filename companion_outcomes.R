@@ -8,6 +8,7 @@
 
 library(data.table)
 library(fixest)
+setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
 data_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/data"
 max_year <- 2019
