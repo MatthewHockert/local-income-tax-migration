@@ -1,0 +1,41 @@
+\begin{thebibliography}{}
+
+\bibitem[Agrawal, 2015]{agrawal2015gradient}
+Agrawal, D.~R. (2015).
+\newblock The tax gradient: Spatial aspects of fiscal competition.
+\newblock {\em American Economic Journal: Economic Policy}, 7(2):1--29.
+
+\bibitem[de~Chaisemartin et~al., 2024]{dechaisemartin2024}
+de~Chaisemartin, C., D'Haultf{\oe}uille, X., and Vazquez-Bare, G. (2024).
+\newblock Difference-in-difference estimators with continuous treatments and no
+  stayers.
+\newblock {\em AEA Papers and Proceedings}, 114:393--397.
+
+\bibitem[Haughwout et~al., 2004]{haughwout2004}
+Haughwout, A., Inman, R.~P., Craig, S., and Luce, T. (2004).
+\newblock Local revenue hills: Evidence from four {U.S.} cities.
+\newblock {\em Review of Economics and Statistics}, 86(2):570--585.
+
+\bibitem[Kleven et~al., 2020]{kleven2020}
+Kleven, H., Landais, C., Mu{\~n}oz, M., and Stantcheva, S. (2020).
+\newblock Taxation and migration: Evidence and policy implications.
+\newblock {\em Journal of Economic Perspectives}, 34(2):119--142.
+
+\bibitem[Sun and Abraham, 2021]{sunab2021}
+Sun, L. and Abraham, S. (2021).
+\newblock Estimating dynamic treatment effects in event studies with
+  heterogeneous treatment effects.
+\newblock {\em Journal of Econometrics}, 225(2):175--199.
+
+\bibitem[Tiebout, 1956]{tiebout1956}
+Tiebout, C.~M. (1956).
+\newblock A pure theory of local expenditures.
+\newblock {\em Journal of Political Economy}, 64(5):416--424.
+
+\bibitem[Young et~al., 2016]{young2016}
+Young, C., Varner, C., Lurie, I.~Z., and Prisinzano, R. (2016).
+\newblock Millionaire migration and taxation of the elite: Evidence from
+  administrative data.
+\newblock {\em American Sociological Review}, 81(3):421--446.
+
+\end{thebibliography}

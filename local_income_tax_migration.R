@@ -162,6 +162,60 @@ p_pa_map <- ggplot() +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 print(p_pa_map)
 
+## Allegheny County: SD boundaries, city, tracts by total EIT rate ----
+# Shows that census tracts within the same city face different total EIT rates
+# because school district boundaries cross municipal boundaries.
+# Pittsburgh spans Pittsburgh SD (2.0%) and neighboring SDs (0.5%).
+
+# Geometry layers
+allegheny_cousub <- pa_cousub %>% filter(COUNTYFP == "003")
+allegheny_tracts <- tracts(state = "PA", county = "003", year = 2020) %>%
+  st_transform(4326)
+allegheny_sds <- school_districts(state = "PA", type = "unified", year = 2020) %>%
+  st_transform(4326)
+
+# Clip SDs to Allegheny County extent
+allegheny_bbox <- st_bbox(allegheny_cousub) %>% st_as_sfc() %>% st_sf()
+allegheny_sds <- st_intersection(allegheny_sds, allegheny_bbox)
+
+# Assign each tract to its municipality via centroid
+tract_centroids <- st_centroid(allegheny_tracts)
+tract_to_muni <- st_join(tract_centroids,
+  allegheny_cousub %>% select(cousub_fips = COUSUBFP, muni_name = NAMELSAD),
+  join = st_within) %>%
+  st_drop_geometry() %>%
+  select(GEOID, cousub_fips, muni_name)
+
+# 2019 municipal and SD rates from DCED panel
+allegheny_rates <- pa_rate_panel[year == 2019 & !is.na(cousub_fips),
+  .(cousub_fips, resident_eit, sd_eit, total_eit)] %>%
+  unique()
+
+# Join rates to tracts via municipality
+tract_rates <- allegheny_tracts %>%
+  left_join(tract_to_muni, by = "GEOID") %>%
+  left_join(allegheny_rates, by = "cousub_fips") %>%
+  filter(!is.na(total_eit))
+
+# Pittsburgh boundary
+pittsburgh <- allegheny_cousub %>% filter(COUSUBFP == "61000")
+
+p_sd_map <- ggplot() +
+  geom_sf(data = tract_rates, aes(fill = total_eit), color = "grey80", linewidth = 0.05) +
+  geom_sf(data = allegheny_sds, fill = NA, color = "black", linewidth = 1.5, linetype = "dashed") +
+  geom_sf(data = allegheny_cousub, fill = NA, color = "grey50", linewidth = 0.15) +
+  geom_sf(data = pittsburgh, fill = NA, color = "firebrick", linewidth = 0.8) +
+  scale_fill_viridis_c(option = "plasma", name = "Total EIT (%)",
+    breaks = seq(0.5, 3, by = 0.5)) +
+  labs(title = "Allegheny County: Total EIT Rate by Census Tract (2019)",
+    subtitle = "Dashed = school district boundaries; red = Pittsburgh city; grey = municipalities") +
+  theme_minimal() +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
+print(p_sd_map)
+
+rm(allegheny_tracts, allegheny_sds, allegheny_bbox, tract_centroids, tract_to_muni,
+  allegheny_rates, tract_rates, pittsburgh)
+
 
 # 3. Rate Change Distributions ----
 
@@ -4029,5 +4083,271 @@ print(paste("Q2: Do workers leave entirely? Check coefficients on own_eit and nb
 print(paste("Q3: Do commuters come from lower-rate cities? Check rate_gap interaction"))
 print(paste("Q4: Do SD rates matter? Compare muni-only vs muni+SD coefficients"))
 print(paste("Q5: Is sorting at the boundary? Check is_boundary interaction"))
+
+beepr::beep()
+
+
+# 22. Q7: Expenditure Decomposition ----
+# Where does the incremental EIT revenue go? Does spending allocation
+# affect the sorting response?
+#
+# Q7a: Aggregate TWFE — each expenditure category on the EIT rate
+# Q7b: Heterogeneity — pre-treatment spending shares × treatment interaction
+#
+# Hypothesis: visible spending (police, fire, streets) attenuates sorting
+# because residents can see the ROI. Invisible spending (debt, admin,
+# community dev) does not.
+
+## 22a. Build fiscal panel with expenditure categories ----
+pa_afr <- fread(file.path(data_dir, "pa_afr_panel.csv"))
+pa_xwalk_afr <- unique(pa_rate_panel[!is.na(cousub_fips), .(municipality_id, cousub_fips)])
+pa_afr[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
+pa_afr <- merge(pa_afr, pa_xwalk_afr, by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
+pa_afr[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
+pa_afr <- pa_afr[!is.na(cousub_fips) & yr >= 2002 & yr <= 2019]
+
+# Coalesce old/new format expenditure columns
+pa_afr[, police_exp := as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police))]
+pa_afr[, fire_exp := as.numeric(ifelse(!is.na(fire_expenditures), fire_expenditures, fire))]
+pa_afr[, streets_exp := as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+  `public_works-highways_and_streets_expenditures`, streets_and_roads))]
+pa_afr[, sewer_exp := as.numeric(ifelse(!is.na(sewer_expenditures), sewer_expenditures, sewer_exp))]
+pa_afr[, recreation_exp := as.numeric(ifelse(!is.na(culture_and_recreation_expenditures),
+  culture_and_recreation_expenditures, parks_and_recreation))]
+pa_afr[, debt_exp := as.numeric(ifelse(!is.na(debt_service_expenditures),
+  debt_service_expenditures, debt_service))]
+pa_afr[, admin_exp := as.numeric(ifelse(!is.na(general_government_expenditures),
+  general_government_expenditures, general_administration))]
+pa_afr[, community_exp := as.numeric(ifelse(!is.na(community_development_expenditures),
+  community_development_expenditures, planning_and_development))]
+pa_afr[, solid_waste_exp := as.numeric(ifelse(!is.na(solid_waste_expenditures),
+  solid_waste_expenditures, solid_waste_exp))]
+pa_afr[, total_exp := as.numeric(ifelse(!is.na(expenditures), expenditures, total_expenditures))]
+
+# Log outcomes
+for (v in c("police_exp", "fire_exp", "streets_exp", "sewer_exp", "recreation_exp",
+  "debt_exp", "admin_exp", "community_exp", "solid_waste_exp")) {
+  pa_afr[, paste0("log_", v) := ifelse(get(v) > 0, log(get(v)), NA_real_)]
+}
+
+# Merge EIT rate
+afr_rates <- unique(pa_rate_panel[, .(cousub_fips, year, resident_eit)])
+pa_afr <- merge(pa_afr, afr_rates, by.x = c("cousub_fips", "yr"),
+  by.y = c("cousub_fips", "year"), all.x = TRUE)
+
+
+## 22b. Q7a: Aggregate — where does the marginal dollar go? ----
+q7_police <- feols(log_police_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_fire <- feols(log_fire_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_streets <- feols(log_streets_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_admin <- feols(log_admin_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_debt <- feols(log_debt_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_sewer <- feols(log_sewer_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_recreation <- feols(log_recreation_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+q7_community <- feols(log_community_exp ~ resident_eit | cousub_fips + yr,
+  data = pa_afr[!is.na(resident_eit)], cluster = ~cousub_fips)
+
+# Q7a: Expenditure Decomposition
+etable(q7_police, q7_fire, q7_streets, q7_admin, q7_debt,
+  q7_sewer, q7_recreation, q7_community,
+  headers = c("Police", "Fire", "Streets", "Admin", "Debt Svc",
+    "Sewer", "Recreation", "Comm Dev"),
+  keep = "resident_eit")
+
+
+## 22c. Q7b: Heterogeneity — does spending allocation affect sorting? ----
+# Compute pre-treatment spending shares for each treated municipality
+first_inc <- unique(pa_rate_panel[!is.na(first_increase_year),
+  .(cousub_fips, first_inc = first_increase_year)])
+pa_afr_treat <- merge(pa_afr, first_inc, by = "cousub_fips")
+pa_afr_pre <- pa_afr_treat[yr < first_inc & total_exp > 0]
+
+# Pre-treatment average spending shares
+pre_shares <- pa_afr_pre[, .(
+  sh_police = mean(pmax(police_exp, 0, na.rm = TRUE) / total_exp, na.rm = TRUE),
+  sh_fire = mean(pmax(fire_exp, 0, na.rm = TRUE) / total_exp, na.rm = TRUE),
+  sh_streets = mean(pmax(streets_exp, 0, na.rm = TRUE) / total_exp, na.rm = TRUE),
+  sh_visible = mean(pmax(police_exp, 0, na.rm = TRUE) +
+    pmax(fire_exp, 0, na.rm = TRUE) +
+    pmax(streets_exp, 0, na.rm = TRUE), na.rm = TRUE) /
+    mean(total_exp, na.rm = TRUE),
+  sh_community = mean(pmax(community_exp, 0, na.rm = TRUE) / total_exp, na.rm = TRUE),
+  sh_debt = mean(pmax(debt_exp, 0, na.rm = TRUE) / total_exp, na.rm = TRUE)
+), by = cousub_fips]
+
+# Classify: above/below median visible spending share
+pre_shares[, high_visible := sh_visible >= median(sh_visible, na.rm = TRUE)]
+pre_shares[, high_police := sh_police >= median(sh_police[sh_police > 0], na.rm = TRUE)]
+
+print(paste("Treated munis with pre-treatment fiscal data:", nrow(pre_shares)))
+print(paste("Median visible share (police+fire+streets):",
+  round(median(pre_shares$sh_visible, na.rm = TRUE), 3)))
+print(paste("High visible:", sum(pre_shares$high_visible),
+  "| Low visible:", sum(!pre_shares$high_visible)))
+
+# Merge into PA OD panel
+pa_q7 <- merge(pa_panel, pre_shares[, .(cousub_fips, sh_visible, sh_police,
+  sh_community, sh_debt, high_visible, high_police)],
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+
+# Continuous interaction: sorting × pre-treatment visible spending share
+q7_vis_cont <- feols(share_live_in ~ resident_eit + resident_eit:sh_visible | work_city + year,
+  data = pa_q7[!is.na(sh_visible)], cluster = ~work_city)
+
+# Split sample: high vs low visible spending
+q7_hi_vis <- feols(share_live_in ~ resident_eit | work_city + year,
+  data = pa_q7[high_visible == TRUE], cluster = ~work_city)
+q7_lo_vis <- feols(share_live_in ~ resident_eit | work_city + year,
+  data = pa_q7[high_visible == FALSE], cluster = ~work_city)
+
+# Continuous interaction: sorting × pre-treatment police share
+q7_police_cont <- feols(share_live_in ~ resident_eit + resident_eit:sh_police | work_city + year,
+  data = pa_q7[!is.na(sh_police)], cluster = ~work_city)
+
+# Continuous interaction: sorting × pre-treatment community dev share
+q7_comm_cont <- feols(share_live_in ~ resident_eit + resident_eit:sh_community | work_city + year,
+  data = pa_q7[!is.na(sh_community)], cluster = ~work_city)
+
+# Q7b: Sorting Response by Pre-Treatment Spending Allocation
+etable(q7_vis_cont, q7_hi_vis, q7_lo_vis, q7_police_cont, q7_comm_cont,
+  headers = c("Visible (cont)", "High Visible", "Low Visible",
+    "Police (cont)", "Comm Dev (cont)"),
+  keep = c("resident_eit", "sh_visible", "sh_police", "sh_community"))
+
+# Dose-response split: does the spending allocation interact with dose?
+pa_q7_treat <- pa_q7[!is.na(sh_visible)]
+pa_q7_treat[, first_inc := pa_rate_panel[.SD, first_increase_year,
+  on = .(cousub_fips = work_city, year), mult = "first"]]
+pa_q7_treat[, post := !is.na(first_inc) & year >= first_inc]
+
+q7_dose_vis <- feols(share_live_in ~ resident_eit:post +
+  resident_eit:post:sh_visible + post | work_city + year,
+  data = pa_q7_treat, cluster = ~work_city)
+
+q7_dose_police <- feols(share_live_in ~ resident_eit:post +
+  resident_eit:post:sh_police + post | work_city + year,
+  data = pa_q7_treat[!is.na(sh_police)], cluster = ~work_city)
+
+# Q7b: Dose-Response × Spending Allocation
+etable(q7_dose_vis, q7_dose_police,
+  headers = c("Dose × Visible Share", "Dose × Police Share"),
+  keep = c("resident_eit", "sh_visible", "sh_police"))
+
+rm(pa_afr, pa_afr_treat, pa_afr_pre, pre_shares, pa_q7, pa_q7_treat)
+
+
+## 22d. Q7c: School District expenditure decomposition ----
+# Mirror of Q7a but for SD spending. Where do SD rate increases go?
+# PDE AFR data: instruction (57%), admin (7%), operations (8%), etc.
+# If SD rates attract residents because they fund instruction, the
+# instruction coefficient should be large and positive.
+
+sd_fiscal <- readRDS(file.path(data_dir, "sd_fiscal_panel.rds"))
+sd_xwalk <- readRDS(file.path(data_dir, "muni_to_sd_xwalk.rds"))
+
+# Merge SD fiscal data with municipality-level SD EIT rates
+# Each municipality maps to one SD via the crosswalk
+sd_rates <- unique(pa_rate_panel[!is.na(cousub_fips), .(cousub_fips, year, sd_eit)])
+sd_rates <- merge(sd_rates, sd_xwalk[, .(cousub_fips, aun)], by = "cousub_fips")
+
+# Average SD rate across municipalities within each SD-year
+# (municipalities in the same SD should have the same sd_eit, but averaging handles edge cases)
+sd_rate_panel <- sd_rates[, .(sd_eit = mean(sd_eit, na.rm = TRUE)),
+  by = .(aun, year)]
+
+# Merge rates into SD fiscal panel
+sd_fiscal <- merge(sd_fiscal, sd_rate_panel, by = c("aun", "year"), all.x = TRUE)
+sd_fiscal <- sd_fiscal[year >= 2002 & year <= 2019 & !is.na(sd_eit)]
+
+print(paste("SD fiscal panel with rates:", nrow(sd_fiscal), "district-years,",
+  uniqueN(sd_fiscal$aun), "districts"))
+
+# Q7c: Where does the SD marginal dollar go?
+sd_m_instr <- feols(log_instruction ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_admin <- feols(log_support_admin ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_ops <- feols(log_operations_maint ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_transport <- feols(log_transportation ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_debt <- feols(log_debt_service ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_facilities <- feols(log_facilities ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_students <- feols(log_support_students ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_total <- feols(log_total_exp ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+
+# Q7c: SD Expenditure Decomposition
+etable(sd_m_instr, sd_m_admin, sd_m_ops, sd_m_transport,
+  sd_m_debt, sd_m_facilities, sd_m_students, sd_m_total,
+  headers = c("Instruction", "Admin", "Operations", "Transport",
+    "Debt Svc", "Facilities", "Student Svc", "Total Exp"),
+  keep = "sd_eit")
+
+# Q7c: SD EIT revenue response
+sd_m_eit_rev <- feols(log_eit_rev ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+sd_m_re_tax <- feols(log_re_tax ~ sd_eit | aun + year,
+  data = sd_fiscal, cluster = ~aun)
+
+# Q7c: SD Revenue Response
+etable(sd_m_eit_rev, sd_m_re_tax,
+  headers = c("log(EIT Revenue)", "log(RE Tax)"),
+  keep = "sd_eit")
+
+
+## 22e. Q7d: Does SD spending allocation affect the residential attraction? ----
+# Most SD rate changes occurred 2006-2011, before PDE expenditure detail (2015+).
+# Use cross-sectional 2015-2019 average instruction shares as a persistent
+# SD spending characteristic. This captures structural differences in how SDs
+# allocate resources (instruction-heavy vs admin-heavy).
+
+sd_shares <- sd_fiscal[year >= 2015 & year <= 2019 & total_exp > 0, .(
+  sd_sh_instruction = mean(sh_instruction, na.rm = TRUE),
+  sd_sh_admin = mean(sh_support_admin, na.rm = TRUE),
+  sd_sh_debt = mean(sh_debt, na.rm = TRUE)
+), by = aun]
+sd_shares[, high_instruction := sd_sh_instruction >= median(sd_sh_instruction, na.rm = TRUE)]
+
+print(paste("SDs with spending data:", nrow(sd_shares),
+  "| Median instruction share:", round(median(sd_shares$sd_sh_instruction), 3)))
+
+# Merge into municipality panel via crosswalk
+pa_q7sd <- merge(pa_panel, sd_xwalk[, .(cousub_fips, aun)],
+  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
+pa_q7sd <- merge(pa_q7sd, sd_shares, by = "aun", all.x = TRUE)
+
+# SD rate × instruction share interaction
+q7sd_base <- feols(share_live_in ~ sd_eit | work_city + year,
+  data = pa_q7sd[!is.na(sd_sh_instruction) & !is.na(sd_eit)], cluster = ~work_city)
+q7sd_instr <- feols(share_live_in ~ sd_eit + sd_eit:sd_sh_instruction | work_city + year,
+  data = pa_q7sd[!is.na(sd_sh_instruction) & !is.na(sd_eit)], cluster = ~work_city)
+q7sd_hi <- feols(share_live_in ~ sd_eit | work_city + year,
+  data = pa_q7sd[high_instruction == TRUE & !is.na(sd_eit)], cluster = ~work_city)
+q7sd_lo <- feols(share_live_in ~ sd_eit | work_city + year,
+  data = pa_q7sd[high_instruction == FALSE & !is.na(sd_eit)], cluster = ~work_city)
+q7sd_joint <- feols(share_live_in ~ resident_eit + sd_eit +
+  sd_eit:sd_sh_instruction | work_city + year,
+  data = pa_q7sd[!is.na(sd_sh_instruction) & !is.na(sd_eit)], cluster = ~work_city)
+q7sd_admin <- feols(share_live_in ~ sd_eit + sd_eit:sd_sh_admin | work_city + year,
+  data = pa_q7sd[!is.na(sd_sh_admin) & !is.na(sd_eit)], cluster = ~work_city)
+
+# Q7d: SD Spending Allocation × Residential Attraction
+etable(q7sd_base, q7sd_instr, q7sd_hi, q7sd_lo, q7sd_joint, q7sd_admin,
+  headers = c("SD Only", "SD × Instr", "High Instr", "Low Instr",
+    "Joint + Instr", "SD × Admin"),
+  keep = c("resident_eit", "sd_eit", "sd_sh_instruction", "sd_sh_admin"))
+
+rm(sd_fiscal, sd_xwalk, sd_rates, sd_rate_panel, sd_shares, pa_q7sd)
 
 beepr::beep()

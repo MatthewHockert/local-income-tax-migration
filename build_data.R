@@ -131,6 +131,36 @@ pa_rate_panel[, dced_name := tolower(municipality)]
 pa_rate_panel[, dced_name := gsub(" boro$", " borough", dced_name)]
 pa_rate_panel[, dced_name := gsub(" twp$", " township", dced_name)]
 
+# Additional normalization: collapse whitespace, fix abbreviations
+pa_rate_panel[, dced_name := trimws(gsub("\\s+", " ", dced_name))]
+pa_rate_panel[, dced_name := gsub("^mt ", "mount ", dced_name)]
+pa_rate_panel[, dced_name := gsub(" mt ", " mount ", dced_name)]
+pa_rate_panel[, dced_name := gsub("^st ", "st. ", dced_name)]
+pa_rate_panel[, dced_name := gsub(" st ", " st. ", dced_name)]
+
+# Compound words and punctuation that differ between DCED and TIGER
+pa_rate_panel[, dced_name := gsub("^ohara ", "o'hara ", dced_name)]
+pa_rate_panel[, dced_name := gsub("^wilkes barre ", "wilkes-barre ", dced_name)]
+pa_rate_panel[, dced_name := gsub("^nanty glo ", "nanty-glo ", dced_name)]
+pa_rate_panel[, dced_name := gsub("^oilcreek ", "oil creek ", dced_name)]
+pa_rate_panel[, dced_name := gsub("^le boeuf ", "leboeuf ", dced_name)]
+pa_rate_panel[, dced_name := gsub("^laplume ", "la plume ", dced_name)]
+
+# Three PA municipalities use "municipality" instead of "borough" in TIGER
+pa_rate_panel[municipality_id == 20303, dced_name := "bethel park municipality"]
+pa_rate_panel[municipality_id == 22103, dced_name := "monroeville municipality"]
+pa_rate_panel[municipality_id == 651043, dced_name := "murrysville municipality"]
+
+# DCED "OIL CITY" lacks a classification suffix; TIGER is "Oil City city"
+pa_rate_panel[municipality_id == 610512, dced_name := "oil city city"]
+
+# 9 DCED municipalities no longer exist in 2020 TIGER boundaries (merged/dissolved):
+# Strausstown Boro (BERKS), West Lawn Boro (BERKS), Wyomissing Hills Boro (BERKS),
+# South Philipsburg Boro (CENTRE), Lumber City Boro (CLEARFIELD),
+# East Fork Twp (POTTER), Upper Mahantango Twp (SCHUYLKILL),
+# Uniondale Boro (SUSQUEHANNA), West Alexander Boro (WASHINGTON).
+# These cannot be matched to 2020 Census geography.
+
 tiger_xwalk <- as.data.table(pa_cousub)[, .(
   cousub_fips = COUSUBFP, tiger_name = tolower(NAMELSAD), county_fips = COUNTYFP)]
 pa_counties <- as.data.table(counties(state = "PA", year = 2020))[, .(
@@ -148,9 +178,11 @@ pa_rate_panel <- merge(pa_rate_panel,
   by = "municipality_id", all.x = TRUE)
 
 saveRDS(pa_rate_panel, file.path(data_dir, "pa_rate_panel.rds"))
+n_matched <- sum(!is.na(unique(pa_rate_panel[, .(municipality_id, cousub_fips)])$cousub_fips))
+n_total <- uniqueN(pa_rate_panel$municipality_id)
 print(paste("PA rate panel:", nrow(pa_rate_panel), "rows,",
-  sum(!is.na(unique(pa_rate_panel[, .(municipality_id, cousub_fips)])$cousub_fips)),
-  "of", uniqueN(pa_rate_panel$municipality_id), "matched"))
+  n_matched, "of", n_total, "matched (",
+  round(100 * n_matched / n_total, 1), "%)"))
 
 
 # 3. Tax Foundation Cross-Section ----
