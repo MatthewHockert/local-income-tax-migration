@@ -1,0 +1,202 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Local Income Taxes and Residential Sorting --- Pitch
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor = x11names, compress, aspectratio = 169]{beamer}
+\setbeamercovered{transparent}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\usefonttheme[onlymath]{serif}
+\beamertemplatenavigationsymbolsempty
+
+\xdefinecolor{GopherMaroon}{HTML}{7A0019}
+\xdefinecolor{GopherGold}{HTML}{FFCC33}
+\xdefinecolor{GopherDarkMaroon}{HTML}{5B0013}
+
+\useoutertheme[subsection = false, shadow]{miniframes}
+\useinnertheme{default}
+\usefonttheme{structureitalicserif}
+\usepackage{palatino}
+\setbeamerfont{title like}{shape = \scshape}
+\setbeamerfont{frametitle}{shape = \scshape}
+
+\setbeamercolor*{lower separation line head}{bg = GopherMaroon}
+\setbeamercolor*{normal text}{fg = black, bg = white}
+\setbeamercolor*{alerted text}{fg = GopherDarkMaroon}
+\setbeamercolor*{structure}{fg = GopherDarkMaroon}
+
+\setbeamertemplate{footline}
+{
+    \leavevmode
+    \hbox{%
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, center]{}
+            Hockert
+        \end{beamercolorbox}
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, center]{}
+            Local Income Taxes and Residential Sorting
+        \end{beamercolorbox}
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, right]{}
+            \today \hspace*{2em}
+            \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+        \end{beamercolorbox}}
+        \vskip0pt
+    }
+
+\hypersetup{colorlinks, linkcolor = black, urlcolor = GopherMaroon}
+
+\newcommand{\src}[2]{\textsuperscript{\href{#1}{\footnotesize[#2]}}}
+
+\begin{document}
+
+\begin{frame}
+    \fontfamily{cmr}
+    \title{Local Income Taxes and Residential Sorting \\
+    \large Pitch}
+    \author[Hockert]{Matthew Hockert}
+    \date{\small{\textit{\today}}}
+    \institute{\textit{Applied Economics, University of Minnesota}}
+    \titlepage
+\end{frame}
+
+%======================================================================
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{The question}
+    \begin{itemize}\setlength{\itemsep}{0.3cm}
+        \item 17 states let local governments tax earned
+        income\src{https://taxfoundation.org/research/all/state/local-income-taxes-2019/}{TF}.
+        \item Do people move to avoid income taxes or do they take on the cost?
+        \item Can't find research specifically answering this question at the local level. 
+        \item Specifically looking at sub-county where standard migration data (ACS, IRS SOI) is too coarse. (most of studied state level policies)
+    \end{itemize}
+\end{frame}
+
+%======================================================================
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Two margins --- both need more research}
+    \begin{itemize}\setlength{\itemsep}{0.3cm}
+        \item Rate changes (intensive): do higher rates push workers
+        out? PA, MD
+        \src{https://www.marylandtaxes.gov/individual/income/tax-info/tax-rates.php}{MD}, MI, and KY
+        \src{https://www.klc.org/InfoCentral/Detail/31/occupational-license-tax}{KY}.
+        \item Adoption (extensive): does turning a tax on cause
+        sorting?:
+        \begin{itemize}\setlength{\itemsep}{0.05cm}
+            \item School Districts
+            \item Cities
+            \item Counties
+        \end{itemize}
+        \item Endogeneity of ``why are you raising (or lowering?) income taxes?''
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Why I want to start with Pennsylvania (intensive margin)}
+    \begin{itemize}\setlength{\itemsep}{0.3cm}
+        \item Every city and school district levies an earned income
+        tax which gives continuous variation on rates over geographies
+        \src{https://dced.pa.gov/local-government/local-income-tax-information/psd-codes-and-eit-rates/}{rates}.
+        \item Every city files an Annual Financial Report so we can
+        see what the money funds and what other taxes were raised or lowered
+        \src{https://apps.dced.pa.gov/munstats-public/ReportInformation2.aspx?report=mAfrForm}{AFR}. (can directly address endogeneity concerns). Can easily make a scraper for this site.
+        \item Act 32 (2012) centralized collection and made employer
+        withholding binding a natural experiment for whether
+        enforcement matters
+        \src{https://business.pa.gov/operate/hiring-workers/act-32-and-local-earned-income-tax/}{Act 32}.
+    \end{itemize}
+\end{frame}
+
+%======================================================================
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Why LODES (origin--destination data)}
+    \begin{itemize}\setlength{\itemsep}{0.3cm}
+        \item Links where you live to where you work, annually, at
+        the Census block
+        \src{https://lehd.ces.census.gov/data/lodes/LODES8/}{LODES}.
+        \item I work with LODES data for my RA at Accessibility Observatory (familiarity)
+        \item Use aggregate data at Census Tract to look at shifts within cities/school districts that the tract is in.
+        \item When a city raises its rate, does the
+        share of its workers who also live there fall?
+    \end{itemize}
+\end{frame}
+
+%======================================================================
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{How PA tax works}
+    \small
+    The worker pays the higher of the two rates, but how that bill is
+    split between the cities is piecewise:
+    \[
+        \bigl(\tau^{\text{home}},\ \tau^{\text{work city}}\bigr) \;=\;
+        \begin{cases}
+            \bigl(\tau^{\text{res}} - \tau^{\text{work}},\ \tau^{\text{work}}\bigr)
+                & \text{if } \tau^{\text{res}} > \tau^{\text{work}} \\[2pt]
+            \bigl(0,\ \tau^{\text{work}}\bigr)
+                & \text{if } \tau^{\text{res}} \leq \tau^{\text{work}}
+        \end{cases}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.18cm}
+        \item Work city always collects its full nonresident rate.
+        \item Home city only collects the leftover, and gets nothing
+        if the work rate is higher.
+        \item Which rate is higher also determines who can respond:
+        home-binds $\rightarrow$ she moves her home; work-binds
+        $\rightarrow$ she changes jobs.
+    \end{itemize}
+\end{frame}
+
+%======================================================================
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Example: a \$50{,}000 worker}
+    \small
+    \begin{itemize}\setlength{\itemsep}{0.18cm}
+        \item Case 1: lives in $B$ (1.0\%), works in $A$ (0.5\%).
+        Bill $=$ \$500. If $B$ raises to 2.0\%, bill $=$ \$1{,}000.
+        Home rate binds, so she escapes only by moving her home.
+        Expect $B$'s resident-worker count to fall.
+        \item Case 2: lives in $A$ (0.5\%), works in $B$ (1.0\%).
+        Bill $=$ \$500. If $B$ raises to 2.0\%, bill $=$ \$1{,}000.
+        Work rate binds, so she escapes only by changing jobs.
+        Expect $B$'s total-jobs count to fall.
+        \item LODES records each worker as a home-tract to work-tract
+        flow, so either kind of move shows up directly in the data.
+    \end{itemize}
+\end{frame}
+
+%======================================================================
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Methods (proposed)}
+    \small
+    Staggered event study on a muni $\times$ year panel:
+    \[
+        Y_{it} = \alpha_i + \gamma_t
+                 + \sum_{\ell} \mu_\ell \cdot D_{it}^{\ell}
+                 + \varepsilon_{it}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.2cm}
+        \item Outcomes of interest:
+        \begin{itemize}\setlength{\itemsep}{0.04cm}
+            \item Share of a city's workers who also live there
+            \item Resident workers, nonresident workers, total jobs
+            \item Fiscal response (EIT revenue, spending by function)
+            \item Muni rate vs.\ school district rate
+        \end{itemize}
+        \item Robustness: de Chaisemartin \& D'Haultfoeuille (2024)
+        continuous staggered estimator, which handles rate size
+        rather than just on/off
+        \src{https://doi.org/10.3982/ECTA19039}{DCDH 2024}.
+    \end{itemize}
+\end{frame}
+
+\end{document}

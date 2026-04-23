@@ -1,0 +1,753 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Local Income Taxes and Residential Sorting --- Slide Deck
+%  Built on the UMN Gopher Maroon & Gold Beamer template
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor = x11names, compress, aspectratio = 169]{beamer}
+\setbeamercovered{transparent}
+
+%%%%%%%%%%%%%%%%  Dependencies %%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{textgreek}
+\usepackage[round]{natbib}
+\usepackage{colortbl}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\usefonttheme[onlymath]{serif}
+\beamertemplatenavigationsymbolsempty
+
+%% UMN brand colors
+\xdefinecolor{GopherMaroon}{HTML}{7A0019}
+\xdefinecolor{GopherGold}{HTML}{FFCC33}
+\xdefinecolor{GopherLightGold}{HTML}{FFDE7A}
+\xdefinecolor{GopherDarkMaroon}{HTML}{5B0013}
+%% Utility colors
+\definecolor{ForestGreen}{RGB}{34,139,34}
+\definecolor{DarkGray}{RGB}{100,100,100}
+
+%%%%%%%%%%%%%%%% Beamer Layout %%%%%%%%%%%%%%%%%%%%%%
+\useoutertheme[subsection = false, shadow]{miniframes}
+\useinnertheme{default}
+\usefonttheme{structureitalicserif}
+\usepackage{palatino}
+\setbeamerfont{title like}{shape = \scshape}
+\setbeamerfont{frametitle}{shape = \scshape}
+
+\setbeamercolor*{lower separation line head}{bg = GopherMaroon}
+\setbeamercolor*{normal text}{fg = black, bg = white}
+\setbeamercolor*{alerted text}{fg = GopherDarkMaroon}
+\setbeamercolor*{example text}{fg = black}
+\setbeamercolor*{structure}{fg = GopherDarkMaroon}
+
+\setbeamercolor*{palette tertiary}{fg = GopherMaroon, bg = black!10}
+\setbeamercolor*{palette quaternary}{fg = black, bg = black!10}
+
+%% Column shorthand
+\renewcommand{\(}{\begin{columns}}
+\renewcommand{\)}{\end{columns}}
+\newcommand{\<}[1]{\begin{column}{#1}}
+\renewcommand{\>}{\end{column}}
+
+%% Footer
+\setbeamertemplate{footline}
+{
+    \leavevmode
+    \hbox{%
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, center]{Author Footer}
+            Hockert
+        \end{beamercolorbox}
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, center]{Title Footer}
+            Local Income Taxes and Residential Sorting
+        \end{beamercolorbox}
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, right]{Date Footer}
+            \usebeamerfont{Date Footer}\today \hspace*{2em}
+            \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+        \end{beamercolorbox}}
+        \vskip0pt
+    }
+
+\hypersetup{
+    colorlinks,
+    citecolor = GopherMaroon,
+    linkcolor = black
+}
+
+\graphicspath{{../figures/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                Title Frame
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+    \fontfamily{cmr}
+    \title{Local Income Taxes and Residential Sorting \\
+    \large Evidence from LEHD Origin--Destination Data}
+    \author[Hockert]{Matthew Hockert$^\dagger$}
+    \date{\small{\textit{\today}}}
+    \institute[\textit{UMN}]{
+        $^\dagger$\textit{Department of Applied Economics, \\
+        University of Minnesota}
+    }
+    \titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Motivation}
+    \begin{itemize}\setlength{\itemsep}{0.25cm}
+        \item Tiebout (1956): households ``vote with their feet'' across
+        local jurisdictions offering different tax/service bundles.
+        \item Strong evidence at the state level \citep{kleven2020, young2016}
+        and for sales tax cross-border shopping \citep{agrawal2015gradient}.
+        \item But little causal evidence on local income tax
+        sorting within metros --- where moving costs are small
+        and boundaries are frequent.
+        \item Two data problems: local tax jurisdictions are sub-county
+        (IRS/ACS too coarse), and credit systems + enforcement complicate
+        effective tax burden.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{This Paper}
+    \begin{itemize}\setlength{\itemsep}{0.2cm}
+        \item Question: Do local income tax rate changes cause
+        residential sorting across municipal boundaries?
+        \item Data: LEHD LODES origin--destination, linking
+        residence tract $\leftrightarrow$ workplace tract annually,
+        2002--2019, for OH and PA.
+        \item Outcome: \texttt{share\_live\_in}
+        = (workers who live and work in city $i$) / (total workers in $i$).
+        \item Design:
+        \begin{itemize}
+            \item OH: clean extensive margin (taxed cities vs.\ untaxed townships).
+            \item PA: universal EIT with rate variation + Act 32 (2012)
+            enforcement consolidation as natural experiment.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Institutional Setting}
+    \begin{itemize}\setlength{\itemsep}{0.2cm}
+        \item Ohio: municipalities may levy 0.5--3.0\% on
+        earned income; townships cannot. 302 increases, 45 decreases
+        in our panel.
+        \item Pennsylvania: universal EIT (Act 511, 1965);
+        typical 0.5\% muni + 0.5\% school district. 291 increases,
+        162 decreases.
+        \item Credit system (PA): worker's liability is
+        $\max(\tau^{\text{res}}, \tau^{\text{work}})$. Moving without
+        changing jobs yields no tax savings.
+        \item Act 32 of 2008 (eff.\ 2012): consolidated
+        collection in 67 Tax Collection Districts, mandated employer
+        withholding. Before 2012 the tax was largely unenforced on
+        nonresidents.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Preview of Findings}
+    \begin{itemize}\setlength{\itemsep}{0.2cm}
+        \item Rate increases reduce \texttt{share\_live\_in} by
+        0.5--0.8 share-points per 1 pp rate increase, building over 7--8 years.
+        \item Response is asymmetric: increases push out,
+        decreases do not bring back.
+        \item Effect is entirely post-Act 32: precise zero
+        before 2012, large and significant after.
+        \item City-wide relocation, not boundary arbitrage.
+        \item School district EIT has the opposite
+        sign: higher SD rates attract residents.
+        \item Fiscally productive: EIT revenue $+67\%$,
+        total tax $+30\%$, population/property values unaffected.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Data}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Data Sources}
+    \begin{itemize}\setlength{\itemsep}{0.18cm}
+        \item LODES v8 (2002--2019, trimmed pre-COVID):
+        tract-pair-year OD flows, main + aux files, segments SE01/SE03/SA01-03/JT04.
+        \item OH rates: ``The Finder'' CSV, direct PLACEFP join.
+        \item PA rates: scraped DCED MunStats (resident/nonresident
+        muni EIT, school district EIT) $\sim$2{,}500 munis/yr; name-based
+        COUSUBFP crosswalk (99.6\% match).
+        \item PA fiscal controls: DCED Annual Financial Reports
+        (71 cols: EIT rev, police, streets, debt, state aid, pop, MV).
+        \item Crime: FBI UCR (Kaplan); Permits: Census BPS.
+        \item April 1 alignment between rate panel and LODES
+        reference date.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Summary Statistics}
+    \centering
+    \small
+    \begin{tabular}{lrrrr}
+        \toprule
+        Variable & Mean & Median & SD & Max \\
+        \midrule
+        \multicolumn{5}{l}{\textit{Panel A: Pennsylvania (2002--2019)}} \\
+        share\_live\_in        & 0.149 & 0.127 & 0.097 & 0.700 \\
+        Resident EIT rate (\%) & 0.542 & 0.500 & 0.199 & 4.331 \\
+        Total jobs             & 3{,}624 & 1{,}224 & & \\
+        Resident workers       & 674   & 154   & & \\
+        \midrule
+        \multicolumn{5}{l}{\textit{Panel B: Ohio (2002--2019)}} \\
+        share\_live\_in        & 0.119 & 0.099 & 0.085 & \\
+        Municipal tax rate (\%) & 1.222 & 1.500 & 0.821 & 3.000 \\
+        \midrule
+        PA muni $\times$ year  & \multicolumn{4}{l}{26{,}650 (1{,}479 munis)} \\
+        OH muni $\times$ year  & \multicolumn{4}{l}{7{,}740 (430 munis)} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \footnotesize \textit{Notes:} Sample restricted to munis with $>50$ total jobs.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Treatment Geography: PA Rate Changes}
+    \centering
+    \includegraphics[width=0.72\textwidth]{pa_map.png}
+    \vfill
+    \small Red = increased; blue = decreased; purple = both; grey = unchanged.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Three Channels of Adjustment}
+    When muni $A$ raises its rate, workers in $A$ can:
+    \vspace{0.15cm}
+    \begin{enumerate}\setlength{\itemsep}{0.15cm}
+        \item Move residence only (keep job in $A$).
+        Under credit system: liability still $\tau_A$. Zero tax
+        savings, but reduces \texttt{share\_live\_in}.
+        \item Move residence and job to lower-rate $B$.
+        New liability $\tau_B$. Canonical Tiebout margin.
+        \item New hires choose to live outside $A$.
+        Reduces share even without existing-resident moves.
+    \end{enumerate}
+    \vspace{0.2cm}
+    \footnotesize
+    Predictions we'll test:
+    (1) enforcement matters $\Rightarrow$ post-Act 32 effect;
+    (2) destination rate irrelevant for commuters;
+    (3) complete relocators pick lower-rate destinations;
+    (4) SD rate opposite sign;
+    (5) boundary gradient.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods \& Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%% Q1 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q1: Does tax adoption cause sorting?}
+    \small
+    Model (Sun--Abraham, pooled OH+PA):
+    \[
+    Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot D_{it}^{\ell} + \varepsilon_{it}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.1cm}
+        \item $Y_{it} = $ \texttt{share\_live\_in}; $D_{it}^{\ell}$ = event time relative to first adoption.
+        \item Treated: 8 adopters (1 OH, 7 PA); Control: 109 never-taxed munis.
+        \item State $\times$ year FE; min 10 total jobs.
+    \end{itemize}
+    \vfill
+    Cleanest extensive-margin test --- but tiny treated cell.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q1 Answer: Directionally consistent, underpowered}
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        & Pooled (OH+PA) \\
+        \midrule
+        Sun--Abraham ATT & $-0.0036$ \\
+                         & $(0.0066)$ \\
+        Treated / Control & 8 / 109 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3cm}
+    \begin{itemize}\setlength{\itemsep}{0.1cm}
+        \item Sign is right but we cannot reject zero.
+        \item Only 8 adopters with enough LODES employment $\Rightarrow$
+        insufficient power for the extensive margin.
+        \item Move to rate changes among already-taxed cities.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Q2 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q2: Do rate increases cause sorting?}
+    \small
+    Same Sun--Abraham spec, plus DCDH continuous treatment:
+    \[
+    Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \cdot D_{it}^{\ell} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.08cm}
+        \item Treated: first rate increase; two control groups:
+        (i) no-tax, (ii) stable-rate.
+        \item \citet{dechaisemartin2024} for continuous rate + placebo pre-trends.
+        \item PA fiscal controls $\mathbf{X}$: police, streets, debt, state aid.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q2 Answer: $-0.5$ to $-0.8$ share-points per 1 pp rate hike}
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{Inc vs No-Tax} & \multicolumn{2}{c}{Inc vs Stable} \\
+        \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+        & OH & PA & OH & PA \\
+        \midrule
+        SA ATT & $-0.0074^{***}$ & $-0.0091^{*}$ & $-0.0001$ & $-0.0053^{*}$ \\
+               & $(0.0025)$ & $(0.0046)$ & $(0.0021)$ & $(0.0029)$ \\
+        DCDH placebo $p$ & 0.406 & --- & 0.147 & 0.904 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Rate increases reduce \texttt{share\_live\_in} by
+        $-0.005$ to $-0.008$ per 1 pp of rate increase, robust across estimators + states.
+        \item OH: no-tax townships are better controls than stable-rate
+        cities (latter share confounding urban traits).
+        \item PA DCDH: clean pre-trends ($p=0.90$); effect $-0.011^{***}$ at $\ell=8$.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Act 32 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Mechanism: Is it enforcement? (Act 32)}
+    \small
+    Structural break on PA rate effect:
+    \[
+    Y_{it} = \alpha_i + \gamma_t
+    + \beta^{\text{pre}} \tau_{it} \cdot \mathbf{1}[t<2012]
+    + \beta^{\text{post}} \tau_{it} \cdot \mathbf{1}[t\geq 2012]
+    + \varepsilon_{it}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.08cm}
+        \item Prediction 1: response requires a binding tax.
+        \item Pre-2012: fragmented collection, weak nonresident enforcement.
+        \item Post-2012: centralized TCDs + employer withholding at
+        $\max(\tau^{\text{res}}, \tau^{\text{work}})$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Act 32 Answer: Sorting only once the tax is binding}
+    \centering
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        & Split Periods & Interaction \\
+        \midrule
+        $\tau \times \mathbf{1}[t<2012]$   & $-0.0021$ $(0.0044)$ & \\
+        $\tau \times \mathbf{1}[t\geq 2012]$ & $-0.0179^{***}$ $(0.0051)$ & \\
+        $\tau$                              & & $-0.0021$ $(0.0044)$ \\
+        $\tau \times \text{Post-2012}$      & & $-0.0158^{***}$ $(0.0034)$ \\
+        \midrule
+        $N$ & 27{,}977 & 27{,}977 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Precise zero before; after 2012, a 1 pp rate hike cuts
+        \texttt{share\_live\_in} by 1.8 share-points --- same statutory rate.
+        \item Difference significant at 1\%. Workers respond to taxes
+        they actually pay, not paper rates.
+        \item Confirms fiscally: same rate generates 5.1\% more EIT revenue post-2012.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Q3 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q3: Are rate changes symmetric?}
+    \small
+    Split cumulative dose:
+    \[
+    Y_{it} = \alpha_i + \gamma_t + \beta^{+} R^{+}_{it} + \beta^{-} R^{-}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.08cm}
+        \item $R^{+}_{it}$, $R^{-}_{it}$: cumulative increases / decreases from baseline.
+        \item If $|\beta^{+}| > |\beta^{-}|$ $\Rightarrow$ residential
+        choices are sticky (fixed costs of moving).
+        \item Also estimate joint inc/dec event indicators.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q3 Answer: Sharply asymmetric}
+    \centering
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        & PA Joint & PA Split Dose \\
+        \midrule
+        inc $\times$ post    & $-0.0070^{**}$ $(0.0034)$ & \\
+        dec $\times$ post    & $-0.0000$ $(0.0058)$      & \\
+        $R^{+}$ (cum.\ inc)  &                           & $-0.0177^{**}$ $(0.0069)$ \\
+        $R^{-}$ (cum.\ dec)  &                           & $+0.0012$ $(0.0040)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Increases: $-1.8$ share-points per 1 pp rate hike; decreases: null.
+        \item Holds across both states and all estimators.
+        \item Interpretation: fixed moving costs $\Rightarrow$
+        once pushed out, residents do not return with a cut.
+        \item Policy: a city that raises then lowers its rate will not
+        recover the residents it lost.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Q4 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q4: Leave entirely, or just change where they sleep?}
+    \small
+    Resident worker panel (complete relocation):
+    \[
+    \ln(\text{ResWorkers}_{Bt}) = \alpha_B + \gamma_t + \beta_1 \tau_{Bt} + \beta_2 \bar{\tau}^{\text{nbr}}_{Bt} + \varepsilon_{Bt}
+    \]
+    Commuter pair model (Channel 1 tax optimization?):
+    \[
+    \ln(\text{Flow}_{ABt}) = \alpha_{AB} + \gamma_t + \beta_1 \tau^{w}_{At} + \beta_2 \tau^{h}_{Bt} + \varepsilon_{ABt}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item $\beta_2 > 0$ in first eq.\ $\Rightarrow$ neighbors absorb
+        displaced workers (Channel 2).
+        \item $\beta_2 \approx 0$ in second eq.\ $\Rightarrow$ credit
+        system works as designed (Prediction 2).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q4 Answer: Cross-boundary relocation, not tax arbitrage}
+    \centering
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        & Resident Workers & Commuter Flow \\
+        \midrule
+        Own EIT $\tau_B$ / $\tau^w_A$   & $-0.140^{**}$ $(0.063)$ & $-0.043$ $(0.031)$ \\
+        Neighbor avg rate               & $+1.069^{*}$ $(0.593)$  & --- \\
+        Home rate $\tau^h_B$            & ---                     & $-0.001$ $(0.006)$ \\
+        Own EIT $\times$ Post-2012      & $-0.210^{***}$ $(0.062)$ & $-0.059^{*}$ $(0.034)$ \\
+        Own EIT $\times$ Pre-2012       & $-0.042$ $(0.044)$       & $-0.020$ $(0.023)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Higher own rate $\Rightarrow$ $-14\%$ log resident workers;
+        neighbors gain when you raise rates.
+        \item Home rate irrelevant for commuters (Prediction 2 confirmed).
+        \item Effects $\sim 5\times$ larger post-Act 32 across both panels.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Q5 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q5: Do school district rates have the opposite effect?}
+    \small
+    Overlapping-tax decomposition:
+    \[
+    Y_{it} = \alpha_i + \gamma_t + \beta^{m} \tau^{m}_{it} + \beta^{sd} \tau^{sd}_{it} + \varepsilon_{it}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.08cm}
+        \item Muni rate raised for fiscal needs; SD rate (Act 1 of 2006)
+        for property tax relief / school spending.
+        \item Muni--SD correlation only $r=-0.12$ $\Rightarrow$
+        independent variation.
+        \item Prediction 4: $\beta^m<0$ (repulsion), $\beta^{sd}>0$ (amenity).
+        \item Also estimate on commuter pairs with rates at both ends.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q5 Answer: Opposite signs --- SD attracts residents}
+    \centering
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        & log(Resident) & log(Nonresident) & log(Total Jobs) \\
+        \midrule
+        Muni EIT $\tau^m$ & $-0.129^{**}$ & $-0.073^{*}$ & $-0.091^{**}$ \\
+                          & $(0.060)$    & $(0.042)$    & $(0.042)$ \\
+        SD EIT $\tau^{sd}$ & $+0.161^{***}$ & $+0.080$ & $+0.080$ \\
+                          & $(0.049)$    & $(0.055)$    & $(0.050)$ \\
+        Total EIT & \multicolumn{3}{c}{$+0.001$ $(0.034)$ --- zero net effect} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item SD operates only on residents; not commuters / total jobs
+        $\Rightarrow$ residential amenity channel.
+        \item Total EIT (muni+SD) nets to zero $\Rightarrow$ explains prior null
+        findings that aggregate the two rates.
+        \item Commuter pairs: home SD rate $+0.088^{***}$ (people live
+        where schools are funded).
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Q6 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q6: Is sorting concentrated at municipal boundaries?}
+    \small
+    Tract-level within-city model:
+    \[
+    S^{\text{within}}_{jt} = \alpha_j + \gamma_t + \beta_1 \tau_{it} + \beta_2 \tau_{it} \times \mathbf{1}[\text{boundary}_j] + \varepsilon_{jt}
+    \]
+    \begin{itemize}\setlength{\itemsep}{0.08cm}
+        \item Tract $j$ in muni $i$; boundary = centroid within 1 km of nearest boundary.
+        \item $S^{\text{within}}_{jt}$ = share of workers at tract $j$ whose home is also in $i$.
+        \item Prediction 5: $\beta_2<0$ if cross-boundary arbitrage dominates.
+        \item Also estimate a distance-to-boundary gradient (0--0.5, 0.5--1, 1--2, 2--5, 5+ km).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q6 Answer: No boundary gradient --- city-wide response}
+    \centering
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        & Within-city share & log(Total workers) \\
+        \midrule
+        Muni EIT             & $+0.0006^{**}$ $(0.0003)$ & $+0.0217^{***}$ $(0.0027)$ \\
+        Muni EIT $\times$ Boundary & $+0.0008$ $(0.0013)$  & $-0.0449^{*}$ $(0.0266)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Within-city reshuffling: essentially zero $\Rightarrow$
+        people are crossing muni boundaries, not just neighborhoods.
+        \item Boundary $\times$ rate on share: null. Boundary tracts
+        respond like interior tracts.
+        \item Boundary tracts do lose total workers marginally ($-4.5\%^{*}$),
+        hinting at employment leaking across boundaries.
+        \item Consistent with whole-city relocation, not short-distance tax arbitrage.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%% Q7 %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q7: Where does the incremental revenue go?}
+    \small
+    Expenditure decomposition (AFR):
+    \[
+    \ln(\text{Exp}^{k}_{it}) = \alpha_i + \gamma_t + \beta^{k} \tau_{it} + \varepsilon_{it}
+    \]
+    $k \in \{$police, fire, streets, admin, debt, sewer, rec, comm dev$\}$.
+    \vspace{0.1cm}
+
+    Does visibility of spending moderate sorting?
+    \[
+    Y_{it} = \alpha_i + \gamma_t + \beta_1 \tau_{it} + \beta_2 \tau_{it} \times S^{\text{visible}}_i + \varepsilon_{it}
+    \]
+    $S^{\text{visible}}_i$ = pre-treatment share on police + fire + streets.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q7 Answer: Revenue funds invisible community dev}
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        & Police & Streets & Comm Dev & Fire \\
+        \midrule
+        $\tau^m$ & $0.051$ & $0.081^{*}$ & $0.915^{***}$ & $0.080$ \\
+                 & $(0.046)$ & $(0.042)$ & $(0.303)$ & $(0.051)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Only community development (planning, econ dev, housing)
+        responds strongly --- long-horizon, hard to see.
+        \item Police / fire: positive but imprecise. Residents do not
+        directly see more patrols.
+        \item Visibility interaction $+0.024$ (SE 0.047): suggestive,
+        not significant --- 171 treated munis limits power.
+        \item SD side (PDE): rate increases reallocate
+        (facilities $-0.73^{***}$, admin $-0.03^{**}$), not expand.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Fiscal \& Robustness}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Fiscal Impact: Rates ``Work''}
+    \centering
+    \small
+    \begin{tabular}{lcccccc}
+        \toprule
+        & log(EIT) & log(Tot.\ Tax) & log(Tot.\ Rev) & log(Police) & log(Pop) & log(MV) \\
+        \midrule
+        $\tau^{\text{res}}$ & $0.671^{***}$ & $0.296^{***}$ & $0.064$ & $0.053$ & $-0.009$ & $0.007$ \\
+                             & $(0.211)$ & $(0.095)$ & $(0.043)$ & $(0.046)$ & $(0.014)$ & $(0.022)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item EIT revenue $+67\%^{***}$, total tax $+30\%^{***}$ per 1 pp of rate increase.
+        \item Population, property values, total revenue: null.
+        \item Behavioral response too small to erode the base
+        --- rate increases are on the right side of the revenue hill.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Robustness}
+    \begin{itemize}\setlength{\itemsep}{0.15cm}
+        \item Pre-trends clean across 11 observables: revenue,
+        EIT rev, RE tax, streets, pop, debt, jobs, crime, permits.
+        Exceptions (police, market value) addressed with controls /
+        coverage notes.
+        \item Fiscal controls (log police, streets, debt, state aid)
+        leave point estimates and SEs essentially unchanged.
+        \item Philadelphia exclusion: results robust to dropping Philly.
+        \item Flip-floppers: 37\% of PA treated munis flip-flop;
+        excluding them strengthens results.
+        \item Placebo: Federal workers (JT04) show no response
+        (federal wages not subject to local withholding same way).
+        \item ACS / IRS SOI: county-level migration null ---
+        LODES detects what coarser data cannot.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Putting it Together (1/2): Who moves?}
+    \small
+    \textsc{Setup.} A post-Act 32 PA city: 1{,}000 total workers;
+    150 live-and-work there (share\_live\_in = 15\%); EIT rises
+    0.5\% $\rightarrow$ 1.5\%.
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.15cm}
+        \item[Q2/Q3.] Over 7--8 years, share falls to $\sim$13.2\% $\Rightarrow$
+        $\sim$18 of 150 locally-resident workers gone. If the city later
+        cuts the rate back, none of them return.
+        \item[Q4.] Those 18 leave the city entirely (not a neighborhood move);
+        nearby lower-rate munis within 80 km absorb them.
+        \item[Q5.] If the overlapping school district had raised its rate
+        instead, residents would have moved in, not out.
+        \item[Q6.] The loss is spread across the city, not concentrated
+        at municipal boundaries --- no ``edge effect.''
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Putting it Together (2/2): Was it worth it?}
+    \small
+    Same city: 1{,}000 workers, rate 0.5\% $\rightarrow$ 1.5\%, $\sim$18 residents lost.
+    \vspace{0.2cm}
+    \begin{itemize}\setlength{\itemsep}{0.15cm}
+        \item[Fiscal.] EIT revenue roughly doubles ($+67$ log points);
+        total tax $+30\%$. Property values and population: unchanged.
+        \item[Q7.] Most new dollars flow to community development
+        (planning, econ dev, housing) --- not to police patrols residents see.
+        \item[Enforcement.] None of this happens pre-Act 32: same statutory
+        rate, precise zero behavioral response. Collection capacity is the
+        binding constraint.
+    \end{itemize}
+    \vspace{0.3cm}
+    \textsc{Bottom line.} The city trades $\sim$18 residents for a near
+    doubling of EIT revenue. Rate increases work --- when enforced.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Summary}
+    \begin{enumerate}\setlength{\itemsep}{0.15cm}
+        \item Local income tax rate increases cause residential sorting:
+        \texttt{share\_live\_in} falls by 0.5--0.8 share-points per 1 pp
+        rate hike, building over 7--8 years.
+        \item Effect is enforcement-contingent: zero pre-Act 32,
+        large post-2012.
+        \item Sorting is asymmetric (sticky residences) and
+        city-wide (not boundary arbitrage).
+        \item Muni and SD rates have opposite signs ---
+        SD acts as an amenity.
+        \item Rate increases are fiscally productive: base erosion
+        too small to offset revenue gains.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Next Steps}
+    \begin{itemize}\setlength{\itemsep}{0.15cm}
+        \item Link Act 1 SD rate changes to actual property tax millage
+        movements (PDE data 2015+ restrictive).
+        \item Extend Q7 with richer, pre-treatment expenditure
+        composition (more power on visibility channel).
+        \item Apply the LODES-based design to other local instruments
+        (property tax millage, local sales taxes, fees).
+        \item Welfare: combine behavioral elasticity with revenue
+        elasticity to bound efficiency cost of local income tax.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Thank You}
+    \centering
+    \vfill
+    \Large Questions?
+    \vfill
+    \normalsize
+    \texttt{hocke043@umn.edu} \\
+    \small github.com/MatthewHockert/local-income-tax-migration
+    \vfill
+\end{frame}
+
+\end{document}

@@ -1,0 +1,261 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  UMN Beamer Template — Gopher Maroon & Gold
+%  Drop into any repo. Replace placeholders marked [PLACEHOLDER].
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[xcolor = x11names, compress, aspectratio = 169]{beamer}
+\setbeamercovered{transparent}
+
+%%%%%%%%%%%%%%%%  Dependencies %%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{textgreek}
+\usepackage[round]{natbib}
+\usepackage{colortbl}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\usefonttheme[onlymath]{serif}
+\beamertemplatenavigationsymbolsempty
+
+%% UMN brand colors
+\xdefinecolor{GopherMaroon}{HTML}{7A0019}
+\xdefinecolor{GopherGold}{HTML}{FFCC33}
+\xdefinecolor{GopherLightGold}{HTML}{FFDE7A}
+\xdefinecolor{GopherDarkMaroon}{HTML}{5B0013}
+%% Utility colors
+\definecolor{ForestGreen}{RGB}{34,139,34}
+\definecolor{DarkGray}{RGB}{100,100,100}
+
+%%%%%%%%%%%%%%%% Beamer Layout %%%%%%%%%%%%%%%%%%%%%%
+\useoutertheme[subsection = false, shadow]{miniframes}
+\useinnertheme{default}
+\usefonttheme{structureitalicserif}
+\usepackage{palatino}
+\setbeamerfont{title like}{shape = \scshape}
+\setbeamerfont{frametitle}{shape = \scshape}
+
+\setbeamercolor*{lower separation line head}{bg = GopherMaroon}
+\setbeamercolor*{normal text}{fg = black, bg = white}
+\setbeamercolor*{alerted text}{fg = GopherDarkMaroon}
+\setbeamercolor*{example text}{fg = black}
+\setbeamercolor*{structure}{fg = GopherDarkMaroon}
+
+\setbeamercolor*{palette tertiary}{fg = GopherMaroon, bg = black!10}
+\setbeamercolor*{palette quaternary}{fg = black, bg = black!10}
+
+%% Column shorthand: \( ... \) for columns, \<{width} ... \> for column
+\renewcommand{\(}{\begin{columns}}
+\renewcommand{\)}{\end{columns}}
+\newcommand{\<}[1]{\begin{column}{#1}}
+\renewcommand{\>}{\end{column}}
+
+%% Footer: [AUTHOR_SHORT] | [TITLE_SHORT] | date + page number
+\setbeamertemplate{footline}
+{
+    \leavevmode %
+    \hbox{%
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, center]{Author Footer} %
+            [AUTHOR_SHORT]
+        \end{beamercolorbox}
+        %
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, center]{Title Footer} %
+            [TITLE_SHORT]
+        \end{beamercolorbox}
+        %
+        \begin{beamercolorbox}[wd = .333333\paperwidth, ht = 2.25ex, dp = 1ex, right]{Date Footer} %
+            \usebeamerfont{Date Footer}\today \hspace*{2em}
+            \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+        \end{beamercolorbox}}
+        %
+        \vskip0pt %
+    }
+
+\hypersetup{
+    colorlinks,
+    citecolor = GopherMaroon,
+    linkcolor = black
+}
+
+%% Set image search path — adjust per project
+% \graphicspath{{figures/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                Title Frame
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+    \fontfamily{cmr}
+    \title{
+    [TITLE] \\
+    \large [SUBTITLE]}
+    \author[[AUTHOR_SHORT]]{
+        [AUTHOR_FULL]$^\dagger$
+    }
+    \date{
+        \small{\textit{\today}}
+    }
+    \institute[\textit{UMN}]{
+        $^\dagger$\textit{[DEPARTMENT], \\
+        University of Minnesota}
+    }
+
+    \titlepage
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Roadmap}
+        \begin{itemize}
+            \item \textbf{Question:} [RESEARCH QUESTION]
+            \vspace{0.2cm}
+            \item \textbf{Data:} [DATA DESCRIPTION]
+            \vspace{0.2cm}
+            \item \textbf{Methods:} [METHODS SUMMARY]
+            \vspace{0.2cm}
+            \item \textbf{This deck:} [DECK OUTLINE]
+        \end{itemize}
+    \end{frame}
+    %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Background}
+        \begin{itemize}
+            \item First point
+            \vspace{0.3cm}
+            \item Second point
+            \vspace{0.3cm}
+            \item Third point
+        \end{itemize}
+    \end{frame}
+    %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Estimation Strategy}
+        \small
+        \textbf{Model:}
+        \[
+        Y_{it} = \alpha_i + \delta_t + \beta \cdot D_{it} + \varepsilon_{it}
+        \]
+        \begin{itemize}\setlength{\itemsep}{0.1cm}
+            \item $\alpha_i$: unit fixed effects
+            \item $\delta_t$: time fixed effects
+            \item $D_{it}$: treatment indicator
+        \end{itemize}
+    \end{frame}
+    %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Main Results}
+        \centering
+        \begin{tabular}{lccc}
+            \toprule
+            \textbf{Specification} & \textbf{Estimate} & \textbf{SE} & \textbf{p-value} \\
+            \midrule
+            Baseline & $+0.000$ & 0.000 & 0.000 \\
+            With controls & $+0.000$ & 0.000 & 0.000 \\
+            \bottomrule
+        \end{tabular}
+
+        \vspace{0.3cm}
+        \begin{itemize}
+            \item Interpretation line 1
+            \item Interpretation line 2
+        \end{itemize}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Event Study}
+        \vfill
+        \centering
+        % \includegraphics[width=0.68\textwidth]{event_study.png}
+        \textit{[Insert event study figure]}
+        \vfill
+        \small
+        Description of the figure.
+        \vspace{0.2cm}
+    \end{frame}
+    %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Robustness}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Robustness Checks}
+        \centering
+        \small
+        \begin{tabular}{lcc}
+            \toprule
+            \textbf{Test} & \textbf{Result} & \textbf{Pass?} \\
+            \midrule
+            Placebo & & \\
+            Leave-one-out & & \\
+            Alternative controls & & \\
+            \bottomrule
+        \end{tabular}
+    \end{frame}
+    %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Summary}
+        \begin{enumerate}\setlength{\itemsep}{0.15cm}
+            \item Finding 1
+            \item Finding 2
+            \item Finding 3
+        \end{enumerate}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Next Steps}
+        \begin{itemize}\setlength{\itemsep}{0.15cm}
+            \item Next step 1
+            \item Next step 2
+            \item Next step 3
+        \end{itemize}
+    \end{frame}
+    %
+
+\end{document}
