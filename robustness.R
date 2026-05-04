@@ -428,4 +428,94 @@ etable(q6_gradient_pre, q6_gradient_post,
 
 rm(pa_tract_panel, pa_tract_sample)
 
+
+# 9. Early-data robustness: drop 2002-2009 ----
+# The Act 32 break compares pre-2012 to post-2012. The pre window includes
+# 2002-2009 LODES, when LEHD coverage was thinnest and incorporates the
+# 2008-2009 recession. If the post-Act 32 effect simply reflects coverage
+# improvements or recession dynamics, it should weaken when we restrict the
+# pre window to 2010-2011 only.
+#
+# LODES8 uses 2020 Census geography across all years, so this is NOT a tract
+# vintage test -- it's a coverage-quality / business-cycle test.
+
+cat("\n\n==== Section 9: Early-data robustness (drop 2002-2009) ====\n")
+
+## 9a. Headline: share_live_in on resident_eit, full vs restricted ----
+pa_panel_full <- copy(pa_panel)
+pa_panel_full[, post_act32 := as.integer(year >= 2012)]
+pa_panel_restr <- pa_panel_full[year >= 2010]
+
+cat("\n9a. Headline share_live_in:\n")
+cat("Full sample (2002-2019):", nrow(pa_panel_full), "city-years\n")
+cat("Restricted (2010-2019):", nrow(pa_panel_restr), "city-years\n")
+
+h_full <- feols(share_live_in ~ resident_eit + resident_eit:post_act32 |
+  cousub_fips + year, data = pa_panel_full, cluster = ~cousub_fips)
+h_restr <- feols(share_live_in ~ resident_eit + resident_eit:post_act32 |
+  cousub_fips + year, data = pa_panel_restr, cluster = ~cousub_fips)
+
+etable(h_full, h_restr,
+  headers = c("Full 2002-2019", "Restricted 2010-2019"),
+  keep = c("resident_eit", "post_act32"))
+
+## 9b. Fiscal: log(EIT revenue) Act 32 break, full vs restricted ----
+pa_afr_full2 <- fread(file.path(data_dir, "pa_afr_panel.csv"))
+pa_afr_full2[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
+pa_afr_full2 <- merge(pa_afr_full2, pa_xwalk,
+  by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
+pa_afr_full2[, yr := ifelse(!is.na(reporting_year),
+  as.integer(reporting_year), as.integer(year))]
+pa_afr_full2 <- merge(pa_afr_full2, pa_rate_fiscal,
+  by.x = c("cousub_fips", "yr"), by.y = c("cousub_fips", "year"), all.x = TRUE)
+pa_afr_full2[, eit_rev := as.numeric(ifelse(!is.na(earned_income_tax_revenues),
+  earned_income_tax_revenues, earned_income_tax))]
+pa_afr_full2[, log_eit := ifelse(eit_rev > 0, log(eit_rev), NA_real_)]
+pa_afr_full2[, post_act32 := as.integer(yr >= 2012)]
+
+f_full <- pa_afr_full2[!is.na(cousub_fips) & !is.na(resident_eit) &
+  !is.na(log_eit) & yr <= 2019]
+f_restr <- f_full[yr >= 2010]
+
+cat("\n9b. Fiscal log(EIT revenue):\n")
+cat("Full:", nrow(f_full), "| Restricted:", nrow(f_restr), "muni-years\n")
+
+eit_full <- feols(log_eit ~ resident_eit + resident_eit:post_act32 |
+  cousub_fips + yr, data = f_full, cluster = ~cousub_fips)
+eit_restr <- feols(log_eit ~ resident_eit + resident_eit:post_act32 |
+  cousub_fips + yr, data = f_restr, cluster = ~cousub_fips)
+
+etable(eit_full, eit_restr,
+  headers = c("Full 2002-2019", "Restricted 2010-2019"),
+  keep = c("resident_eit", "post_act32"))
+
+## 9c. Stage 2: Q4 resident workers, full vs restricted ----
+pa_resident_panel2 <- readRDS(file.path(data_dir, "pa_resident_panel.rds"))
+pa_resident_panel2[, post_act32 := as.integer(year >= 2012)]
+res_full <- pa_resident_panel2[total_jobs > 50 & !is.na(own_eit) & !is.na(nbr_avg_rate)]
+res_restr <- res_full[year >= 2010]
+
+cat("\n9c. Q4 log(resident workers):\n")
+cat("Full:", nrow(res_full), "| Restricted:", nrow(res_restr), "city-years\n")
+
+q4_full <- feols(log_res_workers ~ own_eit + own_eit:post_act32 +
+  nbr_avg_rate | work_city + year, data = res_full, cluster = ~work_city)
+q4_restr <- feols(log_res_workers ~ own_eit + own_eit:post_act32 +
+  nbr_avg_rate | work_city + year, data = res_restr, cluster = ~work_city)
+
+etable(q4_full, q4_restr,
+  headers = c("Full 2002-2019", "Restricted 2010-2019"),
+  keep = c("own_eit", "nbr_avg_rate", "post_act32"))
+
+## 9d. Coverage diagnostic: LODES totals by year ----
+# If LEHD coverage improved across the panel, total jobs and total residents
+# should drift upward in early years independent of any treatment.
+cat("\n9d. LODES coverage diagnostic (PA, never-changed cities only):\n")
+nc_cities <- pa_rate_panel[event_type == "no_change", unique(cousub_fips)]
+cov_check <- pa_panel[cousub_fips %in% nc_cities,
+  .(total_jobs = sum(total_jobs, na.rm = TRUE),
+    total_resident_workers = sum(resident_workers, na.rm = TRUE),
+    n_cities = .N), by = year]
+print(cov_check[order(year)])
+
 beepr::beep()

@@ -86,14 +86,24 @@ pa_eit_file <- file.path(data_dir, "pa_eit_rate_panel.csv")
 if (!file.exists(pa_eit_file)) stop("Run: python3 scrape_pa_dced_eit.py first")
 
 pa_raw <- fread(pa_eit_file)
+
+# Per Act 32: a worker's bill = max(total resident rate at home,
+# nonresident muni rate at work). Home side stacks muni_res + SD; work side is
+# muni nonresident only (SDs do not levy a nonresident rate). We need both
+# muni_res and muni_nonres in the panel so downstream models can implement
+# the piecewise correctly.
+
 pa_resident <- pa_raw[is_resident == TRUE,
   .(municipality_id, municipality, county, year, muni_eit_rate, sd_eit_rate, total_eit_rate)]
+pa_nonres <- pa_raw[is_nonresident == TRUE,
+  .(municipality_id, year, muni_nonres_rate = muni_eit_rate)]
 
 # EIT rates are percentages (0-4% range); values > 5 are LST dollar amounts
 # that leaked into the rate field — filter them out before aggregating
 pa_resident <- pa_resident[is.na(muni_eit_rate) | muni_eit_rate <= 5]
 pa_resident <- pa_resident[is.na(sd_eit_rate) | sd_eit_rate <= 5]
 pa_resident <- pa_resident[is.na(total_eit_rate) | total_eit_rate <= 10]
+pa_nonres <- pa_nonres[is.na(muni_nonres_rate) | muni_nonres_rate <= 5]
 
 # Note: Philadelphia has a separate wage tax (4%+), not standard Act 511 EIT.
 # It reports inconsistently, creating spurious rate changes.
@@ -104,16 +114,52 @@ pa_rate_panel <- pa_resident[, .(
   sd_eit = max(sd_eit_rate, na.rm = TRUE),
   total_eit = max(total_eit_rate, na.rm = TRUE)
 ), by = .(municipality_id, municipality, county, year)]
+pa_nonres_panel <- pa_nonres[, .(
+  muni_nonres_eit = max(muni_nonres_rate, na.rm = TRUE)
+), by = .(municipality_id, year)]
+pa_rate_panel <- merge(pa_rate_panel, pa_nonres_panel,
+  by = c("municipality_id", "year"), all.x = TRUE)
+
 pa_rate_panel[is.infinite(resident_eit), resident_eit := NA]
 pa_rate_panel[is.infinite(sd_eit), sd_eit := NA]
 pa_rate_panel[is.infinite(total_eit), total_eit := NA]
+pa_rate_panel[is.infinite(muni_nonres_eit), muni_nonres_eit := NA]
+
+# DCED central reporting of nonresident rates is incomplete pre-Act-32
+# (only 53-60% of munis report 2002-2011, jumping to 72% in 2012). Diagnostics
+# show this is a reporting gap, not an institutional gap: of 422 munis missing
+# in 2010 but reporting 2015, only 0.2% have nonres=0 (so missing != "no
+# nonres tax"). Nonresident rates are also extremely persistent: 96.3% of
+# munis with post-2012 data have a single stable rate across 2012-2019.
+# We backfill pre-2012 missing values with the earliest observed post-2012
+# nonresident rate for each muni, and flag the imputation.
 pa_rate_panel <- pa_rate_panel[order(municipality_id, year)]
+pa_rate_panel[, nonres_imputed := is.na(muni_nonres_eit)]
+post_nr <- pa_rate_panel[year >= 2012 & !is.na(muni_nonres_eit),
+  .(muni_nonres_backfill = muni_nonres_eit[which.min(year)]), by = municipality_id]
+pa_rate_panel <- merge(pa_rate_panel, post_nr, by = "municipality_id", all.x = TRUE)
+pa_rate_panel[is.na(muni_nonres_eit) & !is.na(muni_nonres_backfill),
+  muni_nonres_eit := muni_nonres_backfill]
+pa_rate_panel[, muni_nonres_backfill := NULL]
+# Backward-compat: total_eit should equal muni_res + sd (home-side comparison object)
+# Recompute defensively in case the DCED total field disagrees with the sum.
+pa_rate_panel[, total_eit := ifelse(is.na(resident_eit) | is.na(sd_eit),
+  total_eit, resident_eit + sd_eit)]
+# Wedge: muni nonres - muni res (positive when work-side rate exceeds home-side muni)
+pa_rate_panel[, rate_wedge := muni_nonres_eit - resident_eit]
+
+pa_rate_panel <- pa_rate_panel[order(municipality_id, year)]
+# Existing change/event flags continue to track resident_eit (backward compat).
 pa_rate_panel[, rate_lag := shift(resident_eit, 1), by = municipality_id]
 pa_rate_panel[, rate_change := resident_eit - rate_lag]
 pa_rate_panel[, total_eit_lag := shift(total_eit, 1), by = municipality_id]
 pa_rate_panel[, total_rate_change := total_eit - total_eit_lag]
 pa_rate_panel[, sd_eit_lag := shift(sd_eit, 1), by = municipality_id]
 pa_rate_panel[, sd_rate_change := sd_eit - sd_eit_lag]
+# New: parallel change flags for nonres rate (so analyses can detect nonres-only
+# events that resident-rate-based event_type misses for ~24% of munis with a wedge).
+pa_rate_panel[, nonres_lag := shift(muni_nonres_eit, 1), by = municipality_id]
+pa_rate_panel[, nonres_change := muni_nonres_eit - nonres_lag]
 pa_rate_panel[, event_type := fcase(
   is.na(rate_change), NA_character_,
   abs(rate_change) < 1e-6, "no_change",
@@ -375,7 +421,8 @@ saveRDS(oh_panel_high, file.path(data_dir, "oh_panel_high.rds"))
 
 ## PA
 pa_rate_merge <- pa_rate_panel[!is.na(cousub_fips),
-  .(cousub_fips, year, resident_eit, sd_eit, total_eit, rate_change, event_type, first_increase_year)] %>%
+  .(cousub_fips, year, resident_eit, sd_eit, total_eit, muni_nonres_eit, rate_wedge,
+    nonres_imputed, rate_change, nonres_change, event_type, first_increase_year)] %>%
   unique()
 pa_panel <- merge(pa_city_od, pa_rate_merge,
   by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)

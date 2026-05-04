@@ -33,9 +33,14 @@ oh_panel[, `:=`(
 
 
 # 1. PA TWFE: Full Outcome Family ----
+# Three regressors per outcome:
+#   muni only (resident_eit) -- back-compat with original results
+#   total stack (total_eit) -- bundled home rate per Act 32 piecewise
+#   decomposition (resident_eit + sd_eit) -- separates muni vs SD channels
 
 pa_samp <- pa_panel[total_jobs > 50 & !is.na(resident_eit)]
 
+# Muni only
 m_share <- feols(share_live_in ~ resident_eit | work_city + year,
   data = pa_samp, cluster = ~work_city)
 m_lw <- feols(log_live_work ~ resident_eit | work_city + year,
@@ -45,9 +50,35 @@ m_lo <- feols(log_live_out ~ resident_eit | work_city + year,
 m_tj <- feols(log_total ~ resident_eit | work_city + year,
   data = pa_samp[!is.na(log_total)], cluster = ~work_city)
 
-print("=== PA TWFE: OUTCOME FAMILY ===")
+# Total stack
+m_share_t <- feols(share_live_in ~ total_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+m_lw_t <- feols(log_live_work ~ total_eit | work_city + year,
+  data = pa_samp[!is.na(log_live_work)], cluster = ~work_city)
+m_lo_t <- feols(log_live_out ~ total_eit | work_city + year,
+  data = pa_samp[!is.na(log_live_out)], cluster = ~work_city)
+m_tj_t <- feols(log_total ~ total_eit | work_city + year,
+  data = pa_samp[!is.na(log_total)], cluster = ~work_city)
+
+# Decomposition
+m_share_d <- feols(share_live_in ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+m_lw_d <- feols(log_live_work ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp[!is.na(log_live_work)], cluster = ~work_city)
+m_lo_d <- feols(log_live_out ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp[!is.na(log_live_out)], cluster = ~work_city)
+m_tj_d <- feols(log_total ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp[!is.na(log_total)], cluster = ~work_city)
+
+print("=== PA TWFE: OUTCOME FAMILY (muni only) ===")
 etable(m_share, m_lw, m_lo, m_tj,
-  headers = c("share_live_in", "log(Resident Workers)", "log(Nonresident Workers)", "log(Total Jobs)"))
+  headers = c("share_live_in", "log(Resident)", "log(Nonresident)", "log(Total Jobs)"))
+print("=== PA TWFE: OUTCOME FAMILY (total stack) ===")
+etable(m_share_t, m_lw_t, m_lo_t, m_tj_t,
+  headers = c("share_live_in", "log(Resident)", "log(Nonresident)", "log(Total Jobs)"))
+print("=== PA TWFE: OUTCOME FAMILY (muni + SD decomp) ===")
+etable(m_share_d, m_lw_d, m_lo_d, m_tj_d,
+  headers = c("share_live_in", "log(Resident)", "log(Nonresident)", "log(Total Jobs)"))
 
 
 # 2. PA Dose-Response: Outcome Family (treated only) ----

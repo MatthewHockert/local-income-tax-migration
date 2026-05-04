@@ -441,20 +441,45 @@ q3_pa_asym <- feols(
   data = q3_pa_both_sample, cluster = ~work_city)
 
 ## Q3 PA: Split dose (cumulative + / - on full sample) ----
+# Three flavors: muni rate (back-compat), total stack, and decomposed (muni + SD).
 q3_pa_dose_sample <- pa_panel[total_jobs > 50 & !is.na(resident_eit)][year <= max_year]
 pa_base_rate <- pa_rate_panel[!is.na(cousub_fips),
-  .(base_rate = first(na.omit(resident_eit))), by = cousub_fips]
+  .(base_rate = first(na.omit(resident_eit)),
+    base_total = first(na.omit(total_eit)),
+    base_sd = first(na.omit(sd_eit))), by = cousub_fips]
 q3_pa_dose_sample <- merge(q3_pa_dose_sample, pa_base_rate,
   by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
-q3_pa_dose_sample[, cumul := resident_eit - fifelse(is.na(base_rate), 0, base_rate)]
 q3_pa_dose_sample[, `:=`(
-  pos_change = fifelse(cumul > 0, cumul, 0),
-  neg_change = fifelse(cumul < 0, abs(cumul), 0)
+  cumul       = resident_eit - fifelse(is.na(base_rate),  0, base_rate),
+  cumul_total = total_eit    - fifelse(is.na(base_total), 0, base_total),
+  cumul_sd    = sd_eit       - fifelse(is.na(base_sd),    0, base_sd)
+)]
+q3_pa_dose_sample[, `:=`(
+  pos_change       = fifelse(cumul > 0, cumul, 0),
+  neg_change       = fifelse(cumul < 0, abs(cumul), 0),
+  pos_total        = fifelse(cumul_total > 0, cumul_total, 0),
+  neg_total        = fifelse(cumul_total < 0, abs(cumul_total), 0),
+  pos_sd           = fifelse(cumul_sd > 0, cumul_sd, 0),
+  neg_sd           = fifelse(cumul_sd < 0, abs(cumul_sd), 0)
 )]
 
+# Muni rate split dose (back-compat with original paper)
 q3_pa_split <- feols(
   share_live_in ~ pos_change + neg_change | work_city + year,
   data = q3_pa_dose_sample, cluster = ~work_city)
+
+# Total stack split dose
+q3_pa_split_total <- feols(
+  share_live_in ~ pos_total + neg_total | work_city + year,
+  data = q3_pa_dose_sample, cluster = ~work_city)
+
+# Decomposition: muni + SD entered separately for both directions
+q3_pa_split_decomp <- feols(
+  share_live_in ~ pos_change + neg_change + pos_sd + neg_sd | work_city + year,
+  data = q3_pa_dose_sample, cluster = ~work_city)
+
+print(etable(q3_pa_split, q3_pa_split_total, q3_pa_split_decomp,
+  headers = c("Muni only", "Total stack", "Muni + SD decomp")))
 
 ## Q3 OH: Decreasers vs no-tax ----
 oh_first_dec <- oh_rate_panel[event_type == "decrease",

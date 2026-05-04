@@ -43,7 +43,9 @@ pa_cousub <- readRDS(file.path(data_dir, "pa_cousub.rds"))
 tf_rates <- readRDS(file.path(data_dir, "tf_rates.rds"))
 
 ## Merge fiscal controls into PA panel ----
-# From DCED AFR: police, streets, debt, state aid expenditures
+# From DCED AFR (PA municipal annual financial reports). Comprehensive city-side
+# expenditure controls for all major function categories. SD-level fiscal data
+# (PA Dept of Education) is NOT yet merged -- see TODO below.
 pa_afr_file <- file.path(data_dir, "pa_afr_panel.csv")
 if (file.exists(pa_afr_file)) {
   pa_afr_raw <- fread(pa_afr_file)
@@ -52,19 +54,41 @@ if (file.exists(pa_afr_file)) {
   pa_afr_raw <- merge(pa_afr_raw, pa_xwalk_afr, by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
   pa_afr_raw[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
 
+  # Helper to coalesce two name variants and take log if positive
+  log_pos <- function(x) ifelse(as.numeric(x) > 0, log(as.numeric(x)), NA_real_)
+
   fiscal_controls <- pa_afr_raw[!is.na(cousub_fips), .(
     cousub_fips, year = yr,
-    log_police = ifelse(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police)) > 0,
-      log(as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police))), NA_real_),
-    log_streets = ifelse(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
-      `public_works-highways_and_streets_expenditures`, streets_and_roads)) > 0,
-      log(as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
-      `public_works-highways_and_streets_expenditures`, streets_and_roads))), NA_real_),
-    log_debt = ifelse(as.numeric(total_debt) > 0, log(as.numeric(total_debt)), NA_real_),
-    log_state_aid = ifelse(as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
-      `intergovernmental_revenues-state_government`, state_govt)) > 0,
-      log(as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
-      `intergovernmental_revenues-state_government`, state_govt))), NA_real_)
+    # Public safety
+    log_police = log_pos(ifelse(!is.na(police_expenditures), police_expenditures, police)),
+    log_fire = log_pos(ifelse(!is.na(fire_expenditures), fire_expenditures, fire)),
+    log_other_safety = log_pos(ifelse(!is.na(other_public_safety_expenditures),
+      other_public_safety_expenditures, other_public_safety)),
+    # Public works
+    log_streets = log_pos(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+      `public_works-highways_and_streets_expenditures`, streets_and_roads)),
+    log_sewer = log_pos(ifelse(!is.na(sewer_expenditures), sewer_expenditures, sewer_exp)),
+    log_other_pw = log_pos(ifelse(!is.na(other_public_works_expenditures),
+      other_public_works_expenditures, other_public_works)),
+    # Quality of life
+    log_parks = log_pos(ifelse(!is.na(culture_and_recreation_expenditures),
+      culture_and_recreation_expenditures, parks_and_recreation)),
+    log_library = log_pos(libraries_expenditures),
+    log_comm_dev = log_pos(ifelse(!is.na(community_development_expenditures),
+      community_development_expenditures, planning_and_development)),
+    # General govt + admin
+    log_genadmin = log_pos(ifelse(!is.na(general_government_expenditures),
+      general_government_expenditures, general_administration)),
+    log_health = log_pos(health_and_human_services_expenditures),
+    # Debt
+    log_debt = log_pos(total_debt),
+    log_debt_service = log_pos(ifelse(!is.na(debt_service_expenditures),
+      debt_service_expenditures, debt_service)),
+    # Total expenditure (denominator-style control)
+    log_total_exp = log_pos(ifelse(!is.na(total_expenditures), total_expenditures, expenditures)),
+    # Intergovernmental revenue
+    log_state_aid = log_pos(ifelse(!is.na(`intergovernmental_revenues-state_government`),
+      `intergovernmental_revenues-state_government`, state_govt))
   )]
 
   pa_panel <- merge(pa_panel, fiscal_controls,
@@ -1462,6 +1486,8 @@ print(p_pa_bin)
 ## PA: Rate changes vs share changes ----
 pa_panel[, d_share := share_live_in - shift(share_live_in), by = work_city]
 pa_panel[, d_rate := resident_eit - shift(resident_eit), by = work_city]
+pa_panel[, d_total := total_eit - shift(total_eit), by = work_city]
+pa_panel[, d_sd := sd_eit - shift(sd_eit), by = work_city]
 
 p_pa_drate <- pa_panel[total_jobs > 50 & !is.na(d_rate) & abs(d_rate) > 1e-6 & !is.na(d_share)] %>%
   ggplot(aes(x = d_rate * 100, y = d_share)) +
@@ -1791,68 +1817,186 @@ etable(oh_m1, oh_m_high,
 
 
 # 5. Pennsylvania OD Estimation ----
+# Per Act 32 piecewise: live-and-work-in-i residents pay
+#   tau_total_home_i = resident_eit + sd_eit (muni resident + SD resident).
+# Q2 (share_live_in) and the related count outcomes are home-channel only,
+# so nonresident rate does not enter. We present each spec twice:
+#   (A) bundled: total home stack alone
+#   (B) decomposed: muni resident and SD entered separately (Q5 channel split)
+# Full 2002-2019 panel; no imputation needed for these specs.
 
-pa_samp <- pa_panel[total_jobs > 50 & !is.na(resident_eit)]
+pa_samp <- pa_panel[total_jobs > 50 & !is.na(total_eit)]
 
-## 5a. TWFE: share_live_in ~ rate | city + year ----
-# PA sample with fiscal controls
+## 5a. TWFE: share_live_in ~ home stack | city + year ----
 pa_samp_ctrl <- pa_samp[!is.na(log_police) & !is.na(log_streets) &
   !is.na(log_debt) & !is.na(log_state_aid)]
 
-pa_m1 <- feols(share_live_in ~ resident_eit | work_city + year,
+# Expanded fiscal control set: public safety (police, fire), public works
+# (streets, sewer), quality of life (parks, comm_dev, library), general govt,
+# debt, intergov state aid. Covers all major expenditure functions.
+fiscal_ctrls_full <- ~ log_police + log_fire + log_streets + log_sewer +
+  log_parks + log_comm_dev + log_genadmin + log_debt + log_state_aid
+
+# (A) bundled total home stack
+pa_m1 <- feols(share_live_in ~ total_eit | work_city + year,
   data = pa_samp, cluster = ~work_city)
-pa_m1_ctrl <- feols(share_live_in ~ resident_eit + log_police + log_streets +
+pa_m1_ctrl <- feols(share_live_in ~ total_eit + log_police + log_streets +
   log_debt + log_state_aid | work_city + year,
   data = pa_samp_ctrl, cluster = ~work_city)
+pa_m1_ctrl_full <- feols(share_live_in ~ total_eit + log_police + log_fire +
+  log_streets + log_sewer + log_parks + log_comm_dev + log_genadmin +
+  log_debt + log_state_aid | work_city + year,
+  data = pa_samp_ctrl, cluster = ~work_city)
+# (B) decomposed: muni res + SD
+pa_m1_decomp <- feols(share_live_in ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+pa_m1_decomp_ctrl <- feols(share_live_in ~ resident_eit + sd_eit + log_police +
+  log_streets + log_debt + log_state_aid | work_city + year,
+  data = pa_samp_ctrl, cluster = ~work_city)
+pa_m1_decomp_ctrl_full <- feols(share_live_in ~ resident_eit + sd_eit +
+  log_police + log_fire + log_streets + log_sewer + log_parks + log_comm_dev +
+  log_genadmin + log_debt + log_state_aid | work_city + year,
+  data = pa_samp_ctrl, cluster = ~work_city)
+
+etable(pa_m1, pa_m1_ctrl, pa_m1_ctrl_full, pa_m1_decomp, pa_m1_decomp_ctrl,
+  pa_m1_decomp_ctrl_full,
+  headers = c("Total (bundled)", "Total + 4 Ctrls", "Total + Full Ctrls",
+    "Decomp", "Decomp + 4 Ctrls", "Decomp + Full Ctrls"),
+  keep = c("total_eit", "resident_eit", "sd_eit"))
 
 ## 5b. Log outcomes ----
-pa_m2 <- feols(log_live_in ~ resident_eit | work_city + year,
+pa_m2 <- feols(log_live_in ~ total_eit | work_city + year,
   data = pa_samp, cluster = ~work_city)
-pa_m3 <- feols(log_live_out ~ resident_eit | work_city + year,
+pa_m3 <- feols(log_live_out ~ total_eit | work_city + year,
   data = pa_samp, cluster = ~work_city)
-pa_m4 <- feols(log_total_jobs ~ resident_eit | work_city + year,
+pa_m4 <- feols(log_total_jobs ~ total_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+# Decomposed
+pa_m2_decomp <- feols(log_live_in ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+pa_m3_decomp <- feols(log_live_out ~ resident_eit + sd_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+pa_m4_decomp <- feols(log_total_jobs ~ resident_eit + sd_eit | work_city + year,
   data = pa_samp, cluster = ~work_city)
 
-etable(pa_m1, pa_m1_ctrl, pa_m2, pa_m3, pa_m4,
-  headers = c("Share Live In", "Share + Controls", "log(Live In)", "log(Live Outside)", "log(Total Jobs)"),
-  keep = c("resident_eit"))
+etable(pa_m1, pa_m2, pa_m3, pa_m4,
+  headers = c("Share Live In", "log(Live In)", "log(Live Outside)", "log(Total Jobs)"),
+  keep = c("total_eit"))
+etable(pa_m1_decomp, pa_m2_decomp, pa_m3_decomp, pa_m4_decomp,
+  headers = c("Share Live In", "log(Live In)", "log(Live Outside)", "log(Total Jobs)"),
+  keep = c("resident_eit", "sd_eit"))
 
 ## 5c. First differences ----
-pa_m_fd <- feols(d_share ~ d_rate | year,
-  data = pa_samp[!is.na(d_share) & !is.na(d_rate) & abs(d_rate) > 1e-6],
+# Use d_total (first-difference of total home stack) as the primary; d_rate (muni only)
+# kept as a robustness column for backward comparison.
+pa_m_fd <- feols(d_share ~ d_total | year,
+  data = pa_samp[!is.na(d_share) & !is.na(d_total) & abs(d_total) > 1e-6],
   cluster = ~work_city)
-etable(pa_m_fd, headers = "PA: First Differences")
+pa_m_fd_decomp <- feols(d_share ~ d_rate + d_sd | year,
+  data = pa_samp[!is.na(d_share) & !is.na(d_rate) & !is.na(d_sd) &
+    (abs(d_rate) > 1e-6 | abs(d_sd) > 1e-6)],
+  cluster = ~work_city)
+etable(pa_m_fd, pa_m_fd_decomp,
+  headers = c("FD: Total Stack", "FD: Muni + SD Decomp"))
 
-## 5d. Event study ----
+## 5d. Event studies ----
+# Three cohort definitions to identify which channel drives sorting:
+#   (i)  first muni-res rate increase (existing -- the muni channel)
+#   (ii) first SD rate increase (Q5 SD channel)
+#   (iii) first total-stack increase (any home-side hike)
+# All on share_live_in. Restricted to +/- 5 years around the event.
+
+# (i) Muni rate event (existing definition uses rate_change = d resident_eit)
 pa_first_change <- pa_samp[!is.na(rate_change) & abs(rate_change) > 1e-6,
-  .(event_year = min(year)), by = work_city]
-pa_event <- merge(pa_samp, pa_first_change, by = "work_city")
-pa_event[, rel_year := year - event_year]
-pa_event_samp <- pa_event[abs(rel_year) <= 5]
+  .(event_year_muni = min(year)), by = work_city]
+# (ii) SD rate event
+pa_first_sd <- pa_samp[!is.na(sd_eit) &
+  !is.na(shift(sd_eit)), .(work_city, year, d_sd_now = sd_eit - shift(sd_eit))][
+  d_sd_now > 1e-6, .(event_year_sd = min(year)), by = work_city]
+# (iii) Total-stack event
+pa_first_total <- pa_samp[!is.na(d_total) & d_total > 1e-6,
+  .(event_year_total = min(year)), by = work_city]
 
+# Build event-time panels
+pa_event_muni <- merge(pa_samp, pa_first_change, by = "work_city")
+pa_event_muni[, rel_year := year - event_year_muni]
+pa_event_muni_samp <- pa_event_muni[abs(rel_year) <= 5]
+
+pa_event_sd <- merge(pa_samp, pa_first_sd, by = "work_city")
+pa_event_sd[, rel_year := year - event_year_sd]
+pa_event_sd_samp <- pa_event_sd[abs(rel_year) <= 5]
+
+pa_event_total <- merge(pa_samp, pa_first_total, by = "work_city")
+pa_event_total[, rel_year := year - event_year_total]
+pa_event_total_samp <- pa_event_total[abs(rel_year) <= 5]
+
+# Estimate event studies (TWFE w/ rel_year dummies, ref = -1)
 pa_m_event <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city + year,
-  data = pa_event_samp, cluster = ~work_city)
+  data = pa_event_muni_samp, cluster = ~work_city)
+pa_m_event_sd <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city + year,
+  data = pa_event_sd_samp, cluster = ~work_city)
+pa_m_event_total <- feols(share_live_in ~ i(rel_year, ref = -1) | work_city + year,
+  data = pa_event_total_samp, cluster = ~work_city)
 
+# Controlled muni event study (existing) + total-stack version with controls
 pa_event_ctrl <- merge(pa_samp_ctrl, pa_first_change, by = "work_city")
-pa_event_ctrl[, rel_year := year - event_year]
+pa_event_ctrl[, rel_year := year - event_year_muni]
 pa_event_ctrl <- pa_event_ctrl[abs(rel_year) <= 5]
 
 pa_m_event_ctrl <- feols(share_live_in ~ i(rel_year, ref = -1) + log_police +
-  log_streets + log_debt + log_state_aid | work_city + year,
+  log_fire + log_streets + log_sewer + log_parks + log_comm_dev + log_genadmin +
+  log_debt + log_state_aid | work_city + year,
   data = pa_event_ctrl, cluster = ~work_city)
 
-etable(pa_m_event, pa_m_event_ctrl,
-  headers = c("PA Event Study", "PA Event Study + Controls"),
+etable(pa_m_event, pa_m_event_sd, pa_m_event_total, pa_m_event_ctrl,
+  headers = c("Muni rate event", "SD rate event", "Total stack event",
+    "Muni event + Full Ctrls"),
   keep = c("rel_year"))
 
-## 5e. Out-of-state share ----
-pa_m_oos <- feols(share_out_of_state ~ resident_eit | work_city + year,
-  data = pa_samp, cluster = ~work_city)
-pa_m_isd <- feols(share_in_state_diff ~ resident_eit | work_city + year,
-  data = pa_samp, cluster = ~work_city)
+# Sun-Abraham parallels (handles staggered timing properly)
+pa_sa_samp_muni <- pa_samp[total_jobs > 50]
+pa_sa_samp_muni[, cohort_muni := ifelse(is.na(first_increase_year), 10000L,
+  as.integer(first_increase_year))]
 
-etable(pa_m1, pa_m_oos, pa_m_isd,
-  headers = c("Share Live In", "Share Out-of-State", "Share In-State Diff Muni"))
+# Build SD cohort: first SD rate increase per city
+pa_sd_first <- pa_samp[, .(work_city, year, sd_eit)][order(work_city, year)]
+pa_sd_first[, sd_lag := shift(sd_eit), by = work_city]
+pa_sd_first <- pa_sd_first[!is.na(sd_lag) & sd_eit - sd_lag > 1e-6,
+  .(first_sd_increase = min(year)), by = work_city]
+pa_sa_samp_muni <- merge(pa_sa_samp_muni, pa_sd_first, by = "work_city", all.x = TRUE)
+pa_sa_samp_muni[, cohort_sd := ifelse(is.na(first_sd_increase), 10000L,
+  as.integer(first_sd_increase))]
+
+# Build total-stack cohort
+pa_total_first <- pa_samp[, .(work_city, year, total_eit)][order(work_city, year)]
+pa_total_first[, total_lag := shift(total_eit), by = work_city]
+pa_total_first <- pa_total_first[!is.na(total_lag) & total_eit - total_lag > 1e-6,
+  .(first_total_increase = min(year)), by = work_city]
+pa_sa_samp_muni <- merge(pa_sa_samp_muni, pa_total_first, by = "work_city", all.x = TRUE)
+pa_sa_samp_muni[, cohort_total := ifelse(is.na(first_total_increase), 10000L,
+  as.integer(first_total_increase))]
+
+pa_m_sa_muni <- feols(share_live_in ~ sunab(cohort_muni, year) | work_city + year,
+  data = pa_sa_samp_muni, cluster = ~work_city)
+pa_m_sa_sd <- feols(share_live_in ~ sunab(cohort_sd, year) | work_city + year,
+  data = pa_sa_samp_muni, cluster = ~work_city)
+pa_m_sa_total <- feols(share_live_in ~ sunab(cohort_total, year) | work_city + year,
+  data = pa_sa_samp_muni, cluster = ~work_city)
+
+etable(pa_m_sa_muni, pa_m_sa_sd, pa_m_sa_total,
+  headers = c("SA: Muni event", "SA: SD event", "SA: Total stack event"))
+
+## 5e. Out-of-state share ----
+pa_m_oos <- feols(share_out_of_state ~ total_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+pa_m_isd <- feols(share_in_state_diff ~ total_eit | work_city + year,
+  data = pa_samp, cluster = ~work_city)
+pa_m_oos_decomp <- feols(share_out_of_state ~ resident_eit + sd_eit |
+  work_city + year, data = pa_samp, cluster = ~work_city)
+
+etable(pa_m1, pa_m_oos, pa_m_isd, pa_m_oos_decomp,
+  headers = c("Live In (Total)", "Out-of-State (Total)", "In-State Diff (Total)",
+    "Out-of-State (Decomp)"))
 
 ## 5f. Event study: out-of-state share ----
 pa_m_event_oos <- feols(share_out_of_state ~ i(rel_year, ref = -1) | work_city + year,
@@ -1861,11 +2005,14 @@ etable(pa_m_event, pa_m_event_oos,
   headers = c("Event: Share Live In", "Event: Share Out-of-State"))
 
 ## 5g. High earners ----
-pa_m_high <- feols(share_live_in ~ resident_eit | work_city + year,
-  data = pa_panel_high[total_jobs > 20 & !is.na(resident_eit)],
+pa_m_high <- feols(share_live_in ~ total_eit | work_city + year,
+  data = pa_panel_high[total_jobs > 20 & !is.na(total_eit)],
   cluster = ~work_city)
-etable(pa_m1, pa_m_high,
-  headers = c("PA All Workers", "PA High Earners"))
+pa_m_high_decomp <- feols(share_live_in ~ resident_eit + sd_eit | work_city + year,
+  data = pa_panel_high[total_jobs > 20 & !is.na(total_eit)],
+  cluster = ~work_city)
+etable(pa_m1, pa_m_high, pa_m_high_decomp,
+  headers = c("All (Total)", "High Earners (Total)", "High Earners (Decomp)"))
 
 
 # 6. Pooled OH + PA ----
@@ -2269,25 +2416,35 @@ oh_dose_m1 <- feols(share_live_in ~ post_tr | work_city + year,
 pa_dose_m1 <- feols(share_live_in ~ post_tr | work_city + year,
   data = pa_tp[total_jobs > 50], cluster = ~work_city)
 
-## 9b. Rate level × post (tax channel) ----
+## 9b. Rate level x post (tax channel) ----
+# PA: home stack (total_eit) primary; muni res + SD decomposition secondary.
+# Q2 is home-channel only -- nonresident rate not needed.
 oh_dose_m2 <- feols(share_live_in ~ rate:post_tr | work_city + year,
   data = oh_tp[total_jobs > 50], cluster = ~work_city)
 
-pa_dose_m2 <- feols(share_live_in ~ resident_eit:post_tr | work_city + year,
+pa_dose_m2 <- feols(share_live_in ~ total_eit:post_tr | work_city + year,
+  data = pa_tp[total_jobs > 50], cluster = ~work_city)
+pa_dose_m2_decomp <- feols(
+  share_live_in ~ resident_eit:post_tr + sd_eit:post_tr | work_city + year,
   data = pa_tp[total_jobs > 50], cluster = ~work_city)
 
-## 9c. Post + rate × post (decomposed) ----
+## 9c. Post + rate x post (decomposed) ----
 oh_dose_m3 <- feols(share_live_in ~ post_tr + rate:post_tr | work_city + year,
   data = oh_tp[total_jobs > 50], cluster = ~work_city)
 
-pa_dose_m3 <- feols(share_live_in ~ post_tr + resident_eit:post_tr | work_city + year,
+pa_dose_m3 <- feols(share_live_in ~ post_tr + total_eit:post_tr | work_city + year,
+  data = pa_tp[total_jobs > 50], cluster = ~work_city)
+pa_dose_m3_decomp <- feols(
+  share_live_in ~ post_tr + resident_eit:post_tr + sd_eit:post_tr |
+    work_city + year,
   data = pa_tp[total_jobs > 50], cluster = ~work_city)
 
 etable(oh_dose_m1, oh_dose_m2, oh_dose_m3,
   headers = c("OH: Post Only", "OH: Rate x Post", "OH: Post + Rate x Post"))
 
-etable(pa_dose_m1, pa_dose_m2, pa_dose_m3,
-  headers = c("PA: Post Only", "PA: Rate x Post", "PA: Post + Rate x Post"))
+etable(pa_dose_m1, pa_dose_m2, pa_dose_m2_decomp, pa_dose_m3, pa_dose_m3_decomp,
+  headers = c("PA: Post Only", "PA: Total x Post", "PA: Decomp x Post",
+    "PA: Post + Total x Post", "PA: Post + Decomp x Post"))
 
 
 # 10. City-Pair OD Flows ----
@@ -2396,9 +2553,9 @@ if (file.exists(pa_afr_file)) {
   # Year column
   pa_afr[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
 
-  # Merge EIT rate
+  # Merge EIT rates: muni resident, SD, total home stack (= muni res + SD)
   pa_rate_fiscal <- unique(pa_rate_panel[!is.na(cousub_fips),
-    .(cousub_fips, year, resident_eit, first_increase_year)])
+    .(cousub_fips, year, resident_eit, sd_eit, total_eit, first_increase_year)])
   pa_afr <- merge(pa_afr, pa_rate_fiscal,
     by.x = c("cousub_fips", "yr"), by.y = c("cousub_fips", "year"), all.x = TRUE)
 
@@ -2441,20 +2598,32 @@ if (file.exists(pa_afr_file)) {
   print(paste("Fiscal sample:", nrow(afr_samp), "municipality-years"))
 
   ## 12a. TWFE: Rate -> Revenue ----
-  fisc_m1 <- feols(log_eit ~ resident_eit | cousub_fips + yr,
+  # Q7 fiscal: residents pay total home stack (muni res + SD); revenue tracks total.
+  # Primary regressor: total_eit. Decomposition: muni_res + sd_eit.
+  fisc_m1 <- feols(log_eit ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_eit)], cluster = ~cousub_fips)
-  fisc_m2 <- feols(log_tax ~ resident_eit | cousub_fips + yr,
+  fisc_m2 <- feols(log_tax ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_tax)], cluster = ~cousub_fips)
-  fisc_m3 <- feols(log_rev ~ resident_eit | cousub_fips + yr,
+  fisc_m3 <- feols(log_rev ~ total_eit | cousub_fips + yr,
     data = afr_samp, cluster = ~cousub_fips)
-  fisc_m4 <- feols(log_re ~ resident_eit | cousub_fips + yr,
+  fisc_m4 <- feols(log_re ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_re)], cluster = ~cousub_fips)
-  fisc_m5 <- feols(log_exp ~ resident_eit | cousub_fips + yr,
+  fisc_m5 <- feols(log_exp ~ total_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_exp)], cluster = ~cousub_fips)
+
+  # Decomposition (muni res vs SD) — identifies which channel funds spending
+  fisc_m1_d <- feols(log_eit ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_eit)], cluster = ~cousub_fips)
+  fisc_m3_d <- feols(log_rev ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp, cluster = ~cousub_fips)
+  fisc_m5_d <- feols(log_exp ~ resident_eit + sd_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_exp)], cluster = ~cousub_fips)
 
   etable(fisc_m1, fisc_m2, fisc_m3, fisc_m4, fisc_m5,
     headers = c("log(EIT Rev)", "log(Total Tax)", "log(Total Rev)",
       "log(RE Tax)", "log(Expenditure)"))
+  etable(fisc_m1_d, fisc_m3_d, fisc_m5_d,
+    headers = c("EIT Rev (Decomp)", "Total Rev (Decomp)", "Expenditure (Decomp)"))
 
   ## 12b. Sun-Abraham: EIT Revenue ----
   afr_samp[, cohort := ifelse(is.na(first_increase_year), 10000L,
@@ -2470,25 +2639,47 @@ if (file.exists(pa_afr_file)) {
   saveRDS(afr_samp, file.path(data_dir, "pa_fiscal_panel.rds"))
 
   ## 12c. All fiscal outcomes ----
-  fisc_m_re <- feols(log_re ~ resident_eit | cousub_fips + yr,
+  # Primary: total_eit (home stack drives total revenue, which funds expenditures)
+  fisc_m_re <- feols(log_re ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_re)], cluster = ~cousub_fips)
-  fisc_m_police <- feols(log_police ~ resident_eit | cousub_fips + yr,
+  fisc_m_police <- feols(log_police ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_police)], cluster = ~cousub_fips)
-  fisc_m_exp <- feols(log_exp ~ resident_eit | cousub_fips + yr,
+  fisc_m_exp <- feols(log_exp ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_exp)], cluster = ~cousub_fips)
-  fisc_m_debt <- feols(log_debt ~ resident_eit | cousub_fips + yr,
+  fisc_m_debt <- feols(log_debt ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_debt)], cluster = ~cousub_fips)
-  fisc_m_state <- feols(log_state_aid ~ resident_eit | cousub_fips + yr,
+  fisc_m_state <- feols(log_state_aid ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_state_aid)], cluster = ~cousub_fips)
-  fisc_m_pop <- feols(log_pop ~ resident_eit | cousub_fips + yr,
+  fisc_m_pop <- feols(log_pop ~ total_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_pop) & pop > 0], cluster = ~cousub_fips)
-  fisc_m_mkt <- feols(log_mkt_val ~ resident_eit | cousub_fips + yr,
+  fisc_m_mkt <- feols(log_mkt_val ~ total_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_mkt_val)], cluster = ~cousub_fips)
+
+  # Decomposed: muni res vs SD on each spending category
+  fisc_m_re_d    <- feols(log_re        ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_re)], cluster = ~cousub_fips)
+  fisc_m_pol_d   <- feols(log_police    ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_police)], cluster = ~cousub_fips)
+  fisc_m_exp_d   <- feols(log_exp       ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_exp)], cluster = ~cousub_fips)
+  fisc_m_debt_d  <- feols(log_debt      ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_debt)], cluster = ~cousub_fips)
+  fisc_m_state_d <- feols(log_state_aid ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_state_aid)], cluster = ~cousub_fips)
+  fisc_m_pop_d   <- feols(log_pop       ~ resident_eit + sd_eit | cousub_fips + yr,
+    data = afr_samp[!is.na(log_pop) & pop > 0], cluster = ~cousub_fips)
+  fisc_m_mkt_d   <- feols(log_mkt_val   ~ resident_eit + sd_eit | cousub_fips + yr,
     data = afr_samp[!is.na(log_mkt_val)], cluster = ~cousub_fips)
 
   etable(fisc_m1, fisc_m2, fisc_m3, fisc_m_re, fisc_m_police, fisc_m_exp, fisc_m_pop, fisc_m_mkt,
     headers = c("EIT Rev", "Total Tax", "Total Rev", "RE Tax", "Police",
       "Expenditure", "Population", "Mkt Value RE"),
-    keep = "resident_eit")
+    keep = "total_eit")
+  etable(fisc_m1_d, fisc_m_re_d, fisc_m_pol_d, fisc_m_exp_d, fisc_m_debt_d,
+    fisc_m_state_d, fisc_m_pop_d, fisc_m_mkt_d,
+    headers = c("EIT Rev", "RE Tax", "Police", "Expenditure", "Debt",
+      "State Aid", "Population", "Mkt Value RE"),
+    keep = c("resident_eit", "sd_eit"))
 
   ## 12d. Fiscal asymmetry: increases vs decreases ----
   pa_first_dec <- pa_rate_panel[event_type == "decrease" & !is.na(cousub_fips),
@@ -3571,15 +3762,17 @@ pa_od_raw[, `:=`(
 pa_rp <- as.data.table(readRDS(file.path(data_dir, "pa_rate_panel.rds")))
 pa_rp <- pa_rp[!is.na(cousub_fips)]
 
-# Work city rates
+# Work city rates -- includes BOTH muni resident rate AND muni nonresident rate.
+# Per Act 32: a commuter from home j to work i pays max(home_total, w_nonres_i).
+# So work-side regressor for commuter flows is w_nonres_eit (NOT w_muni_eit).
 work_rates <- unique(pa_rp[, .(cousub_fips, year, w_muni_eit = resident_eit,
-  w_sd_eit = sd_eit, w_total_eit = total_eit,
+  w_nonres_eit = muni_nonres_eit, w_sd_eit = sd_eit, w_total_eit = total_eit,
   w_rate_change = rate_change, w_event_type = event_type,
   w_first_inc = first_increase_year)])
 pa_od_raw <- merge(pa_od_raw, work_rates,
   by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
 
-# Home city rates
+# Home city rates -- only resident-side rates apply to home location
 home_rates <- unique(pa_rp[, .(cousub_fips, year, h_muni_eit = resident_eit,
   h_sd_eit = sd_eit, h_total_eit = total_eit)])
 pa_od_raw <- merge(pa_od_raw, home_rates,
@@ -3605,10 +3798,10 @@ pa_pair <- pa_od_raw[!is.na(work_city) & !is.na(home_city),
   .(workers = sum(S000, na.rm = TRUE)),
   by = .(work_city, home_city, year)]
 
-# Add rates for both sides of each pair
+# Add rates for both sides of each pair (work-side includes nonres for piecewise)
 pa_pair <- merge(pa_pair,
-  unique(pa_rp[, .(cousub_fips, year, w_eit = resident_eit, w_sd = sd_eit,
-    w_total = total_eit, w_rate_change = rate_change,
+  unique(pa_rp[, .(cousub_fips, year, w_eit = resident_eit, w_nonres = muni_nonres_eit,
+    w_sd = sd_eit, w_total = total_eit, w_rate_change = rate_change,
     w_first_inc = first_increase_year)]),
   by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
 
@@ -3623,6 +3816,12 @@ pa_pair[, `:=`(
   is_resident   = (work_city == home_city),
   rate_gap      = w_eit - h_eit,
   total_gap     = w_total - h_total,
+  # Piecewise: actual bill is max(home total, work nonres). For residents
+  # (work=home), nonres doesn't apply -- they pay home total only.
+  bill          = ifelse(work_city == home_city, h_total,
+                    pmax(h_total, w_nonres, na.rm = TRUE)),
+  home_binds    = (!is.na(h_total) & !is.na(w_nonres) & h_total > w_nonres),
+  work_binds    = (!is.na(h_total) & !is.na(w_nonres) & h_total <= w_nonres),
   post_act32    = as.integer(year >= 2012)
 )]
 
@@ -3687,10 +3886,10 @@ pa_resident_panel <- pa_pair[is_resident == TRUE,
   .(resident_workers = sum(workers)), by = .(work_city, year)]
 pa_resident_panel[, log_res_workers := log(resident_workers + 1)]
 
-# Merge own rates and neighbor exposure
+# Merge own rates and neighbor exposure (own_nonres added for piecewise companions)
 pa_resident_panel <- merge(pa_resident_panel,
-  unique(pa_rp[, .(cousub_fips, year, own_eit = resident_eit, own_sd = sd_eit,
-    own_total = total_eit)]),
+  unique(pa_rp[, .(cousub_fips, year, own_eit = resident_eit,
+    own_nonres = muni_nonres_eit, own_sd = sd_eit, own_total = total_eit)]),
   by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
 pa_resident_panel <- merge(pa_resident_panel, pa_nbr_exposure,
   by.x = c("work_city", "year"), by.y = c("city_fips", "year"), all.x = TRUE)
@@ -3713,40 +3912,58 @@ saveRDS(pa_resident_panel, file.path(data_dir, "pa_resident_panel.rds"))
 
 pa_res_samp <- pa_resident_panel[total_jobs > 50 & !is.na(own_eit)]
 
-# Q2a: Does own rate increase reduce resident workers?
-q2_own <- feols(log_res_workers ~ own_eit | work_city + year,
+# Resident workers respond to home stack (muni res + SD); nonres rate doesn't
+# enter (residents pay home rate, not nonres). Primary regressor own_total;
+# decomposition own_eit + own_sd. Full 2002-2019 panel.
+
+# Q2a: Own rate (total stack) on resident workers
+q2_own <- feols(log_res_workers ~ own_total | work_city + year,
+  data = pa_res_samp, cluster = ~work_city)
+q2_own_decomp <- feols(log_res_workers ~ own_eit + own_sd | work_city + year,
   data = pa_res_samp, cluster = ~work_city)
 
-# Q2b: Does exposure to neighbor rate increases boost resident workers?
-# (i.e., do displaced workers show up as new residents in nearby cities?)
-q2_nbr <- feols(log_res_workers ~ own_eit + nbr_avg_rate | work_city + year,
+# Q2b: Add neighbor exposure (neighbor avg rate as proxy for outside option)
+q2_nbr <- feols(log_res_workers ~ own_total + nbr_avg_rate | work_city + year,
   data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
+q2_nbr_decomp <- feols(log_res_workers ~ own_eit + own_sd + nbr_avg_rate |
+  work_city + year, data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
 
-# Q2c: Rate differential — does the gain depend on being cheaper than neighbors?
-pa_res_samp[, cheaper_than_nbrs := own_eit < nbr_avg_rate]
-q2_diff <- feols(log_res_workers ~ own_eit + nbr_avg_rate +
+# Q2c: Rate differential
+pa_res_samp[, cheaper_than_nbrs := own_total < nbr_avg_rate]
+q2_diff <- feols(log_res_workers ~ own_total + nbr_avg_rate +
   i(cheaper_than_nbrs, nbr_sum_increase) | work_city + year,
   data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
 
-# Q2d: Post-Act 32 interaction — does the channel differ pre/post enforcement?
-q2_act32 <- feols(log_res_workers ~ own_eit:post_act32 + own_eit:I(1 - post_act32) +
+# Q2d: Post-Act 32 interaction
+q2_act32 <- feols(log_res_workers ~ own_total:post_act32 + own_total:I(1 - post_act32) +
+  nbr_avg_rate:post_act32 + nbr_avg_rate:I(1 - post_act32) | work_city + year,
+  data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
+q2_act32_decomp <- feols(log_res_workers ~ own_eit:post_act32 + own_eit:I(1 - post_act32) +
+  own_sd:post_act32 + own_sd:I(1 - post_act32) +
   nbr_avg_rate:post_act32 + nbr_avg_rate:I(1 - post_act32) | work_city + year,
   data = pa_res_samp[!is.na(nbr_avg_rate)], cluster = ~work_city)
 
-# Q2e: With fiscal controls — does controlling for city spending change the result?
+# Q2e: With expanded fiscal controls
 pa_res_ctrl <- pa_res_samp[!is.na(nbr_avg_rate) & !is.na(log_police) &
   !is.na(log_streets) & !is.na(log_debt) & !is.na(log_state_aid)]
 
-q2_nbr_ctrl <- feols(log_res_workers ~ own_eit + nbr_avg_rate +
+q2_nbr_ctrl <- feols(log_res_workers ~ own_total + nbr_avg_rate +
   log_police + log_streets + log_debt + log_state_aid | work_city + year,
   data = pa_res_ctrl, cluster = ~work_city)
+q2_nbr_ctrl_full <- feols(log_res_workers ~ own_total + nbr_avg_rate +
+  log_police + log_fire + log_streets + log_sewer + log_parks + log_comm_dev +
+  log_genadmin + log_debt + log_state_aid | work_city + year,
+  data = pa_res_ctrl[!is.na(log_fire) & !is.na(log_comm_dev) & !is.na(log_genadmin)],
+  cluster = ~work_city)
 
-# Q2: Own Rate Effect on Resident Workers
-etable(q2_own, q2_nbr, q2_nbr_ctrl, q2_diff,
-  headers = c("Own Rate", "Own + Neighbor", "Own + Neighbor + Controls", "Rate Differential"))
+etable(q2_own, q2_own_decomp, q2_nbr, q2_nbr_decomp, q2_nbr_ctrl, q2_nbr_ctrl_full,
+  headers = c("Own Total", "Own Decomp (Muni+SD)", "Own + Nbr", "Decomp + Nbr",
+    "+ 4 Ctrls", "+ Full Ctrls"),
+  keep = c("own_total", "own_eit", "own_sd", "nbr_avg_rate"))
 
 # Q2: Pre/Post Act 32
-etable(q2_act32, headers = "Own + Neighbor Rate x Act 32 Split")
+etable(q2_act32, q2_act32_decomp,
+  headers = c("Total x Act 32", "Decomp x Act 32"))
 
 # Q2 Visualization: resident worker response to own rate
 p_q2 <- ggplot(pa_res_samp[!is.na(own_eit)],
@@ -3770,62 +3987,58 @@ print(p_q2)
 # Strategy: city-pair panel (work=A, home=B) for A≠B. When A raises rate,
 # do flows shift toward B's with specific rate characteristics?
 
-# Q3: Destination Choice
+# Commuter pair models implement the piecewise: a worker from home j to work i
+# pays max(h_total_j, w_nonres_i). So the work-side regressor is w_nonres
+# (NOT muni resident rate at work) and the home-side regressor is h_total
+# (muni resident + SD). RESTRICTED TO 2012+ since nonres rate is only fully
+# reported post-Act 32 and the piecewise is only fully operational then.
 
-# Commuter pairs only: work in A, live in B (A≠B), within 80km
+# Commuter pairs only: work in A, live in B (A!=B), within 80km, post-Act 32
 pa_commuter <- pa_pair[is_resident == FALSE & !is.na(dist_km) & dist_km <= 80 &
-  !is.na(w_eit) & !is.na(h_eit) & workers > 0]
+  !is.na(w_nonres) & !is.na(h_total) & workers > 0 & year >= 2012]
 
 # Treatment: first rate increase at work city
-pa_commuter <- merge(pa_commuter,
-  unique(pa_rp[!is.na(first_increase_year) & !is.na(cousub_fips),
-    .(cousub_fips, first_increase_year)])[, first := TRUE],
-  by.x = "work_city", by.y = "cousub_fips", all.x = TRUE)
 pa_commuter[, post_increase := as.integer(!is.na(w_first_inc) & year >= w_first_inc)]
 
-# Rate gap bins for interpretability
-pa_commuter[, gap_bin := cut(rate_gap,
+# Rate gap bins (using TOTAL home vs NONRES work -- the piecewise comparison)
+pa_commuter[, piecewise_gap := w_nonres - h_total]
+pa_commuter[, gap_bin := cut(piecewise_gap,
   breaks = c(-Inf, -0.25, -0.01, 0.01, 0.25, Inf),
-  labels = c("Work much lower", "Work slightly lower", "Same rate",
+  labels = c("Work much lower", "Work slightly lower", "Same",
     "Work slightly higher", "Work much higher"))]
 
-# Q3a: When work city raises rate, do commuter flows increase?
-# (Higher share_live_in drop should correspond to more commuters)
-q3_flow <- feols(log_workers ~ w_eit | pair_id + year,
+# Q3a: Work nonres rate effect on commuter flows
+q3_flow <- feols(log_workers ~ w_nonres | pair_id + year,
   data = pa_commuter, cluster = ~work_city)
 
-# Q3b: Does the flow increase depend on the rate gap?
-# If workers prefer lower-rate home cities: rate_gap coefficient positive
-# (bigger gap = more flow to that destination)
-q3_gap <- feols(log_workers ~ w_eit + w_eit:rate_gap | pair_id + year,
+# Q3b: Add home stack (under credit system home should be irrelevant when work binds)
+q3_home <- feols(log_workers ~ w_nonres + h_total | pair_id + year,
   data = pa_commuter, cluster = ~work_city)
 
-# Q3c: Does the home city rate independently matter?
-# Under credit system it shouldn't (you pay work rate if it's higher)
-q3_home <- feols(log_workers ~ w_eit + h_eit | pair_id + year,
+# Q3c: Decomposed home stack -- can SD attract commute flows independently?
+q3_home_decomp <- feols(log_workers ~ w_nonres + h_eit + h_sd | pair_id + year,
   data = pa_commuter, cluster = ~work_city)
 
-# Q3d: Post-Act 32 — does destination choice change with enforcement?
-q3_act32 <- feols(log_workers ~ w_eit:post_act32 + w_eit:I(1 - post_act32) +
-  h_eit:post_act32 + h_eit:I(1 - post_act32) | pair_id + year,
-  data = pa_commuter, cluster = ~work_city)
+# Q3d: Piecewise binding regime -- effects should differ by which rate binds
+q3_binding <- feols(
+  log_workers ~ w_nonres:work_binds + h_total:home_binds | pair_id + year,
+  data = pa_commuter[!is.na(home_binds) & !is.na(work_binds)],
+  cluster = ~work_city)
 
-# Q3e: With fiscal controls for both work and home city
+# Q3e: With fiscal controls for both ends
 pa_commuter_ctrl <- pa_commuter[!is.na(w_log_police) & !is.na(h_log_police) &
   !is.na(w_log_streets) & !is.na(h_log_streets) &
   !is.na(w_log_debt) & !is.na(h_log_debt)]
 
-q3_home_ctrl <- feols(log_workers ~ w_eit + h_eit +
+q3_home_ctrl <- feols(log_workers ~ w_nonres + h_total +
   w_log_police + w_log_streets + w_log_debt +
   h_log_police + h_log_streets + h_log_debt | pair_id + year,
   data = pa_commuter_ctrl, cluster = ~work_city)
 
-# Q3: Commuter Flow Determinants
-etable(q3_flow, q3_gap, q3_home, q3_home_ctrl,
-  headers = c("Work Rate", "Rate Gap", "Work + Home", "Work + Home + Controls"))
-
-# Q3: Pre/Post Act 32
-etable(q3_act32, headers = "Work + Home Rate x Act 32 Split")
+# Q3: Commuter Flow Determinants (post-Act 32 only)
+etable(q3_flow, q3_home, q3_home_decomp, q3_binding, q3_home_ctrl,
+  headers = c("Work nonres", "Work + Home Total", "Home Decomp",
+    "Piecewise Binding", "Work + Home + Controls"))
 
 # Q3 Visualization: flow distribution by rate gap
 q3_means <- pa_commuter[!is.na(gap_bin),
@@ -3868,37 +4081,35 @@ print(p_q3_event)
 # - Does controlling for SD rates change the municipal coefficient?
 # - Is the total rate (muni + SD) or only the municipal component driving results?
 
-# Q4: School District Rate Effects
+# Q4 (slide-Q5): School district rate effects via decomposition.
+# COMMUTER FLOW (post-Act 32 only, w_nonres on work side, h_total on home side):
+#   The work-side regressor is w_nonres (NOT w_eit / muni resident).
+#   SD does not levy on nonresidents -- so w_sd doesn't apply to commuters.
+#   On the home side, SD enters via h_total = h_eit + h_sd.
 
-# City-pair models with SD rates
-q4_muni_only <- feols(log_workers ~ w_eit | pair_id + year,
+# Commuter pairs: work-side nonres rate, home-side decomposition
+q4_work_nonres <- feols(log_workers ~ w_nonres | pair_id + year,
   data = pa_commuter, cluster = ~work_city)
+q4_work_home <- feols(log_workers ~ w_nonres + h_total | pair_id + year,
+  data = pa_commuter, cluster = ~work_city)
+q4_work_home_decomp <- feols(log_workers ~ w_nonres + h_eit + h_sd |
+  pair_id + year, data = pa_commuter, cluster = ~work_city)
 
-q4_muni_sd <- feols(log_workers ~ w_eit + w_sd | pair_id + year,
-  data = pa_commuter[!is.na(w_sd)], cluster = ~work_city)
+# Q4: Commuter flows (post-Act 32, piecewise rates)
+etable(q4_work_nonres, q4_work_home, q4_work_home_decomp,
+  headers = c("Work Nonres Only", "+ Home Total", "+ Home Decomp (Muni + SD)"))
 
-q4_total <- feols(log_workers ~ w_total | pair_id + year,
-  data = pa_commuter[!is.na(w_total)], cluster = ~work_city)
-
-# Home city SD rate: does it attract/repel commuters?
-q4_home_sd <- feols(log_workers ~ w_eit + w_sd + h_eit + h_sd | pair_id + year,
-  data = pa_commuter[!is.na(w_sd) & !is.na(h_sd)], cluster = ~work_city)
-
-# Q4: Municipal vs SD Rate in Commuter Flows
-etable(q4_muni_only, q4_muni_sd, q4_total, q4_home_sd,
-  headers = c("Muni Only", "Muni + SD", "Total EIT", "Full Decomposition"))
-
-# Resident worker panel: SD effects
+# RESIDENT WORKERS (full panel, home-channel only -- nonres irrelevant):
 q4_res_muni <- feols(log_res_workers ~ own_eit | work_city + year,
   data = pa_res_samp, cluster = ~work_city)
-q4_res_sd <- feols(log_res_workers ~ own_eit + own_sd | work_city + year,
+q4_res_decomp <- feols(log_res_workers ~ own_eit + own_sd | work_city + year,
   data = pa_res_samp[!is.na(own_sd)], cluster = ~work_city)
 q4_res_total <- feols(log_res_workers ~ own_total | work_city + year,
   data = pa_res_samp[!is.na(own_total)], cluster = ~work_city)
 
-# Q4: Municipal vs SD Rate on Resident Workers
-etable(q4_res_muni, q4_res_sd, q4_res_total,
-  headers = c("Muni Only", "Muni + SD", "Total EIT"))
+# Q4: Resident workers (home-channel decomposition)
+etable(q4_res_muni, q4_res_decomp, q4_res_total,
+  headers = c("Muni Only", "Muni + SD (Decomp)", "Total EIT"))
 
 # SD rate changes: do they independently cause sorting?
 # Compute SD rate change in the panel
@@ -3967,10 +4178,10 @@ pa_tract_panel[, `:=`(
   log_total         = log(total_workers + 1)
 )]
 
-# Add rates via work_city
+# Add rates via work_city -- include nonres rate for total-workers spec
 pa_tract_panel <- merge(pa_tract_panel,
-  unique(pa_rp[, .(cousub_fips, year, muni_eit = resident_eit, sd_eit,
-    total_eit, rate_change, first_increase_year)]),
+  unique(pa_rp[, .(cousub_fips, year, muni_eit = resident_eit,
+    muni_nonres_eit, sd_eit, total_eit, rate_change, first_increase_year)]),
   by.x = c("work_city", "year"), by.y = c("cousub_fips", "year"), all.x = TRUE)
 pa_tract_panel[, post_act32 := as.integer(year >= 2012)]
 
@@ -4030,30 +4241,48 @@ saveRDS(pa_tract_panel, file.path(data_dir, "pa_tract_panel.rds"))
 # Filter to tracts with meaningful employment
 pa_tract_samp <- pa_tract_panel[total_workers > 10 & !is.na(muni_eit)]
 
-# Q5a: Does within-city worker share change after a rate increase?
-# If people just shuffle within the city, this should be stable
-q5_within <- feols(share_within_city ~ muni_eit | w_tract + year,
+# Q5 (slide-Q6): Within-city tract-level effects.
+# share_within_city = (workers at tract whose home is also in i) / total workers.
+# Numerator workers are residents of i -- driven by total home stack of i.
+# Denominator includes commuters from outside -- driven by w_nonres of i.
+
+# Q5a: Within-share on home stack (primary)
+q5_within <- feols(share_within_city ~ total_eit | w_tract + year,
+  data = pa_tract_samp, cluster = ~work_city)
+q5_within_decomp <- feols(share_within_city ~ muni_eit + sd_eit | w_tract + year,
   data = pa_tract_samp, cluster = ~work_city)
 
-# Q5b: Does it differ for boundary vs interior tracts?
-q5_boundary <- feols(share_within_city ~ muni_eit + muni_eit:is_boundary | w_tract + year,
+# Q5b: Boundary interaction (does the share response differ near boundaries?)
+q5_boundary <- feols(share_within_city ~ total_eit + total_eit:is_boundary |
+  w_tract + year,
+  data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
+q5_boundary_decomp <- feols(
+  share_within_city ~ muni_eit + sd_eit + muni_eit:is_boundary + sd_eit:is_boundary |
+  w_tract + year,
   data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
 
-# Q5c: Total worker count — do boundary tracts lose more workers overall?
-q5_total_boundary <- feols(log_total ~ muni_eit + muni_eit:is_boundary | w_tract + year,
-  data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
+# Q5c: Total workers (mixed -- residents + nonres commuters).
+# Post-Act 32 only since w_nonres becomes binding regressor.
+pa_tract_samp_post <- pa_tract_samp[year >= 2012 & !is.na(muni_nonres_eit) &
+  !is.na(is_boundary)]
+q5_total_boundary <- feols(
+  log_total ~ total_eit + muni_nonres_eit + total_eit:is_boundary +
+  muni_nonres_eit:is_boundary | w_tract + year,
+  data = pa_tract_samp_post, cluster = ~work_city)
 
-# Q5d: Post-Act 32 split
-q5_act32 <- feols(share_within_city ~ muni_eit:post_act32 + muni_eit:I(1 - post_act32) +
-  muni_eit:is_boundary:post_act32 + muni_eit:is_boundary:I(1 - post_act32) | w_tract + year,
+# Q5d: Post-Act 32 split (within-share)
+q5_act32 <- feols(share_within_city ~ total_eit:post_act32 + total_eit:I(1 - post_act32) +
+  total_eit:is_boundary:post_act32 + total_eit:is_boundary:I(1 - post_act32) |
+  w_tract + year,
   data = pa_tract_samp[!is.na(is_boundary)], cluster = ~work_city)
 
 # Q5: Within-City Tract-Level Effects
-etable(q5_within, q5_boundary, q5_total_boundary,
-  headers = c("Within-City Share", "Boundary Interaction", "Total Workers × Boundary"))
+etable(q5_within, q5_within_decomp, q5_boundary, q5_boundary_decomp, q5_total_boundary,
+  headers = c("Share (Total)", "Share (Decomp)", "+ Boundary",
+    "+ Boundary (Decomp)", "Total Workers + Boundary (post-2012)"))
 
 # Q5: Boundary Effects x Act 32
-etable(q5_act32, headers = "Boundary × Act 32 Split")
+etable(q5_act32, headers = "Boundary x Act 32 Split (Total Stack)")
 
 # Q5 Visualization: boundary vs interior response
 p_q5_dist <- ggplot(boundary_dt, aes(x = dist_to_boundary_m / 1000)) +
@@ -4071,7 +4300,7 @@ pa_tract_samp[, dist_bin := cut(dist_to_boundary_m / 1000,
   breaks = c(0, 0.5, 1, 2, 5, Inf),
   labels = c("0-0.5km", "0.5-1km", "1-2km", "2-5km", "5+km"))]
 
-q5_gradient <- feols(share_within_city ~ muni_eit:dist_bin | w_tract + year,
+q5_gradient <- feols(share_within_city ~ total_eit:dist_bin | w_tract + year,
   data = pa_tract_samp[!is.na(dist_bin)], cluster = ~work_city)
 
 # Q5: Distance-to-Boundary Gradient

@@ -131,26 +131,32 @@
 %======================================================================
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{How PA tax works}
+\frametitle{How PA tax works (post-Act 32, ex.\ Philadelphia)}
     \small
-    The worker pays the higher of the two rates, but how that bill is
-    split between the cities is piecewise:
+    The worker pays the higher of the home resident rate or the work
+    nonresident rate\src{https://dced.pa.gov/local-government/local-income-tax-information/local-withholding-tax-faqs/}{DCED}, but how that bill is split between the cities is
+    piecewise:
     \[
         \bigl(\tau^{\text{home}},\ \tau^{\text{work city}}\bigr) \;=\;
         \begin{cases}
-            \bigl(\tau^{\text{res}} - \tau^{\text{work}},\ \tau^{\text{work}}\bigr)
-                & \text{if } \tau^{\text{res}} > \tau^{\text{work}} \\[2pt]
-            \bigl(0,\ \tau^{\text{work}}\bigr)
-                & \text{if } \tau^{\text{res}} \leq \tau^{\text{work}}
+            \bigl(\tau^{\text{res}} - \tau^{\text{work,nr}},\ \tau^{\text{work,nr}}\bigr)
+                & \text{if } \tau^{\text{res}} > \tau^{\text{work,nr}} \\[2pt]
+            \bigl(0,\ \tau^{\text{work,nr}}\bigr)
+                & \text{if } \tau^{\text{res}} \leq \tau^{\text{work,nr}}
         \end{cases}
     \]
     \begin{itemize}\setlength{\itemsep}{0.18cm}
         \item Work city always collects its full nonresident rate.
         \item Home city only collects the leftover, and gets nothing
         if the work rate is higher.
-        \item Which rate is higher also determines who can respond:
-        home-binds $\rightarrow$ she moves her home; work-binds
-        $\rightarrow$ she changes jobs.
+        \item Which rate is higher also determines the active margin:
+        home-binds $\rightarrow$ move home; work-binds $\rightarrow$
+        change jobs (or absorb the tax).
+        \item Philadelphia operates under the Sterling Act and is
+        excluded from Act 32's credit/max
+        system\src{https://dced.pa.gov/local-government/local-income-tax-information/act32-faq/}{Act 32 FAQ}.
+        Withholding only became binding statewide on
+        Jan.\ 1, 2012\src{https://dced.pa.gov/local-government/local-income-tax-information/act32-faq/}{DCED}.
     \end{itemize}
 \end{frame}
 
