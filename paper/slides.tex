@@ -104,16 +104,16 @@
 \fontfamily{cmr}
 \frametitle{Motivation}
     \begin{itemize}\setlength{\itemsep}{0.25cm}
-        \item Tiebout (1956): households ``vote with their feet'' across
-        local jurisdictions offering different tax/service bundles.
-        \item Strong evidence at the state level \citep{kleven2020, young2016}
-        and for sales tax cross-border shopping \citep{agrawal2015gradient}.
-        \item But little causal evidence on local income tax
-        sorting within metros --- where moving costs are small
-        and boundaries are frequent.
-        \item Two data problems: local tax jurisdictions are sub-county
-        (IRS/ACS too coarse), and credit systems + enforcement complicate
-        effective tax burden.
+        \item Tiebout (1956): citizens sort across jurisdictions
+        according to their demands for local public goods.
+        \item Strong evidence of tax-driven sorting at the state level
+        \citep{kleven2020, young2016}.
+        \item Little causal evidence on local income tax sorting within
+        metro areas, where moving costs are small and boundaries frequent.
+        \item Two data problems make this hard. Local tax jurisdictions
+        are sub-county, so IRS/ACS migration data are too coarse.
+        Credit systems and weak enforcement complicate the effective
+        tax burden.
     \end{itemize}
 \end{frame}
 
@@ -121,19 +121,18 @@
 \fontfamily{cmr}
 \frametitle{This Paper}
     \begin{itemize}\setlength{\itemsep}{0.2cm}
-        \item Question: Do local income tax rate changes cause
-        residential sorting across municipal boundaries?
+        \item Question: Do local income tax rate changes cause sorting?
         \item Setting: Pennsylvania, 2002--2019. Universal Earned
         Income Tax with continuous rate variation across $\sim$2{,}500
         munis $\times$ $\sim$500 school districts.
         \item Data: LEHD LODES origin--destination, linking
-        residence tract $\leftrightarrow$ workplace tract annually.
-        \item Outcome: \texttt{share\_live\_in}
+        residence tract with workplace tract annually.
+        \item Outcomes: \texttt{share\_live\_in}
         = (workers who live and work in city $i$) / (total workers in $i$),
         plus count outcomes (resident workers, total jobs).
-        \item Identification: Act 32 of 2008 (effective Jan.\ 1, 2012)
+        \item Exogeneous identification: Act 32
         consolidated collection and made employer withholding
-        mandatory --- a clean enforcement break in the middle of the panel.
+        mandatory.
     \end{itemize}
 \end{frame}
 
@@ -141,29 +140,37 @@
 \fontfamily{cmr}
 \frametitle{Institutional Setting (Pennsylvania)}
     \begin{itemize}\setlength{\itemsep}{0.18cm}
-        \item Universal EIT under Act 511 (1965); $\sim$2{,}500 munis
-        and $\sim$500 school districts each set rates. Typical 0.5\%
-        muni + 0.5\% SD. 291 muni increases, 162 decreases in panel.
-        \item Each address has a six-digit \textbf{PSD code} = (muni $\times$ SD)
-        identifying its taxing jurisdictions for withholding.
-        \item Act 32 of 2008 (eff.\ Jan.\ 1, 2012): consolidated
-        collection into 69 Tax Collection Districts; mandated employer
-        withholding at the higher of home-resident vs.\ work-nonresident
-        rate. Before 2012, withholding fragmented and nonresident
-        registry incomplete.
-        \item \textbf{Three rates per muni}: $\tau^{\text{res,muni}}$ (residents),
-        $\tau^{\text{nr,muni}}$ (nonresidents working there),
-        $\tau^{\text{SD}}$ (residents only -- SDs do not levy on nonresidents).
+        \item Pennsylvania has a universal Earned Income Tax under
+        Act 511 of 1965. About 2{,}500 municipalities and 500 school
+        districts each set their own rate. The typical muni rate is
+        0.5\%; the typical school district rate is also 0.5\%.
+        \item Each address has a six-digit PSD code that identifies
+        its (muni, school district) pair for withholding purposes.
+        \item Before Act 32, collection was handled by roughly 560
+        separate tax officers across the state. Employer withholding
+        was inconsistent, and many munis did not even report a
+        nonresident rate to the state.
+        \item Act 32 of 2008 (effective January 1, 2012) consolidated
+        collection into 69 Tax Collection Districts and required
+        employers to withhold the higher of the home resident rate
+        and the work nonresident rate.
+        \item In our 2002--2019 panel: 210 muni rate increases and
+        119 decreases; 611 school district increases and 52 decreases.
+        \item Each muni has three rates we track:
+        $\tau^{\text{res,muni}}$ on residents,
+        $\tau^{\text{nr,muni}}$ on nonresidents working in the muni,
+        and $\tau^{\text{SD}}$ on residents only.
     \end{itemize}
 \end{frame}
 
 %%%%%%%%%%% How PA tax works -- piecewise %%%%%%%%%%%
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{How the PA EIT works (post-Act 32, ex.\ Philadelphia)}
+\frametitle{How the PA EIT works (post-Act 32, excluding Philadelphia)}
     \small
-    Worker bill = higher of \emph{total home rate} (muni res + SD) and
-    \emph{work-location nonres rate}. Split between cities is piecewise:
+    A worker pays the higher of the total home rate (muni resident plus
+    school district) and the nonresident rate at the work location.
+    The bill is split piecewise:
     \[
         \bigl(\tau^{\text{home}},\ \tau^{\text{work}}\bigr) =
         \begin{cases}
@@ -174,37 +181,31 @@
         \end{cases}
     \]
     \begin{itemize}\setlength{\itemsep}{0.1cm}
-        \item Work jurisdiction always collects its full nonresident rate.
-        \item Home muni + SD share what's left, zero if work rate is higher.
-        \item Which rate binds determines the response margin:
-        \emph{home-binds} $\Rightarrow$ move home; \emph{work-binds}
-        $\Rightarrow$ change job (or absorb).
+        \item The work jurisdiction always collects its full nonresident rate.
+        \item The home muni and school district then split whatever remains
+        of the worker's bill. They get nothing if the work rate is higher.
+        \item Which rate binds determines how the worker can respond.
+        When the home rate binds, the worker can lower the bill by moving
+        home. When the work rate binds, the worker can lower it only by
+        changing jobs.
     \end{itemize}
 \end{frame}
 
 %%%%%%%%%%% Worked numeric example %%%%%%%%%%%
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Worked example: how this maps to the model}
+\frametitle{Worked example}
     \small
-    Worker 1 lives in city $B$ (muni 1.0\% + SD 0.5\% = total home 1.5\%) and
-    works in city $A$ (muni nonres 0.8\%).
-    \begin{itemize}\setlength{\itemsep}{0.08cm}
-        \item Bill $= \max(1.5\%, 0.8\%) = 1.5\%$. \textbf{Home binds}.
-        $B$ + its SD collect $1.5 - 0.8 = 0.7$pp; $A$ collects $0.8$pp.
-        \item In our model: this flow $B \to A$ is treated as a
-        \textbf{home-binds observation}. Treatment intensity for
-        residential margin = $\tau^{\text{home}}_B = 1.5\%$.
-        \item If $B$ raises SD by $0.5$pp (total home now $2.0\%$),
-        worker 1's bill rises to $2.0\%$ -- response margin is move home.
-        \item If $A$ instead raises nonres to $1.7\%$, regime flips:
-        bill $= 1.7\%$ at $A$, home gets $0$. \textbf{Work binds}; worker 1
-        can only respond by changing job.
+    Worker 1 lives in city $B$ and works in city $A$.
+    Home muni rate is 1.0\%, home school district is 0.5\%, so the total
+    home rate is 1.5\%. The work-location nonresident rate is 0.8\%.
+    \begin{itemize}\setlength{\itemsep}{0.1cm}
+        \item Worker 1 pays the higher of the two rates, so 1.5\%.
+        Home collects $1.5 - 0.8 = 0.7$\%; work collects 0.8\%.
+        \item This is a home-binds case. To lower the bill,
+        worker 1 would have to move out of $B$. Changing jobs would
+        not help because the work rate is already lower.
     \end{itemize}
-    \vspace{0.1cm}
-    \footnotesize Implication: Q2/Q3/Q4 (resident sorting) load on
-    $\tau^{\text{res,muni}}_B + \tau^{\text{SD}}_B$. Commuter flow models
-    (Q4b/Q6) load on $\tau^{\text{nr}}_A$ at the work side.
 \end{frame}
 
 %%%%%%%%%%% Philadelphia handling %%%%%%%%%%%
@@ -213,40 +214,19 @@
 \frametitle{Philadelphia: a separate regime}
     \small
     \begin{itemize}\setlength{\itemsep}{0.15cm}
-        \item Philadelphia is \textbf{exempt from Act 32}; its Wage Tax
-        operates under the Sterling Act (1932), administered by the
-        City Department of Revenue.
-        \item Philly residents pay Philly's resident rate
-        regardless of where they work --- no max rule, no offset.
-        \item Philly nonresidents working in Philly pay Philly's
-        nonresident rate to Philly; no residual flows back to home muni.
-        \item PA residents who work in Philly: Act 32 does not apply;
-        employer withholds Philly nonresident rate.
-        \item In our analysis: kept in main sample (it's part of PA's
-        labor-market geography), \textbf{excluded in robustness checks}
-        because its rate dynamics and reporting differ from Act-32 munis.
+        \item Philadelphia is exempt from Act 32. Its Wage Tax operates
+        under the Sterling Act of 1932, administered by the City
+        Department of Revenue.
+        \item Philly residents pay the Philly resident rate regardless
+        of where they work. There is no max rule and no offset.
+        \item Nonresidents working in Philly pay the Philly nonresident
+        rate, which goes entirely to Philly.
+        \item In our analysis we keep Philly in the main sample because
+        it is part of PA's labor market, but exclude it in robustness
+        checks because its reporting and dynamics differ from Act-32 munis.
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-\fontfamily{cmr}
-\frametitle{Preview of Findings}
-    \begin{itemize}\setlength{\itemsep}{0.2cm}
-        \item Muni rate increases reduce \texttt{share\_live\_in} by
-        $-1.3$ share-points per 1 pp rate hike, building over 7--8 years.
-        \item Effect is entirely post-Act 32: muni rate effect is
-        a precise zero pre-2012, $-1.8$ share-points** post-2012.
-        \item Response is asymmetric: increases push out,
-        decreases do not bring back.
-        \item School district rate has \emph{opposite sign}: SD
-        attracts residents (Q5). The home-side decomposition is
-        essential -- bundling muni + SD into a "total" rate hides
-        both channels.
-        \item City-wide relocation, not boundary arbitrage.
-        \item Fiscally productive: EIT revenue $+67\%$,
-        total tax $+30\%$, population/property values unaffected.
-    \end{itemize}
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data}
@@ -262,14 +242,9 @@
         \item PA rates: scraped DCED MunStats (resident + nonresident
         muni EIT, school district EIT) $\sim$2{,}500 munis/yr;
         name-based COUSUBFP crosswalk (99.6\% match).
-        \item Neighbor pairs: all PA muni pairs within 80 km
-        centroid distance ($\sim$1M pairs; regional commute shed).
         \item PA fiscal controls: DCED Annual Financial Reports
         (71 cols: EIT rev, police, fire, streets, sewer, parks,
         comm dev, debt, state aid, pop, MV).
-        \item Crime: FBI UCR (Kaplan); Permits: Census BPS.
-        \item April 1 alignment between rate panel and LODES
-        reference date.
     \end{itemize}
 \end{frame}
 
@@ -286,8 +261,8 @@
         Muni resident EIT (\%) & 0.542 & 0.500 & 0.199 & 4.331 \\
         Muni nonres EIT (\%)   & 0.546 & 0.500 & 0.207 & 4.331 \\
         SD EIT (\%)            & 0.523 & 0.500 & 0.221 & 1.000 \\
-        Total jobs             & 3{,}624 & 1{,}224 & & \\
-        Resident workers       & 674   & 154   & & \\
+        Total jobs             & 3{,}624 & 1{,}224 & 19{,}248 & 730{,}988 \\
+        Resident workers       & 674   & 154   & 9{,}507 & 389{,}798 \\
         \midrule
         Muni $\times$ year     & \multicolumn{4}{l}{27{,}973 (1{,}479 munis)} \\
         \bottomrule
@@ -324,7 +299,7 @@
     \vspace{0.2cm}
     \footnotesize
     Predictions we'll test:
-    (1) enforcement matters $\Rightarrow$ post-Act 32 effect (Act 32 break);
+    (1) enforcement matters $\to$ post-Act 32 effect (Act 32 break);
     (2) destination rate irrelevant for commuters when work-binds;
     (3) complete relocators pick lower-rate destinations;
     (4) SD rate opposite sign (Q5);
@@ -452,7 +427,7 @@
     \]
     \begin{itemize}\setlength{\itemsep}{0.08cm}
         \item $R^{+}_{it}$, $R^{-}_{it}$: cumulative increases / decreases from baseline.
-        \item If $|\beta^{+}| > |\beta^{-}|$ $\Rightarrow$ residential
+        \item If $|\beta^{+}| > |\beta^{-}|$ $\to$ residential
         choices are sticky (fixed costs of moving).
         \item Also estimate joint inc/dec event indicators.
     \end{itemize}
@@ -554,12 +529,12 @@
     \begin{itemize}\setlength{\itemsep}{0.06cm}
         \item Outcomes: \texttt{share\_live\_in}, log(resident workers),
         log(nonresident workers), log(total jobs).
-        \item Theory: SD only taxes residents $\Rightarrow$
+        \item Theory: SD only taxes residents $\to$
         $\beta^{sd} \approx 0$ on nonresident outcome but nonzero on
         resident outcomes. Muni res rate same direction across all but
         smaller for nonres workers (who pay only $\tau^{\text{nr,muni}}$,
         which is correlated but not identical).
-        \item Muni--SD rate correlation $r=-0.12$ $\Rightarrow$
+        \item Muni--SD rate correlation $r=-0.12$ $\to$
         independent variation.
     \end{itemize}
 \end{frame}
@@ -583,7 +558,7 @@
     \begin{itemize}\setlength{\itemsep}{0.05cm}\small
         \item Muni rate consistently negative; SD strongly positive on
         residents, $\sim 0$ on nonresidents (theory: SDs don't tax commuters).
-        \item Bundling them as ``total EIT'' nets to zero $\Rightarrow$
+        \item Bundling them as ``total EIT'' nets to zero $\to$
         prior literature using a single rate would find a null.
         \item Decomposition is the methodological contribution.
     \end{itemize}
@@ -628,7 +603,7 @@
     \end{tabular}
     \vspace{0.2cm}
     \begin{itemize}\setlength{\itemsep}{0.05cm}
-        \item Within-city reshuffling: essentially zero $\Rightarrow$
+        \item Within-city reshuffling: essentially zero $\to$
         people are crossing muni boundaries, not just neighborhoods.
         \item Boundary $\times$ rate on share: null. Boundary tracts
         respond like interior tracts.
@@ -745,7 +720,7 @@
     0.5\% $\rightarrow$ 1.5\%.
     \vspace{0.2cm}
     \begin{itemize}\setlength{\itemsep}{0.15cm}
-        \item[Q2/Q3.] Over 7--8 years, share falls to $\sim$13.2\% $\Rightarrow$
+        \item[Q2/Q3.] Over 7--8 years, share falls to $\sim$13.2\% $\to$
         $\sim$18 of 150 locally-resident workers gone. If the city later
         cuts the rate back, none of them return.
         \item[Q4.] Those 18 leave the city entirely (not a neighborhood move);
@@ -779,19 +754,18 @@
 
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Summary}
+\frametitle{Summary of Findings}
     \begin{enumerate}\setlength{\itemsep}{0.15cm}
-        \item Local income tax rate increases cause residential sorting:
-        \texttt{share\_live\_in} falls by 0.5--0.8 share-points per 1 pp
-        rate hike, building over 7--8 years.
-        \item Effect is enforcement-contingent: zero pre-Act 32,
-        large post-2012.
-        \item Sorting is asymmetric (sticky residences) and
-        city-wide (not boundary arbitrage).
-        \item Muni and SD rates have opposite signs ---
-        SD acts as an amenity.
-        \item Rate increases are fiscally productive: base erosion
-        too small to offset revenue gains.
+        \item Higher muni rates reduce \texttt{share\_live\_in} by about
+        1.3 share-points per 1 pp, building over 7 to 8 years.
+        \item The effect is enforcement-contingent. The muni rate
+        coefficient is a precise zero before Act 32 and roughly
+        $-1.8$ share-points after.
+        \item The response is asymmetric. Increases push residents out,
+        but decreases do not bring them back.
+        \item Muni and school district rates have opposite signs.
+        Bundling them as a single "total EIT" rate hides both channels.
+        \item Sorting is whole-city relocation, not boundary arbitrage.
     \end{enumerate}
 \end{frame}
 
@@ -818,9 +792,18 @@
     \Large Questions?
     \vfill
     \normalsize
-    \texttt{hocke043@umn.edu} \\
+    \texttt{hocke069@umn.edu} \\
     \small github.com/MatthewHockert/local-income-tax-migration
     \vfill
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]
+\fontfamily{cmr}
+\frametitle{References}
+\footnotesize
+\bibliographystyle{plainnat}
+\bibliography{../references/lit_review}
 \end{frame}
 
 \end{document}
