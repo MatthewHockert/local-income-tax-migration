@@ -6,7 +6,7 @@ library(lehdr)
 library(data.table)
 
 data_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/data"
-lodes_dir <- file.path(data_dir, "lodes")
+lodes_dir <- file.path(data_dir, "lodes_block")
 dir.create(lodes_dir, showWarnings = FALSE)
 
 download_and_save <- function(state, lodes_type, segment, state_part = NULL,
@@ -26,7 +26,7 @@ download_and_save <- function(state, lodes_type, segment, state_part = NULL,
     lodes_type = lodes_type,
     job_type = "JT00",
     segment = segment,
-    agg_geo = "tract",
+    agg_geo = "block",
     version = "LODES8",
     use_cache = TRUE
   )
@@ -35,16 +35,6 @@ download_and_save <- function(state, lodes_type, segment, state_part = NULL,
   df <- do.call(grab_lodes, args)
   saveRDS(df, fpath)
   cat("Saved:", fname, "(", nrow(df), "rows)\n")
-}
-
-# Ohio RAC segments
-for (seg in c("S000", "SE01", "SE03", "SA01", "SA03")) {
-  download_and_save("oh", "rac", seg)
-}
-
-# Ohio OD
-for (seg in c("S000", "SE03")) {
-  download_and_save("oh", "od", seg, state_part = "main", suffix = "_main")
 }
 
 # Pennsylvania RAC segments

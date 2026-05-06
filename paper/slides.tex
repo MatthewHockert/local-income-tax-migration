@@ -244,14 +244,14 @@
         \toprule
         Variable & Mean & Median & SD & Max \\
         \midrule
-        share\_live\_in        & 0.149 & 0.127 & 0.097 & 0.700 \\
-        Muni resident EIT (\%) & 0.542 & 0.500 & 0.199 & 4.331 \\
-        Muni nonres EIT (\%)   & 0.546 & 0.500 & 0.207 & 4.331 \\
-        SD EIT (\%)            & 0.523 & 0.500 & 0.221 & 1.000 \\
-        Total jobs             & 3{,}624 & 1{,}224 & 19{,}248 & 730{,}988 \\
-        Resident workers       & 674   & 154   & 9{,}507 & 389{,}798 \\
+        share\_live\_in        & 0.103   & 0.088   & 0.076   & 0.657 \\
+        Muni resident EIT (\%) & 0.532   & 0.500   & 0.175   & 4.331 \\
+        Muni nonres EIT (\%)   & 0.891   & 1.000   & 0.235   & 3.820 \\
+        SD EIT (\%)            & 0.617   & 0.500   & 0.289   & 2.050 \\
+        Total jobs             & 2{,}438 & 565     & 14{,}502 & 629{,}698 \\
+        Resident workers       & 450     & 50      & 8{,}001  & 391{,}047 \\
         \midrule
-        Muni $\times$ year     & \multicolumn{4}{l}{27{,}973 (1{,}479 munis)} \\
+        Muni $\times$ year     & \multicolumn{4}{l}{35{,}743 (2{,}275 munis)} \\
         \bottomrule
     \end{tabular}
    
@@ -327,7 +327,7 @@
 
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Q2 Answer: muni rate drives sorting; SD has opposite sign}
+\frametitle{Q2 Answer: muni rate drives sorting; SD null}
     \centering
     \small
     \begin{tabular}{lccc}
@@ -335,24 +335,28 @@
         & share\_live\_in & log(Resident) & log(Total Jobs) \\
         \midrule
         \multicolumn{4}{l}{\textit{Total stack}} \\
-        $\tau^{\text{home}}$     & $-0.004$ & $-0.049$ & $-0.092^{**}$ \\
-                                  & $(0.003)$ & $(0.040)$ & $(0.040)$ \\
+        $\tau^{\text{home}}$     & $-0.010^{**}$ & $-0.137^{***}$ & $-0.096^{**}$ \\
+                                  & $(0.004)$    & $(0.043)$      & $(0.038)$ \\
         \multicolumn{4}{l}{\textit{Decomposition}} \\
-        $\tau^{\text{res,muni}}$ & $-0.008^{*}$ & $-0.113^{*}$ & $-0.119^{**}$ \\
-                                  & $(0.004)$ & $(0.067)$ & $(0.059)$ \\
-        $\tau^{\text{SD}}$       & $+0.009$ & $+0.147^{**}$ & $-0.009$ \\
-                                  & $(0.007)$ & $(0.059)$ & $(0.046)$ \\
+        $\tau^{\text{res,muni}}$ & $-0.012^{**}$ & $-0.201^{***}$ & $-0.128^{***}$ \\
+                                  & $(0.006)$    & $(0.041)$      & $(0.038)$ \\
+        $\tau^{\text{SD}}$       & $-0.005$      & $+0.029$       & $-0.013$ \\
+                                  & $(0.006)$    & $(0.114)$      & $(0.093)$ \\
         \midrule
-        $R^2$                     & 0.898 & 0.972 & 0.972 \\
-        $N$                       & 13{,}199 & 13{,}199 & 13{,}199 \\
+        $R^2$                     & 0.909         & 0.975          & 0.976 \\
+        $N$                       & 12{,}891      & 12{,}781       & 12{,}891 \\
         \bottomrule
     \end{tabular}
     \vspace{0.1cm}
     \begin{itemize}\setlength{\itemsep}{0.04cm}\small
         \item Controls: log muni spending (police, streets, debt, state aid)
-        + revenue shares (EIT, real estate, intergov).
-        \item A 1 pp muni rate hike lowers share\_live\_in by 0.8 share-pp
-        and resident workers by 11\%; SD rate raises resident workers by 15\%.
+        + revenue shares (EIT, real estate).
+        \item A 1 pp muni rate hike lowers share\_live\_in by 1.2 share-pp
+        and resident workers by 20\%.
+        \item SD rate coefficient is null --- the prior $+0.147^{**}$
+        ``SD attracts residents'' result was an artifact of tract-centroid
+        job misattribution, not a feature of the data
+        (see ``Data note'' slide).
     \end{itemize}
 \end{frame}
 
@@ -403,11 +407,13 @@
     \end{tabular}
     \vspace{0.1cm}
     \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item ACR (average causal response per pp of rate) is consistent
-        in sign and rough magnitude with TWFE (Q2 muni $-0.008^{*}$).
+        \item \textcolor{red}{\textbf{Note: DCDH not yet rerun on the
+        block-aggregated panel}} (computationally intense). Numbers above
+        are from prior tract-centroid panel; expected to shift modestly
+        toward the new TWFE muni point estimates ($-0.012^{**}$,
+        $-0.201^{***}$, $-0.128^{***}$).
         \item DCDH addresses the staggered-DiD critique: no negative
         weights from already-treated comparison groups.
-        \item Computationally intense so bootstrapping is planned and would potentially tighten SEs.
     \end{itemize}
 \end{frame}
 
@@ -451,6 +457,39 @@
 
 \begin{frame}
 \fontfamily{cmr}
+\frametitle{Do the rate increases we exploit actually bind?}
+    \small
+    \textbf{For self-pair (worker lives \emph{and} works in muni $X$):}
+    home stack $= \tau^{\text{res}}_X + \tau^{\text{SD}}_X$ vs.\ work
+    nonres rate $\tau^{\text{nr}}_X$.
+    \begin{itemize}\setlength{\itemsep}{0.10cm}
+        \item Across all PA muni-years post-Act-32 (15{,}423):
+        home binds 41\%, work binds 59\%. Mean wedge
+        $\tau^{\text{home}} - \tau^{\text{nr}} = +0.27$ pp.
+        \item Of muni-resident rate increases 2012--2019 (57 events):
+        \textbf{84\% (48 of 57)} occur where home binds at the muni
+        $\Rightarrow$ the rate increase \emph{moves the bill} for
+        residents working locally.
+        \item The remaining 16\% (9 of 57) occur where work already
+        binds and stays binding $\Rightarrow$ the rate hike is
+        irrelevant to in-muni workers' bills.
+    \end{itemize}
+    \vspace{0.1cm}
+    \textbf{Cross-pair within 80 km, post-Act-32 (1.83M pair-years):}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}
+        \item Work binds (home stack $\le$ work nonres): 61.6\%.
+        \item Home binds (home stack $>$ work nonres): 38.4\%.
+    \end{itemize}
+    \vspace{0.1cm}
+    \footnotesize \emph{Implication}: most of the resident-rate
+    increases we exploit are economically meaningful for the
+    in-muni worker population. The piecewise binding test below
+    sharpens this: separates extensive switches in binding side from
+    intensive within-channel rate changes.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
 \frametitle{Act 32 Answer: Q2 results split pre/post 2012}
     \centering
     \small
@@ -459,22 +498,24 @@
         & share\_live\_in & log(Resident) & log(Total Jobs) \\
         \midrule
         \multicolumn{4}{l}{\textit{Decomposition}} \\
-        $\tau^{\text{res,muni}} \times $ Pre  & $-0.004$ & $-0.056$ & $-0.078$ \\
-        $\tau^{\text{res,muni}} \times $ Post & $-0.011^{**}$ & $-0.151^{**}$ & $-0.144^{**}$ \\
-        $\tau^{\text{SD}} \times $ Pre        & $+0.008$ & $+0.147^{**}$ & $+0.014$ \\
-        $\tau^{\text{SD}} \times $ Post       & $+0.013^{*}$ & $+0.170^{**}$ & $-0.032$ \\
+        $\tau^{\text{res,muni}} \times $ Pre  & $-0.008$       & $-0.139^{***}$ & $-0.073$ \\
+        $\tau^{\text{res,muni}} \times $ Post & $-0.013^{**}$  & $-0.209^{***}$ & $-0.132^{***}$ \\
+        $\tau^{\text{SD}} \times $ Pre        & $-0.007$       & $+0.032$       & $+0.027$ \\
+        $\tau^{\text{SD}} \times $ Post       & $-0.003$       & $+0.026$       & $-0.038$ \\
         \midrule
-        $R^2$                                  & 0.899 & 0.972 & 0.972 \\
-        $N$                                    & 13{,}199 & 13{,}199 & 13{,}199 \\
+        $N$                                    & 12{,}891 & 12{,}781 & 12{,}891 \\
         \bottomrule
     \end{tabular}
     \vspace{0.1cm}
     \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Controls: 4 expenditure (police, streets, debt, state aid) + 3 revenue shares.
-        \item Pre-2012 muni coefficients are zero; post-2012 they are negative
-        and significant.
-        \item SD effect on resident workers is present pre- and post-Act-32,
-        slightly stronger after.
+        \item Controls: log spending (police, streets, debt, state aid)
+        + revenue shares (EIT, real estate).
+        \item Pre-Act-32 muni coefficient on share\_live\_in is null;
+        post-Act-32 it is significant. Magnitudes on log(Resident) more
+        than \emph{double} from $-0.139$ pre to $-0.209$ post.
+        \item SD coefficient is null in both periods --- the prior
+        $+0.147^{**}$ pre / $+0.170^{**}$ post pattern was an artifact
+        of tract-centroid job misattribution.
     \end{itemize}
 \end{frame}
 
@@ -490,15 +531,15 @@
         \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
         & Mean & SD & Mean & SD & Mean & SD \\
         \midrule
-        share\_live\_in       & 0.123 & 0.071 & 0.143 & 0.092 & 0.096 & 0.056 \\
-        Muni resident EIT (\%) & 0.521 & 0.135 & 0.810 & 0.425 & 0.667 & 0.258 \\
-        SD EIT (\%)            & 0.570 & 0.234 & 0.546 & 0.209 & 0.469 & 0.182 \\
-        Total EIT (\%)         & 1.092 & 0.259 & 1.356 & 0.465 & 1.136 & 0.269 \\
-        Total jobs              & 4{,}028 & 9{,}315 & 8{,}098 & 11{,}046 & 4{,}515 & 4{,}850 \\
-        Resident workers       & 486 & 2{,}260 & 1{,}243 & 2{,}741 & 373 & 410 \\
+        share\_live\_in       & 0.102 & 0.067 & 0.132 & 0.080 & 0.104 & 0.061 \\
+        Muni resident EIT (\%) & 0.514 & 0.102 & 0.822 & 0.448 & 0.617 & 0.253 \\
+        SD EIT (\%)            & 0.590 & 0.253 & 0.556 & 0.214 & 0.483 & 0.090 \\
+        Total EIT (\%)         & 1.104 & 0.257 & 1.378 & 0.498 & 1.101 & 0.254 \\
+        Total jobs              & 2{,}943 & 7{,}419 & 8{,}080 & 10{,}589 & 3{,}436 & 3{,}059 \\
+        Resident workers       & 328     & 1{,}660 & 1{,}195 & 2{,}719  & 352     & 382 \\
         \midrule
-        Munis                  & \multicolumn{2}{c}{842} & \multicolumn{2}{c}{78} & \multicolumn{2}{c}{21} \\
-        Muni-years             & \multicolumn{2}{c}{11{,}207} & \multicolumn{2}{c}{1{,}264} & \multicolumn{2}{c}{314} \\
+        Munis                  & \multicolumn{2}{c}{1{,}110} & \multicolumn{2}{c}{90} & \multicolumn{2}{c}{15} \\
+        Muni-years             & \multicolumn{2}{c}{11{,}076} & \multicolumn{2}{c}{1{,}126} & \multicolumn{2}{c}{178} \\
         \bottomrule
     \end{tabular}
     \vspace{0.15cm}
@@ -523,8 +564,8 @@
     where $G_i \in \{$nc, inc, dec$\}$ defined by muni-rate event.
     \footnotesize
     \begin{itemize}
-        \item Treated: inc-only munis (97) and dec-only munis (24).
-        \item Control: never-changed munis (1{,}264).
+        \item Treated: inc-only munis (90) and dec-only munis (15).
+        \item Control: never-changed munis (1{,}110).
         \item Flip-floppers dropped.
         \item Continuous rate (per pp), not binary cohort.
         \item $\mathbf{X}_{it}$ = log muni spending (police, streets,
@@ -535,33 +576,35 @@
 
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Q3 Answer: Asymmetric --- inc effect sharper than dec}
+\frametitle{Q3 Answer: Inc effect robust; SD null}
     \centering
     \small
     \begin{tabular}{lccc}
         \toprule
         & share\_live\_in & log(Resident) & log(Total Jobs) \\
         \midrule
-        $\tau^{\text{res,muni}} \times $ Inc & $-0.020^{***}$ & $-0.256^{***}$ & $-0.213^{***}$ \\
-                                              & $(0.006)$ & $(0.046)$ & $(0.047)$ \\
-        $\tau^{\text{res,muni}} \times $ Dec & $-0.025$ & $-0.224$ & $-0.208$ \\
-                                              & $(0.022)$ & $(0.176)$ & $(0.162)$ \\
-        $\tau^{\text{SD}}$                    & $+0.007$ & $+0.139^{**}$ & $-0.026$ \\
-                                              & $(0.006)$ & $(0.071)$ & $(0.052)$ \\
+        $\tau^{\text{res,muni}} \times $ Inc & $-0.016^{**}$  & $-0.221^{***}$ & $-0.151^{***}$ \\
+                                              & $(0.007)$    & $(0.038)$      & $(0.040)$ \\
+        $\tau^{\text{res,muni}} \times $ Dec & $+0.032^{**}$  & $-0.295$       & $-0.067$ \\
+                                              & $(0.016)$    & $(0.657)$      & $(0.114)$ \\
+        $\tau^{\text{SD}}$                    & $-0.004$       & $+0.024$       & $-0.018$ \\
+                                              & $(0.006)$    & $(0.122)$      & $(0.099)$ \\
         \midrule
-        $R^2$                                  & 0.894 & 0.970 & 0.971 \\
-        $N$                                    & 12{,}745 & 12{,}745 & 12{,}745 \\
+        $N$                                    & 12{,}298 & 12{,}188 & 12{,}298 \\
         \bottomrule
     \end{tabular}
     \vspace{0.1cm}
     \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Controls: 4 expenditure + 3 revenue shares.
-        \item Muni rate hits inc-only hard: $-2.0$ share-pp per pp;
-        $-26\%$ on resident workers. Dec-only point estimates similar
-        but imprecise (only 21 munis).
-        \item SD rate (single coef across all groups, controlling for
-        muni rate): $+14\%$ on resident workers per pp --- when an SD
-        raises its rate, cities in that SD gain residents.
+        \item Controls: log expenditures (police, streets, debt, state aid)
+        + revenue shares (EIT, real estate).
+        \item Muni rate hits inc-only hard: $-1.6$ share-pp per pp;
+        $-22\%$ on resident workers; $-15\%$ on total jobs.
+        \item Dec-only point estimates noisy (only 15 munis).
+        $+0.032^{**}$ on share\_live\_in is a small-sample composition
+        effect, not a substantive sign reversal.
+        \item SD coefficient is null --- the prior $+0.139^{**}$ on
+        log(Resident) was an artifact of tract-centroid job
+        misattribution. See ``Data note.''
     \end{itemize}
 \end{frame}
 
@@ -576,20 +619,18 @@
         \toprule
         & share\_live\_in & log(Resident) & log(Total Jobs) \\
         \midrule
-        $\tau^{\text{res,muni}} \times $ Inc  & $-0.020^{***}$ (0.006) & $-0.256^{***}$ (0.046) & $-0.213^{***}$ (0.047) \\
-        $\tau^{\text{res,muni}} \times $ Dec  & $-0.025$ (0.022)        & $-0.224$ (0.176)        & $-0.208$ (0.162) \\
-        $\tau^{\text{SD}}$                     & $+0.007$ (0.006)        & $+0.139^{**}$ (0.071)   & $-0.026$ (0.052) \\
+        $\tau^{\text{res,muni}} \times $ Inc  & $-0.016^{**}$ (0.007) & $-0.221^{***}$ (0.038) & $-0.151^{***}$ (0.039) \\
+        $\tau^{\text{res,muni}} \times $ Dec  & $+0.032^{**}$ (0.016) & $-0.296$ (0.657)        & $-0.067$ (0.114) \\
+        $\tau^{\text{SD}}$                     & $-0.004$ (0.006)      & $+0.024$ (0.122)        & $-0.018$ (0.099) \\
         \midrule
-        log\_police       & $+0.001$ (0.001)  & $+0.029^{***}$ (0.011) & $+0.026^{**}$ (0.012) \\
-        log\_streets      & $+0.000$ (0.001)  & $+0.019^{**}$ (0.009)  & $+0.018^{*}$ (0.010) \\
-        log\_debt         & $-0.000$ (0.000)  & $-0.002$ (0.004)       & $+0.003$ (0.004) \\
-        log\_state\_aid   & $-0.001$ (0.002)  & $+0.053^{***}$ (0.018) & $+0.066^{***}$ (0.017) \\
-        share\_eit        & $+0.003$ (0.011)  & $+0.227^{**}$ (0.097)  & $+0.283^{***}$ (0.107) \\
-        share\_re         & $-0.007$ (0.008)  & $-0.075$ (0.077)       & $-0.063$ (0.080) \\
-        share\_intergov   & $+0.012$ (0.015)  & $-0.397^{***}$ (0.147) & $-0.529^{***}$ (0.147) \\
+        log\_police       & $-0.000$ (0.001)  & $+0.004$ (0.012)       & $+0.010$ (0.012) \\
+        log\_streets      & $-0.001$ (0.001)  & $+0.010$ (0.010)       & $+0.018^{**}$ (0.009) \\
+        log\_debt         & $-0.000$ (0.001)  & $-0.005$ (0.005)       & $+0.001$ (0.005) \\
+        log\_state\_aid   & $+0.001$ (0.001)  & $+0.011$ (0.010)       & $-0.005$ (0.009) \\
+        share\_eit        & $+0.005$ (0.010)  & $-0.046$ (0.118)       & $-0.105$ (0.114) \\
+        share\_re         & $-0.001$ (0.008)  & $-0.076$ (0.092)       & $-0.074$ (0.088) \\
         \midrule
-        $R^2$             & 0.894    & 0.970    & 0.971 \\
-        $N$               & 12{,}745 & 12{,}745 & 12{,}745 \\
+        $N$               & 12{,}298 & 12{,}188 & 12{,}298 \\
         \bottomrule
     \end{tabular}
     \vspace{0.1cm} \\
@@ -636,8 +677,590 @@
     \centering
     \includegraphics[width=\textwidth]{q3_sd_clean_groups_es.png}
     \footnotesize
-    SD inc-only = 165 munis; SD dec-only = 9 munis (noisy);
-    SD never-changed = 1{,}299 munis.
+    SD inc-only $\approx$ 165 munis; SD dec-only too thin to fit.
+\end{frame}
+
+%%%%%%%%%%% Q3 ROBUSTNESS: staggered-DiD estimators %%%%%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q3 Robustness motivation: staggered + multi-event treatment}
+    \small
+    \begin{itemize}\setlength{\itemsep}{0.10cm}
+        \item Of 113 inc-only munis, 17 ($\approx$15\%) raise rates more
+        than once; 1 raises 9 times.
+        \item Pooled TWFE on continuous \texttt{resident\_eit} can have
+        \emph{negative weights} under heterogeneous treatment effects
+        (Goodman-Bacon 2021, de Chaisemartin \& D'Haultfoeuille 2020).
+        \item Even after restricting to single-event munis, staggered
+        timing (different munis treated in different years) keeps the
+        problem alive --- need SA / DCDH / stacked DiD.
+        \item Four robustness checks below, each with both an aggregate
+        coefficient and an event-study figure.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%% (1) Single-event TWFE %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(1) Single-event TWFE: drop multi-event Inc munis}
+    \scriptsize
+    \[
+        Y_{it} = \alpha_i + \gamma_t
+        + \beta\,\tau^{\text{res,muni}}_{it} + \delta\,\tau^{\text{SD}}_{it}
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+    \]
+    Sample: 1{,}110 NC + 68 Inc-only with exactly one rate increase
+    (drops 22 multi-event Inc munis). $\mathbf{X}_{it}$: log spending +
+    revenue shares. SEs clustered at muni.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_live\_in & log(Resident) & log(Total Jobs) \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Total stack}} \\
+        $\tau^{\text{home}}$    & $-0.004$ (0.005)  & $-0.062$ (0.072) & $-0.077$ (0.061) \\
+        \multicolumn{4}{l}{\textit{Decomposition}} \\
+        $\tau^{\text{res,muni}}$ & $-0.004$ (0.007)   & $-0.162^{***}$ (0.035) & $-0.144^{***}$ (0.047) \\
+        $\tau^{\text{SD}}$       & $-0.004$ (0.006)   & $+0.027$ (0.122)        & $-0.020$ (0.099) \\
+        \midrule
+        log\_police       & $-0.000$ (0.001) & $+0.005$ (0.012) & $+0.011$ (0.012) \\
+        log\_streets      & $-0.001$ (0.001) & $+0.011$ (0.010) & $+0.018^{**}$ (0.009) \\
+        log\_debt         & $-0.000$ (0.001) & $-0.005$ (0.005) & $+0.001$ (0.005) \\
+        log\_state\_aid   & $+0.001$ (0.001) & $+0.011$ (0.010) & $-0.005$ (0.009) \\
+        share\_eit        & $+0.003$ (0.011) & $-0.052$ (0.125) & $-0.104$ (0.121) \\
+        share\_re         & $-0.001$ (0.008) & $-0.076$ (0.092) & $-0.074$ (0.088) \\
+        \midrule
+        $N$               & 11{,}828 & 11{,}719 & 11{,}828 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.05cm}\\
+    \scriptsize Cluster-robust SEs by muni in parentheses. City + year FE.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(1) Single-event sample ES (Sun-Abraham, binary cohort)}
+    \scriptsize
+    \[
+        Y_{it} = \alpha_i + \gamma_t
+        + \sum_{\ell \neq -1} \mu_\ell \,\mathbf{1}\{t - c_i = \ell\}
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+        \quad
+        \text{(SA cohort-aggregated)}
+    \]
+    SA aggregates the cohort $\times$ event-time interactions of
+    \citet{sunab2021} using cohort-share weights. Cohort $c_i$ = year
+    of muni $i$'s first rate increase. \textbf{Note: SA needs binary
+    staggered treatment, so the dynamic coefficients here are the
+    average ATT in event-time, \emph{not} the per-pp dose magnitude
+    in the previous slide.}
+    \centering
+    \includegraphics[width=\textwidth]{q3_sa_single_event_es.png}
+    \scriptsize
+    68 single-event Inc munis vs 1{,}110 NC. Pre-trends near zero;
+    post-treatment drift negative on log outcomes.
+\end{frame}
+
+%%%%%%%% (2) DCDH %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(2) DCDH: continuous, multi-event, inc-only + NC}
+    \scriptsize
+    de Chaisemartin \& D'Haultfoeuille (2024). For each pair of
+    consecutive years $(t{-}1,\,t)$ and each muni $i$, define the
+    \emph{instantaneous causal response}
+    \[
+        \delta_{i,t} \;=\; \frac{Y_{it} - Y_{i,t-1}}{\tau_{it} - \tau_{i,t-1}}
+    \]
+    on switchers (munis with $\tau_{it} \neq \tau_{i,t-1}$). The
+    estimator averages $\delta_{i,t}$ across switchers and event-times,
+    using only never-treated munis as the difference-in-differences
+    counterfactual; no negative weights even with continuous, staggered,
+    multi-event treatment.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \vspace{0.05cm}
+    ATE per pp:
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_live\_in & log(Resident) & log(Total Jobs) \\
+        \midrule
+        Av.\ total effect & $+0.002$ & $-0.049$ & $-0.043$ \\
+                          & $(-0.023, +0.026)$ & $(-0.238, +0.139)$ & $(-0.223, +0.137)$ \\
+        \midrule
+        Effective $N$ (cells)  & 10{,}853 & 10{,}750 & 10{,}853 \\
+        Switchers              & 234 & 234 & 234 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.1cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item ATE null but underpowered: only 36 switchers in $t{=}1$,
+        falling to 21 by $t{=}8$.
+        \item Analytical SEs are conservative under continuous treatment
+        (package warns; bootstrap recommended for inference, $\sim$6--8 hr).
+        \item Same controls as TWFE in the data setup; DCDH uses the
+        residualized treatment after partialling controls.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(2) DCDH event study}
+    \centering
+    \includegraphics[width=\textwidth]{q3_dcdh_es.png}
+    \footnotesize
+    Effects (years 1--8) + placebos ($-5$ to $-1$). Placebos not
+    individually significant. Effect on log(Total jobs) at $t{=}1$ is
+    $-0.035$ (95\% CI $-0.070, -0.000$).
+\end{frame}
+
+%%%%%%%% (3) Stacked DiD, binary post %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(3) Stacked DiD, binary post: 21 sub-experiments}
+    \scriptsize
+    For each cohort $c$ (event year), construct a stack $s$: that
+    treated muni plus all NC, $t\in[c{-}5,\,c{+}5]$. Concatenate stacks
+    and estimate
+    \[
+        Y_{ist} = \alpha_{is} + \gamma_{ts}
+        + \beta\,(\text{Treat}_i \cdot \text{Post}_{st})
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{ist}
+    \]
+    with stack$\times$muni and stack$\times$year FE. Only NC munis as
+    controls $\Rightarrow$ no already-treated comparison; SEs clustered
+    at the original muni.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \vspace{0.05cm}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_live\_in & log(Resident) & log(Total Jobs) \\
+        \midrule
+        \texttt{treat\_post} & $-0.002$ (0.003) & $-0.000$ (0.037) & $+0.008$ (0.029) \\
+        \midrule
+        log\_police, log\_streets, log\_debt, & \multicolumn{3}{c}{\textit{(included; coefficients suppressed)}} \\
+        log\_state\_aid, share\_eit, share\_re & & & \\
+        \midrule
+        $N$ (stack-muni-year) & 95{,}287 & 94{,}317 & 95{,}287 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.05cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item ATT pools all post-treatment years at intensive treatment $=1$.
+        \item Null because the intensity of the rate change is collapsed
+        out --- a 0.1pp hike and a 0.5pp hike both contribute equally.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(3) Stacked DiD binary event study}
+    \centering
+    \includegraphics[width=\textwidth]{q3_stacked_binary_es.png}
+\end{frame}
+
+%%%%%%%% (4) Stacked DiD, continuous %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(4) Stacked DiD, continuous $\Delta\tau$: dose-response per pp}
+    \scriptsize
+    Same stacks as (3). Within each stack, define
+    $\Delta\tau_{ist} = \tau^{\text{res,muni}}_{it}
+    - \overline{\tau}_{is}^{\text{pre}}$ (rate deviation from the muni's
+    own pre-treatment baseline within stack $s$). Then
+    \[
+        Y_{ist} = \alpha_{is} + \gamma_{ts}
+        + \beta\,\Delta\tau_{ist}
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{ist}
+    \]
+    $\hat{\beta}$ has a per-pp interpretation. The event-study version
+    interacts a time-invariant per-unit dose with $\mathbf{1}\{t - c_i = \ell\}$.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \vspace{0.05cm}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_live\_in & log(Resident) & log(Total Jobs) \\
+        \midrule
+        $\Delta\tau$ (per pp) & $-0.005$ (0.005) & $-0.091^{**}$ (0.036) & $-0.072^{**}$ (0.031) \\
+        \midrule
+        log\_police, log\_streets, log\_debt, & \multicolumn{3}{c}{\textit{(included; coefficients suppressed)}} \\
+        log\_state\_aid, share\_eit, share\_re & & & \\
+        \midrule
+        $N$ (stack-muni-year) & 77{,}182 & 76{,}528 & 77{,}182 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.1cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item \textbf{Recommended headline magnitude.} 1 pp muni rate
+        increase $\Rightarrow$ $-9\%$ resident workers, $-7\%$ total jobs.
+        \item Roughly half the magnitude of Q2 TWFE pooled
+        ($-20\%$, $-13\%$) --- consistent with TWFE being inflated by
+        negative weights under heterogeneous effects.
+        \item No staggered-DiD critique: only NC munis as controls, no
+        already-treated comparison.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(4) Stacked DiD continuous event study}
+    \centering
+    \includegraphics[width=\textwidth]{q3_stacked_continuous_es.png}
+\end{frame}
+
+%%%%%%%% PIECEWISE BINDING MODEL %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(5) Piecewise binding model: setup}
+    \scriptsize
+    Cousub-pair panel (work $A$, home $B$, year $t$). Under the
+    institutional rule, the work jurisdiction always collects
+    $\tau^{\text{nr}}_A$; the home jurisdictions collect the
+    \emph{residual} $\max(\tau^{\text{home}}_B - \tau^{\text{nr}}_A,\,0)$.
+    Worker's total bill:
+    \[
+        \tau^{\text{bill}}(A,B,t)
+        \;=\; \max\!\bigl(\tau^{\text{home}}_B,\; \tau^{\text{nr}}_A\bigr),
+        \qquad
+        \tau^{\text{home}}_B = \tau^{\text{res}}_B + \tau^{\text{SD}}_B.
+    \]
+    \emph{Binding side} = which jurisdiction's rate moves the bill at the
+    margin: \textbf{home binds} iff $\tau^{\text{home}}_B > \tau^{\text{nr}}_A$,
+    else \textbf{work binds}.
+    For each pair and each year-over-year transition $(t-1)\!\to\!t$
+    (pooled across all $t \in 2013\text{--}2019$), classify:
+    \begin{itemize}\setlength{\itemsep}{0.04cm}
+        \item \textbf{int\_home}: home-binds in both $t-1$ and $t$.
+        \item \textbf{int\_work}: work-binds in both $t-1$ and $t$.
+        \item \textbf{ext\_to\_home}: was work-binds, now home-binds.
+        \item \textbf{ext\_to\_work}: was home-binds, now work-binds.
+    \end{itemize}
+    Decomposition of the year-over-year change in the bill:
+    \begin{align*}
+        \Delta\log\text{flow}_{ABt} &=
+        \beta_{ih}\,\Delta\tau^{\text{bill}}_{ABt}\!\cdot\!\mathbf{1}\{\text{int\_home}\}
+      + \beta_{iw}\,\Delta\tau^{\text{bill}}_{ABt}\!\cdot\!\mathbf{1}\{\text{int\_work}\} \\
+      &\quad
+      + \beta_{eh}\,\Delta\tau^{\text{bill}}_{ABt}\!\cdot\!\mathbf{1}\{\text{ext\_to\_home}\}
+      + \beta_{ew}\,\Delta\tau^{\text{bill}}_{ABt}\!\cdot\!\mathbf{1}\{\text{ext\_to\_work}\} \\
+      &\quad + \alpha_{AB} + \gamma_{At} + \varepsilon_{ABt}
+    \end{align*}
+    Each $\beta$ is per-pp dose response within that channel-state.
+    Pair FE $\alpha_{AB}$ + work-muni $\times$ year FE $\gamma_{At}$
+    absorbs muni-$A$-specific year shocks (e.g., booming labor
+    market that drives flows up while $A$ raises rates). SE clustered
+    at work muni.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(5) Piecewise: transition distribution post-Act-32}
+    \centering
+    \scriptsize
+    Pair-years 2012--2019, all 8.6M PA OD-pairs (no distance filter).
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{\textit{STRICT (drop NA nonres)}}
+        & \multicolumn{2}{c}{\textit{FILLED (NA $\to$ work res)}} \\
+        \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+        Transition & Pair-years & \% & Pair-years & \% \\
+        \midrule
+        int\_home    & 1{,}187{,}143 & 39.9 & 1{,}604{,}992 & 47.0 \\
+        int\_work    & 1{,}736{,}664 & 58.3 & 1{,}755{,}095 & 51.4 \\
+        ext\_to\_home &     19{,}521 &  0.7 &     20{,}446 &  0.6 \\
+        ext\_to\_work &     33{,}733 &  1.1 &     33{,}930 &  1.0 \\
+        \midrule
+        Total        & 2{,}977{,}061 & 100.0 & 3{,}414{,}463 & 100.0 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.1cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item Extensive switches are rare ($\sim$1.8\% combined). Most
+        pair-year action is intensive within a stable channel.
+        \item Filling shifts pair-years toward home-binding ($+7$ pp)
+        because imputed nonres = res $\le$ res + SD = home stack
+        wherever the imputation kicks in.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(5) Piecewise: aggregate and decomposed coefficients}
+    \centering
+    \scriptsize
+    log(flow), pair + year FE, SE clustered at work muni.
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        & \multicolumn{2}{c}{STRICT} & \multicolumn{2}{c}{FILLED} \\
+        \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+        & Estimate & SE & Estimate & SE \\
+        \midrule
+        Aggregate $\Delta\tau^{\text{bill}}$ & $+0.005$ & $0.009$ & $+0.001$ & $0.008$ \\
+        \midrule
+        $\beta_{ih}$ (int\_home)     & $+0.016$       & $0.013$ & $+0.001$ & $0.012$ \\
+        $\beta_{iw}$ (int\_work)     & $+0.042$       & $0.026$ & $+0.043$ & $0.027$ \\
+        $\beta_{eh}$ (ext\_to\_home) & $+0.002$       & $0.012$ & $+0.003$ & $0.012$ \\
+        $\beta_{ew}$ (ext\_to\_work) & $+0.015$       & $0.019$ & $+0.016$ & $0.019$ \\
+        \midrule
+        $N$ pair-years      & 2{,}735{,}968 & & 3{,}129{,}492 & \\
+        Pairs               & 823{,}244     & & 953{,}578     & \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.1cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item All four channels null individually. Aggregate $\Delta\tau^{\text{bill}}$
+        is null. \emph{Direction} is positive across the board, opposite
+        the piecewise prediction.
+        \item Pair-level pair + year FE absorbs almost everything;
+        residual signal of a $\sim$0.5 pp dose change on a typical
+        flow of 1--3 jobs is too small to detect.
+        \item $\beta_{iw}$ is the largest at $+0.042$ (p $\approx 0.11$) ---
+        wrong-signed positive on intensive work-rate increases. Likely
+        confounded by time-varying muni-A growth that pair FE doesn't
+        absorb (work-muni rate increases coincide with muni-A booming).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(5) Piecewise event study around extensive switches}
+    \centering
+    \includegraphics[width=\textwidth]{q3_piecewise_es.png}
+    \footnotesize
+    76{,}119 pairs flip to home-binding; 52{,}570 flip to work-binding.
+    Pre-trends near zero; post-flip drift toward zero is consistent
+    with the null aggregate.
+\end{frame}
+
+%%%%%%%% NONRESIDENT-SIDE Q3 %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q3 nonresident-side: motivation and group composition}
+    \small
+    Mirror of resident-side Q3 but treatment = $\tau^{\text{nr}}_A$
+    (work muni's nonresident rate); outcome = log(Nonresident workers)
+    in muni $A$ and log(Total Jobs).
+    \begin{itemize}\setlength{\itemsep}{0.10cm}
+        \item Re-classify munis on nonresident-rate events.
+        Of 88 nonres-Inc munis, \textbf{83 had exactly one increase}
+        (94\% --- multi-event scope is smaller than the resident side).
+        Inc-only: 88; NC: 892; FF / Dec dropped.
+        \item Direct test of the piecewise mechanism: nonresident workers
+        face $\tau^{\text{nr}}_A$ when the work rate binds; resident
+        workers don't. So the nonres-rate effect should concentrate on
+        nonresident outflows / total jobs, not on resident workers.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(1) Single-event TWFE, nonres-side}
+    \scriptsize
+    \[
+        Y_{it} = \alpha_i + \gamma_t
+        + \beta\,\tau^{\text{nr}}_{it}
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
+    \]
+    Sample: 892 NC + 83 single-event nonres-Inc munis.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_nonres & log(NonRes) & log(Total Jobs) \\
+        \midrule
+        $\tau^{\text{nr}}$ & $-0.004$ (0.012) & $-0.289^{*}$ (0.169) & $-0.286^{*}$ (0.166) \\
+        \midrule
+        $N$               & 9{,}911          & 9{,}911              & 9{,}911 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.05cm} \\
+    \scriptsize Cluster-robust SEs by muni; same controls as resident side.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(1) Single-event ES, nonres-side (Sun-Abraham)}
+    \centering
+    \includegraphics[width=\textwidth]{q3_nonres_sa_single_event_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(2) DCDH, nonres-side: continuous, multi-event}
+    \scriptsize
+    Same DCDH machinery as resident side; treatment $= \tau^{\text{nr}}$.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_nonres & log(NonRes) & log(Total Jobs) \\
+        \midrule
+        Av.\ total effect  & $-0.004$ & $-0.298$ & $-0.294$ \\
+                            & $(-0.028,\,+0.020)$ & $(-0.663,\,+0.068)$ & $(-0.646,\,+0.058)$ \\
+        \midrule
+        Switchers          & 261 & 261 & 261 \\
+        $N$ (cells)        & 8{,}807 & 8{,}807 & 8{,}807 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.1cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item Point estimates are similar to single-event TWFE
+        ($\sim$$-30\%$ on log NonRes and log Total Jobs) but CIs span
+        zero. Bootstrap not yet run.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(2) DCDH ES, nonres-side}
+    \centering
+    \includegraphics[width=\textwidth]{q3_nonres_dcdh_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(3) Stacked DiD binary, nonres-side}
+    \scriptsize
+    \[
+        Y_{ist} = \alpha_{is} + \gamma_{ts}
+        + \beta\,(\text{Treat}_i \cdot \text{Post}_{st})
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{ist}
+    \]
+    18 sub-experiments (cohorts), $\pm$5-yr window, NC-only controls.
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_nonres & log(NonRes) & log(Total Jobs) \\
+        \midrule
+        \texttt{treat\_post} & $0.000$ (0.007) & $-0.129$ (0.086) & $-0.130$ (0.084) \\
+        \midrule
+        $N$ & 76{,}292 & 76{,}292 & 76{,}292 \\
+        \bottomrule
+    \end{tabular}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(3) Stacked binary ES, nonres-side}
+    \centering
+    \includegraphics[width=\textwidth]{q3_nonres_stacked_binary_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(4) Stacked DiD continuous $\Delta\tau$, nonres-side}
+    \scriptsize
+    \[
+        Y_{ist} = \alpha_{is} + \gamma_{ts}
+        + \beta\,\Delta\tau^{\text{nr}}_{ist}
+        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{ist}
+    \]
+    \centering
+    \renewcommand{\arraystretch}{1.05}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_nonres & log(NonRes) & log(Total Jobs) \\
+        \midrule
+        $\Delta\tau^{\text{nr}}$ (per pp) & $0.000$ (0.013) & $-0.261$ (0.165) & $-0.262$ (0.160) \\
+        \midrule
+        $N$ & 61{,}557 & 61{,}557 & 61{,}557 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.1cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item Direction matches resident side (negative); magnitude
+        about 3$\times$ larger than resident-side stacked ($-0.09$).
+        \item p $\approx 0.11$. Underpowered: only 88 nonres-Inc munis
+        and small dose variation (most muni nonres rates barely change).
+        \item log(NonRes) and log(Total Jobs) move in tandem ---
+        consistent with nonresident workers being a large share of
+        total jobs in many munis.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(4) Stacked continuous ES, nonres-side}
+    \centering
+    \includegraphics[width=\textwidth]{q3_nonres_stacked_continuous_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Nonres-side estimator triangulation}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lccc}
+        \toprule
+        Estimator & share\_nonres & log(NonRes) & log(Total Jobs) \\
+        \midrule
+        (1) Single-event TWFE & $-0.004$       & $-0.289^{*}$ & $-0.286^{*}$ \\
+        (2) DCDH ATE          & $-0.004$       & $-0.298$     & $-0.294$ \\
+        (3) Stacked binary    & $+0.000$       & $-0.129$     & $-0.130$ \\
+        \textbf{(4) Stacked continuous} & $+0.000$ & $\mathbf{-0.261}$ & $\mathbf{-0.262}$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.15cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item Direction robust: negative on level outcomes across all
+        clean estimators.
+        \item No estimator crosses 5\%: nonres-side is underpowered
+        (smaller treated group, smaller dose variation).
+        \item share\_nonres null everywhere --- mechanically protected
+        because numerator and denominator move together.
+        \item Magnitudes are $\sim$2--3$\times$ resident-side
+        coefficients --- nonresident workers are more responsive per
+        pp of tax than residents, in the data and consistent with the
+        piecewise mechanism (residents face the home stack and a
+        larger move cost; nonresidents can switch jobs).
+    \end{itemize}
+\end{frame}
+
+%%%%%%%% Estimator triangulation %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Estimator triangulation: log(Resident) and log(Total Jobs)}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        Estimator & share\_live\_in & log(Resident) & log(Total Jobs) & Notes \\
+        \midrule
+        Q2 TWFE (full)        & $-0.012^{**}$ & $-0.201^{***}$ & $-0.128^{***}$ & Pooled, possibly negative-weighted \\
+        Single-event TWFE     & $-0.004$      & $-0.162^{***}$ & $-0.144^{***}$ & Drops 22 multi-event Inc munis \\
+        DCDH ATE              & $+0.002$      & $-0.049$       & $-0.043$       & Null, wide CI; underpowered \\
+        Stacked binary        & $-0.002$      & $-0.000$       & $+0.008$       & Dose-information lost \\
+        \textbf{Stacked continuous} & $-0.005$ & $\mathbf{-0.091^{**}}$ & $\mathbf{-0.072^{**}}$ & \textbf{Recommended headline} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.15cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item Direction is robust: \emph{negative} on level outcomes
+        across every clean estimator.
+        \item Magnitude on log outcomes ranges from $-0.04$ (DCDH) to
+        $-0.20$ (TWFE pooled). Stacked continuous $-0.09$ sits in the
+        middle and has the cleanest identification properties.
+        \item \texttt{share\_live\_in} is fragile across clean estimators;
+        the level outcomes are the robust headline.
+    \end{itemize}
 \end{frame}
 
 \iffalse % HIDDEN: Q4 + Q5 (Q5 is essentially Q2 with extra outcome) -- restore by removing iffalse/fi

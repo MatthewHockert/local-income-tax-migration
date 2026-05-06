@@ -2,8 +2,15 @@
 # Run once to create all intermediate RDS files
 # Prerequisites:
 #   1. python3 scrape_pa_dced_eit.py (creates data/pa_eit_rate_panel.csv)
-#   2. Rscript download_lodes.R (creates data/lodes/*.rds)
+#   2. Rscript download_lodes.R (creates data/lodes_block/*.rds for PA)
 # ============================================================================
+#
+# PA LODES is downloaded at block level (agg_geo = "block") and aggregated to
+# cousub here via a block→cousub crosswalk built from TIGER 2020 blocks. This
+# recovers all 2,561 PA cousubs; the prior tract-level pipeline (with centroid
+# join) silently dropped 42% of cousubs (those that didn't host a tract
+# centroid) and mis-attributed jobs for the rest. OH legacy path still uses
+# tract-level data; OH was dropped from the paper.
 
 library(sf)
 library(dplyr)
@@ -18,7 +25,8 @@ options(tigris_use_cache = TRUE)
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"
 data_dir <- file.path(project_dir, "data")
-lodes_dir <- file.path(data_dir, "lodes")
+lodes_dir       <- file.path(data_dir, "lodes")        # legacy tract-level (OH)
+lodes_block_dir <- file.path(data_dir, "lodes_block")  # block-level (PA)
 
 
 # 1. Ohio Rate Panel ----
@@ -273,6 +281,29 @@ pa_tract_xwalk <- st_join(
   select(tract_geoid = GEOID, cousub_fips, cousub_name)
 saveRDS(pa_tract_xwalk, file.path(data_dir, "pa_tract_xwalk.rds"))
 
+## PA: block -> cousub (used by block-level LODES aggregation)
+# Blocks nest within cousubs in 2020 Census hierarchy, so a centroid
+# point-in-polygon is exact. Cached because the spatial join is the slowest
+# step in the build (~30s after blocks are downloaded).
+pa_block_xwalk_file <- file.path(data_dir, "pa_block_xwalk.rds")
+if (!file.exists(pa_block_xwalk_file)) {
+  pa_blocks <- tigris::blocks(state = "PA", year = 2020) %>%
+    st_transform(4326) %>%
+    select(block_geoid = GEOID20)
+  pa_block_centroids <- pa_blocks %>%
+    mutate(geometry = st_centroid(geometry))
+  pa_block_xwalk <- st_join(
+    pa_block_centroids,
+    pa_cousub %>% select(cousub_fips = COUSUBFP) %>% st_transform(4326),
+    join = st_within
+  ) %>%
+    st_drop_geometry() %>%
+    as.data.table()
+  saveRDS(pa_block_xwalk, pa_block_xwalk_file)
+} else {
+  pa_block_xwalk <- readRDS(pa_block_xwalk_file)
+}
+
 # Save place/cousub geometries for maps
 saveRDS(oh_places, file.path(data_dir, "oh_places.rds"))
 saveRDS(pa_cousub, file.path(data_dir, "pa_cousub.rds"))
@@ -376,6 +407,53 @@ build_city_od <- function(main_rds, aux_rds = NULL, tract_xwalk, id_col, state_f
 oh_tract_dt <- as.data.table(oh_tract_xwalk)
 pa_tract_dt <- as.data.table(pa_tract_xwalk)
 
+# Block-level OD aggregator for PA. Mirrors build_city_od but consumes
+# block-level LODES (h_geocode/w_geocode 15-digit GEOIDs) and merges via
+# the block→cousub crosswalk. Aggregates to (work_city, year) as before.
+build_city_od_block <- function(main_rds, aux_rds = NULL, block_xwalk,
+                                state_fips) {
+  od_dt <- as.data.table(readRDS(main_rds))
+  od_dt[, year := as.integer(year)]
+  setnames(od_dt, c("h_geocode", "w_geocode"), c("h_block", "w_block"),
+           skip_absent = TRUE)
+
+  if (!is.null(aux_rds) && file.exists(aux_rds)) {
+    aux_dt <- as.data.table(readRDS(aux_rds))
+    aux_dt[, year := as.integer(year)]
+    setnames(aux_dt, c("h_geocode", "w_geocode"), c("h_block", "w_block"),
+             skip_absent = TRUE)
+    aux_dt <- aux_dt[substr(w_block, 1, 2) == state_fips]
+    od_dt <- rbind(od_dt, aux_dt, fill = TRUE)
+    print(paste("  Added", nrow(aux_dt), "cross-state flows"))
+  }
+
+  home_xw <- block_xwalk[, .(h_block = block_geoid, home_city = cousub_fips)]
+  work_xw <- block_xwalk[, .(w_block = block_geoid, work_city = cousub_fips)]
+  od_dt <- merge(od_dt, home_xw, by = "h_block", all.x = TRUE)
+  od_dt <- merge(od_dt, work_xw, by = "w_block", all.x = TRUE)
+  od_dt[, home_out_of_state := substr(h_block, 1, 2) != state_fips]
+
+  city_od <- od_dt[!is.na(work_city), .(
+    total_jobs = sum(S000, na.rm = TRUE),
+    live_and_work = sum(S000[home_city == work_city], na.rm = TRUE),
+    live_outside = sum(S000[is.na(home_city) | home_city != work_city], na.rm = TRUE),
+    live_out_of_state = sum(S000[home_out_of_state == TRUE], na.rm = TRUE),
+    live_in_state_diff_city = sum(S000[home_out_of_state == FALSE &
+      (is.na(home_city) | home_city != work_city)], na.rm = TRUE)
+  ), by = .(work_city, year)]
+
+  city_od[, `:=`(
+    share_live_in = live_and_work / total_jobs,
+    share_out_of_state = live_out_of_state / total_jobs,
+    share_in_state_diff = live_in_state_diff_city / total_jobs,
+    log_total_jobs = log(total_jobs),
+    log_live_in = ifelse(live_and_work > 0, log(live_and_work), NA_real_),
+    log_live_out = ifelse(live_outside > 0, log(live_outside), NA_real_),
+    log_out_of_state = ifelse(live_out_of_state > 0, log(live_out_of_state), NA_real_)
+  )]
+  city_od
+}
+
 oh_city_od <- build_city_od(
   file.path(lodes_dir, "oh_od_S000_main.rds"),
   file.path(lodes_dir, "oh_od_S000_aux.rds"),
@@ -385,14 +463,14 @@ oh_city_od_high <- build_city_od(
   file.path(lodes_dir, "oh_od_SE03_main.rds"),
   NULL, oh_tract_dt, "place_fips", "39")
 
-pa_city_od <- build_city_od(
-  file.path(lodes_dir, "pa_od_S000_main.rds"),
-  file.path(lodes_dir, "pa_od_S000_aux.rds"),
-  pa_tract_dt, "cousub_fips", "42")
+pa_city_od <- build_city_od_block(
+  file.path(lodes_block_dir, "pa_od_S000_main.rds"),
+  file.path(lodes_block_dir, "pa_od_S000_aux.rds"),
+  pa_block_xwalk, "42")
 
-pa_city_od_high <- build_city_od(
-  file.path(lodes_dir, "pa_od_SE03_main.rds"),
-  NULL, pa_tract_dt, "cousub_fips", "42")
+pa_city_od_high <- build_city_od_block(
+  file.path(lodes_block_dir, "pa_od_SE03_main.rds"),
+  NULL, pa_block_xwalk, "42")
 
 saveRDS(oh_city_od, file.path(data_dir, "oh_city_od.rds"))
 saveRDS(oh_city_od_high, file.path(data_dir, "oh_city_od_high.rds"))

@@ -50,12 +50,17 @@ Execute scripts in this order from the project root:
 python3 scrape_pa_dced_eit.py     # → data/pa_eit_rate_panel.csv (~15 min)
 python3 scrape_pa_dced_afr.py     # → data/pa_afr_panel.csv (~10 min)
 
-# Step 2: Download LODES origin-destination and residence data from Census
-Rscript download_lodes.R          # → data/lodes/*.rds (~30 min, ~1.5 GB)
+# Step 2: Download LODES origin-destination data from Census at the BLOCK level.
+#         Block-level rather than tract-level because tract->cousub centroid
+#         joins drop ~42% of PA cousubs (those whose land is covered by a tract
+#         whose centroid falls in a different cousub). Block aggregation is
+#         exact since 2020 Census blocks nest within cousubs.
+Rscript download_lodes.R          # → data/lodes_block/*.rds (~60 min, ~4 GB)
 
-# Step 3: Build all intermediate datasets (rate panels, crosswalks, analysis panels,
-#         fiscal controls including expenditure logs and revenue shares)
-Rscript build_data.R              # → data/*.rds (~5 min)
+# Step 3: Build all intermediate datasets (rate panels, block->cousub crosswalk,
+#         block-aggregated cousub OD panel, fiscal controls including
+#         expenditure logs and revenue shares)
+Rscript build_data.R              # → data/*.rds (~10 min, dominated by block crosswalk)
 
 # Step 4: Main analysis (source interactively in RStudio, or run in batch)
 Rscript local_income_tax_migration.R
@@ -76,7 +81,7 @@ All data are publicly available. Steps 1--2 above download them automatically.
 |--------|----------|----------|--------|
 | **EIT rates** | PA DCED MunStats | 2,500+ municipalities (resident + nonresident muni rates, school district rates), 2000--2026 | [MunStats tax reports](https://apps.dced.pa.gov/munstats-public/ReportInformation2.aspx?report=taxes_Dyn_Excel) (scraped by `scrape_pa_dced_eit.py`) |
 | **Municipal finances (AFR)** | PA DCED MunStats | 2,500+ municipalities, 2002--2023 (revenue, expenditures by function, debt, intergov) | [Statewide AFR](https://apps.dced.pa.gov/munstats-public/ReportInformation2.aspx?report=StatewideMuniAfr) (scraped by `scrape_pa_dced_afr.py`) |
-| **LODES OD/RAC** | Census Bureau LEHD | Tract-level, 2002--2021, LODES v8 (2020 Census geography throughout) | Via `lehdr` R package |
+| **LODES OD/RAC** | Census Bureau LEHD | Block-level, 2002--2021, LODES v8 (2020 Census geography throughout); aggregated to cousub via block→cousub crosswalk | Via `lehdr` R package (`agg_geo = "block"`) |
 | **TIGER/Line shapefiles** | Census Bureau | County subdivisions, places, tracts, school districts | Via `tigris` R package (2020 vintage) |
 | **UCR crime** | FBI Uniform Crime Reports | Agency-level offenses known, 1960--present | Jacob Kaplan's concatenated files (RDS format) |
 | **Building permits (BPS)** | Census Bureau | Place/MCD-level, annual | [Building Permits Survey](https://www.census.gov/construction/bps/) |
@@ -124,7 +129,9 @@ The `data/` directory is not tracked due to file size (~1.5 GB for LODES alone).
     │                            #   + revenue shares (EIT, real estate, intergov)
     ├── pa_neighbors.rds         # Muni pairs within 80 km centroid
     ├── pa_cousub.rds            # PA cousub geometry (TIGER 2020)
-    ├── lodes/                   # Cached LODES RDS files
+    ├── pa_block_xwalk.rds       # Block GEOID → cousub crosswalk (TIGER 2020)
+    ├── lodes_block/             # Block-level LODES RDS (current pipeline)
+    ├── lodes/                   # Tract-level LODES RDS (legacy / OH only)
     └── crime_data/, irs_soi/    # External data
 ```
 
@@ -182,6 +189,7 @@ Comm-dev spending is **not** included as a control — it responds strongly to r
 
 ## Key Joins
 
+- **LODES → cousub:** Block-level LODES (`agg_geo = "block"` in lehdr) merged to cousub via `pa_block_xwalk.rds`, built from TIGER 2020 blocks via centroid `st_within` against cousub polygons. Blocks nest within cousubs in the 2020 Census hierarchy, so this is exact (no centroid heuristic across boundaries). Recovers all 2,561 PA cousubs; the prior tract-level pipeline assigned each tract to one cousub by tract centroid and silently dropped 1,082 cousubs (42%) whose land was covered by a tract whose centroid fell elsewhere.
 - **Pennsylvania:** DCED `municipality_id` → Census `COUSUBFP` via municipality name + county matching in `build_data.R` (~99.6% match rate after manual fixes for 9 dissolved/merged munis).
 - **UCR crime:** `fips_place_code` → `cousub_fips` (93.5% match).
 - **BPS permits:** `fips_mcd_code` → `cousub_fips` (93.3% match).

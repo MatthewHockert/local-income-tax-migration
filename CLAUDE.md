@@ -38,8 +38,8 @@ Rscript run_dcdh.R             # DCDH continuous treatment estimator
 |--------|---------|
 | `scrape_pa_dced_eit.py` | PA EIT rates → `data/pa_eit_rate_panel.csv` |
 | `scrape_pa_dced_afr.py` | PA municipal finances → `data/pa_afr_panel.csv` |
-| `download_lodes.R` | Cache LODES to `data/lodes/*.rds` |
-| `build_data.R` | Rate panels, crosswalks, neighbors (80km), city OD panels |
+| `download_lodes.R` | Cache PA LODES at block level (`agg_geo = "block"`) to `data/lodes_block/*.rds`; legacy OH tract-level files remain in `data/lodes/` |
+| `build_data.R` | Rate panels, block→cousub crosswalk (`pa_block_xwalk.rds`), neighbors (80km), city OD panels (PA aggregated from block via crosswalk; OH legacy tract-level path) |
 | `local_income_tax_migration.R` | Master analysis: Sections 1-21 |
 | `companion_outcomes.R` | Decomposition: resident/nonresident/total jobs |
 | `pretreatment_balance.R` | Balance table + pre-trend tests (fiscal + crime + permits + jobs) |
@@ -121,7 +121,9 @@ Trimmed at load time (`max_year <- 2019`) to exclude COVID-contaminated LODES 20
 
 | File | Contents |
 |------|----------|
-| `data/lodes/` | 15+ cached RDS: OD main/aux, RAC, federal JT04, earnings, age segments |
+| `data/lodes_block/` | PA block-level LODES (current pipeline): OD main, RAC by segment |
+| `data/lodes/` | Legacy tract-level LODES (OH + dropped Stage 2 PA tract files) |
+| `data/pa_block_xwalk.rds` | Block GEOID → cousub crosswalk (TIGER 2020 blocks via centroid `st_within`); recovers all 2,561 PA cousubs vs 1,479 under tract centroid join |
 | `data/oh_rate_panel.rds` | OH municipality x year rate panel |
 | `data/pa_rate_panel.rds` | PA municipality x year rate panel with COUSUBFP crosswalk |
 | `data/oh_panel.rds` / `pa_panel.rds` | Analysis-ready: city OD + tax rates |

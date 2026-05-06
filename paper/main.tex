@@ -382,7 +382,7 @@ panel ($r = -0.12$).
 \label{subsec:pipeline}
 
 The analysis links two administrative systems that do not share common
-identifiers: LEHD/LODES employment records (Census tract geography)
+identifiers: LEHD/LODES employment records (Census block geography)
 and Pennsylvania EIT rates (DCED municipality IDs). The analysis
 panels are constructed through the following steps:
 
@@ -417,33 +417,50 @@ panels are constructed through the following steps:
     backfill missing pre-2012 nonresident rates with the earliest
     observed post-2012 rate per muni and flag the imputation.
 
-    \item \textbf{Download LODES origin-destination files.}
+    \item \textbf{Download LODES origin-destination files at the
+    block level.}
     LODES Version 8 (2020 Census geography throughout, retroactively
-    applied to 2002--2021 by LEHD) provides tract-level
-    residence--workplace links. We download main files (intra-state)
-    and auxiliary files (cross-state, where the workplace is in-state
-    but the residence is out-of-state) for PA, 2002--2021. Auxiliary
-    files are necessary because excluding cross-state commuters would
-    mechanically inflate share\_live\_in for border munis. Segments
-    include all jobs (S000), earnings categories (SE01, SE03), age
-    groups (SA01--SA03), and federal employment (JT04, used as a
-    placebo). Reference date: April 1 of each year.
+    applied to 2002--2021 by LEHD) is downloaded at the Census block
+    level (\texttt{agg\_geo = "block"} in \texttt{lehdr}). We download
+    main files (intra-state) and auxiliary files (cross-state, where
+    the workplace is in-state but the residence is out-of-state) for
+    PA, 2002--2021. Auxiliary files are necessary because excluding
+    cross-state commuters would mechanically inflate
+    share\_live\_in for border munis. Segments include all jobs
+    (S000), earnings categories (SE01, SE03), and age groups
+    (SA01--SA03). Reference date: April 1 of each year.
 
     \item \textbf{Crosswalk PA DCED to Census geography.}
-    LODES uses Census tract geography; PA rates use DCED municipality
-    IDs with no Census equivalent. PA municipalities are county
-    subdivisions (COUSUBFP), not Census places. We match DCED
-    municipality names to TIGER/Line COUSUBFP codes using normalized
-    name + county. Match rate: 99.6\%. The 9 unmatched munis are
-    boroughs and townships merged or dissolved before the 2020 Census.
+    PA rates use DCED municipality IDs with no Census equivalent.
+    PA municipalities are county subdivisions (COUSUBFP), not Census
+    places. We match DCED municipality names to TIGER/Line COUSUBFP
+    codes using normalized name + county. Match rate: 99.6\%. The 9
+    unmatched munis are boroughs and townships merged or dissolved
+    before the 2020 Census.
+
+    \item \textbf{Build a block-to-cousub crosswalk.}
+    LODES geographies (block GEOIDs) do not directly identify the
+    cousub. We construct a block-to-cousub crosswalk from the TIGER
+    2020 PA blocks shapefile by point-in-polygon (block centroid
+    \texttt{st\_within} cousub). Because 2020 Census blocks nest
+    within cousubs by construction, this assignment is exact---every
+    block has an unambiguous cousub. The crosswalk recovers all 2{,}561
+    PA cousubs. We adopt block-level aggregation rather than the
+    tract-level alternative because in rural PA a single tract often
+    spans multiple cousubs; assigning each tract to one cousub by tract
+    centroid silently drops 1{,}082 of 2{,}561 cousubs (42\%) and
+    misattributes employment for the cousubs it does retain.
 
     \item \textbf{Compute neighbor pairs.}
     Centroid-to-centroid distances between all PA muni pairs; retain
     pairs within 80 km (the plausible commuting and relocation zone).
 
-    \item \textbf{Aggregate LODES to municipality-level OD panels.}
-    Raw LODES has $\sim$24 million tract-pair-year observations per
-    state. Aggregate to work municipality $\times$ year: total jobs,
+    \item \textbf{Aggregate block-level LODES to municipality-level OD
+    panels.}
+    Raw block-level LODES has $\sim$5 million block-pair-year
+    observations for PA per year. Each block-pair is mapped to a
+    (work~cousub, home~cousub) pair via the block-to-cousub crosswalk
+    and summed to produce, for each (work~muni, year): total jobs,
     live-and-work (workers who reside in the work muni), commuters
     from other in-state munis, and cross-state commuters. This
     produces \texttt{share\_live\_in}, the primary outcome: the
@@ -458,13 +475,19 @@ panels are constructed through the following steps:
 \label{subsec:sources}
 
 \paragraph{LODES Origin-Destination Data.}
-LEHD LODES Version 8, 2002--2019. Tract-level residence--workplace
+LEHD LODES Version 8, 2002--2019. Block-level residence--workplace
 links derived from state Unemployment Insurance wage records and the
-Quarterly Census of Employment and Wages. We trim 2020--2021 due to
-COVID-related disruptions in both employment patterns and LODES
-coverage. Noise infusion is applied at the census block level;
-aggregation to the municipality level substantially reduces
-measurement error.
+Quarterly Census of Employment and Wages \citep{abowd2009lehd}. We
+trim 2020--2021 due to COVID-related disruptions in both employment
+patterns and LODES coverage. The Census Bureau applies synthetic
+noise infusion at the block level to protect respondent
+confidentiality; the mechanism is calibrated so that aggregation to
+larger geographies produces estimates that approximate ground truth
+and have been validated against external sources at the tract level
+and above \citep{machanavajjhala2008, graham2014lodes,
+lodes_techdoc_v8}. We aggregate blocks to county subdivisions
+(cousubs) using the TIGER 2020 block-to-cousub crosswalk described
+in Section~\ref{subsec:pipeline}, item~3.
 
 \paragraph{Municipal Tax Rate Panel.}
 Pennsylvania: DCED MunStats, scraped annually. Resident and
