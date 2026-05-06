@@ -2,11 +2,33 @@
 
 ## Project Overview
 
-Do local income tax changes cause residential sorting? Uses LODES Origin-Destination data to measure whether workers relocate residence outside taxing municipalities. Two-state design: Ohio (binary tax/no-tax) and Pennsylvania (universal EIT with rate variation). Act 32 (2012) enforcement consolidation provides a natural experiment: sorting only appears when the tax becomes binding through employer withholding.
+Do local income tax changes cause residential sorting? Uses LEHD LODES Origin-Destination data, aggregated from the **block** level to PA county subdivisions (cousubs), to measure whether workers relocate residence outside taxing municipalities. **PA-only** (Ohio dropped from the paper). The PA Earned Income Tax operates piecewise: each worker's bill = max(home_stack, work_nonresident_rate), with home_stack = muni_resident_rate + SD_rate. Act 32 of 2008 (effective 2012) made the EIT binding via consolidated employer withholding — the natural experiment.
 
-## Key Finding
+## Headline Findings (current state, post block-level rebuild)
 
-Higher local income tax rates reduce the locally-resident share of city workers. The behavioral response is real but too small to offset the fiscal gains from higher rates. Rate increases push people out (-0.018** per pp post-Act 32); rate decreases do not bring them back. Cities raise rates to fund programs (e.g., police), not because of fiscal distress — pre-treatment budgets are flat. The sorting is cross-boundary (people leave the city) not within-city (people don't just reshuffle neighborhoods). School district EIT has the opposite effect: higher SD rates attract residents, fully offsetting municipal rate repulsion in high-SD areas.
+**Q2 muni rate decomposition, full sample TWFE:**
+- share_live_in: muni rate −0.012\*\*; SD rate **null** (was +0.147\*\* under the old tract-aggregated panel — that effect was an artifact of cousub-level job misattribution).
+- log(Resident workers): muni rate −0.201\*\*\*; SD rate null.
+- log(Total Jobs): muni rate −0.128\*\*\*; SD rate null.
+
+**Estimator triangulation (resident-side, log Resident workers):**
+- Q2 TWFE pooled: −0.201\*\*\* (likely inflated by negative weighting under heterogeneous staggered effects).
+- Single-event TWFE: −0.162\*\*\*.
+- DCDH ATE: −0.049 (CI spans 0; underpowered without bootstrap).
+- Stacked binary: ~0 (binary post collapses dose).
+- **Stacked continuous (recommended headline): −0.091\*\*** (≈9% drop in resident workers per pp; 7% on total jobs).
+
+**Act 32 structural break:** muni × Pre is null on share_live_in (−0.008); muni × Post is significant (−0.013\*\*); log(Resident) effect roughly *doubles* post-Act 32 (−0.139\*\*\* → −0.209\*\*\*). SD coefficient null in both periods.
+
+**Q3 clean groups (Inc-only / Dec-only / NC, flip-floppers dropped):** muni × Inc = −0.016\*\* on share_live_in, −0.221\*\*\* on log(Resident). Dec-only is too thin (15 munis) to identify; SA pre-trends underpowered, ATT not credibly estimated.
+
+**Nonresident-side parallel build:** point estimates negative on log(Nonres workers) and log(Total jobs) (~−0.13 to −0.30 per pp) but no estimator crosses 5% — smaller treatment group, smaller dose variation. Direction consistent with resident side.
+
+**Piecewise binding model** (cousub-pair × year): aggregate Δbill response is null at pair level. Adding work_muni × year FE eliminates the wrong-signed +0.042 on `dbill_int_work` from the pair + year FE version (confirmed muni-A growth confound). With FE correction + thin-pair filter, `dbill_ext_h` is significant negative (−0.056\*\*\*) — flow falls when binding side flips from work to home — but result is sensitive to imputation.
+
+**Asymmetry**: Inc-only effects identified; Dec-only not identified (15 munis, underpowered).
+
+**Mechanism**: rate increases push residents out (residential margin); total jobs fall via local-services-demand spillover (not via direct nonresident taxation, since 74% of resident-rate hikes leave the nonres rate unchanged).
 
 ## Run Order
 
@@ -15,21 +37,44 @@ Higher local income tax rates reduce the locally-resident share of city workers.
 python3 scrape_pa_dced_eit.py
 python3 scrape_pa_dced_afr.py
 
-# 2. Download and cache LODES OD + RAC data
+# 2. Reparse DCED XLS files to recover School District ID/name
+Rscript reparse_dced.R
+
+# 3. Download LODES at block level (PA only); ~4 GB, ~60 min
 Rscript download_lodes.R
 
-# 3. Build all intermediate datasets
+# 4. Build all intermediate datasets (block→cousub crosswalk + cousub OD panel)
 Rscript build_data.R
 
-# 4. Main analysis (Sections 1-21)
-# Source in RStudio: local_income_tax_migration.R
+# 5. Slide-model bundle: Q2 + Act 32 + Q3 clean groups + ES figures
+Rscript run_slide_models.R
 
-# 5. Additional analyses
-Rscript companion_outcomes.R   # Decomposition: resident/nonresident/total
-Rscript pretreatment_balance.R # Balance + pre-trends (11 observables incl crime, permits)
-Rscript robustness.R           # Philly exclusion, fiscal controls, Act 32 Stage 2
-Rscript run_paper_models.R     # Paper-ready Sun-Abraham models
-Rscript run_dcdh.R             # DCDH continuous treatment estimator
+# 6. Q3 robustness (resident side)
+Rscript q3_robustness.R          # single-event TWFE + DCDH on inc + NC
+Rscript q3_stacked.R             # stacked DiD binary + continuous
+Rscript make_dcdh_es_figure.R    # builds DCDH event-study from saved coefs
+
+# 7. Q3 nonresident-side parallel
+Rscript q3_nonres.R              # 4 estimators against muni_nonres_eit
+
+# 8. Piecewise binding model
+Rscript q3_piecewise.R           # 4 specs: v1 pair+yr FE, v2 +work×yr FE,
+                                 # v3 +thin-pair filter, v4 filled imputation
+Rscript q3_piecewise_es.R        # ES around extensive switches
+
+# 9. Residence-side panel (queued for residence-side estimators)
+Rscript build_residence_panel.R  # aggregate LODES OD by home cousub
+
+# 10. SD heterogeneity diagnostic (confirms SD attraction was an artifact)
+Rscript sd_heterogeneity.R
+
+# Legacy / reference
+# Rscript local_income_tax_migration.R   # 4400-line master, mostly superseded
+# Rscript companion_outcomes.R           # earlier decomposition
+# Rscript pretreatment_balance.R         # 11-outcome balance + SA pre-trends
+# Rscript robustness.R                   # Philly + Act 32 + fiscal robustness
+# Rscript run_paper_models.R             # earlier paper-ready SA models
+# Rscript run_dcdh.R                     # earlier DCDH (slow, kept for reference)
 ```
 
 ## Scripts
@@ -38,121 +83,85 @@ Rscript run_dcdh.R             # DCDH continuous treatment estimator
 |--------|---------|
 | `scrape_pa_dced_eit.py` | PA EIT rates → `data/pa_eit_rate_panel.csv` |
 | `scrape_pa_dced_afr.py` | PA municipal finances → `data/pa_afr_panel.csv` |
-| `download_lodes.R` | Cache PA LODES at block level (`agg_geo = "block"`) to `data/lodes_block/*.rds`; legacy OH tract-level files remain in `data/lodes/` |
-| `build_data.R` | Rate panels, block→cousub crosswalk (`pa_block_xwalk.rds`), neighbors (80km), city OD panels (PA aggregated from block via crosswalk; OH legacy tract-level path) |
-| `local_income_tax_migration.R` | Master analysis: Sections 1-21 |
-| `companion_outcomes.R` | Decomposition: resident/nonresident/total jobs |
-| `pretreatment_balance.R` | Balance table + pre-trend tests (fiscal + crime + permits + jobs) |
-| `robustness.R` | Philadelphia exclusion, fiscal controls, Act 32 structural break (all outcomes) |
-| `run_paper_models.R` | Paper-ready Sun-Abraham models: inc/dec vs NC, OH controls, dose-response |
-| `run_dcdh.R` | de Chaisemartin & D'Haultfoeuille (2024) continuous treatment + ACRT |
-| `paper/main.tex` | LaTeX with filled tables, figures, and robustness section |
-| `references/lit_review.bib` | BibTeX literature review (27 papers, tiered by relevance) |
+| `reparse_dced.R` | Reparse PA DCED XLS files keeping School District ID/name (the original parser dropped these) |
+| `download_lodes.R` | PA LODES at block level (`agg_geo = "block"`) → `data/lodes_block/*.rds`. ~4 GB. Legacy OH tract files remain in `data/lodes/`. |
+| `build_data.R` | Rate panels, block→cousub crosswalk (`pa_block_xwalk.rds`), neighbors (80km), cousub-level OD panels via `build_city_od_block()` |
+| `run_slide_models.R` | Slide-relevant models: Q2 TWFE total stack + decomposition, Act 32 break, Q3 clean groups (Inc/Dec/NC), Sun-Abraham event-study figures |
+| `q3_robustness.R` | Single-event TWFE on inc-only with exactly one increase + DCDH continuous on inc + NC; rate-events-by-year and events-per-muni figures |
+| `q3_stacked.R` | Stacked DiD binary + continuous Δτ on single-event Inc + NC; ±5-yr window, NC-only controls |
+| `q3_nonres.R` | Same four estimators as resident-side, but treatment = `muni_nonres_eit`, outcomes = `log_live_outside`, `share_nonres`, `log_total_jobs` |
+| `q3_piecewise.R` | Cousub-pair binding model (work A × home B × year). Strict (drop NA nonres) and Filled (impute nonres = res). Δbill decomposition by transition state. Optional work_muni × year FE and thin-pair filter. |
+| `q3_piecewise_es.R` | Event study around extensive switches in binding side |
+| `make_dcdh_es_figure.R` | Renders DCDH event-study figure from saved per-period effects/placebos |
+| `build_residence_panel.R` | Residence-side aggregation by home cousub: residents_employed, residents_work_in_own, residents_work_outside, share_work_outside |
+| `sd_heterogeneity.R` | Diagnostic: confirms SD attraction effect was an artifact of tract-centroid job misattribution |
+| `pilot_block_lodes.R` | One-year pilot used to validate the block migration (kept for reference) |
+| `paper/main.tex` | LaTeX manuscript (PA-only) |
+| `paper/slides.tex` | 56-page slide deck (advisor presentation) |
+| `references/local_income_taxes.bib` | BibTeX (current; LODES technical citations included) |
 
-## Main Script Sections
+## Sample: 2002–2019
 
-| Section | Content |
-|---------|---------|
-| 1 | Load data (trimmed to 2019) + merge fiscal controls + save `pa_fiscal_controls.rds` |
-| 2 | Maps (OH rates, PA rate changes) |
-| 3 | Rate change distributions + adoption plots |
-| 4 | Treated vs control OD trends + normalized event plots + distance gradient |
-| 4b-4d | Tract-level distance, case studies (Circleville, Gahanna) |
-| 5 | Scatter plots + fiscal outcome scatters |
-| 6 (OH) | OH OD estimation: TWFE, event study, stacked, out-of-state, earnings |
-| 7 (PA) | PA OD estimation: TWFE + controls, event study + controls |
-| 8 | Pooled OH + PA |
-| 9 | Robustness: asymmetry, decreases, Sun-Abraham, cleaned stacked, rate dynamics |
-| 10 | Dose-response identification (treated-only, key result) |
-| 11 | City-pair OD flows (distance gradient) |
-| 12 | Rate x year scatter plots |
-| 13 | Fiscal impact (AFR: revenue, police, debt, population, property values, asymmetry) |
-| 14 | Heterogeneity: earnings (SE01/SE03) and age (SA01-SA03) |
-| 15 | Federal worker placebo (JT04) |
-| 16 | Sample sensitivity + full continuous dose-response (both directions) |
-| 17 | Paper-ready models: Sun-Abraham inc/dec splits, OH two control groups, dose-response |
-| 18 | ACS place-level outcomes (population, income growth — null) |
-| 19 | IRS SOI county migration (null at county level — LODES detects what IRS can't) |
-| 20 | PA institutional robustness: Act 32 structural break, total EIT, SD rates |
-| 21 | Tract-level OD: complete relocation (Q4), destination choice (Q4), SD decomp (Q5), boundary gradient (Q6) |
-
-## Sample: 2002-2019
-
-Trimmed at load time (`max_year <- 2019`) to exclude COVID-contaminated LODES 2020-2021 and ARPA-distorted fiscal data 2020-2023.
-
-## Key Results
-
-**Stage 1: Municipal-level sorting**
-- PA Sun-Abraham (inc vs NC): ATT = **-0.005** (SE 0.003), clean pre-trends, effect at t+8 significant
-- PA DCDH continuous (inc vs NC): ATE = **-0.008** (SE 0.007), placebo p = 0.90, Effect_8 = **-0.011***
-- OH Sun-Abraham (inc vs no-tax): ATT = **-0.008*** (SE 0.003), clean pre-trends
-- OH Sun-Abraham (inc vs never-changed): null — stable-rate taxed cities are poor controls
-- PA split dose: increases **-0.018** per pp; decreases +0.001 (null, asymmetric)
-- Asymmetry confirmed across all estimators: rate decreases do not reverse sorting
-
-**Act 32 structural break (enforcement mechanism)**
-- Pre-Act 32 (2002-2011): β = -0.002 (precise zero) — no sorting when tax not enforced
-- Post-Act 32 (2012-2019): β = -0.018*** — sorting only when employer withholding is binding
-- Fiscal confirmation: same rate generates 5.1%** more EIT revenue post-Act 32
-- Pattern holds across all Stage 2 outcomes (resident workers, commuter pairs, SD decomposition)
-
-**Stage 2: Tract-level decomposition**
-- Workers leave the city (cross-boundary sorting), not reshuffle within it
-- Neighbor spillovers: cities gain resident workers when neighbors raise rates (Channel 2)
-- Home rate irrelevant for commuters (consistent with credit/max system — Prediction 2)
-- SD rates attract residents (+0.019*), completely offset muni rate repulsion in high-SD areas
-- Boundary gradient null — sorting is city-wide relocation, not cross-boundary arbitrage
-
-**Companion outcomes and fiscal**
-- Companion outcomes: resident workers -15.3%**, total jobs -11.7%**; cannot reject equality (p=0.09)
-- Fiscal: EIT revenue +67%***, total tax +30%***, police +5%; population null; property values null
-- Fiscal controls (police, streets, debt, state aid) do not change estimates or SEs
-- Crime declines gradually post-treatment (significant at t+7, t+8): rate increases fund police, reduce crime
-
-**Pre-treatment balance (11 observables)**
-- Clean pre-trends: revenue, EIT revenue, RE tax, streets, population, debt, jobs, crime, permits
-- Exceptions: police (lower spending pre-treatment, addressed with controls), market value (limited coverage)
-
-**Null results (confirming mechanism)**
-- ACS outcomes: population and income growth null (effect too small for aggregate outcomes)
-- IRS SOI: county-level migration null (sorting is sub-county, LODES detects what IRS can't)
+Trimmed at load time (`max_year <- 2019`) to exclude COVID-contaminated LODES 2020–2021 and ARPA-distorted fiscal data 2020–2023. Estimation samples typically further restrict to `total_jobs > 50` and require non-missing fiscal controls.
 
 ## Data
 
 | File | Contents |
 |------|----------|
-| `data/lodes_block/` | PA block-level LODES (current pipeline): OD main, RAC by segment |
-| `data/lodes/` | Legacy tract-level LODES (OH + dropped Stage 2 PA tract files) |
-| `data/pa_block_xwalk.rds` | Block GEOID → cousub crosswalk (TIGER 2020 blocks via centroid `st_within`); recovers all 2,561 PA cousubs vs 1,479 under tract centroid join |
-| `data/oh_rate_panel.rds` | OH municipality x year rate panel |
-| `data/pa_rate_panel.rds` | PA municipality x year rate panel with COUSUBFP crosswalk |
-| `data/oh_panel.rds` / `pa_panel.rds` | Analysis-ready: city OD + tax rates |
-| `data/pa_afr_panel.csv` | PA municipal finances (56K rows, 71 cols, 2002-2023) |
-| `data/pa_fiscal_panel.rds` | Fiscal panel merged with rates |
-| `data/pa_fiscal_controls.rds` | Log police, streets, debt, state aid for Stage 2 merges |
-| `data/pa_city_pair_od.rds` | City-pair panel with work/home rates + fiscal controls |
-| `data/pa_resident_panel.rds` | Resident worker panel with own + neighbor rates + fiscal controls |
-| `data/pa_tract_panel.rds` | Tract panel with boundary classification |
-| `data/oh_neighbors.rds` / `pa_neighbors.rds` | City-to-city pairs (80km radius) |
-| `data/crime_data/ucr_offenses_known_monthly/` | FBI UCR annual RDS (1960-present) |
+| `data/lodes_block/` | PA block-level LODES (current pipeline): pa_od_S000_main.rds, pa_od_SE03_main.rds, pa_rac_*.rds |
+| `data/lodes/` | Legacy tract-level LODES (OH + earlier PA tract files) |
+| `data/pa_block_xwalk.rds` | Block GEOID → cousub crosswalk (TIGER 2020 blocks via centroid `st_within`). Recovers all 2,561 PA cousubs vs 1,479 under tract-centroid join. |
+| `data/pa_eit_rate_panel.csv` | DCED rates with School District ID/name preserved (rebuilt by `reparse_dced.R`) |
+| `data/pa_afr_panel.csv` | PA municipal finances (56K rows, 71 cols, 2002–2023) |
+| `data/pa_rate_panel.rds` | PA muni × year rate panel with cousub_fips, resident_eit, sd_eit, total_eit, muni_nonres_eit (post-2012 backfill applied), event_type |
+| `data/pa_panel.rds` | Workplace-side cousub × year panel: total_jobs, live_and_work, live_outside, share_live_in + rates |
+| `data/pa_residence_panel.rds` | Residence-side cousub × year panel: residents_employed, residents_work_in_own, residents_work_outside + home rates |
+| `data/pa_pair_panel.rds` | Cousub-pair × year panel for piecewise model: flow, home_stack, tau_nr_w, work_binds, transition |
+| `data/pa_fiscal_controls.rds` | log police/streets/debt/state aid + revenue shares |
+| `data/pa_neighbors.rds` | Cousub pairs within 80km centroid distance |
+| `data/pa_cousub.rds` | PA cousub geometry (TIGER 2020) |
+| `data/crime_data/ucr_offenses_known_monthly/` | FBI UCR annual RDS (1960–present; legacy) |
 | `figures/` | Publication-ready PNGs (300 DPI) |
-| `paper/main.tex` | LaTeX with filled tables, equations, figure refs |
-| `references/lit_review.bib` | 27 papers organized by relevance tier |
+| `paper/main.tex`, `paper/slides.tex` | Manuscript and slides |
+| `references/local_income_taxes.bib` | BibTeX (active) |
 
 ## Key Joins
 
-- OH: `muni_fips` = Census `PLACEFP` (direct FIPS join)
-- PA: DCED `municipality_id` → Census `COUSUBFP` via name + county matching (97% match)
-- UCR crime: `fips_place_code` → `cousub_fips` (93.5% match for PA)
-- BPS permits: `fips_mcd_code` → `cousub_fips` (93.3% match for PA)
+- **LODES → cousub**: block-level LODES merged via `pa_block_xwalk.rds`. Blocks nest within cousubs in the 2020 Census hierarchy, so the assignment is exact.
+- **PA**: DCED `municipality_id` → Census `COUSUBFP` via municipality name + county matching (~99.6% match).
+- **UCR crime**: `fips_place_code` → `cousub_fips` (93.5% match).
+- **BPS permits**: `fips_mcd_code` → `cousub_fips` (93.3% match).
+- **Muni → SD rate**: each (muni, year) cell gets `max(sd_eit_rate)` across the SDs reported by DCED. Only 2.4% of munis straddle multiple SDs (61 of 2,505), so the max-aggregation is correct for 97.6% of munis. Diagnosed in `sd_heterogeneity.R`; the prior +0.147\*\* SD attraction effect was traced to tract-centroid job misattribution, not multi-SD measurement.
+
+## Slide Deck Structure (paper/slides.tex)
+
+Resident-side Q3:
+- Q2 Answer (TWFE total stack + decomposition)
+- Act 32 Answer (pre/post-2012 split)
+- Q3 Sample (Inc-only / Dec-only / NC)
+- Q3 Answer + Q3 Full Results
+- Binding-relevance slide (84% of resident-rate increases bind)
+- (1) Single-event TWFE — table + ES (Sun-Abraham)
+- (2) DCDH — table + ES
+- (3) Stacked binary — table + ES
+- (4) Stacked continuous — table + ES (recommended headline)
+- (5) Piecewise binding model — setup, transition distribution, decomposition, ES
+- Estimator triangulation (resident)
+
+Nonresident-side Q3 (parallel):
+- Motivation + group composition
+- (1)–(4) same four estimators with table + ES on `log_live_outside`, `share_nonres`, `log_total_jobs`
+- Nonres triangulation
+
+Each slide has the estimating equation written out.
 
 ## Significance Convention
 
-All scripts use: `* p < .1, ** p < .05, *** p < .01` (set via `setFixest_etable`).
+`* p < .1, ** p < .05, *** p < .01` (set via `setFixest_etable`).
 
 ## Dependencies
 
-**R**: `sf`, `dplyr`, `tidyr`, `stringr`, `data.table`, `fixest`, `ggplot2`, `lehdr`, `tigris`, `readxl`, `janitor`, `tidycensus`, `beepr`
+**R**: `sf`, `dplyr`, `tidyr`, `stringr`, `data.table`, `fixest`, `ggplot2`, `lehdr`, `tigris`, `readxl`, `janitor`, `tidycensus`, `beepr`, `DIDmultiplegtDYN`
 
 **Python** (scrapers only): `requests`, `pandas`, `xlrd`
 
