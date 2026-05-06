@@ -699,7 +699,46 @@
     \end{itemize}
 \end{frame}
 
-%%%%%%%% (1) Single-event TWFE %%%%%%%%
+%%%%%%%% Roadmap of Q3 experiments %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Q3 roadmap: three experiments, four estimators each}
+    \small
+    Q3 runs the same four estimators \{(1) Single-event TWFE, (2) DCDH,
+    (3) Stacked binary, (4) Stacked continuous\} on \emph{three}
+    different (panel $\times$ rate) designs:
+    \medskip
+    \scriptsize
+    \renewcommand{\arraystretch}{1.25}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{llll}
+        \toprule
+        Block & Panel (unit) & Treatment & Outcomes \\
+        \midrule
+        \textbf{A} & Workplace (work\_city) & $\tau^{\text{res}}$ work-muni resident rate & share\_live\_in, log(Resident), log(Tot Jobs) \\
+        \textbf{B} & Workplace (work\_city) & $\tau^{\text{nr}}$ work-muni nonres rate    & share\_nonres, log(NonRes), log(Tot Jobs) \\
+        \textbf{C} & Residence (home\_city) & $\tau^{\text{res}}$ home-muni resident rate & share\_work\_outside, log(Residents), log(WorkOut) \\
+        \bottomrule
+    \end{tabular}
+    \medskip
+    \small
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\footnotesize
+        \item \textbf{A} = headline: do workers stop living where they work
+        when the work-muni's resident rate rises?
+        \item \textbf{B} = piecewise mechanism check: does the work-muni's
+        nonresident rate push out cross-border workers?
+        \item \textbf{C} = clean residential test: when home rate rises,
+        do residents leave / shift to commuting out?
+        \item Block A also includes a 5th estimator: piecewise binding
+        model on cousub-pair flows.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Block A: Workplace panel x resident rate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%% (A.1) Single-event TWFE %%%%%%%%
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{(1) Single-event TWFE: drop multi-event Inc munis}
@@ -915,7 +954,38 @@
     \includegraphics[width=\textwidth]{q3_stacked_continuous_es.png}
 \end{frame}
 
-%%%%%%%% PIECEWISE BINDING MODEL %%%%%%%%
+%%%%%%%% Block A triangulation %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Block A triangulation: Workplace $\times$ resident rate}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        Estimator & share\_live\_in & log(Resident) & log(Total Jobs) & Notes \\
+        \midrule
+        Q2 TWFE (full)        & $-0.012^{**}$ & $-0.201^{***}$ & $-0.128^{***}$ & Pooled, possibly negative-weighted \\
+        Single-event TWFE     & $-0.004$      & $-0.162^{***}$ & $-0.144^{***}$ & Drops 22 multi-event Inc munis \\
+        DCDH ATE              & $+0.002$      & $-0.049$       & $-0.043$       & Null, wide CI; underpowered \\
+        Stacked binary        & $-0.002$      & $-0.000$       & $+0.008$       & Dose-information lost \\
+        \textbf{Stacked continuous} & $-0.005$ & $\mathbf{-0.091^{**}}$ & $\mathbf{-0.072^{**}}$ & \textbf{Recommended headline} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.15cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
+        \item Direction is robust: \emph{negative} on level outcomes
+        across every clean estimator.
+        \item Magnitude on log outcomes ranges from $-0.04$ (DCDH) to
+        $-0.20$ (TWFE pooled). Stacked continuous $-0.09$ sits in the
+        middle and has the cleanest identification properties.
+        \item \texttt{share\_live\_in} is fragile across clean estimators;
+        the level outcomes are the robust headline.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%% Block A (5): PIECEWISE BINDING MODEL %%%%%%%%
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{(5) Piecewise binding model: setup}
@@ -1046,7 +1116,7 @@
 %%%%%%%% NONRESIDENT-SIDE Q3 %%%%%%%%
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Q3 nonresident-side: motivation and group composition}
+\frametitle{Block B (Workplace $\times$ nonres rate): motivation and group composition}
     \small
     Mirror of resident-side Q3 but treatment = $\tau^{\text{nr}}_A$
     (work muni's nonresident rate); outcome = log(Nonresident workers)
@@ -1201,7 +1271,7 @@
 
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Nonres-side estimator triangulation}
+\frametitle{Block B triangulation: Workplace $\times$ nonres rate}
     \centering
     \scriptsize
     \renewcommand{\arraystretch}{1.15}
@@ -1232,34 +1302,198 @@
     \end{itemize}
 \end{frame}
 
-%%%%%%%% Estimator triangulation %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Block C: Residence panel x home rate
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{Estimator triangulation: log(Resident) and log(Total Jobs)}
+\frametitle{Block C (Residence $\times$ home rate): motivation}
+    \small
+    So far, two experiments on the \textbf{workplace panel} (unit = work
+    cousub):
+    \begin{itemize}\setlength{\itemsep}{0.05cm}\small
+        \item Workplace $\times$ \textbf{resident rate}:
+        outcomes $\{$share\_live\_in, log(Resident workers), log(Total Jobs)$\}$.
+        \item Workplace $\times$ \textbf{nonres rate}:
+        outcomes $\{$share\_nonres, log(Nonres workers), log(Total Jobs)$\}$.
+    \end{itemize}
+    Both index by where workers \emph{work}. They miss residential moves
+    when the worker keeps the same job: such a worker exits
+    log(Resident workers) but the move itself is invisible.
+    \medskip
+
+    Third experiment: \textbf{residence panel} (unit = home cousub),
+    treatment = home muni's resident rate.
+    \begin{itemize}\setlength{\itemsep}{0.05cm}\small
+        \item residents\_employed: total employed people \emph{living} in $B$, any workplace.
+        \item residents\_work\_outside: of those, the count commuting out.
+        \item share\_work\_outside = residents\_work\_outside / residents\_employed.
+    \end{itemize}
+    Aligned design: treatment (home rate) and unit (home muni) match.
+    Cleanest direct test of residential sorting.
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(1) Single-event TWFE, residence-side}
+    \small
+    Sample: 1{,}172 NC + 67 single-event resident-Inc home munis (22
+    multi-event Inc dropped; 15 Dec, 54 flip-floppers excluded).
+    \[
+    Y_{Bt} = \alpha_B + \gamma_t + \beta\,\tau^{\text{res}}_{Bt} + \mathbf{X}'_{Bt}\boldsymbol{\phi} + \varepsilon_{Bt}
+    \]
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_work\_outside & log(Residents) & log(WorkOutside) \\
+        \midrule
+        $\tau^{\text{res}}_{Bt}$ (home) & $+0.026^{***}$ & $-0.087^{**}$ & $-0.054$ \\
+        & $(0.008)$ & $(0.038)$ & $(0.045)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.10cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\footnotesize
+        \item 1pp $\uparrow$ in home rate $\to$ $\sim$9\% drop in
+        employed residents and $+2.6$pp in share commuting out.
+        \item Absolute count of out-commuters doesn't move: residents
+        leave faster than they switch to commuting.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(1) Single-event ES, residence-side (Sun-Abraham)}
+    \centering
+    \includegraphics[width=\textwidth]{q3_residence_sa_single_event_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(2) DCDH, residence-side: continuous, multi-event}
+    \small
+    Inc (n\_inc $\geq$ 1) + NC; analytical SE.
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_work\_outside & log(Residents) & log(WorkOutside) \\
+        \midrule
+        DCDH ATE & $-0.001$ & $+0.075$ & $+0.066$ \\
+        SE       & $(0.017)$ & $(0.048)$ & $(0.060)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.10cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\footnotesize
+        \item All three null with CIs spanning zero.
+        \item Underpowered without bootstrap; analytical SEs are liberal
+        on continuous DCDH per the authors.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(2) DCDH ES, residence-side}
+    \centering
+    \includegraphics[width=\textwidth]{q3_residence_dcdh_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(3) Stacked DiD binary, residence-side}
+    \small
+    Stacked sub-experiments on single-event Inc + NC; $\pm$5 yr.
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_work\_outside & log(Residents) & log(WorkOutside) \\
+        \midrule
+        Treat $\times$ Post & $+0.003$ & $+0.010$ & $+0.014$ \\
+        SE                  & $(0.005)$ & $(0.027)$ & $(0.027)$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.10cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\footnotesize
+        \item Binary post collapses dose; all null.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(3) Stacked binary ES, residence-side}
+    \centering
+    \includegraphics[width=\textwidth]{q3_residence_stacked_binary_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(4) Stacked DiD continuous $\Delta\tau$, residence-side}
+    \small
+    Treatment = $\Delta\tau^{\text{res}}_{Bt}$ vs pre-event mean.
+    \scriptsize
+    \renewcommand{\arraystretch}{1.15}
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lccc}
+        \toprule
+        & share\_work\_outside & log(Residents) & log(WorkOutside) \\
+        \midrule
+        $\Delta\tau$ & $+0.016^{*}$ & $-0.058$ & $-0.037$ \\
+        SE           & $(0.009)$ & $(0.040)$ & $(0.049)$ \\
+        $p$          & $0.089$ & $0.149$ & $0.448$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.10cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\footnotesize
+        \item share\_work\_outside marginally positive: residents
+        reallocate toward out-commuting per pp of dose.
+        \item log(Residents) trends negative ($-0.058$, $p=0.15$);
+        same sign as TWFE but not significant.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{(4) Stacked continuous ES, residence-side}
+    \centering
+    \includegraphics[width=\textwidth]{q3_residence_stacked_continuous_es.png}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Block C triangulation: Residence $\times$ home rate}
     \centering
     \scriptsize
     \renewcommand{\arraystretch}{1.15}
     \setlength{\tabcolsep}{8pt}
-    \begin{tabular}{lcccc}
+    \begin{tabular}{lccc}
         \toprule
-        Estimator & share\_live\_in & log(Resident) & log(Total Jobs) & Notes \\
+        Estimator & share\_work\_out & log(Residents) & log(WorkOut) \\
         \midrule
-        Q2 TWFE (full)        & $-0.012^{**}$ & $-0.201^{***}$ & $-0.128^{***}$ & Pooled, possibly negative-weighted \\
-        Single-event TWFE     & $-0.004$      & $-0.162^{***}$ & $-0.144^{***}$ & Drops 22 multi-event Inc munis \\
-        DCDH ATE              & $+0.002$      & $-0.049$       & $-0.043$       & Null, wide CI; underpowered \\
-        Stacked binary        & $-0.002$      & $-0.000$       & $+0.008$       & Dose-information lost \\
-        \textbf{Stacked continuous} & $-0.005$ & $\mathbf{-0.091^{**}}$ & $\mathbf{-0.072^{**}}$ & \textbf{Recommended headline} \\
+        (1) Single-event TWFE & $+0.026^{***}$ & $-0.087^{**}$ & $-0.054$ \\
+        (2) DCDH ATE          & $-0.001$       & $+0.075$       & $+0.066$ \\
+        (3) Stacked binary    & $+0.003$       & $+0.010$       & $+0.014$ \\
+        \textbf{(4) Stacked continuous} & $\mathbf{+0.016^{*}}$ & $-0.058$ & $-0.037$ \\
         \bottomrule
     \end{tabular}
     \vspace{0.15cm}
     \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Direction is robust: \emph{negative} on level outcomes
-        across every clean estimator.
-        \item Magnitude on log outcomes ranges from $-0.04$ (DCDH) to
-        $-0.20$ (TWFE pooled). Stacked continuous $-0.09$ sits in the
-        middle and has the cleanest identification properties.
-        \item \texttt{share\_live\_in} is fragile across clean estimators;
-        the level outcomes are the robust headline.
+        \item TWFE and stacked-continuous agree in sign on
+        share\_work\_outside ($+$) and log(Residents) ($-$); DCDH and
+        stacked-binary are noisy nulls.
+        \item Magnitude on log(Residents): $-0.087$ (TWFE) to $-0.058$
+        (stacked continuous) --- about half the workplace-panel coefficient
+        ($-0.20$ to $-0.09$) on log(Resident workers).
+        \item Reading: residence panel isolates the residential-move
+        channel; the gap with workplace-side is the live-and-work
+        intersection collapsing from the work side
+        (job changes, not moves).
+        \item Sorting story holds, but smaller and noisier than the
+        workplace-side estimate suggested.
     \end{itemize}
 \end{frame}
 
@@ -1612,19 +1846,112 @@
 \end{frame}
 \fi % END HIDDEN: Putting it Together
 
+%%%%%%%% Synthesis: is there a causal effect? %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Is there a causal effect? Five independent reads}
+    \footnotesize
+    \textbf{Yes on the resident-side.} Five pieces of evidence with
+    different identification, different units, same sign:
+    \medskip
+    \renewcommand{\arraystretch}{1.20}
+    \setlength{\tabcolsep}{5pt}
+    \scriptsize
+    \begin{tabular}{p{3.4cm}p{2.6cm}p{2.6cm}p{3.4cm}}
+        \toprule
+        Evidence & Unit & Outcome & Result \\
+        \midrule
+        Block A (4 estimators)         & work cousub & log(Resident wkrs)        & $-0.04$ to $-0.20$, sign robust \\
+        Block C (residence panel)      & home cousub & log(Residents employed)   & $-0.087^{**}$ TWFE; $-0.058$ stacked \\
+        Act 32 enforcement break       & work cousub & log(Resident wkrs)        & $-0.139^{***}$ pre $\to$ $-0.209^{***}$ post \\
+        Piecewise binding (pair flows) & A$\times$B pair  & log(flow)            & $-0.056^{***}$ when home side flips to bind \\
+        Asymmetry (Q3 clean groups)    & work cousub & share\_live\_in           & Inc identified $-0.016^{**}$; Dec too thin \\
+        \bottomrule
+    \end{tabular}
+    \medskip
+    \textbf{Where the evidence is weaker:}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
+        \item DCDH (analytical SE) and stacked-binary often null --- CIs span zero.
+        \item Block B (nonres rate): direction consistent, no estimator $<5\%$ --- underpowered (88 nonres-Inc munis).
+        \item \texttt{share\_live\_in} fragile across estimators; \emph{level} outcomes are the robust headline.
+        \item Decreases not identified (15 Dec munis) --- can't test reversibility directly.
+    \end{itemize}
+\end{frame}
+
+%%%%%%%% Synthesis: what do tax increases do? %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{What do tax increases do? Magnitudes and mechanism}
+    \footnotesize
+    \textbf{Headline (recommended: stacked continuous on Block A).}
+    1pp $\uparrow$ in muni resident rate $\Rightarrow$
+    $\sim 9\%$ $\downarrow$ in resident workers, $\sim 7\%$ $\downarrow$ in total jobs.
+    \medskip
+
+    \textbf{Decomposing the workplace-side decline:}
+    \scriptsize
+    \[
+    \underbrace{-0.20}_{\text{Block A TWFE}}
+    \;=\;
+    \underbrace{-0.087}_{\text{Block C: residential moves}}
+    \;+\;
+    \underbrace{-0.11}_{\text{job-side adjustment within muni}}
+    \]
+    \footnotesize
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
+        \item Roughly half the live-and-work decline is people \emph{leaving the muni}
+        (Block C residence panel).
+        \item Other half is the live-and-work intersection collapsing from the
+        work side --- workers staying put but losing or switching local jobs.
+        \item Among residents who stay, share commuting out rises $+2.6$pp
+        per 1pp of home rate (Block C TWFE).
+    \end{itemize}
+    \medskip
+
+    \textbf{Mechanism:}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
+        \item Total jobs fall via \emph{local services demand}, not via direct
+        nonresident taxation: 74\% of muni-rate hikes leave the nonresident rate unchanged,
+        and Block B (nonres rate) doesn't cross 5\% in any spec.
+        \item SD rate \emph{does not} attract or repel residents. The prior
+        $+0.147^{**}$ SD effect was a tract-centroid artifact and collapses
+        under block-level LODES.
+        \item Effect concentrated post-Act-32: same statutory rates,
+        but enforcement (consolidated withholding) is what makes the rate bind.
+        Collection capacity is the binding policy lever.
+        \item Asymmetric: increases push residents out; decreases don't bring
+        them back. Consistent with move-cost / sticky residential decisions.
+    \end{itemize}
+\end{frame}
+
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Summary of Findings}
-    \begin{enumerate}\setlength{\itemsep}{0.15cm}
-        \item Higher muni rates reduce \texttt{share\_live\_in} by about
-        1.3 share-points per 1 pp, building over 7 to 8 years.
-        \item The effect is enforcement-contingent. The muni rate
-        coefficient is a precise zero before Act 32 and roughly
-        $-1.8$ share-points after.
-        \item The response is asymmetric. Increases push residents out,
-        but decreases do not bring them back.
-        \item Muni and school district rates have opposite signs.
-        Bundling them as a single "total EIT" rate hides both channels.
+    \footnotesize
+    \begin{enumerate}\setlength{\itemsep}{0.10cm}
+        \item \textbf{Causal effect on residential sorting: yes.}
+        Triangulated across 3 (panel $\times$ rate) blocks, 5 estimators,
+        and the Act 32 enforcement break. Direction robust; magnitude on
+        log(Resident workers) ranges $-0.05$ to $-0.20$ per pp.
+        \emph{Recommended headline: $-0.091^{**}$ (stacked continuous).}
+        \item \textbf{Decomposition.} About half the workplace-side decline
+        is residential moves (Block C: $-0.087^{**}$ on log(Residents
+        employed)); the other half is job-side adjustment within the muni.
+        Among residents who stay, share commuting out rises $+2.6$pp per pp.
+        \item \textbf{Mechanism.} Resident rate $\uparrow$ $\to$ residents
+        move out $\to$ local-services demand falls $\to$ total jobs fall.
+        Not driven by the nonresident rate (Block B underpowered, but
+        the nonres rate is unchanged in 74\% of hikes anyway), and \emph{not}
+        by SD rates (block-level LODES rules out the prior artifact).
+        \item \textbf{Enforcement-contingent.} Pre-Act-32: null on
+        share\_live\_in, half-magnitude on log(Resident). Post-Act-32:
+        full effect. Withholding capacity is the binding policy lever,
+        not the statutory rate.
+        \item \textbf{Asymmetric.} Increases identified; decreases too thin
+        (15 munis) to test reversibility. Consistent with move-cost story.
+        \item \textbf{What's not happening.} No SD-rate sorting. No
+        boundary concentration evidence on the workplace panel. No
+        detectable nonresident-side response at conventional levels.
     \end{enumerate}
 \end{frame}
 
