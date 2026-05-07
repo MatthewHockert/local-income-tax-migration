@@ -155,27 +155,50 @@
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{How the PA EIT works (post-Act 32, excluding Philadelphia)}
-    \small
-    A worker pays the higher of the total home rate (muni resident plus
-    school district) and the nonresident rate at the work location.
-    The bill is split piecewise:
+    \footnotesize
+    For a PA resident working outside Philadelphia, the applicable EIT rate is
+    the higher of the worker's total resident rate and the work-location nonresident rate:
+    \[
+        T_{ij} = \max\{\tau^{\text{res}}_j + \tau^{\text{SD}}_j,\ \tau^{\text{nr}}_i\}.
+    \]
+    Liability allocation:
     \[
         \bigl(\tau^{\text{home}},\ \tau^{\text{work}}\bigr) =
         \begin{cases}
             \bigl(\tau^{\text{res}}_j + \tau^{\text{SD}}_j - \tau^{\text{nr}}_i,\ \tau^{\text{nr}}_i\bigr)
               & \text{if } \tau^{\text{res}}_j + \tau^{\text{SD}}_j > \tau^{\text{nr}}_i \\[2pt]
             \bigl(0,\ \tau^{\text{nr}}_i\bigr)
-              & \text{if } \tau^{\text{res}}_j + \tau^{\text{SD}}_j \leq \tau^{\text{nr}}_i
+              & \text{if } \tau^{\text{res}}_j + \tau^{\text{SD}}_j \leq \tau^{\text{nr}}_i .
         \end{cases}
     \]
-    \begin{itemize}\setlength{\itemsep}{0.1cm}
-        \item The work jurisdiction always collects its full nonresident rate.
-        \item The home muni and school district then split whatever remains
-        of the worker's bill. They get nothing if the work rate is higher.
-        \item Which rate binds determines how the worker can respond.
-        When the home rate binds, the worker can lower the bill by moving
-        home. When the work rate binds, the worker can lower it only by
-        changing jobs.
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Work muni collects up to its nonres rate; excess (if any) goes to home muni and SD.
+        \item Home jurisdictions get nothing if work nonres rate is higher.
+        \item Binding rate determines the margin: resident binds $\Rightarrow$
+        moving lowers bill; work binds $\Rightarrow$ only job change does.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{How the PA EIT worked before Act 32}
+    \footnotesize
+    Before Act 32, the underlying liability was still credit-based:
+    workers owed the work-location nonresident tax, and the home
+    jurisdictions received any residual after crediting work-location tax.
+
+    \[
+        T_{ij}^{pre}
+        = \tau^{\text{nr}}_i + \max\!\left\{0,\ \tau^{\text{res}}_j + \tau^{\text{SD}}_j - \tau^{\text{nr}}_i\right\}
+        = \max\!\left\{\tau^{\text{res}}_j + \tau^{\text{SD}}_j,\ \tau^{\text{nr}}_i\right\}.
+    \]
+
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item Liability formula identical to post-Act-32. The change was
+        \emph{administrative}: fragmented local collection, weak employer
+        withholding, no uniform residency certification.
+        \item Act 32 standardized withholding, remittance, residency
+        certification, collection districts, and revenue distribution.
     \end{itemize}
 \end{frame}
 
@@ -285,6 +308,17 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Methods \& Results}
+\subsection{Q2: Does the rate increase cause sorting?}
+
+\begin{frame}[plain]
+    \centering
+    \vfill
+    \Large \textbf{Q2: Does the rate increase cause sorting?}
+    \normalsize
+    \vspace{0.4cm}\\
+    Workplace panel; TWFE \& DCDH on \texttt{resident\_eit}.
+    \vfill
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%% Outcomes %%%%%%%%%%%
@@ -329,7 +363,7 @@
 \fontfamily{cmr}
 \frametitle{Q2 Answer: muni rate drives sorting; SD null}
     \centering
-    \small
+    \footnotesize
     \begin{tabular}{lccc}
         \toprule
         & share\_live\_in & log(Resident) & log(Total Jobs) \\
@@ -343,20 +377,14 @@
         $\tau^{\text{SD}}$       & $-0.005$      & $+0.029$       & $-0.013$ \\
                                   & $(0.006)$    & $(0.114)$      & $(0.093)$ \\
         \midrule
-        $R^2$                     & 0.909         & 0.975          & 0.976 \\
         $N$                       & 12{,}891      & 12{,}781       & 12{,}891 \\
         \bottomrule
     \end{tabular}
-    \vspace{0.1cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Controls: log muni spending (police, streets, debt, state aid)
-        + revenue shares (EIT, real estate).
-        \item A 1 pp muni rate hike lowers share\_live\_in by 1.2 share-pp
-        and resident workers by 20\%.
-        \item SD rate coefficient is null --- the prior $+0.147^{**}$
-        ``SD attracts residents'' result was an artifact of tract-centroid
-        job misattribution, not a feature of the data
-        (see ``Data note'' slide).
+    \vspace{0.10cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
+        \item Controls: log muni spending + revenue shares (EIT, real estate).
+        \item 1pp muni rate $\Rightarrow$ $-1.2$ share-pp; $-20\%$ resident workers.
+        \item SD null. Prior $+0.147^{**}$ on log(Resident) was a tract-centroid artifact (see Data note).
     \end{itemize}
 \end{frame}
 
@@ -425,6 +453,19 @@
 \end{frame}
 
 %%%%%%%%%%% Act 32 %%%%%%%%%%%
+\subsection{Mechanism: Is the effect enforcement-driven?}
+
+\begin{frame}[plain]
+    \centering
+    \vfill
+    \Large \textbf{Mechanism: Is the effect enforcement-driven?}
+    \normalsize
+    \vspace{0.4cm}\\
+    Act 32 split: do the same statutory rates produce different
+    behavior pre- vs. post-2012 enforcement?
+    \vfill
+\end{frame}
+
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Mechanism: Is it enforcement? (Act 32)}
@@ -458,34 +499,19 @@
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Do the rate increases we exploit actually bind?}
-    \small
-    \textbf{For self-pair (worker lives \emph{and} works in muni $X$):}
-    home stack $= \tau^{\text{res}}_X + \tau^{\text{SD}}_X$ vs.\ work
-    nonres rate $\tau^{\text{nr}}_X$.
-    \begin{itemize}\setlength{\itemsep}{0.10cm}
-        \item Across all PA muni-years post-Act-32 (15{,}423):
-        home binds 41\%, work binds 59\%. Mean wedge
-        $\tau^{\text{home}} - \tau^{\text{nr}} = +0.27$ pp.
-        \item Of muni-resident rate increases 2012--2019 (57 events):
-        \textbf{84\% (48 of 57)} occur where home binds at the muni
-        $\Rightarrow$ the rate increase \emph{moves the bill} for
-        residents working locally.
-        \item The remaining 16\% (9 of 57) occur where work already
-        binds and stays binding $\Rightarrow$ the rate hike is
-        irrelevant to in-muni workers' bills.
+    \footnotesize
+    \textbf{Self-pair (worker lives + works in $X$):} home stack $= \tau^{\text{res}}_X + \tau^{\text{SD}}_X$ vs.\ $\tau^{\text{nr}}_X$.
+    \begin{itemize}\setlength{\itemsep}{0.05cm}
+        \item PA muni-years post-Act-32 (15{,}423): home binds 41\%, work binds 59\%; mean wedge $+0.27$pp.
+        \item Muni-resident rate increases 2012--2019 (57 events):
+        \textbf{84\% (48/57) bind at home} $\Rightarrow$ rate hike moves the bill.
+        \item Remaining 16\% (9/57): work binds already $\Rightarrow$ hike is irrelevant.
     \end{itemize}
-    \vspace{0.1cm}
-    \textbf{Cross-pair within 80 km, post-Act-32 (1.83M pair-years):}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}
-        \item Work binds (home stack $\le$ work nonres): 61.6\%.
-        \item Home binds (home stack $>$ work nonres): 38.4\%.
-    \end{itemize}
-    \vspace{0.1cm}
-    \footnotesize \emph{Implication}: most of the resident-rate
-    increases we exploit are economically meaningful for the
-    in-muni worker population. The piecewise binding test below
-    sharpens this: separates extensive switches in binding side from
-    intensive within-channel rate changes.
+    \vspace{0.05cm}
+    \textbf{Cross-pair within 80km, post-Act-32 (1.83M pair-years):}
+    work binds 61.6\%; home binds 38.4\%.
+    \vspace{0.05cm}\\
+    \scriptsize \emph{Implication}: most increases are economically meaningful. Piecewise test below separates extensive switches from intensive within-channel changes.
 \end{frame}
 
 \begin{frame}
@@ -520,6 +546,18 @@
 \end{frame}
 
 %%%%%%%%%%% Q3: clean groups (replaces old Q3 split-dose) %%%%%%%%%%%
+\subsection{Q3: Are increases and decreases symmetric?}
+
+\begin{frame}[plain]
+    \centering
+    \vfill
+    \Large \textbf{Q3: Are increases and decreases symmetric?}
+    \normalsize
+    \vspace{0.4cm}\\
+    Clean Inc-only / Dec-only / NC groups (drop flip-floppers).
+    \vfill
+\end{frame}
+
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Q3 Sample: clean treatment vs control groups}
@@ -578,7 +616,7 @@
 \fontfamily{cmr}
 \frametitle{Q3 Answer: Inc effect robust; SD null}
     \centering
-    \small
+    \footnotesize
     \begin{tabular}{lccc}
         \toprule
         & share\_live\_in & log(Resident) & log(Total Jobs) \\
@@ -593,18 +631,11 @@
         $N$                                    & 12{,}298 & 12{,}188 & 12{,}298 \\
         \bottomrule
     \end{tabular}
-    \vspace{0.1cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Controls: log expenditures (police, streets, debt, state aid)
-        + revenue shares (EIT, real estate).
-        \item Muni rate hits inc-only hard: $-1.6$ share-pp per pp;
-        $-22\%$ on resident workers; $-15\%$ on total jobs.
-        \item Dec-only point estimates noisy (only 15 munis).
-        $+0.032^{**}$ on share\_live\_in is a small-sample composition
-        effect, not a substantive sign reversal.
-        \item SD coefficient is null --- the prior $+0.139^{**}$ on
-        log(Resident) was an artifact of tract-centroid job
-        misattribution. See ``Data note.''
+    \vspace{0.10cm}
+    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
+        \item Inc-only: $-1.6$ share-pp per pp; $-22\%$ resident workers; $-15\%$ total jobs.
+        \item Dec (15 munis) noisy; $+0.032^{**}$ is small-sample composition, not reversal.
+        \item SD null --- prior $+0.139^{**}$ was tract-centroid artifact.
     \end{itemize}
 \end{frame}
 
@@ -681,6 +712,19 @@
 \end{frame}
 
 %%%%%%%%%%% Q3 ROBUSTNESS: staggered-DiD estimators %%%%%%%%%%%
+\subsection{Q3 Robustness: three experiments, four estimators each}
+
+\begin{frame}[plain]
+    \centering
+    \vfill
+    \Large \textbf{Q3 Robustness: three experiments, four estimators}
+    \normalsize
+    \vspace{0.4cm}\\
+    Block A (work $\times$ res rate) $\,\cdot\,$ Block B (work $\times$ nonres rate)
+    $\,\cdot\,$ Block C (home $\times$ res rate)
+    \vfill
+\end{frame}
+
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Q3 Robustness motivation: staggered + multi-event treatment}
@@ -783,23 +827,13 @@
 \frametitle{(1) Single-event sample ES (Sun-Abraham, binary cohort)}
     \scriptsize
     \[
-        Y_{it} = \alpha_i + \gamma_t
-        + \sum_{\ell \neq -1} \mu_\ell \,\mathbf{1}\{t - c_i = \ell\}
-        + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-        \quad
-        \text{(SA cohort-aggregated)}
+        Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell \,\mathbf{1}\{t - c_i = \ell\} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
     \]
-    SA aggregates the cohort $\times$ event-time interactions of
-    \citet{sunab2021} using cohort-share weights. Cohort $c_i$ = year
-    of muni $i$'s first rate increase. \textbf{Note: SA needs binary
-    staggered treatment, so the dynamic coefficients here are the
-    average ATT in event-time, \emph{not} the per-pp dose magnitude
-    in the previous slide.}
+    SA cohort-aggregated \citep{sunab2021}; cohort $c_i$ = first-increase year. Coefficients are average ATT in event-time, \emph{not} per-pp dose.
     \centering
     \includegraphics[width=\textwidth]{q3_sa_single_event_es.png}
     \scriptsize
-    68 single-event Inc munis vs 1{,}110 NC. Pre-trends near zero;
-    post-treatment drift negative on log outcomes.
+    68 single-event Inc vs 1{,}110 NC. Pre-trends near zero; post drift negative on log outcomes.
 \end{frame}
 
 %%%%%%%% (2) DCDH %%%%%%%%
@@ -1087,18 +1121,11 @@
         Pairs               & 823{,}244     & & 953{,}578     & \\
         \bottomrule
     \end{tabular}
-    \vspace{0.1cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item All four channels null individually. Aggregate $\Delta\tau^{\text{bill}}$
-        is null. \emph{Direction} is positive across the board, opposite
-        the piecewise prediction.
-        \item Pair-level pair + year FE absorbs almost everything;
-        residual signal of a $\sim$0.5 pp dose change on a typical
-        flow of 1--3 jobs is too small to detect.
-        \item $\beta_{iw}$ is the largest at $+0.042$ (p $\approx 0.11$) ---
-        wrong-signed positive on intensive work-rate increases. Likely
-        confounded by time-varying muni-A growth that pair FE doesn't
-        absorb (work-muni rate increases coincide with muni-A booming).
+    \vspace{0.08cm}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item All four channels null individually. Aggregate $\Delta\tau^{\text{bill}}$ null. Signs positive throughout, opposite the prediction.
+        \item Pair + year FE absorb almost everything; signal of a $\sim$0.5 pp dose on a 1--3 job flow is too small to detect.
+        \item $\beta_{iw}=+0.042$ ($p\approx 0.11$) wrong-signed --- likely time-varying muni-A growth not absorbed by pair FE.
     \end{itemize}
 \end{frame}
 
@@ -1497,6 +1524,42 @@
     \end{itemize}
 \end{frame}
 
+%%%%%%%% Three blocks at a glance %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{Three blocks at a glance: stacked-continuous headline}
+    \centering
+    \scriptsize
+    \renewcommand{\arraystretch}{1.20}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lllc}
+        \toprule
+        Block & Question & Outcome & $\beta$ per pp \\
+        \midrule
+        \multicolumn{4}{l}{\textit{A: Workplace panel $\times$ resident rate}} \\
+        & Do live-and-work workers leave?    & log(Resident wkrs) & $\mathbf{-0.091^{**}}$ \\
+        & Does total local employment fall?  & log(Total Jobs)    & $\mathbf{-0.072^{**}}$ \\
+        & Does the live-in share fall?       & share\_live\_in    & $-0.005$ \\
+        \midrule
+        \multicolumn{4}{l}{\textit{B: Workplace panel $\times$ nonresident rate}} \\
+        & Do nonresident workers flee?       & log(NonRes wkrs)   & $-0.261$ \\
+        & Does total local employment fall?  & log(Total Jobs)    & $-0.262$ \\
+        & Does the nonres share rise?        & share\_nonres      & $+0.000$ \\
+        \midrule
+        \multicolumn{4}{l}{\textit{C: Residence panel $\times$ home rate}} \\
+        & Do residents leave the muni?       & log(Residents emp) & $-0.058$ \\
+        & Do residents shift to commuting out? & log(WorkOutside) & $-0.037$ \\
+        & Does the share commuting out rise? & share\_work\_outside & $\mathbf{+0.016^{*}}$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.08cm}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item Stacked-continuous $\Delta\tau$ on each block's Inc + NC sample.
+        Single-event TWFE coefficients are larger (see each block's tri).
+        \item A pins headline; C corroborates residential margin; B direction-consistent, not at 5\%.
+    \end{itemize}
+\end{frame}
+
 \iffalse % HIDDEN: Q4 + Q5 (Q5 is essentially Q2 with extra outcome) -- restore by removing iffalse/fi
 %%%%%%%%%%% Q4: Where do displaced residents go? %%%%%%%%%%%
 \begin{frame}
@@ -1850,40 +1913,38 @@
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Is there a causal effect? Five independent reads}
-    \footnotesize
-    \textbf{Yes on the resident-side.} Five pieces of evidence with
-    different identification, different units, same sign:
-    \medskip
-    \renewcommand{\arraystretch}{1.20}
-    \setlength{\tabcolsep}{5pt}
     \scriptsize
-    \begin{tabular}{p{3.4cm}p{2.6cm}p{2.6cm}p{3.4cm}}
+    \textbf{Yes on the resident-side.} Five reads, different identification, same sign:
+    \vspace{0.05cm}
+    \renewcommand{\arraystretch}{1.10}
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{p{3.0cm}p{2.2cm}p{2.4cm}p{4.0cm}}
         \toprule
         Evidence & Unit & Outcome & Result \\
         \midrule
-        Block A (4 estimators)         & work cousub & log(Resident wkrs)        & $-0.04$ to $-0.20$, sign robust \\
-        Block C (residence panel)      & home cousub & log(Residents employed)   & $-0.087^{**}$ TWFE; $-0.058$ stacked \\
-        Act 32 enforcement break       & work cousub & log(Resident wkrs)        & $-0.139^{***}$ pre $\to$ $-0.209^{***}$ post \\
-        Piecewise binding (pair flows) & A$\times$B pair  & log(flow)            & $-0.056^{***}$ when home side flips to bind \\
-        Asymmetry (Q3 clean groups)    & work cousub & share\_live\_in           & Inc identified $-0.016^{**}$; Dec too thin \\
+        Block A (4 estimators)         & work cousub & log(Resident wkrs) & $-0.04$ to $-0.20$, sign robust \\
+        Block C (residence panel)      & home cousub & log(Residents emp) & $-0.087^{**}$ TWFE; $-0.058$ stacked \\
+        Act 32 break                   & work cousub & log(Resident wkrs) & $-0.139^{***}$ pre $\to$ $-0.209^{***}$ post \\
+        Piecewise (pair flows)         & A$\times$B pair & log(flow)       & $-0.056^{***}$ when home flips to bind \\
+        Asymmetry (Q3 clean)           & work cousub & share\_live\_in    & Inc $-0.016^{**}$; Dec too thin \\
         \bottomrule
     \end{tabular}
-    \medskip
-    \textbf{Where the evidence is weaker:}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
-        \item DCDH (analytical SE) and stacked-binary often null --- CIs span zero.
-        \item Block B (nonres rate): direction consistent, no estimator $<5\%$ --- underpowered (88 nonres-Inc munis).
-        \item \texttt{share\_live\_in} fragile across estimators; \emph{level} outcomes are the robust headline.
-        \item Decreases not identified (15 Dec munis) --- can't test reversibility directly.
+    \vspace{0.10cm}
+    \textbf{Weaker:}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item DCDH (analytical SE) and stacked-binary often null; CIs span zero.
+        \item Block B: direction-consistent, no estimator $<5\%$ (88 nonres-Inc munis).
+        \item \texttt{share\_live\_in} fragile; level outcomes are the robust headline.
+        \item Dec (15 munis) too thin to test reversibility directly.
     \end{itemize}
 \end{frame}
 
-%%%%%%%% Synthesis: what do tax increases do? %%%%%%%%
+%%%%%%%% Synthesis: what do tax increases do? (1/2) %%%%%%%%
 \begin{frame}
 \fontfamily{cmr}
-\frametitle{What do tax increases do? Magnitudes and mechanism}
+\frametitle{What do tax increases do? (1/2) Magnitudes}
     \footnotesize
-    \textbf{Headline (recommended: stacked continuous on Block A).}
+    \textbf{Headline (stacked continuous, Block A).}
     1pp $\uparrow$ in muni resident rate $\Rightarrow$
     $\sim 9\%$ $\downarrow$ in resident workers, $\sim 7\%$ $\downarrow$ in total jobs.
     \medskip
@@ -1899,59 +1960,59 @@
     \]
     \footnotesize
     \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
-        \item Roughly half the live-and-work decline is people \emph{leaving the muni}
-        (Block C residence panel).
+        \item Roughly half is residential moves out of the taxing muni (Block C).
         \item Other half is the live-and-work intersection collapsing from the
-        work side --- workers staying put but losing or switching local jobs.
+        work side --- workers staying put but losing/switching local jobs.
         \item Among residents who stay, share commuting out rises $+2.6$pp
-        per 1pp of home rate (Block C TWFE).
+        per pp of home rate (Block C TWFE).
     \end{itemize}
-    \medskip
+\end{frame}
 
-    \textbf{Mechanism:}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
-        \item Total jobs fall via \emph{local services demand}, not via direct
-        nonresident taxation: 74\% of muni-rate hikes leave the nonresident rate unchanged,
-        and Block B (nonres rate) doesn't cross 5\% in any spec.
-        \item SD rate \emph{does not} attract or repel residents. The prior
-        $+0.147^{**}$ SD effect was a tract-centroid artifact and collapses
-        under block-level LODES.
-        \item Effect concentrated post-Act-32: same statutory rates,
-        but enforcement (consolidated withholding) is what makes the rate bind.
-        Collection capacity is the binding policy lever.
-        \item Asymmetric: increases push residents out; decreases don't bring
-        them back. Consistent with move-cost / sticky residential decisions.
+%%%%%%%% Synthesis: what do tax increases do? (2/2) %%%%%%%%
+\begin{frame}
+\fontfamily{cmr}
+\frametitle{What do tax increases do? (2/2) Mechanism}
+    \footnotesize
+    \begin{itemize}\setlength{\itemsep}{0.10cm}\footnotesize
+        \item \textbf{Total-jobs channel: \emph{consistent with} local-services
+        demand spillover, not direct nonresident taxation.}
+        74\% of muni-rate hikes leave the nonres rate unchanged, and Block B
+        (nonres rate) doesn't cross 5\%. Industry-level decomposition
+        pending (issue \#2) to nail the demand mechanism.
+        \item \textbf{SD rate doesn't sort.} Prior $+0.147^{**}$ on
+        log(Resident) was a tract-centroid artifact; null under block-level LODES.
+        \item \textbf{Enforcement-contingent.} Same statutory rates pre-Act-32
+        produce no effect. Consolidated withholding (post-2012) is what makes
+        the rate bind. Collection capacity, not headline rate, is the policy lever.
+        \item \textbf{Asymmetric.} Increases push residents out; decreases
+        don't reverse (15 Dec munis too thin to identify). Consistent with
+        move-cost / sticky residential decisions.
     \end{itemize}
 \end{frame}
 
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{Summary of Findings}
-    \footnotesize
-    \begin{enumerate}\setlength{\itemsep}{0.10cm}
+    \scriptsize
+    \begin{enumerate}\setlength{\itemsep}{0.07cm}
         \item \textbf{Causal effect on residential sorting: yes.}
         Triangulated across 3 (panel $\times$ rate) blocks, 5 estimators,
-        and the Act 32 enforcement break. Direction robust; magnitude on
-        log(Resident workers) ranges $-0.05$ to $-0.20$ per pp.
-        \emph{Recommended headline: $-0.091^{**}$ (stacked continuous).}
-        \item \textbf{Decomposition.} About half the workplace-side decline
-        is residential moves (Block C: $-0.087^{**}$ on log(Residents
-        employed)); the other half is job-side adjustment within the muni.
-        Among residents who stay, share commuting out rises $+2.6$pp per pp.
+        and the Act 32 break. Magnitude on log(Resident wkrs) ranges
+        $-0.05$ to $-0.20$. Headline: $-0.091^{**}$ (stacked continuous).
+        \item \textbf{Decomposition.} $\sim$Half the workplace decline
+        is residential moves (Block C: $-0.087^{**}$); the other half is
+        job-side adjustment. Share commuting out: $+2.6$pp per pp.
         \item \textbf{Mechanism.} Resident rate $\uparrow$ $\to$ residents
-        move out $\to$ local-services demand falls $\to$ total jobs fall.
-        Not driven by the nonresident rate (Block B underpowered, but
-        the nonres rate is unchanged in 74\% of hikes anyway), and \emph{not}
-        by SD rates (block-level LODES rules out the prior artifact).
-        \item \textbf{Enforcement-contingent.} Pre-Act-32: null on
-        share\_live\_in, half-magnitude on log(Resident). Post-Act-32:
-        full effect. Withholding capacity is the binding policy lever,
-        not the statutory rate.
-        \item \textbf{Asymmetric.} Increases identified; decreases too thin
-        (15 munis) to test reversibility. Consistent with move-cost story.
-        \item \textbf{What's not happening.} No SD-rate sorting. No
-        boundary concentration evidence on the workplace panel. No
-        detectable nonresident-side response at conventional levels.
+        move out $\to$ local-services demand $\downarrow$ $\to$ total jobs $\downarrow$.
+        Not the nonres rate (Block B), not SD (block-level LODES rules
+        out the prior artifact).
+        \item \textbf{Enforcement-contingent.} Pre-Act-32 null on
+        share\_live\_in, half-magnitude on log(Resident). Withholding
+        capacity is the policy lever, not the statutory rate.
+        \item \textbf{Asymmetric.} Increases identified; decreases (15 munis)
+        too thin. Consistent with move-cost story.
+        \item \textbf{What's not happening.} No SD sorting; no detectable
+        nonresident-side response at 5\%.
     \end{enumerate}
 \end{frame}
 
