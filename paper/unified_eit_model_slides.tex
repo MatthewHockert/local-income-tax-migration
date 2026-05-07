@@ -1081,6 +1081,43 @@
     %
     \begin{frame}
     \fontfamily{cmr}
+    \frametitle{Pre/Post Act 32 Decomposition (enforcement mechanism test)}
+        \footnotesize
+        Each cell $\times$ dose term split pre-2012 vs post-2012. The
+        binding-rule mechanism should only operate once Act 32 consolidates
+        withholding (1 January 2012).
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.05}
+        \setlength{\tabcolsep}{4pt}
+        \begin{tabular}{llcc}
+            \toprule
+            Outcome & Cell & Pre-2012 & Post-2012 \\
+            \midrule
+            log(live\_and\_work) & Inc-bind        & $+0.058$ (0.127) & \alert{$\bm{-0.604^{***}}$ (0.090)} \\
+                                  & Inc-becomes     & $-0.125^{*}$ (0.070) & $-0.200^{**}$ (0.081) \\
+                                  & Inc-nobind \emph{(placebo)} & $-0.038$ (0.063) & $-0.067$ (0.194) \\
+            log(total\_jobs)     & Inc-bind        & $+0.110$ (0.137)  & $-0.437^{***}$ (0.101) \\
+            log(total\_residents)& Inc-bind        & $-0.047$ (0.058)  & $-0.124^{***}$ (0.032) \\
+            share\_live\_in      & Inc-bind        & $-0.023$ (0.014)  & $-0.054^{***}$ (0.009) \\
+            share\_work\_outside & Inc-bind        & $-0.004$ (0.014)  & $+0.060^{***}$ (0.018) \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.10cm}
+        \begin{itemize}\setlength{\itemsep}{0.03cm}\scriptsize
+            \item Pre-Act-32 binding-cell effects \alert{null on every outcome}.
+            \item Post-Act-32 Inc-bind on log(LW) is $-0.604$, vs pooled $-0.402$
+            --- pooled diluted by null pre-2012 portion.
+            \item Placebo holds in both periods on headline outcomes.
+            \item Validates Bagchi (2022) enforcement claim \emph{within}
+            our binding-state design: the mechanism activates post-Act-32.
+        \end{itemize}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
     \frametitle{Pre-Trends: Pooled Cell vs City Subset}
         \footnotesize
         \textbf{Important distinction.} Pre-trends are sample-specific.
