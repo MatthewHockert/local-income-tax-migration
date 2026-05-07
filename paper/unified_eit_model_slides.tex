@@ -383,13 +383,13 @@
             & Inc-bind & Inc-becomes & Inc-nobind & Dec-bind & Dec-becomes & Dec-nobind \\
             & ($n$=40) & ($n$=58) & \emph{placebo} ($n$=26) & ($n$=11) & ($n$=4) & \emph{placebo} ($n$=15) \\
             \midrule
-            log(live\_and\_work)    & $\bm{-0.283^{***}}$ & $\bm{-0.142^{***}}$ & $-0.079$       & $-0.283$       & $-0.641$       & $-0.139$ \\
-            log(in\_commuters)      & $-0.076$            & $\bm{-0.154^{***}}$ & $-0.077$       & $+0.018$       & $+0.363^{***}$ & $-0.125$ \\
-            log(out\_commuters)     & $\bm{-0.078^{*}}$   & $-0.029$            & $+0.136$       & $+0.167^{*}$   & $-0.798$       & $-0.052$ \\
-            log(total\_jobs)        & $-0.125$            & $\bm{-0.152^{***}}$ & $-0.084$       & $+0.038$       & $+0.250^{*}$   & $-0.141$ \\
-            log(total\_residents)   & $\bm{-0.117^{***}}$ & $\bm{-0.056^{**}}$  & $+0.067$       & $+0.169$       & $-0.847$       & $-0.053$ \\
-            share\_live\_in         & $\bm{-0.039^{***}}$ & $+0.000$            & $-0.007$       & $+0.017$       & $-0.099^{*}$   & $-0.008$ \\
-            share\_work\_outside    & $\bm{+0.033^{**}}$  & $\bm{+0.020^{***}}$ & $+0.053^{***}$ & $-0.002$       & $+0.036^{***}$ & $+0.001$ \\
+            log(live\_and\_work)    & $\bm{-0.388^{***}}$ & $\bm{-0.168^{**}}$  & $-0.044$        & $+0.241^{***}$ & $-0.260$  & $+0.332^{**}$ \\
+            log(in\_commuters)      & $\bm{-0.205^{**}}$  & $\bm{-0.183^{**}}$  & $-0.187$        & $+0.052$       & $+0.496$  & $+0.013$ \\
+            log(out\_commuters)     & $-0.053$            & $-0.041$            & $+0.214^{**}$   & $-0.068$       & $-0.628$  & $+0.132$ \\
+            log(total\_jobs)        & $\bm{-0.264^{***}}$ & $\bm{-0.201^{***}}$ & $-0.204$        & $+0.111$       & $+0.420$  & $+0.022$ \\
+            log(total\_residents)   & $\bm{-0.101^{***}}$ & $-0.068^{*}$        & $+0.191^{**}$   & $-0.056$       & $-0.651$  & $+0.135$ \\
+            share\_live\_in         & $\bm{-0.046^{***}}$ & $-0.013$            & $-0.013^{*}$    & $+0.054^{*}$   & $-0.071$  & $+0.012$ \\
+            share\_work\_outside    & $\bm{+0.041^{***}}$ & $\bm{+0.020^{***}}$ & $+0.018$        & $-0.011$       & $+0.014$  & $-0.003^{*}$ \\
             \bottomrule
         \end{tabular}
         \vspace{0.10cm}
@@ -398,7 +398,8 @@
             $\Delta\tau^{\text{muni}}$, $\Delta\tau^{\text{SD}}$, and
             $\Delta\tau^{\text{nr}}$ cell interactions in the same regression
             (only muni cells shown here; SD on next slide).
-            Cluster-robust SEs by muni.
+            Share-based controls (police/streets/debt-svc / total expenditures;
+            EIT/RE/intergov / total revenues). Cluster-robust SEs by muni.
             $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
         \end{minipage}
     \end{frame}
@@ -469,26 +470,31 @@
         \footnotesize
         \textbf{Inc-bind} (muni rate up; bill rises by full $\Delta\tau^{\text{muni}}$):
         \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
-            \item Live-and-work workers $\downarrow$ 28\%; total residents $\downarrow$ 12\%.
-            \item Share commuting out $\uparrow$ +3.3pp.
+            \item Live-and-work workers $\downarrow$ 39\%; total residents $\downarrow$ 10\%; total jobs $\downarrow$ 26\%.
+            \item In-commuters $\downarrow$ 21\% (large demand spillover).
+            \item Share commuting out $\uparrow$ +4.1pp.
             \item Cleanest evidence of residential sorting in the data.
         \end{itemize}
 
         \textbf{Inc-becomes} (muni rate up; bill newly starts moving):
         \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
-            \item Smaller live-and-work effect ($-0.142$) --- bill rises
-            by less than $\Delta\tau$ in this cell.
-            \item In-commuters $\downarrow$ 15\%; total jobs $\downarrow$ 15\%.
+            \item Live-and-work $-0.168$, in-commuters $-0.183$, total jobs $-0.201$ ---
+            all significant. Less than Inc-bind on \texttt{live\_and\_work},
+            similar on \texttt{in\_commuters}.
         \end{itemize}
 
         \textbf{\textcolor{DarkGray}{Inc-nobind}} (muni rate up; bill never moves --- placebo):
         \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
-            \item Null on every level outcome.
-            \item \alert{Placebo passes.} Institutional rule, not generic
-            confounding, identifies the response.
+            \item \texttt{live\_and\_work}, \texttt{in\_commuters}, \texttt{total\_jobs}: null. Placebo holds for the headline outcomes.
+            \item \texttt{total\_residents} +0.191** and \texttt{out\_commuters}
+            +0.214** (small-cell, $n=26$): placebo wrinkle.
+            Possible reading: Inc-nobind munis are low-rate and the (irrelevant-bill) hike doesn't deter inflows;
+            could also be small-sample noise.
         \end{itemize}
 
-        \textbf{Dec cells}: 11--26 munis combined; underpowered.
+        \textbf{Dec cells}: noisy. Dec-bind ($n=11$) and Dec-nobind ($n=15$) show
+        large positive coefficients on level outcomes (rate down $\to$ residents/jobs up)
+        but precision is limited.
     \end{frame}
     %
 
@@ -537,21 +543,28 @@
             & \multicolumn{2}{c|}{Muni-rate (Inc-bind)} & \multicolumn{2}{c|}{SD-rate (Inc-bind)} & \multicolumn{2}{c}{Nonres-rate (Inc-nobind)} \\
             Outcome & coef & sig & coef & sig & coef & sig \\
             \midrule
-            log(live\_and\_work)   & $-0.283$ & $***$ & $+0.058$ & ---   & $-0.157$ & --- \\
-            log(in\_commuters)     & $-0.076$ & ---   & $+0.099$ & $*$   & $-0.363$ & $**$ \\
-            log(total\_residents)  & $-0.117$ & $***$ & $-0.010$ & ---   & $-0.031$ & --- \\
-            log(out\_commuters)    & $-0.078$ & $*$   & $+0.001$ & ---   & $-0.025$ & --- \\
+            log(live\_and\_work)   & $-0.388$ & $***$ & $+0.130$ & ---   & $+0.149$ & --- \\
+            log(in\_commuters)     & $-0.205$ & $**$  & $+0.180$ & $**$  & $+0.192$ & --- \\
+            log(total\_residents)  & $-0.101$ & $***$ & $+0.072$ & ---   & $+0.017$ & --- \\
+            log(out\_commuters)    & $-0.053$ & ---   & $+0.065$ & ---   & $+0.032$ & --- \\
             \bottomrule
         \end{tabular}
         \medskip
 
         \footnotesize
         \begin{itemize}\setlength{\itemsep}{0.04cm}
-            \item \textbf{Muni rate hike} $\to$ residents leave; SD doesn't move them; in-commuters mostly unaffected.
-            \item \textbf{SD rate hike} $\to$ no significant resident response; small in-commuters bump (10\%) at $p<0.10$.
-            \item \textbf{Nonres rate hike} $\to$ in-commuters leave; residents unaffected.
-            \item Three rates, three populations: muni $\to$ residents; SD $\to$ no one;
-            nonres $\to$ in-commuters.
+            \item \textbf{Muni rate hike} $\to$ residents leave (live\_and\_work $-39\%$,
+            total\_residents $-10\%$); in-commuters drop $21\%$.
+            \item \textbf{SD rate hike} $\to$ no significant decrease on any
+            outcome. SD Inc-bind in-commuters $+18\%^{**}$ (positive, surprising).
+            Likely composition / cohort timing artifact; SD doesn't induce
+            outflows in the binding-decomposition design.
+            \item \textbf{Nonres rate hike} $\to$ under share-based controls,
+            nonres Inc-nobind effects become imprecise (SEs grow to 0.4+).
+            Pre-share-control headline (which had $-0.363^{**}$ on in-commuters)
+            is sensitive to specification.
+            \item Bottom line on the resident side stays unchanged: \textbf{the muni
+            rate is the policy lever that moves residents.}
         \end{itemize}
     \end{frame}
     %
@@ -738,10 +751,10 @@
             \toprule
             Estimator & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
             \midrule
-            Q2 TWFE pooled                & $-0.238^{***}$       & $-0.154^{***}$       & $-0.089^{**}$ \\
-            Single-event TWFE ($\le$2)    & $-0.157$             & $-0.201^{***}$       & $-0.078$ \\
-            Stacked binary                & $-0.086^{*}$         & $-0.094^{**}$        & $-0.022$ \\
-            \alert{Stacked continuous}    & \alert{$\bm{-0.283^{***}}$} & \alert{$\bm{-0.142^{***}}$} & $-0.079$ \\
+            Q2 TWFE pooled                & $-0.402^{***}$       & $-0.208^{***}$       & $-0.121$ \\
+            Single-event TWFE ($\le$2)    & $-0.403^{***}$       & $-0.245^{***}$       & $-0.339$ \\
+            Stacked binary                & $-0.144^{***}$       & $-0.098^{*}$         & $-0.042$ \\
+            \alert{Stacked continuous}    & \alert{$\bm{-0.388^{***}}$} & \alert{$\bm{-0.168^{**}}$} & $-0.044$ \\
             DCDH (effects=3 horizon)      & $-0.054$             & $-0.003$             & $-0.008$ \\
             \bottomrule
         \end{tabular}
@@ -909,22 +922,30 @@
             \toprule
             & log(live\_and\_work) & log(total\_residents) & share\_live\_in \\
             \midrule
-            Q2 TWFE pooled        & $-0.089^{**}$ & $+0.073$  & $-0.005$ \\
-            Single-event TWFE     & $-0.078$      & $+0.071$  & $-0.005$ \\
-            Stacked binary        & $-0.022$      & $+0.041$  & $+0.001$ \\
-            Stacked continuous    & $-0.081$      & $+0.066$  & $-0.007$ \\
-            DCDH                  & $-0.008$      & ---       & --- \\
+            Q2 TWFE pooled        & $-0.121$      & $+0.115$       & $-0.013$ \\
+            Single-event TWFE     & $-0.339$      & $+0.270^{*}$   & $-0.011$ \\
+            Stacked binary        & $-0.042$      & $+0.098^{**}$  & $-0.007^{*}$ \\
+            Stacked continuous    & $-0.044$      & $+0.191^{**}$  & $-0.013^{*}$ \\
+            DCDH                  & $-0.008$      & ---            & --- \\
             \bottomrule
         \end{tabular}
         \medskip
 
         \footnotesize
-        \alert{Inc-nobind} = rate up but bill never moves.
-        Across every estimator, level outcomes are within noise of zero.
-        Q2 TWFE pooled is the only spec to reach 10\% on log(live\_and\_work)
-        --- the spec most contaminated by negative weighting.
-        \textbf{Bottom line:} when the rule says "no bill change,"
-        we measure no behavioral change.
+        \alert{Inc-nobind} = rate up but bill never moves. Under share-based controls:
+        \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+            \item \texttt{log(live\_and\_work)}: \textbf{null across every estimator}.
+            The headline placebo holds.
+            \item \texttt{log(total\_residents)}: positive significant in stacked-continuous
+            ($+0.191^{**}$) and stacked-binary ($+0.098^{**}$). Possible reading: Inc-nobind
+            munis are low-rate cousubs that remain attractive even after a small,
+            irrelevant-to-bill rate hike. Or small-cell artifact ($n=26$).
+            \item \texttt{share\_live\_in}: marginally negative ($-0.013^{*}$).
+        \end{itemize}
+        \textbf{Bottom line:} the headline placebo (log\_live\_and\_work)
+        passes; the auxiliary outcome \texttt{log\_total\_residents} shows a
+        wrinkle that softens the strict-placebo claim. Worth flagging in
+        limitations rather than dismissing.
     \end{frame}
     %
 
@@ -1004,11 +1025,20 @@
             stronger version of the prior block-level-LODES finding.
             \item \textbf{Magnitude (stacked continuous, headline).}
             1pp \emph{muni}-rate hike when home binds $\Rightarrow$
-            $-28\%$ live-and-work, $-12\%$ total residents,
-            $+3.3$pp share commuting out.
+            $-39\%$ live-and-work, $-21\%$ in-commuters, $-26\%$ total jobs,
+            $-10\%$ total residents, $+4.1$pp share commuting out.
             \item \textbf{Robust to treatment specification.} Muni-only,
-            home-stack combined, and muni+SD-separate all give
-            $-0.28$ to $-0.29$ on Inc-bind / log(live\_and\_work).
+            home-stack combined, and muni+SD-separate all give the same
+            order of magnitude on Inc-bind / log(live\_and\_work).
+            \item \textbf{Industry decomposition (issue \#2).} Within Inc-bind:
+            consumer-facing jobs $-29\%^{**}$; tradeable jobs $+0.244$ (insig).
+            Composition shifts toward tradeables. Direct evidence for
+            local-services-demand spillover.
+            \item \textbf{Spillover (issue \#3).} Ring-1 of Inc-bind munis
+            loses live\_and\_work ($-15\%$); ring-2 gains ($+9\%$). Pattern
+            unchanged under lower-rate restriction --- consistent with
+            spatial labor-market clustering, not pure fiscal-advantage
+            migration.
         \end{enumerate}
     \end{frame}
     %
