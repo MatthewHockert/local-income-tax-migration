@@ -24,9 +24,9 @@ Do local income tax changes cause residential sorting? Uses LEHD LODES Origin-De
 
 **Nonresident-side parallel build:** point estimates negative on log(Nonres workers) and log(Total jobs) (~−0.13 to −0.30 per pp) but no estimator crosses 5% — smaller treatment group, smaller dose variation. Direction consistent with resident side.
 
-**Piecewise binding model** (cousub-pair × year): aggregate Δbill response is null at pair level. Adding work_muni × year FE eliminates the wrong-signed +0.042 on `dbill_int_work` from the pair + year FE version (confirmed muni-A growth confound). With FE correction + thin-pair filter, `dbill_ext_h` is significant negative (−0.056\*\*\*) — flow falls when binding side flips from work to home — but result is sensitive to imputation.
+**Q3 unified decomposition** (replaces per-block estimator stack and the piecewise pair-flow model): single design splits each muni-rate event by direction (Inc/Dec) × binding state (post-event home_stack vs muni_nonres). Five estimators run on each block. Predicted-null placebo cell is Inc × non-binding (rate hike doesn't move bill). See `q3_unified_decomposition.R`.
 
-**Asymmetry**: Inc-only effects identified; Dec-only not identified (15 munis, underpowered).
+**Asymmetry**: Inc-only effects identified; Dec-only not identified (15 munis, underpowered). Subsumed within the unified decomposition's Inc/Dec rows.
 
 **Mechanism**: rate increases push residents out (residential margin); total jobs fall via local-services-demand spillover (not via direct nonresident taxation, since 74% of resident-rate hikes leave the nonres rate unchanged).
 
@@ -57,13 +57,12 @@ Rscript make_dcdh_es_figure.R    # builds DCDH event-study from saved coefs
 # 7. Q3 nonresident-side parallel
 Rscript q3_nonres.R              # 4 estimators against muni_nonres_eit
 
-# 8. Piecewise binding model
-Rscript q3_piecewise.R           # 4 specs: v1 pair+yr FE, v2 +work×yr FE,
-                                 # v3 +thin-pair filter, v4 filled imputation
-Rscript q3_piecewise_es.R        # ES around extensive switches
-
-# 9. Residence-side panel (queued for residence-side estimators)
+# 8. Residence-side panel
 Rscript build_residence_panel.R  # aggregate LODES OD by home cousub
+Rscript q3_residence.R           # 4 estimators against home muni resident_eit
+
+# 9. Q3 unified decomposition (replaces piecewise pair-flow model)
+Rscript q3_unified_decomposition.R  # 5 estimators × 3 blocks × Inc/Dec × bind/no-bind
 
 # 10. SD heterogeneity diagnostic (confirms SD attraction was an artifact)
 Rscript sd_heterogeneity.R
@@ -90,8 +89,7 @@ Rscript sd_heterogeneity.R
 | `q3_robustness.R` | Single-event TWFE on inc-only with exactly one increase + DCDH continuous on inc + NC; rate-events-by-year and events-per-muni figures |
 | `q3_stacked.R` | Stacked DiD binary + continuous Δτ on single-event Inc + NC; ±5-yr window, NC-only controls |
 | `q3_nonres.R` | Same four estimators as resident-side, but treatment = `muni_nonres_eit`, outcomes = `log_live_outside`, `share_nonres`, `log_total_jobs` |
-| `q3_piecewise.R` | Cousub-pair binding model (work A × home B × year). Strict (drop NA nonres) and Filled (impute nonres = res). Δbill decomposition by transition state. Optional work_muni × year FE and thin-pair filter. |
-| `q3_piecewise_es.R` | Event study around extensive switches in binding side |
+| `q3_unified_decomposition.R` | Replaces the piecewise pair-flow model. Decomposes each muni-rate event by direction (Inc/Dec) × binding (post home_stack vs muni_nonres). Runs 5 estimators on Blocks A/B/C with cell × Δτ interactions. |
 | `make_dcdh_es_figure.R` | Renders DCDH event-study figure from saved per-period effects/placebos |
 | `build_residence_panel.R` | Residence-side aggregation by home cousub: residents_employed, residents_work_in_own, residents_work_outside, share_work_outside |
 | `sd_heterogeneity.R` | Diagnostic: confirms SD attraction effect was an artifact of tract-centroid job misattribution |

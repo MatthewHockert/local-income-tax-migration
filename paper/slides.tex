@@ -307,8 +307,7 @@
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Methods \& Results}
-\subsection{Q2: Does the rate increase cause sorting?}
+\section{Q2: Total effect}
 
 \begin{frame}[plain]
     \centering
@@ -381,10 +380,11 @@
         \bottomrule
     \end{tabular}
     \vspace{0.10cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
-        \item Controls: log muni spending + revenue shares (EIT, real estate).
-        \item 1pp muni rate $\Rightarrow$ $-1.2$ share-pp; $-20\%$ resident workers.
-        \item SD null. Prior $+0.147^{**}$ on log(Resident) was a tract-centroid artifact (see Data note).
+    \textbf{In plain English:}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item Pooled across all rate changes: 1pp up in muni rate $\Rightarrow$ $-1.2$ share-pp and $-20\%$ resident workers in that muni.
+        \item Decomposition: muni rate does all the work; SD coefficient null on every outcome.
+        \item Caveat: pooled TWFE on continuous treatment can be negative-weighted under heterogeneous timing. Q3 Robustness fixes that --- headline drops to $-0.091^{**}$ stacked continuous.
     \end{itemize}
 \end{frame}
 
@@ -453,7 +453,7 @@
 \end{frame}
 
 %%%%%%%%%%% Act 32 %%%%%%%%%%%
-\subsection{Mechanism: Is the effect enforcement-driven?}
+\section{Mechanism (Act 32)}
 
 \begin{frame}[plain]
     \centering
@@ -511,7 +511,7 @@
     \textbf{Cross-pair within 80km, post-Act-32 (1.83M pair-years):}
     work binds 61.6\%; home binds 38.4\%.
     \vspace{0.05cm}\\
-    \scriptsize \emph{Implication}: most increases are economically meaningful. Piecewise test below separates extensive switches from intensive within-channel changes.
+    \scriptsize \emph{Implication}: most resident-rate increases are economically meaningful for in-muni workers. The Q3 unified decomposition splits estimation by binding state to test this directly.
 \end{frame}
 
 \begin{frame}
@@ -532,21 +532,18 @@
         $N$                                    & 12{,}891 & 12{,}781 & 12{,}891 \\
         \bottomrule
     \end{tabular}
-    \vspace{0.1cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Controls: log spending (police, streets, debt, state aid)
-        + revenue shares (EIT, real estate).
-        \item Pre-Act-32 muni coefficient on share\_live\_in is null;
-        post-Act-32 it is significant. Magnitudes on log(Resident) more
-        than \emph{double} from $-0.139$ pre to $-0.209$ post.
-        \item SD coefficient is null in both periods --- the prior
-        $+0.147^{**}$ pre / $+0.170^{**}$ post pattern was an artifact
-        of tract-centroid job misattribution.
+    \vspace{0.10cm}
+    \textbf{In plain English:}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item Same statutory rates pre and post 2012, but the coefficient on log(Resident) more than \emph{doubles} ($-0.139$ pre $\to$ $-0.209$ post).
+        \item Pre-Act-32, share\_live\_in coefficient is null; post-Act-32 it's significant. Workers didn't sort when the rate was on paper but not enforced.
+        \item Implication: \textbf{enforcement is the policy lever, not the headline rate.} Consolidated employer withholding (post-2012) is what makes a rate increase actually move the worker's bill.
+        \item SD null in both periods. Prior $+0.147^{**}$ / $+0.170^{**}$ pattern was tract-centroid artifact.
     \end{itemize}
 \end{frame}
 
 %%%%%%%%%%% Q3: clean groups (replaces old Q3 split-dose) %%%%%%%%%%%
-\subsection{Q3: Are increases and decreases symmetric?}
+\section{Q3: Asymmetry}
 
 \begin{frame}[plain]
     \centering
@@ -632,10 +629,12 @@
         \bottomrule
     \end{tabular}
     \vspace{0.10cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\scriptsize
-        \item Inc-only: $-1.6$ share-pp per pp; $-22\%$ resident workers; $-15\%$ total jobs.
-        \item Dec (15 munis) noisy; $+0.032^{**}$ is small-sample composition, not reversal.
-        \item SD null --- prior $+0.139^{**}$ was tract-centroid artifact.
+    \textbf{In plain English:}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item Increases bind hard: 1pp up $\Rightarrow$ $-1.6$ share-pp, $-22\%$ resident workers, $-15\%$ total jobs.
+        \item Decreases (only 15 munis) too thin to identify. The wrong-signed $+0.032^{**}$ on share is a small-sample composition artifact, not a real reversal.
+        \item The asymmetry is suggestive of move costs: hikes push out, cuts don't pull back. Dec sample is too small to test directly.
+        \item SD coefficient null. Prior $+0.139^{**}$ was a tract-centroid artifact, fixed by block-level LODES.
     \end{itemize}
 \end{frame}
 
@@ -712,7 +711,7 @@
 \end{frame}
 
 %%%%%%%%%%% Q3 ROBUSTNESS: staggered-DiD estimators %%%%%%%%%%%
-\subsection{Q3 Robustness: three experiments, four estimators each}
+\section{Q3: Decomposition}
 
 \begin{frame}[plain]
     \centering
@@ -769,12 +768,12 @@
     \begin{itemize}\setlength{\itemsep}{0.04cm}\footnotesize
         \item \textbf{A} = headline: do workers stop living where they work
         when the work-muni's resident rate rises?
-        \item \textbf{B} = piecewise mechanism check: does the work-muni's
+        \item \textbf{B} = nonres mechanism check: does the work-muni's
         nonresident rate push out cross-border workers?
         \item \textbf{C} = clean residential test: when home rate rises,
         do residents leave / shift to commuting out?
-        \item Block A also includes a 5th estimator: piecewise binding
-        model on cousub-pair flows.
+        \item Each block decomposed by Inc/Dec $\times$ binding/non-binding
+        (Q3 unified decomposition).
     \end{itemize}
 \end{frame}
 
@@ -1007,19 +1006,17 @@
         \textbf{Stacked continuous} & $-0.005$ & $\mathbf{-0.091^{**}}$ & $\mathbf{-0.072^{**}}$ & \textbf{Recommended headline} \\
         \bottomrule
     \end{tabular}
-    \vspace{0.15cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Direction is robust: \emph{negative} on level outcomes
-        across every clean estimator.
-        \item Magnitude on log outcomes ranges from $-0.04$ (DCDH) to
-        $-0.20$ (TWFE pooled). Stacked continuous $-0.09$ sits in the
-        middle and has the cleanest identification properties.
-        \item \texttt{share\_live\_in} is fragile across clean estimators;
-        the level outcomes are the robust headline.
+    \vspace{0.10cm}
+    \textbf{In plain English:}
+    \begin{itemize}\setlength{\itemsep}{0.03cm}\scriptsize
+        \item When a muni raises its resident rate by 1pp, it loses $\sim$9\% of its live-and-work workers and $\sim$7\% of total jobs in the muni (stacked continuous, the cleanest estimator).
+        \item Direction is robust across every estimator. The range $-0.04$ to $-0.20$ reflects how each handles staggered timing and dose, not whether the effect exists.
+        \item \texttt{share\_live\_in} is fragile because it's a ratio (numerator and denominator can both move). The \emph{level} outcomes are the robust headline.
     \end{itemize}
 \end{frame}
 
-%%%%%%%% Block A (5): PIECEWISE BINDING MODEL %%%%%%%%
+%%%%%%%% PIECEWISE BINDING MODEL (REMOVED) %%%%%%%%
+\iffalse
 \begin{frame}
 \fontfamily{cmr}
 \frametitle{(5) Piecewise binding model: setup}
@@ -1139,6 +1136,7 @@
     Pre-trends near zero; post-flip drift toward zero is consistent
     with the null aggregate.
 \end{frame}
+\fi % END piecewise (removed in favor of unified decomposition)
 
 %%%%%%%% NONRESIDENT-SIDE Q3 %%%%%%%%
 \begin{frame}
@@ -1313,19 +1311,13 @@
         \textbf{(4) Stacked continuous} & $+0.000$ & $\mathbf{-0.261}$ & $\mathbf{-0.262}$ \\
         \bottomrule
     \end{tabular}
-    \vspace{0.15cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item Direction robust: negative on level outcomes across all
-        clean estimators.
-        \item No estimator crosses 5\%: nonres-side is underpowered
-        (smaller treated group, smaller dose variation).
-        \item share\_nonres null everywhere --- mechanically protected
-        because numerator and denominator move together.
-        \item Magnitudes are $\sim$2--3$\times$ resident-side
-        coefficients --- nonresident workers are more responsive per
-        pp of tax than residents, in the data and consistent with the
-        piecewise mechanism (residents face the home stack and a
-        larger move cost; nonresidents can switch jobs).
+    \vspace{0.10cm}
+    \textbf{In plain English:}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item When a muni raises its \emph{nonresident} rate, both nonresident workers and total jobs fall by $\sim$26\%; direction matches Block A.
+        \item But \emph{no estimator crosses 5\%}. Nonres rates change rarely and by small amounts, and only 88 munis ever raise theirs --- not enough power.
+        \item Magnitudes are 2--3$\times$ Block A. Nonresidents are easier to dislodge than residents (just switch employers, no move cost), so per-pp response is bigger when it shows up.
+        \item \texttt{share\_nonres} is null because numerator and denominator both fall together.
     \end{itemize}
 \end{frame}
 
@@ -1495,7 +1487,7 @@
 \frametitle{Block C triangulation: Residence $\times$ home rate}
     \centering
     \scriptsize
-    \renewcommand{\arraystretch}{1.15}
+    \renewcommand{\arraystretch}{1.10}
     \setlength{\tabcolsep}{8pt}
     \begin{tabular}{lccc}
         \toprule
@@ -1507,20 +1499,13 @@
         \textbf{(4) Stacked continuous} & $\mathbf{+0.016^{*}}$ & $-0.058$ & $-0.037$ \\
         \bottomrule
     \end{tabular}
-    \vspace{0.15cm}
-    \begin{itemize}\setlength{\itemsep}{0.04cm}\small
-        \item TWFE and stacked-continuous agree in sign on
-        share\_work\_outside ($+$) and log(Residents) ($-$); DCDH and
-        stacked-binary are noisy nulls.
-        \item Magnitude on log(Residents): $-0.087$ (TWFE) to $-0.058$
-        (stacked continuous) --- about half the workplace-panel coefficient
-        ($-0.20$ to $-0.09$) on log(Resident workers).
-        \item Reading: residence panel isolates the residential-move
-        channel; the gap with workplace-side is the live-and-work
-        intersection collapsing from the work side
-        (job changes, not moves).
-        \item Sorting story holds, but smaller and noisier than the
-        workplace-side estimate suggested.
+    \vspace{0.08cm}
+    \textbf{In plain English:}
+    \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+        \item Total residents \emph{fall} ($-0.087^{**}$); out-commuter count roughly \emph{flat}; share commuting out \emph{rises}.
+        \item Share rises mechanically: denominator shrinks faster than numerator. Out-commuters aren't moving in.
+        \item Leavers are disproportionately \emph{live-and-work} types --- they pay full home stack on all income (max exposure). Out-commuters are insulated (work-muni's nonres rate unchanged).
+        \item Same population as Block A, viewed from home instead of workplace.
     \end{itemize}
 \end{frame}
 
@@ -1552,11 +1537,11 @@
         & Does the share commuting out rise? & share\_work\_outside & $\mathbf{+0.016^{*}}$ \\
         \bottomrule
     \end{tabular}
-    \vspace{0.08cm}
+    \vspace{0.04cm}
     \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
-        \item Stacked-continuous $\Delta\tau$ on each block's Inc + NC sample.
-        Single-event TWFE coefficients are larger (see each block's tri).
-        \item A pins headline; C corroborates residential margin; B direction-consistent, not at 5\%.
+        \item \textbf{A:} $\sim$9\% drop in live-and-work workers per pp resident-rate hike.
+        \item \textbf{B:} same sign as A but no estimator crosses 5\% --- underpowered.
+        \item \textbf{C:} same movers seen from home; share commuting out \emph{rises} (live-and-work types leave fastest).
     \end{itemize}
 \end{frame}
 
