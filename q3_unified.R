@@ -224,8 +224,23 @@ classify_events <- function(p) {
               by = "muni", all.x = TRUE)
   p2 <- merge(p2, ev_nr[, .(muni, c_nr, baseline_nr, cell_nr)],
               by = "muni", all.x = TRUE)
-  p2[is.na(cell_res), cell_res := "NC"]
-  p2[is.na(cell_nr),  cell_nr  := "NC"]
+
+  # FIX: distinguish TRULY NC munis (no rate change ever) from "Uncertain"
+  # munis that had events but couldn't be cell-classified (e.g., NA pre-event
+  # binding state due to DCED nonres reporting gaps).
+  rate_changes_res <- p2[!is.na(resident_eit), .(
+    n = sum(abs(diff(resident_eit)) > 1e-6, na.rm = TRUE)
+  ), by = muni]
+  truly_stable_res <- rate_changes_res[n == 0, muni]
+  rate_changes_nr <- p2[!is.na(muni_nonres_eit), .(
+    n = sum(abs(diff(muni_nonres_eit)) > 1e-6, na.rm = TRUE)
+  ), by = muni]
+  truly_stable_nr <- rate_changes_nr[n == 0, muni]
+
+  p2[muni %in% truly_stable_res, cell_res := "NC"]
+  p2[!muni %in% truly_stable_res & is.na(cell_res), cell_res := "Uncertain"]
+  p2[muni %in% truly_stable_nr,   cell_nr  := "NC"]
+  p2[!muni %in% truly_stable_nr & is.na(cell_nr),   cell_nr := "Uncertain"]
 
   # Cumulative dose (option b): post-event signed change from baseline
   p2[, dose_res := fifelse(!is.na(c_res) & year >= c_res,
@@ -244,10 +259,19 @@ samples <- lapply(samples, classify_events)
 # Cell levels (factor with NC reference)
 cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
                  "Dec-bind", "Dec-becomes-non", "Dec-nobind",
-                 "Inc-loses", "Dec-gains")
+                 "Inc-loses", "Dec-gains", "Uncertain")
 for (s in names(samples)) {
   samples[[s]][, cell_res := factor(cell_res, levels = cell_levels)]
   samples[[s]][, cell_nr  := factor(cell_nr,  levels = cell_levels)]
+  # Drop Uncertain munis from analysis (had events but cell unclassifiable)
+  uncertain_munis_res <- unique(samples[[s]][cell_res == "Uncertain", muni])
+  uncertain_munis_nr  <- unique(samples[[s]][cell_nr  == "Uncertain", muni])
+  uncertain_drop <- union(uncertain_munis_res, uncertain_munis_nr)
+  cat(sprintf("Sample %s: dropping %d uncertain munis (had rate changes but NA pre-event binding state)\n",
+              s, length(uncertain_drop)))
+  samples[[s]] <- samples[[s]][!muni %in% uncertain_drop]
+  samples[[s]][, cell_res := droplevels(cell_res)]
+  samples[[s]][, cell_nr  := droplevels(cell_nr)]
 }
 
 # Print cell counts

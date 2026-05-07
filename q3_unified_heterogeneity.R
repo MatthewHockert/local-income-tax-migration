@@ -146,15 +146,26 @@ classify_treatment <- function(p, rate_var, tag) {
   p2 <- merge(p, ev, by = "muni", all.x = TRUE)
   cell_v <- paste0("cell_", tag); c_v <- paste0("c_", tag)
   base_v <- paste0("baseline_", tag); dose_v <- paste0("dose_", tag)
-  p2[is.na(get(cell_v)), (cell_v) := "NC"]
+  # FIX: True NC = no change in rate_var; Uncertain = had changes but cell unclassifiable
+  rate_changes <- p2[!is.na(get(rate_var)), .(
+    n = sum(abs(diff(get(rate_var))) > 1e-6, na.rm = TRUE)
+  ), by = muni]
+  truly_stable <- rate_changes[n == 0, muni]
+  p2[muni %in% truly_stable,                            (cell_v) := "NC"]
+  p2[!muni %in% truly_stable & is.na(get(cell_v)),     (cell_v) := "Uncertain"]
   p2[, (dose_v) := fifelse(!is.na(get(c_v)) & year >= get(c_v),
                            get(rate_var) - get(base_v), 0)]
   cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
-                   "Dec-bind", "Dec-becomes-non", "Dec-nobind")
+                   "Dec-bind", "Dec-becomes-non", "Dec-nobind", "Uncertain")
   p2[, (cell_v) := factor(get(cell_v), levels = cell_levels)]
   p2
 }
 panel <- classify_treatment(panel, "resident_eit", "muni")
+# Drop Uncertain munis
+u <- unique(panel[cell_muni == "Uncertain", muni])
+cat(sprintf("Heterogeneity: dropping %d uncertain munis\n", length(u)))
+panel <- panel[!muni %in% u]
+panel[, cell_muni := droplevels(cell_muni)]
 
 # Merge typology
 panel <- merge(panel, type_panel[, .(muni, type)], by = "muni", all.x = TRUE)
@@ -221,7 +232,33 @@ build_stack <- function(p, side_tag = "muni") {
 }
 stk <- build_stack(panel)
 
-cat("\n========== Heterogeneity: stacked continuous on log_live_and_work by type ==========\n")
+# Combined non-city group
+stk[, type_collapsed := fifelse(type == "city", "city", "non_city")]
+panel[, type_collapsed := fifelse(type == "city", "city", "non_city")]
+
+cat("\n========== Heterogeneity: city vs non_city (borough + township) ==========\n")
+for (t in c("city","non_city")) {
+  sub <- stk[type_collapsed == t]
+  if (nrow(sub) == 0) next
+  d <- sub[, c("log_live_and_work","treat_cell","dose_stack","stack_muni",
+                "stack_year","muni", ctrls), with = FALSE]
+  d <- d[complete.cases(d)]
+  if (nrow(d) == 0 || sum(d$treat_cell == "Inc-bind") < 5) {
+    cat("\n--- type =", t, "(insufficient Inc-bind obs)\n"); next
+  }
+  f <- as.formula(paste0("log_live_and_work ~ i(treat_cell, dose_stack, ref='NC') + ",
+                          ctrls_str, " | stack_muni + stack_year"))
+  m <- feols(f, data = d, cluster = ~muni)
+  ct <- as.data.table(m$coeftable, keep.rownames = "term")
+  ct <- ct[grepl("treat_cell::", term)]
+  ct[, cell := sub("^.*treat_cell::([^:]+):.*$", "\\1", term)]
+  cat("\n--- type =", t, "; N =", format(nrow(d), big.mark = ","),
+      "; Inc-bind munis =", uniqueN(d$muni[d$treat_cell == "Inc-bind"]), "---\n")
+  print(ct[, .(cell, est = round(Estimate, 3), se = round(`Std. Error`, 3),
+               p = round(`Pr(>|t|)`, 4))])
+}
+
+cat("\n========== Three-way split (kept for comparison): ==========\n")
 for (t in c("city","borough","township")) {
   sub <- stk[type == t]
   if (nrow(sub) == 0) next
@@ -246,6 +283,228 @@ for (t in c("city","borough","township")) {
 # ---------------------------------------------------------------------------
 # 5. Magnitudes in absolute jobs
 # ---------------------------------------------------------------------------
+cat("\n========== City subset: full estimator suite + ES ==========\n")
+suppressMessages(library(DIDmultiplegtDYN))
+
+p_city <- panel[type == "city"]
+cat(sprintf("City subset: %s muni-years, %d unique munis, Inc-bind = %d\n",
+            format(nrow(p_city), big.mark = ","),
+            uniqueN(p_city$muni),
+            uniqueN(p_city[cell_muni == "Inc-bind", muni])))
+
+run_twfe_pooled_city <- function(p, outcome) {
+  needed <- c(outcome, ctrls, "cell_muni", "dose_muni", "muni", "year")
+  d <- p[, ..needed]; d <- d[complete.cases(d)]
+  if (nrow(d) == 0) return(NULL)
+  f <- as.formula(paste0(outcome,
+       " ~ i(cell_muni, dose_muni, ref='NC') + ",
+       ctrls_str, " | muni + year"))
+  feols(f, data = d, cluster = ~muni)
+}
+run_twfe_single_city <- function(p, outcome) {
+  count_changes <- function(x) {
+    x <- x[!is.na(x)]; if (length(x) < 2) return(0L)
+    sum(abs(diff(x)) > 1e-6)
+  }
+  ec <- p[, .(n_res = count_changes(resident_eit)), by = muni]
+  keep <- ec[n_res <= 2, muni]
+  needed <- c(outcome, ctrls, "cell_muni", "dose_muni", "muni", "year")
+  d <- p[muni %in% keep, ..needed]; d <- d[complete.cases(d)]
+  if (nrow(d) == 0) return(NULL)
+  f <- as.formula(paste0(outcome,
+       " ~ i(cell_muni, dose_muni, ref='NC') + ",
+       ctrls_str, " | muni + year"))
+  feols(f, data = d, cluster = ~muni)
+}
+build_stack_city <- function(p) {
+  treated_munis <- unique(p[!is.na(c_muni) & cell_muni != "NC",
+                             .(muni, cohort = c_muni, cell = cell_muni)])
+  nc_munis <- unique(p[cell_muni == "NC", muni])
+  cohort_years <- sort(unique(treated_munis$cohort))
+  build_one <- function(cy) {
+    win <- (cy - K_stack):(cy + K_stack)
+    t_munis <- treated_munis[cohort == cy]
+    if (nrow(t_munis) == 0) return(NULL)
+    d_t <- p[muni %in% t_munis$muni & year %in% win]
+    d_t <- merge(d_t, t_munis[, .(muni, treat_cell = cell)], by = "muni", all.x = TRUE)
+    d_c <- p[muni %in% nc_munis & year %in% win]
+    d_c[, treat_cell := "NC"]
+    d <- rbind(d_t, d_c, fill = TRUE)
+    if (nrow(d) == 0) return(NULL)
+    d[, stack := cy]; d[, rel := year - cy]
+    d
+  }
+  stk <- rbindlist(lapply(cohort_years, build_one), fill = TRUE)
+  stk[, stack_muni := paste0(stack, "_", muni)]
+  stk[, stack_year := paste0(stack, "_", year)]
+  stk[, base_rate := mean(dose_muni[rel < 0], na.rm = TRUE), by = .(stack, muni)]
+  stk[!is.finite(base_rate), base_rate := 0]
+  stk[, dose_stack := dose_muni - base_rate]
+  stk[, post := as.integer(rel >= 0)]
+  stk[, treat := treat_cell != "NC"]
+  cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
+                   "Dec-bind","Dec-becomes-non","Dec-nobind")
+  stk[, treat_cell := factor(treat_cell, levels = cell_levels)]
+  stk
+}
+
+run_stack_binary_city <- function(stk, outcome) {
+  d <- stk[, c(outcome, ctrls, "treat_cell", "post", "stack_muni",
+                "stack_year", "muni"), with = FALSE]
+  d <- d[complete.cases(d)]
+  if (nrow(d) == 0) return(NULL)
+  d[, treat_post := as.integer(treat_cell != "NC" & post == 1)]
+  f <- as.formula(paste0(outcome,
+       " ~ i(treat_cell, treat_post, ref='NC') + ",
+       ctrls_str, " | stack_muni + stack_year"))
+  feols(f, data = d, cluster = ~muni)
+}
+run_stack_cont_city <- function(stk, outcome) {
+  d <- stk[, c(outcome, ctrls, "treat_cell", "dose_stack", "stack_muni",
+                "stack_year", "muni"), with = FALSE]
+  d <- d[complete.cases(d)]
+  if (nrow(d) == 0) return(NULL)
+  f <- as.formula(paste0(outcome,
+       " ~ i(treat_cell, dose_stack, ref='NC') + ",
+       ctrls_str, " | stack_muni + stack_year"))
+  feols(f, data = d, cluster = ~muni)
+}
+run_dcdh_city <- function(p, outcome, target_cell) {
+  d <- p[cell_muni %in% c("NC", target_cell)]
+  cell_lbl <- as.character(d$cell_muni)
+  needed <- c(outcome, "resident_eit", "muni", "year", ctrls)
+  d <- d[, ..needed]; d[, cell_lbl := cell_lbl]
+  d <- d[complete.cases(d[, .SD, .SDcols = c(outcome, "resident_eit", "muni", "year")])]
+  if (nrow(d) == 0 || uniqueN(d[cell_lbl != "NC", muni]) < 2) return(NULL)
+  d[, muni_int := as.integer(as.factor(muni))]
+  res <- tryCatch(suppressMessages(did_multiplegt_dyn(
+    df = as.data.frame(d), outcome = outcome,
+    group = "muni_int", time = "year",
+    treatment = "resident_eit",
+    effects = 3, placebo = 2, continuous = 1,
+    cluster = "muni_int", graph_off = TRUE
+  )), error = function(e) NULL)
+  if (is.null(res) || is.null(res$results$ATE)) return(NULL)
+  ate <- res$results$ATE
+  data.table(cell = target_cell,
+             est = as.numeric(ate[1, "Estimate"]),
+             se  = as.numeric(ate[1, "SE"]),
+             n = as.numeric(ate[1, "N"]))
+}
+
+# Run all five on city subset
+extract_cell <- function(m) {
+  ct <- as.data.table(m$coeftable, keep.rownames = "term")
+  setnames(ct, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
+           skip_absent = TRUE)
+  ct <- ct[grepl("(cell_muni|treat_cell)::", term)]
+  ct[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
+  ct[, .(cell, est = round(est, 3), se = round(se, 3), p = round(p, 4))]
+}
+
+stk_city <- build_stack_city(p_city)
+cat("\n>> Q2 TWFE pooled (city)\n")
+m1 <- run_twfe_pooled_city(p_city, "log_live_and_work")
+print(extract_cell(m1))
+cat("\n>> Single-event TWFE (city)\n")
+m2 <- run_twfe_single_city(p_city, "log_live_and_work")
+print(extract_cell(m2))
+cat("\n>> Stacked binary (city)\n")
+m3 <- run_stack_binary_city(stk_city, "log_live_and_work")
+print(extract_cell(m3))
+cat("\n>> Stacked continuous (city)\n")
+m4 <- run_stack_cont_city(stk_city, "log_live_and_work")
+print(extract_cell(m4))
+cat("\n>> DCDH (city, Inc-bind cell)\n")
+m5 <- run_dcdh_city(p_city, "log_live_and_work", "Inc-bind")
+print(m5)
+
+# ES: Stacked continuous event study on city subset (per-pp dose-response over event-time)
+cat("\n========== City Inc-bind: STACKED CONTINUOUS event study ==========\n")
+stk_city_es <- stk_city[treat_cell %in% c("NC","Inc-bind")]
+needed_es <- c("log_live_and_work", ctrls, "rel", "dose_stack", "treat_cell",
+               "stack_muni", "stack_year", "muni")
+d_es_sc <- stk_city_es[, ..needed_es]
+d_es_sc <- d_es_sc[complete.cases(d_es_sc) & abs(rel) <= 5]
+# Restrict to Inc-bind dose for treated, zero for NC (already handled by dose_stack=0 for NC)
+f_sc_es <- as.formula(paste0("log_live_and_work ~ i(rel, dose_stack, ref=-1) + ",
+                              ctrls_str, " | stack_muni + stack_year"))
+m_sc_es <- feols(f_sc_es, data = d_es_sc, cluster = ~muni)
+ct_sc <- as.data.table(m_sc_es$coeftable, keep.rownames = "term")
+setnames(ct_sc, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
+         skip_absent = TRUE)
+ct_sc <- ct_sc[grepl("^rel::", term)]
+ct_sc[, rel_year := as.integer(sub("^rel::(-?[[:digit:]]+):.*$", "\\1", term))]
+ct_sc <- rbind(ct_sc, data.table(term="ref", est=0, se=0, p=NA_real_,
+                                  rel_year=-1L), fill=TRUE)
+ct_sc <- ct_sc[order(rel_year)]
+print(ct_sc[, .(rel_year, est = round(est,3), se = round(se,3), p = round(p,4))])
+
+# Save figure
+suppressMessages(library(ggplot2))
+fig_dir <- file.path(project_dir, "figures")
+es_plot_data <- ct_sc[, .(rel_year, est, se)]
+p_fig_sc <- ggplot(es_plot_data, aes(rel_year, est)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
+  geom_vline(xintercept = -0.5, linetype = "dotted", color = "#7A0019") +
+  geom_errorbar(aes(ymin = est - 1.96*se, ymax = est + 1.96*se),
+                width = 0, linewidth = 0.4) +
+  geom_line(linewidth = 0.5, color = "#7A0019") +
+  geom_point(size = 1.6, color = "#7A0019") +
+  labs(title = "City Inc-bind: log(live_and_work) stacked-continuous ES",
+       subtitle = "Per-pp dose-response in event-time; 8 PA cities; 95% CI",
+       x = "Years relative to first muni-rate event",
+       y = "Per-pp coefficient on dose_stack") +
+  theme_minimal(base_size = 11) +
+  theme(panel.grid.minor = element_blank(),
+        plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(color = "grey30"))
+ggsave(file.path(fig_dir, "unified_es_city_inc_bind_lw_stackcont.png"),
+       p_fig_sc, width = 9, height = 4.5, dpi = 300)
+cat("Saved figures/unified_es_city_inc_bind_lw_stackcont.png\n")
+
+# ES: Sun-Abraham on city subset (binary cohort) -- KEPT FOR REFERENCE
+cat("\n========== City Inc-bind: Sun-Abraham (binary cohort, reference) ==========\n")
+p_city_es <- p_city[cell_muni %in% c("NC","Inc-bind")]
+p_city_es[, cohort := ifelse(is.na(c_muni), 10000L, as.integer(c_muni))]
+needed <- c("log_live_and_work", ctrls, "cohort", "muni", "year")
+d_es <- p_city_es[, ..needed]; d_es <- d_es[complete.cases(d_es)]
+f_sa <- as.formula(paste0("log_live_and_work ~ sunab(cohort, year) + ",
+                           ctrls_str, " | muni + year"))
+m_sa <- feols(f_sa, data = d_es, cluster = ~muni)
+ct_sa <- as.data.table(m_sa$coeftable, keep.rownames = "term")
+setnames(ct_sa, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
+         skip_absent = TRUE)
+ct_sa <- ct_sa[grepl("^year::", term)]
+ct_sa[, rel_year := as.integer(sub("^year::(-?[[:digit:]]+)$", "\\1", term))]
+ct_sa <- ct_sa[abs(rel_year) <= 5]
+ct_sa <- rbind(ct_sa, data.table(term="ref", est=0, se=0, p=NA_real_, rel_year=-1L), fill=TRUE)
+ct_sa <- ct_sa[order(rel_year)]
+print(ct_sa[, .(rel_year, est = round(est,3), se = round(se,3), p = round(p,4))])
+
+# Save ES figure
+suppressMessages(library(ggplot2))
+fig_dir <- file.path(project_dir, "figures")
+es_plot_data <- ct_sa[, .(rel_year, est, se)]
+p_fig <- ggplot(es_plot_data, aes(rel_year, est)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
+  geom_vline(xintercept = -0.5, linetype = "dotted", color = "#7A0019") +
+  geom_errorbar(aes(ymin = est - 1.96*se, ymax = est + 1.96*se),
+                width = 0, linewidth = 0.4) +
+  geom_line(linewidth = 0.5, color = "#7A0019") +
+  geom_point(size = 1.6, color = "#7A0019") +
+  labs(title = "City Inc-bind: log(live_and_work) Sun-Abraham ES",
+       subtitle = "8 PA cities (Wilkes-Barre, Hazleton, Johnstown, Jeannette, Coatesville, Warren, Carbondale, Farrell)",
+       x = "Years relative to first muni-rate event",
+       y = "Coefficient") +
+  theme_minimal(base_size = 11) +
+  theme(panel.grid.minor = element_blank(),
+        plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(color = "grey30"))
+ggsave(file.path(fig_dir, "unified_es_city_inc_bind_lw.png"),
+       p_fig, width = 9, height = 4.5, dpi = 300)
+cat("Saved figures/unified_es_city_inc_bind_lw.png\n")
+
 cat("\n========== Inc-bind magnitudes in absolute jobs ==========\n")
 incbind_munis <- unique(panel[cell_muni == "Inc-bind", muni])
 absolute <- panel[muni %in% incbind_munis & year >= c_muni - 1 & year <= c_muni + 5,

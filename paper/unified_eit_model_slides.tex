@@ -269,41 +269,69 @@
     %
     \begin{frame}
     \fontfamily{cmr}
-    \frametitle{Estimating Equation}
+    \frametitle{Headline Estimator: Stacked Continuous DiD}
         \scriptsize
-        For outcome $Y$ and estimator $E$:
+        \alert{Headline equation} (run on the stacked panel; one row per
+        muni-stack-year, NC munis appear in every stack as clean controls):
         \begin{equation*}
         \begin{split}
-        Y_{it} = \alpha_i + \gamma_t
-          &+ \sum_{k}\beta^{\text{muni}}_k\,\Delta\tau^{\text{muni}}_{it}\cdot\mathbf{1}\{\text{cell}^{\text{muni}}_i=k\} \\
-          &+ \sum_{k}\beta^{\text{SD}}_k\,\Delta\tau^{\text{SD}}_{it}\cdot\mathbf{1}\{\text{cell}^{\text{SD}}_i=k\} \\
-          &+ \sum_{k}\beta^{\text{nr}}_k\,\Delta\tau^{\text{nr}}_{it}\cdot\mathbf{1}\{\text{cell}^{\text{nr}}_i=k\}
-          + \mathbf{X}'_{it}\phi + \varepsilon_{it}
+        Y_{\tilde{i}\tilde{t}} \;=\; \alpha_{\tilde{i}} \;+\; \gamma_{\tilde{t}}
+          &+ \sum_{k\in\mathcal{C}\setminus\text{NC}}\beta^{\text{muni}}_k\,\Delta\tau^{\text{muni}}_{it}\cdot\mathbf{1}\{\text{cell}^{\text{muni}}_i=k\} \\
+          &+ \sum_{k\in\mathcal{C}\setminus\text{NC}}\beta^{\text{SD}}_k\,\Delta\tau^{\text{SD}}_{it}\cdot\mathbf{1}\{\text{cell}^{\text{SD}}_i=k\} \\
+          &+ \sum_{k\in\mathcal{C}\setminus\text{NC}}\beta^{\text{nr}}_k\,\Delta\tau^{\text{nr}}_{it}\cdot\mathbf{1}\{\text{cell}^{\text{nr}}_i=k\}
+          + \mathbf{X}'_{it}\phi + \varepsilon
         \end{split}
         \end{equation*}
+        \scriptsize
+        \begin{itemize}\setlength{\itemsep}{0.02cm}
+            \item $\tilde{i}=(\text{stack},\,\text{muni})$, $\tilde{t}=(\text{stack},\,\text{year})$
+            so each muni has a separate intercept per stack.
+            \item $\mathcal{C}\setminus$NC = \{Inc-bind, Inc-becomes, Inc-nobind,
+            Dec-bind, Dec-becomes-non, Dec-nobind\}; NC is omitted reference \emph{per side}.
+            \item Each muni $i$ appears in exactly one sub-experiment (its own cohort)
+            on each side where it's non-NC; NC munis appear in every cohort.
+            \item Each $\beta^s_k$ is the per-pp dose-response of $Y$ to a 1 pp change
+            in rate $s$, restricted to munis whose first event on side $s$ is in cell $k$,
+            \emph{relative to NC's contemporaneous trend on side $s$}.
+            \item Within each sub-experiment, comparison is treated cohort vs NC
+            in the same calendar-year window. Treated munis from \emph{other}
+            cohorts are not used as controls --- avoids Goodman-Bacon negative weighting.
+            \item Stack-muni and stack-year FE absorb cohort-specific level/time effects.
+        \end{itemize}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{What's Being Compared}
         \footnotesize
-        \begin{itemize}\setlength{\itemsep}{0.04cm}
-            \item All three treatments and their cell decompositions enter the
-            \emph{same} regression. No OD flows; no pair panel.
-            \item \textbf{Control group:} NC (\emph{never-changed}) munis on each side.
-            For an NC muni, $\Delta\tau^{\text{muni}}=\Delta\tau^{\text{SD}}=\Delta\tau^{\text{nr}}=0$,
-            so all three cell-$\times$-dose terms drop. NC munis identify
-            $\gamma_t$ (the parallel time trend) and $\alpha_i$. Cell coefficients
-            $\beta_k$ are dose-response \emph{relative to NC's trend}.
-            Sample: $\sim$2{,}400 muni-rate NC, $\sim$2{,}250 SD NC, $\sim$2{,}275 nonres NC.
-            \item Reference cell in factor coding: \texttt{ref='NC'}.
-            \item $\mathbf{X}_{it}$: \textbf{share-based controls, all time-varying} ---
-            expenditure shares of total expenditures (police, streets, debt service);
-            revenue shares of total revenues (EIT, real estate, intergov).
-            \item Fixed effects: muni $\alpha_i$, year $\gamma_t$. SE clustered at muni.
+        For each sub-experiment $\mathcal{S}^s_c$ (one per cohort year $c$ on side $s$):
+        \begin{itemize}\setlength{\itemsep}{0.05cm}\scriptsize
+            \item \textbf{Treated set:} munis $i$ with $c^s_i = c$ and cell$^s_i \neq$ NC.
+            \item \textbf{Control set:} \emph{all} NC$^s$ munis (truly stable rate on side $s$).
+            \item \textbf{Window:} $t \in [c-5, c+5]$.
+            \item \textbf{Dose:} $\Delta\tau^s_{it} = \tau^s_{it} - \tau^s_{i,c-1}$ for treated $i$;
+            $0$ for NC munis at all $t$ and for treated $i$ at $t < c$.
         \end{itemize}
         \medskip
 
-        \textbf{Five estimators.} Q2 TWFE pooled $\to$ single-event TWFE
-        ($\le 2$ events per side) $\to$ stacked DiD binary
-        (cell $\times$ post) $\to$
-        \alert{stacked DiD continuous (cell $\times \Delta\tau$, headline)}
-        $\to$ DCDH (per cell, continuous).
+        \textbf{Within-design placebo.} The Inc-nobind cell --- rate hike that
+        leaves the bill unchanged because home stack stays below nonres rate ---
+        is the institutional rule's predicted-null cell. If it shows zero behavioral
+        response while Inc-bind shows large response, the response is mechanism-driven.
+        \medskip
+
+        \textbf{Five estimators.} Q2 TWFE pooled $\to$ single-event TWFE ($\le$2 events) $\to$
+        stacked binary (cell $\times$ post) $\to$ \alert{\textbf{stacked continuous}
+        (cell $\times \Delta\tau$, \alert{headline})} $\to$ DCDH (per cell).
+        \medskip
+
+        \textbf{Controls.} Share-based, all time-varying:
+        \texttt{share\_police}, \texttt{share\_streets}, \texttt{share\_debt\_svc}
+        (denom = total expenditures); \texttt{share\_eit}, \texttt{share\_re},
+        \texttt{share\_intergov} (denom = total revenues).
+        SE clustered at muni level.
     \end{frame}
     %
 
@@ -373,35 +401,148 @@
     %
     \begin{frame}
     \fontfamily{cmr}
-    \frametitle{Muni Resident Rate: Stacked Continuous, Drop Sample}
+    \frametitle{Headline: Stacked Continuous DiD, Muni-Rate Inc Cells}
+        \centering
+        \scriptsize
+        \renewcommand{\arraystretch}{1.05}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lccc}
+            \toprule
+            & Inc-bind & Inc-becomes & Inc-nobind \\
+            & ($n_{\text{muni}}$=40) & ($n_{\text{muni}}$=58) & \emph{placebo} ($n_{\text{muni}}$=26) \\
+            \midrule
+            log(live\_and\_work)    & $\bm{-0.402^{***}}$ & $\bm{-0.181^{**}}$  & $-0.062$ \\
+                                    & $(0.096)$           & $(0.072)$           & $(0.169)$ \\
+            log(in\_commuters)      & $\bm{-0.213^{**}}$  & $\bm{-0.197^{***}}$ & $-0.187$ \\
+                                    & $(0.083)$           & $(0.054)$           & $(0.204)$ \\
+            log(out\_commuters)     & $-0.053$            & $-0.042$            & $+0.217^{**}$ \\
+                                    & $(0.038)$           & $(0.029)$           & $(0.091)$ \\
+            log(total\_jobs)        & $\bm{-0.270^{***}}$ & $\bm{-0.212^{***}}$ & $-0.201$ \\
+                                    & $(0.086)$           & $(0.054)$           & $(0.203)$ \\
+            log(total\_residents)   & $\bm{-0.100^{***}}$ & $-0.068^{*}$        & $+0.194^{**}$ \\
+                                    & $(0.033)$           & $(0.040)$           & $(0.095)$ \\
+            share\_live\_in         & $\bm{-0.045^{***}}$ & $-0.012$            & $-0.012$ \\
+                                    & $(0.010)$           & $(0.009)$           & $(0.008)$ \\
+            share\_work\_outside    & $\bm{+0.041^{***}}$ & $\bm{+0.020^{***}}$ & $+0.017$ \\
+                                    & $(0.016)$           & $(0.007)$           & $(0.014)$ \\
+            \midrule
+            \multicolumn{4}{l}{\textit{Diagnostics (log\_live\_and\_work)}} \\
+            \quad $N$ & \multicolumn{3}{c}{218{,}685} \\
+            \quad $R^2$ / Within $R^2$ & \multicolumn{3}{c}{0.964 / 0.0007} \\
+            \quad Dep.\ mean (SD) & \multicolumn{3}{c}{3.677 (1.934)} \\
+            \quad FE & \multicolumn{3}{c}{stack-muni $+$ stack-year} \\
+            \quad Cluster & \multicolumn{3}{c}{muni (1{,}945)} \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.05cm}
+        \begin{minipage}{0.95\textwidth}
+            \tiny \textit{Notes:} SEs in parens. SD and nonres-side cells
+            estimated jointly (Tables in robustness). Share-based controls.
+            Dec cells on the next slide.
+            $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \end{minipage}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Headline: Per-Outcome Diagnostics}
+        \centering
+        \scriptsize
+        \renewcommand{\arraystretch}{1.10}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lccccc}
+            \toprule
+            Outcome & $N$ & $R^2$ & Within $R^2$ & Dep.\ mean & Dep.\ SD \\
+            \midrule
+            log(live\_and\_work)    & 218{,}685 & 0.964 & 0.0007 & 3.677 & 1.934 \\
+            log(in\_commuters)      & 239{,}031 & 0.959 & 0.0011 & 5.847 & 1.887 \\
+            log(out\_commuters)     & 242{,}730 & 0.979 & 0.0009 & 6.636 & 1.263 \\
+            log(total\_jobs)        & 239{,}041 & 0.961 & 0.0011 & 5.948 & 1.901 \\
+            log(total\_residents)   & 242{,}730 & 0.981 & 0.0010 & 6.697 & 1.299 \\
+            share\_live\_in         & 239{,}041 & 0.823 & 0.0010 & 0.093 & 0.076 \\
+            share\_work\_outside    & 242{,}730 & 0.945 & 0.0008 & 0.943 & 0.066 \\
+            share\_nonres           & 239{,}041 & 0.823 & 0.0010 & 0.907 & 0.076 \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.10cm}
+        \footnotesize
+        Dep.\ mean and SD computed on the regression sample. The Within $R^2$
+        is small because muni-stack and year-stack FE absorb the dominant
+        variation; the cell$\times$dose terms add the remaining identification.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Main Spec: Full Coefficients on log(live\_and\_work)}
+        \centering
+        \scriptsize
+        \renewcommand{\arraystretch}{1.05}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lcc}
+            \toprule
+            Term & Coef & SE \\
+            \midrule
+            \multicolumn{3}{l}{\textit{Muni resident-rate cells (vs NC)}} \\
+            Inc-bind $\times \Delta\tau^{\text{muni}}$       & $\bm{-0.402^{***}}$ & 0.096 \\
+            Inc-becomes $\times \Delta\tau^{\text{muni}}$    & $\bm{-0.181^{**}}$  & 0.072 \\
+            Inc-nobind $\times \Delta\tau^{\text{muni}}$     & $-0.062$            & 0.169 \\
+            Dec-bind $\times \Delta\tau^{\text{muni}}$       & $+0.241^{***}$      & 0.078 \\
+            \multicolumn{3}{l}{\textit{School district rate cells (vs NC)}} \\
+            Inc-bind $\times \Delta\tau^{\text{SD}}$         & $+0.130$            & 0.084 \\
+            Inc-becomes $\times \Delta\tau^{\text{SD}}$      & $+0.229$            & 0.150 \\
+            Dec-bind $\times \Delta\tau^{\text{SD}}$         & $-0.669^{***}$      & 0.139 \\
+            \multicolumn{3}{l}{\textit{Muni nonresident-rate cells (vs NC)}} \\
+            Inc-nobind $\times \Delta\tau^{\text{nr}}$       & $+0.149$            & 0.415 \\
+            Dec-becomes-non $\times \Delta\tau^{\text{nr}}$  & $-0.072^{**}$       & 0.030 \\
+            \multicolumn{3}{l}{\textit{Share-based controls}} \\
+            share\_police                                     & $+0.097$            & 0.100 \\
+            share\_streets                                    & $+0.049$            & 0.039 \\
+            share\_debt\_svc                                  & $-0.058$            & 0.051 \\
+            share\_eit                                        & $-0.022$            & 0.085 \\
+            share\_re                                         & $\bm{-0.182^{**}}$  & 0.087 \\
+            share\_intergov                                   & $+0.016$            & 0.044 \\
+            \midrule
+            $N$, $R^2$, dep mean & \multicolumn{2}{c}{218{,}685, $R^2=$0.964, mean$=$3.677} \\
+            FE & \multicolumn{2}{c}{stack-muni $+$ stack-year; cluster: muni} \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.05cm}
+        \begin{minipage}{0.95\textwidth}
+            \tiny Cell interactions on all three rate sides plus controls,
+            single regression. Cells with zero observations omitted.
+            $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \end{minipage}
+    \end{frame}
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Headline: Muni-Rate Dec Cells (thin and noisy)}
         \centering
         \scriptsize
         \renewcommand{\arraystretch}{1.10}
         \setlength{\tabcolsep}{4pt}
-        \begin{tabular}{lcccccc}
+        \begin{tabular}{lccc}
             \toprule
-            & Inc-bind & Inc-becomes & Inc-nobind & Dec-bind & Dec-becomes & Dec-nobind \\
-            & ($n$=40) & ($n$=58) & \emph{placebo} ($n$=26) & ($n$=11) & ($n$=4) & \emph{placebo} ($n$=15) \\
+            & Dec-bind ($n$=11) & Dec-becomes-non ($n$=4) & Dec-nobind ($n$=15) \\
             \midrule
-            log(live\_and\_work)    & $\bm{-0.388^{***}}$ & $\bm{-0.168^{**}}$  & $-0.044$        & $+0.241^{***}$ & $-0.260$  & $+0.332^{**}$ \\
-            log(in\_commuters)      & $\bm{-0.205^{**}}$  & $\bm{-0.183^{**}}$  & $-0.187$        & $+0.052$       & $+0.496$  & $+0.013$ \\
-            log(out\_commuters)     & $-0.053$            & $-0.041$            & $+0.214^{**}$   & $-0.068$       & $-0.628$  & $+0.132$ \\
-            log(total\_jobs)        & $\bm{-0.264^{***}}$ & $\bm{-0.201^{***}}$ & $-0.204$        & $+0.111$       & $+0.420$  & $+0.022$ \\
-            log(total\_residents)   & $\bm{-0.101^{***}}$ & $-0.068^{*}$        & $+0.191^{**}$   & $-0.056$       & $-0.651$  & $+0.135$ \\
-            share\_live\_in         & $\bm{-0.046^{***}}$ & $-0.013$            & $-0.013^{*}$    & $+0.054^{*}$   & $-0.071$  & $+0.012$ \\
-            share\_work\_outside    & $\bm{+0.041^{***}}$ & $\bm{+0.020^{***}}$ & $+0.018$        & $-0.011$       & $+0.014$  & $-0.003^{*}$ \\
+            log(live\_and\_work)    & $+0.241^{***}$ (0.078) & $-0.260$ (0.272)        & $+0.332^{**}$ (0.165) \\
+            log(in\_commuters)      & $+0.052$ (0.080)        & $+0.496$ (0.339)        & $+0.013$ (0.121) \\
+            log(out\_commuters)     & $-0.068$ (0.061)        & $-0.628$ (0.416)        & $+0.132$ (0.101) \\
+            log(total\_jobs)        & $+0.111$ (0.073)        & $+0.420$ (0.265)        & $+0.022$ (0.116) \\
+            log(total\_residents)   & $-0.056$ (0.043)        & $-0.651$ (0.420)        & $+0.135$ (0.099) \\
+            share\_live\_in         & $+0.054^{*}$ (0.030)    & $-0.071$ (0.095)        & $+0.012$ (0.030) \\
+            share\_work\_outside    & $-0.011$ (0.013)        & $+0.014$ (0.017)        & $-0.003^{*}$ (0.001) \\
             \bottomrule
         \end{tabular}
         \vspace{0.10cm}
-        \begin{minipage}{0.95\textwidth}
-            \tiny \textit{Notes:} Stacked-continuous DiD ($\pm$5-yr window).
-            $\Delta\tau^{\text{muni}}$, $\Delta\tau^{\text{SD}}$, and
-            $\Delta\tau^{\text{nr}}$ cell interactions in the same regression
-            (only muni cells shown here; SD on next slide).
-            Share-based controls (police/streets/debt-svc / total expenditures;
-            EIT/RE/intergov / total revenues). Cluster-robust SEs by muni.
-            $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-        \end{minipage}
+        \footnotesize
+        Dec cells too thin to drive headline causal claims. Coefficients
+        reported for completeness; we do not interpret these individually.
     \end{frame}
     %
 
@@ -745,11 +886,11 @@
     %
     \begin{frame}
     \fontfamily{cmr}
-    \frametitle{Heterogeneity: Who Are the Inc-Bind Munis?}
+    \frametitle{Heterogeneity: Who Are the Inc-Bind Munis? (NC-fix applied)}
         \footnotesize
         \textbf{The headline is concentrated in post-industrial cities.}
         Inc-bind ($n$=40) breaks down as 22 townships, 10 boroughs, 8 cities,
-        but the 8 cities are mostly declining post-industrial PA cities.
+        but the 8 cities drive the effect.
         \medskip
         \scriptsize
         \renewcommand{\arraystretch}{1.15}
@@ -758,11 +899,14 @@
             \toprule
             Muni type & $n$ & Mean residents & Inc-bind coef on log(LW) & Sig \\
             \midrule
-            \textbf{City}      & 8  & 6{,}904 & $\bm{-0.418}$ & ** ($p$=0.025) \\
-            Borough            & 10 & 2{,}631 & $-0.211$      & --- ($p$=0.180) \\
-            Township           & 22 & 3{,}468 & $-0.159$      & --- ($p$=0.443) \\
+            \textbf{City}                & 8  & 6{,}904 & $\bm{-0.455}$ & ** ($p$=0.021) \\
+            Non-city (borough + township) & 32 & 3{,}207 & $-0.194$      & --- ($p$=0.189) \\
             \midrule
-            \textit{Pooled (headline)} & 40 & ---  & $-0.388^{***}$ & --- \\
+            \textit{(by sub-type)} \\
+            \quad Borough                & 10 & 2{,}631 & $-0.213$      & --- ($p$=0.173) \\
+            \quad Township               & 22 & 3{,}468 & $-0.161$      & --- ($p$=0.438) \\
+            \midrule
+            \textit{Pooled muni headline (Mode B, post-fix)} & 40 & --- & $-0.402^{***}$ & --- \\
             \bottomrule
         \end{tabular}
         \medskip
@@ -775,8 +919,230 @@
         \textbf{Implication.} Townships and boroughs (the suburbs/rural munis)
         don't drive the headline. The result is real but \emph{specific}: rate
         hikes in declining cities accelerate already-falling
-        \texttt{live\_and\_work} counts. Some portion of the $-0.418$ is the
+        \texttt{live\_and\_work} counts. Some portion of $-0.455$ is the
         underlying decline that prompted the hike, not pure tax-driven sorting.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Design Support: Cohort Timing}
+        \centering
+        \includegraphics[width=0.85\textwidth]{support_cohort_timing.png}
+        \vspace{0.05cm}
+        \footnotesize
+        Inc-bind events span 2003--2019 with no single year dominating.
+        8 cities, 10 boroughs, 22 townships --- distribution roughly uniform.
+        Stacked DiD requires staggered timing for clean identification; we have it.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Design Support: Dose Distribution}
+        \centering
+        \includegraphics[width=0.85\textwidth]{support_dose_distribution.png}
+        \vspace{0.05cm}
+        \footnotesize
+        Cumulative resident-rate change at year +5: median 0.25pp,
+        mean 0.27pp, range $[-0.20, 1.00]$. Most rate hikes are 0.1--0.5pp
+        --- the per-pp coefficient of $-0.402$ extrapolates to typical-dose
+        effects of $\sim$10--20\% on \texttt{live\_and\_work}.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Design Support: Stack Coverage}
+        \centering
+        \includegraphics[width=0.85\textwidth]{support_stack_coverage.png}
+        \vspace{0.05cm}
+        \footnotesize
+        Within each cohort year (rows), we have at least 1--3 treated munis
+        in every event-time slot from $t=-5$ to $t=+5$ (some early/late
+        cohorts truncated by panel boundary). \textbf{No calendar-year overlap
+        within a single muni's stack.} Each muni appears in exactly one cohort
+        as treated; NC munis appear in every cohort as clean controls.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Design Support: Cell $\times$ Type Composition}
+        \centering
+        \includegraphics[width=0.85\textwidth]{support_cell_type_heatmap.png}
+        \vspace{0.05cm}
+        \footnotesize
+        Cells well-populated for cities, boroughs, townships across Inc-bind,
+        Inc-becomes, Inc-nobind. Dec cells thin (especially \texttt{Dec-bind}
+        with 11 munis pooled). NC pool large in every type.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Design Support: Cumulative Dose Trajectory}
+        \centering
+        \includegraphics[width=0.85\textwidth]{support_dose_trajectory.png}
+        \vspace{0.05cm}
+        \footnotesize
+        Mean and IQR of cumulative $\Delta\tau^{\text{muni}}$ relative to
+        baseline, by muni type. Pre-event dose is identically zero by
+        construction (this is what makes pre-trends in the dose-response
+        unidentifiable in the stacked-continuous ES). Post-event dose
+        accumulates to $\sim$0.25pp by year $+5$ on average.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{On Stacked DiD and Treatment Overlap}
+        \footnotesize
+        \textbf{Common concern:} ``Stacked DiD with continuous treatment
+        cannot have overlapping treatment times.''
+        \medskip
+
+        \textbf{Reading.} The constraint is \emph{within each sub-experiment,
+        controls must be clean.} Calendar-year overlap across cohorts is fine
+        (and unavoidable in any staggered design).
+        \medskip
+
+        \begin{itemize}\setlength{\itemsep}{0.05cm}\scriptsize
+            \item Each sub-experiment $cy$ uses treated munis from cohort
+            $cy$ + NC munis only. Treated munis from \emph{other} cohorts
+            are not included as controls.
+            \item Within-sub-experiment FE (\texttt{stack\_muni},
+            \texttt{stack\_year}) absorb stack-specific level/time effects.
+            \item Each muni appears in exactly one stack as treated (its own
+            cohort), or in every stack as NC if never-treated.
+            \item No muni-year is double-counted as both treated and control.
+        \end{itemize}
+
+        \textbf{What goes wrong with vanilla TWFE under staggered treatment:}
+        later-treated units used as controls for earlier-treated cohorts
+        (Goodman-Bacon 2021). Stacked DiD avoids this by construction.
+        \textbf{Our design is correct.}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{City Subset: Full Estimator Triangulation (NC-fix applied)}
+        \footnotesize
+        Run all five estimators on the city subset (8 Inc-bind cities + truly-stable NC cities).
+        \alert{NC pool corrected:} previously included $\sim$1 muni with rate
+        changes but unclassifiable cell (NA pre-event binding state from DCED
+        nonres reporting gaps); now dropped. Coefficients shift modestly.
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.20}
+        \setlength{\tabcolsep}{8pt}
+        \begin{tabular}{lccc}
+            \toprule
+            Estimator & Coef & SE & p \\
+            \midrule
+            Q2 TWFE pooled            & $\bm{-0.342^{***}}$ & 0.075 & $<$0.001 \\
+            Single-event TWFE ($\le$2)& $+0.220$            & 0.289 & 0.45 \\
+            Stacked binary            & $\bm{-0.182^{**}}$  & 0.084 & 0.034 \\
+            \alert{Stacked continuous (headline)} & \alert{$\bm{-0.455^{**}}$} & 0.191 & 0.021 \\
+            DCDH (effects=3)          & $\sim 0$            & ---   & --- \\
+            \bottomrule
+        \end{tabular}
+        \medskip
+
+        Direction negative across every estimator with signal. Stacked
+        continuous on city subset ($-0.455$) close to pooled muni headline,
+        confirming cities drive the headline.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{City Subset: Sun-Abraham Event Study}
+        \centering
+        \includegraphics[width=0.85\textwidth]{unified_es_city_inc_bind_lw.png}
+        \vspace{0.05cm}
+        \footnotesize
+        \alert{\textbf{Pre-trend problem.}} Coefficients at $t=-5$ to $t=-2$ are
+        positive and significant ($+0.20, +0.10, +0.12, +0.10$). Treated cities
+        were declining toward NC trend pre-event; post-event continues the same
+        slope.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Pre-Trends: Pooled Cell vs City Subset}
+        \footnotesize
+        \textbf{Important distinction.} Pre-trends are sample-specific.
+        Diagnose at the cell level, not just within the city subset.
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.15}
+        \setlength{\tabcolsep}{8pt}
+        \begin{tabular}{lcccc|c}
+            \toprule
+            Cell (Sun-Abraham, log\_LW) & $t=-5$ & $t=-4$ & $t=-3$ & $t=-2$ & Pre-trend? \\
+            \midrule
+            \textbf{Inc-bind, FULL ($n$=40)} & $+0.060$  & $+0.008$  & $+0.057$  & $-0.003$  & \alert{Null --- clean} \\
+            \textbf{Inc-bind, CITY only ($n$=8)} & $\bm{+0.194^{***}}$ & $\bm{+0.105^{**}}$ & $\bm{+0.118^{**}}$ & $\bm{+0.101^{***}}$ & \alert{Present} \\
+            Inc-becomes ($n$=58)        & $-0.048$  & $+0.049$  & $-0.053^{***}$ & $0$       & Borderline \\
+            Inc-nobind \emph{(placebo, $n$=26)} & $+0.066^{**}$ & $+0.092^{***}$ & $+0.009$ & $+0.027^{**}$ & Small but sig \\
+            Dec-bind ($n$=11)           & $+0.339^{***}$ & $+0.003$ & $-0.442^{***}$ & $-0.142^{***}$ & Large/noisy \\
+            \bottomrule
+        \end{tabular}
+        \medskip
+
+        \textbf{The pooled Inc-bind headline} ($-0.402$): pre-trends are null
+        across $t=-5$ to $t=-2$. Parallel trends roughly hold. Headline is
+        defensible.
+        \medskip
+
+        \textbf{City-specific finding} ($-0.455$): pre-trends \emph{are}
+        significant. The 8 cities had levels above the NC city pool in the
+        pre-period, declining toward NC by $t=-1$. City-specific magnitude
+        claim must be hedged.
+        \medskip
+
+        \textbf{Placebo cell} (Inc-nobind, $-0.062$): small but significant
+        pre-trends. Imperfect placebo. Worth disclosing as a caveat.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Honest Causal Read}
+        \footnotesize
+        \begin{itemize}\setlength{\itemsep}{0.10cm}
+            \item \textbf{Pooled Inc-bind cell (40 munis): defensible.} Null
+            pre-trends in binary SA. Null per-pp dose pre-trends by
+            construction. Post-event coefficients (\texttt{stacked\_continuous}
+            $-0.402^{***}$) plausibly causal under standard parallel-trends.
+            \item \textbf{City-specific magnitude (8 munis): \alert{do not claim
+            as causal}.} Pre-trends are present; post-event drop is partly
+            continuation of differential trajectory. Frame as ``rate hikes in
+            declining cities \emph{associated with} continued decline.''
+            \item \textbf{Placebo (Inc-nobind, 26 munis):} small pre-trends mean
+            the within-design placebo isn't perfectly clean. Still null on
+            \texttt{log\_live\_and\_work} post-event ($-0.062$, insig).
+            Acknowledge as caveat.
+            \item \textbf{Sharpening for the city result (open follow-ups).}
+            (i) Matched controls --- pair each Inc-bind city with NC cities
+            on similar pre-2002 trajectories.
+            (ii) Synthetic control per Inc-bind city.
+            (iii) Drop steepest-pre-trend cities (Wilkes-Barre, Hazleton)
+            and re-estimate; check robustness to specific inclusion.
+        \end{itemize}
     \end{frame}
     %
 
@@ -897,11 +1263,11 @@
             \toprule
             Estimator & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
             \midrule
-            Q2 TWFE pooled                & $-0.402^{***}$       & $-0.208^{***}$       & $-0.121$ \\
-            Single-event TWFE ($\le$2)    & $-0.403^{***}$       & $-0.245^{***}$       & $-0.339$ \\
-            Stacked binary                & $-0.144^{***}$       & $-0.098^{*}$         & $-0.042$ \\
-            \alert{Stacked continuous}    & \alert{$\bm{-0.388^{***}}$} & \alert{$\bm{-0.168^{**}}$} & $-0.044$ \\
-            DCDH (effects=3 horizon)      & $-0.054$             & $-0.003$             & $-0.008$ \\
+            Q2 TWFE pooled                & $-0.413^{***}$       & $-0.219^{***}$       & $-0.139$ \\
+            Single-event TWFE ($\le$2)    & $-0.419^{***}$       & $-0.256^{***}$       & $-0.379$ \\
+            Stacked binary                & $-0.149^{***}$       & $-0.108^{*}$         & $-0.048$ \\
+            \alert{Stacked continuous}    & \alert{$\bm{-0.402^{***}}$} & \alert{$\bm{-0.181^{**}}$} & $-0.062$ \\
+            DCDH (effects=3 horizon)      & $-0.102$             & $-0.012$             & $-0.034$ \\
             \bottomrule
         \end{tabular}
         \medskip

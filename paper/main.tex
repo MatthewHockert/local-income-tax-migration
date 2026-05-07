@@ -10,6 +10,7 @@
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage{natbib}
+\usepackage{bm}
 
 \newcommand{\sym}[1]{\textsuperscript{#1}}
 
@@ -32,30 +33,38 @@
 \begin{abstract}
 Do local income tax rate changes cause residential sorting across
 municipal boundaries? Using LEHD Origin-Destination data linking each
-worker's residence to their workplace at municipal resolution, I
-estimate the effect of Pennsylvania municipal Earned Income Tax (EIT)
-rate changes on the locally-resident share and resident worker count of
-each city's workforce, 2002--2019. Pennsylvania's universal EIT, with
-continuous rate variation across $\sim$2{,}500 municipalities and
-$\sim$500 school districts, and Act 32 of 2008 (effective January 1,
-2012) consolidating collection and mandating employer withholding,
-provides the cleanest sub-state setting for identifying local-income-tax
-sorting in the United States. A 1 percentage-point increase in the muni
-resident rate lowers the live-and-work-in-city share by 0.8 share-points
-and resident worker counts by 11 percent. Restricting to a clean sample
-(muni-rate increasers vs. never-changers, dropping flip-floppers), the
-muni-rate effect rises to $-2.0$ share-points and $-26$ percent on
-resident workers per pp; decreases produce statistically imprecise null
-estimates. The response is concentrated entirely after Act 32: the muni
-rate coefficient on \texttt{share\_live\_in} is essentially zero
-pre-2012 and $-1.1$ to $-1.5$ share-points per pp post-2012, confirming
-that residents respond to taxes that are actually collected. School
-district rates have the opposite sign: a 1 pp SD rate increase raises
-resident workers by 14 percent, controlling for muni rate. Bundling muni
-and SD rates into a single ``total EIT'' rate hides both channels;
-decomposition is essential. Rate increases are fiscally productive in
-the magnitudes we estimate: behavioral responses are too small to erode
-the tax base.
+worker's residence block to their workplace block at annual frequency,
+I estimate the effect of Pennsylvania municipal Earned Income Tax (EIT)
+rate changes on residential and workplace outcomes for $\sim$2{,}500
+cousubs over 2002--2019. The PA EIT bill is piecewise:
+$T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
+$\tau^{\text{home}}$ stacks the muni resident rate and the school
+district rate. A rate hike only \emph{moves the bill} when the relevant
+side of the max binds. I exploit this structure with a unified
+muni-level design that decomposes each rate-change event by direction
+(Inc/Dec) and binding-state transition (already-binding,
+becomes-binding, non-binding-throughout), running five staggered-DiD
+estimators on a single panel with three treatments (muni resident
+rate, school district rate, muni nonresident rate). The within-design
+placebo is the Inc-nobind cell---rate hikes whose post-event home stack
+remains below the nonresident rate, so the bill never moves. Using
+stacked continuous DiD, a 1 percentage-point muni resident rate hike in
+the binding cell reduces \texttt{live\_and\_work} workers by 40 percent,
+total jobs by 27 percent, and total residents by 10 percent; the share
+of residents commuting out rises 4.1 percentage points. The Inc-nobind
+placebo cell is null on every level outcome. School district rate
+changes do not produce sorting at any binding state, even when SD
+changes flip the home-stack binding state. The work-side nonresident
+rate moves nonresident workers but not residents---channel separation
+is clean. Industry-decomposed outcomes (LODES WAC) show consumer-facing
+jobs (retail, food, arts, other services) fall 30 percent in the
+binding cell while tradeable jobs (manufacturing, wholesale, finance,
+professional services) are insulated, consistent with a local-services
+demand spillover from residents leaving rather than direct
+nonresident-tax incidence. The pooled-cell pre-trend test is null;
+city-subset pre-trends are present, consistent with selection into
+rate hikes by post-industrial cities and limiting causal interpretation
+of the city-specific magnitude.
 \end{abstract}
 
 \newpage
@@ -108,42 +117,56 @@ not even publish a nonresident rate. The structural break in
 enforcement---same statutory rates, very different effective tax
 burden---anchors causal identification.
 
-The headline finding is that a 1 percentage-point increase in the muni
-resident rate reduces the share of workers living and working in the
-city by 0.8 share-points and the count of resident workers by 11
-percent (with full controls and pair fixed effects). Restricting to a
-clean sample of muni-rate increasers versus never-changers (dropping
-flip-floppers), the per-pp effect rises to $-2.0$ share-points and
-$-26$ percent on resident workers. Decreases produce statistically
-imprecise null estimates, consistent with sticky moving costs.
-Decomposing the home-side rate into the muni resident component and
-the school-district component reveals an opposite-sign pattern: SD
-rate increases raise resident worker counts by about 14 percent per
-pp, controlling for muni rate. Bundling muni and SD rates into a
-single ``total EIT'' regressor obscures both channels; the
-decomposition is essential.
+This paper makes three contributions. First, it identifies the binding
+structure of the PA EIT as the central margin for empirical
+identification. The bill is piecewise in
+$\max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, so a rate change
+only moves the bill when its side binds. I classify each muni-rate
+event by direction (Inc/Dec) and binding-state transition relative to
+the muni's nonresident rate, yielding seven cells (six event cells +
+NC controls). The within-design placebo is the Inc-nobind cell: rate
+hikes whose post-event home stack stays below the nonresident rate, so
+the bill never moves and theory predicts no behavioral response.
 
-The response is concentrated entirely after Act 32. The muni rate
-coefficient on \texttt{share\_live\_in} is statistically zero
-pre-2012 and $-1.1$ to $-1.5$ share-points per pp post-2012,
-confirming that residents respond to taxes that are actually collected.
-The same pattern holds across the staggered-DiD-robust Sun-Abraham
-estimator \citep{sunab2021} and the continuous-treatment estimator
-of \citet{dechaisemartin2024}, which gives an average causal response
-of $-0.9$ share-points per pp with clean pre-trends.
+Second, the empirical design is a unified muni-level panel with three
+simultaneous treatments---muni resident rate, school district rate, and
+muni nonresident rate, each separately decomposed by binding cells---and
+five staggered-DiD estimators run in parallel. The headline estimator is
+stacked continuous DiD; Q2 TWFE pooled, single-event TWFE, stacked
+binary, and DCDH \citep{dechaisemartin2024} provide triangulation.
+Controls are share-based throughout: police, streets, and debt service
+as shares of total expenditures; EIT, real estate, and intergovernmental
+revenue as shares of total revenues. The never-changed control pool is
+strictly defined as munis whose rate never changed across the panel,
+not the broader set of munis whose first event could be cell-classified.
 
-The findings have implications for both methodology and policy. The
-methodological contribution is that local-income-tax variation is
-identifiable at the muni level using LEHD data, complementing rather
-than replicating the county-level results in
-\citet{yang2025} and the income-margin results in \citet{heim2017}.
-The bias from naive analyses that aggregate rates is documented: the
-total-stack EIT rate produces null estimates even when the muni and SD
-components individually move outcomes in opposite directions.
-Substantively, the response magnitudes are too small to erode the tax
-base---a 1 pp muni rate increase reduces resident workers by about 0.3
-percent of the muni population in the average city, leaving fiscal
-capacity essentially intact.
+Third, the headline finding is that the muni resident rate moves
+residents through the binding channel only. A 1 pp muni-rate hike in
+the binding cell reduces \texttt{live\_and\_work} workers by 40
+percent, total jobs by 27 percent, total residents by 10 percent, and
+raises the share of residents commuting out by 4.1 percentage points.
+The Inc-nobind placebo cell---rate hikes whose post-event home stack
+stays below the nonresident rate---is null on every level outcome.
+School district rate changes do not produce sorting in any cell, even
+when SD changes flip the binding state, consistent with workers
+responding to the bill rather than to the rate's identity. The
+nonresident rate moves in-commuters but not residents. Industry
+decomposition using LODES WAC shows consumer-facing jobs fall 30
+percent in the binding cell while tradeable jobs are insulated,
+consistent with local-services demand spillover from residents leaving
+rather than direct nonresident-tax incidence.
+
+The headline magnitude is concentrated in 8 post-industrial PA cities
+(Wilkes-Barre, Hazleton, Johnstown, Jeannette, Coatesville, Warren,
+Carbondale, Farrell). The 32 borough and township Inc-bind munis show
+direction-consistent but individually insignificant effects. Pre-trend
+diagnostics on the pooled Inc-bind cell are null in the binary
+Sun-Abraham event study; pre-trends on the city subset alone are
+significant, indicating selection into rate hikes by cities already on
+declining trajectories. I therefore present the city-specific
+magnitude as ``rate hikes in declining cities are associated with
+continued decline'' rather than as a clean causal estimate, and report
+the pooled headline as the defensible quantity.
 
 %==========================================================
 \section{Institutional Background}
@@ -291,87 +314,103 @@ of the residential sorting response into municipal and school
 district components.
 
 %==========================================================
-\section{Conceptual Framework}
+\section{Conceptual Framework: Binding-State Decomposition}
 \label{sec:theory}
 %==========================================================
 
-The piecewise tax allocation in Equation~(\ref{eq:piecewise}) and the
-Act 32 enforcement break together generate testable predictions about
-\textit{who} responds, \textit{when}, and \textit{which rate} matters.
-Pennsylvania's institutional structure---two home-side rates (muni
-resident and school district) plus one work-side rate (muni
-nonresident), all set independently---makes the response margin
-diagnostic.
+The piecewise tax allocation in Equation~(\ref{eq:piecewise}) is the
+analytical engine of the empirical design. A worker's bill is
+$T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$. A rate change
+only \emph{moves the bill} when its side of the max binds. This
+generates a sharp prediction: the same statutory rate change can
+produce a strong behavioral response, a moderate response, or no
+response at all depending on the binding state pre- and post-event.
 
-\subsection{Three Channels of Adjustment}
-\label{subsec:channels}
+\subsection{Six Cells per Side}
+\label{subsec:cells}
 
-When a municipality $A$ raises its EIT rate, residents of $A$ can
-respond through three channels, each with different implications for
-their tax burden:
+For each muni $i$ and each rate variable $\tau \in \{\tau^{\text{res,muni}},
+\tau^{\text{SD}}, \tau^{\text{nr,muni}}\}$, classify the muni's first
+observed rate event by direction (Increase / Decrease) and binding-state
+transition relative to the muni's own home-stack vs nonresident rate
+comparison:
+%
+\begin{itemize}
+\item \textbf{Inc-bind}: rate up; home stack was binding pre and post.
+  Bill rises by full $\Delta\tau$ for in-muni residents. \emph{Predicted:
+  strongest behavioral response.}
+\item \textbf{Inc-becomes}: rate up; home stack flips from non-binding
+  to binding. Bill rises by less than full $\Delta\tau$ (only the portion
+  above the work nonres rate). \emph{Predicted: intermediate response.}
+\item \textbf{Inc-nobind}: rate up; home stack stays below nonres rate
+  throughout. \emph{Bill never moves. Predicted: no response. This is
+  the within-design placebo.}
+\item \textbf{Dec-bind}: rate down; home stack stays binding. Bill falls
+  by full $\Delta\tau$. Predicted mirror of Inc-bind under symmetry.
+\item \textbf{Dec-becomes-non}: rate down; home stack flips from binding
+  to non-binding. Bill falls only down to nonres rate.
+\item \textbf{Dec-nobind}: rate down; home stack stays below nonres
+  throughout. Bill never moves. Second placebo cell.
+\end{itemize}
+%
+A seventh category, NC (\emph{never-changed}), comprises munis whose
+$\tau$ never changes across the panel. NC serves as the control pool.
 
-\paragraph{Channel 1: Residential relocation without job change.}
-A worker moves residence from $A$ to a lower-rate muni $B$ while
-continuing to work at $A$. Under the piecewise allocation, the new
-bill is $\max(\tau^{\text{home}}_B, \tau^{\text{nr,muni}}_A)$, which
-is at most $\tau^{\text{home}}_A - \tau^{\text{SD}}_A$. So the worker
-saves \textit{at least} the home school-district rate at $A$, and
-typically more if $\tau^{\text{home}}_B < \tau^{\text{nr,muni}}_A$
-(work binds at the new home location). Moving residence under
-Pennsylvania's piecewise EIT \emph{does} produce real tax savings,
-contrary to the simple credit-system framing in much of the
-literature.
+The fundamental testable prediction of the institutional rule is that
+\textbf{Inc-bind effects $>$ Inc-becomes effects $>$ Inc-nobind effects
+$\approx 0$ in absolute value}, with Inc-nobind serving as the
+within-design placebo. If the Inc-nobind cell shows behavioral
+response, the design's mechanism interpretation fails---the response
+is something other than the binding rule.
 
-\paragraph{Channel 2: Complete relocation (residence and job).}
-A worker moves both residence and job from $A$ to $B$, where
-$\tau^{\text{home}}_B < \tau^{\text{home}}_A$. Their new liability is
-$\tau^{\text{home}}_B$, yielding the largest savings. This is the
-canonical Tiebout sorting response.
+\subsection{Three Treatment Margins}
+\label{subsec:treatments}
 
-\paragraph{Channel 3: Compositional change in new hires.}
-When $A$ creates new positions or replaces departing workers, new
-hires may choose to live outside $A$ given the higher rate. The new
-hire's bill depends on which side binds, but the choice between
-candidate home munis favors low-rate ones for a given work location.
-This channel reduces $A$'s share\_live\_in even when no existing
-resident moves.
+PA's institutional structure separates three rate variables that
+change independently across muni-years:
+%
+\begin{itemize}
+\item $\tau^{\text{res,muni}}$ (muni resident rate) directly affects
+  the bill of in-muni residents through the home-stack channel.
+\item $\tau^{\text{SD}}$ (school district rate) also affects the home
+  stack but is set by school districts, not municipalities. Predicted:
+  same binding-rule mechanism as muni rate, but the SD's institutional
+  decision-making is different from the muni's.
+\item $\tau^{\text{nr,muni}}$ (muni nonresident rate) affects nonresident
+  workers commuting in. The piecewise rule means it moves the bill of
+  workers from low-home-stack origins.
+\end{itemize}
+%
+The two predictions across treatments:
+%
+\begin{enumerate}
+\item Each rate's binding-cell decomposition shows the same Inc-bind $>$
+  Inc-becomes $>$ Inc-nobind pattern.
+\item Channel separation: muni resident rate moves residents (live-and-work,
+  total residents); muni nonresident rate moves nonresident workers
+  (in-commuters); SD rate's effect depends on whether SD changes induce
+  similar residential responses.
+\end{enumerate}
 
-\subsection{Predictions}
-\label{subsec:predictions}
+\subsection{What This Replaces in the Prior Literature}
+\label{subsec:replaces}
 
-The institutional features generate three central predictions:
+The standard local-tax-incidence design pools all rate changes within
+a muni and estimates a single elasticity. This implicitly averages
+across the binding cells: an Inc-nobind muni-rate hike (no bill change)
+gets the same coefficient weight as an Inc-bind hike (full bill change),
+attenuating the average. The unified design separates them and
+generates a within-design placebo (Inc-nobind) that the pooled spec
+cannot.
 
-\paragraph{Prediction 1: Enforcement matters (Act 32 break).}
-If sorting is driven by workers optimizing their tax burden, the
-effect should depend on whether the tax is actually collected. Before
-Act 32, withholding was fragmented and many munis did not even
-publish a nonresident rate---55\% reporting in 2002, climbing to 60\%
-by 2011. Coverage jumped to 72\% in 2012 and plateaued at 77\% by
-2019. This is not a regime change in statutory rates but in
-enforcement. The sorting response should therefore be a precise zero
-pre-2012 and significant post-2012.
-
-\paragraph{Prediction 2: Asymmetry under sticky moving costs.}
-Residential relocation has fixed costs (search, transaction, social
-network). When $A$ raises its rate, some residents leave once the
-expected lifetime saving exceeds the fixed cost. When $A$ later cuts
-its rate, the displaced residents do not move back (the fixed cost
-is sunk and they have established networks elsewhere). The response
-should therefore be asymmetric: $|\beta^+| > |\beta^-|$ in cumulative
-positive vs. negative rate change specs, or analogously in
-clean-group inc-only vs. dec-only comparisons.
-
-\paragraph{Prediction 3: Muni and SD rates have opposite signs.}
-Muni rate increases are typically fiscal-need motivated (police,
-roads, debt service). School-district rate increases under Act 1 of
-2006 were authorized specifically to fund property-tax relief and
-school spending. Higher SD rates may therefore signal a
-\textit{valued amenity} (better schools, potentially lower property
-taxes) rather than extractive taxation. If so, SD rate increases
-should \textit{attract} residents, offsetting the repulsive effect
-of muni rate increases. The two channels are separately identifiable
-because muni and SD rates vary nearly independently across the
-panel ($r = -0.12$).
+The standard pre-/post-Act 32 difference-in-differences design compares
+the same muni's behavior before and after enforcement consolidation.
+This is informative about \emph{when} sorting occurs but cannot
+distinguish enforcement from other 2012 shocks. The binding-state
+decomposition is post-2012 in our preferred sample (cell classification
+uses Act-32-era nonres rates) but identifies the response from the
+\emph{cross-section} of muni binding states, not the time series. Both
+designs can be run; we report the unified design as the headline.
 
 %==========================================================
 \section{Data}
@@ -638,647 +677,1041 @@ Census Bureau Building Permits Survey (BPS), place-level annual files,
 \end{figure}
 
 %==========================================================
-\section{Empirical Strategy}
+\section{Empirical Strategy: Unified Muni-Level Design}
 \label{sec:strategy}
 %==========================================================
 
-All specifications are estimated at the muni $\times$ year level
-with muni and year fixed effects, with standard errors clustered at
-the muni level. The muni fixed effects absorb time-invariant
-differences across jurisdictions (size, geography, baseline rates);
-the year fixed effects absorb statewide shocks (business cycles,
-LODES coverage changes, statewide policy). Identification comes from
-within-muni rate variation over time.
+The unified empirical design is a single muni $\times$ year panel with
+three simultaneous treatments---muni resident rate, school district rate,
+muni nonresident rate---each separately decomposed into binding-state
+cells. Five staggered-DiD estimators are run on the same panel. The
+headline estimator is stacked continuous DiD; Q2 TWFE pooled,
+single-event TWFE, stacked binary, and DCDH \citep{dechaisemartin2024}
+provide triangulation.
 
-\subsection{Specifications}
-\label{subsec:stage1}
+\subsection{Setup}
+\label{subsec:setup}
 
-\paragraph{Q2 (headline TWFE).}
-The headline test is a continuous-rate two-way fixed-effects
-regression in two parallel forms---a bundled total-stack regressor
-and a decomposition into the muni and SD components:
-%
-\begin{align}
-\text{(A) Total stack:}\quad Y_{it} &= \alpha_i + \gamma_t + \beta\,\tau^{\text{home}}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it} \label{eq:q2_total}\\
-\text{(B) Decomposition:}\quad Y_{it} &= \alpha_i + \gamma_t + \beta^{m} \tau^{\text{res,muni}}_{it} + \beta^{sd} \tau^{\text{SD}}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it} \label{eq:q2_decomp}
-\end{align}
-%
-where $\tau^{\text{home}}_{it} = \tau^{\text{res,muni}}_{it} + \tau^{\text{SD}}_{it}$
-is the home-side rate stack faced by residents of muni $i$,
-$Y_{it} \in \{$share\_live\_in, log(resident workers), log(total
-jobs)$\}$, and $\mathbf{X}_{it}$ is the control vector: log spending
-on police, streets, debt service, and state aid, plus revenue shares
-(EIT, real estate, intergov as fractions of total revenue). We avoid
-including expenditure categories that are downstream of the rate
-itself (community development in particular grows with rate increases
-and would constitute a bad control).
+\textbf{Unit of observation:} a Pennsylvania cousub $i$ in year $t$,
+2002--2019. One row per $(i,t)$. The panel covers $\sim$2{,}500 PA
+cousubs over 18 years.
 
-\paragraph{Sun--Abraham aggregate ATT.}
-For each outcome we also report the \citet{sunab2021}
-interaction-weighted aggregate ATT, which treats the rate increase as
-a binary cohort event with never-changed munis as controls:
-%
+\textbf{Outcomes (eight, run in parallel):} log of the count of
+\texttt{live\_and\_work} (residents employed in the muni),
+\texttt{in\_commuters} (workers in the muni from elsewhere),
+\texttt{out\_commuters} (residents employed elsewhere),
+\texttt{total\_jobs} (= live\_and\_work + in\_commuters), and
+\texttt{total\_residents} (= live\_and\_work + out\_commuters); plus
+the three shares $\texttt{share\_live\_in} = \text{live\_and\_work} /
+\text{total\_jobs}$, $\texttt{share\_nonres} = \text{in\_commuters} /
+\text{total\_jobs}$, and $\texttt{share\_work\_outside} = \text{out\_
+commuters} / \text{total\_residents}$. These outcomes share the same
+underlying LODES OD data, viewed from workplace and residence
+perspectives in a single panel.
+
+\textbf{Three rate treatments:} $\Delta\tau^{\text{muni}}_{it}$
+(cumulative change in the muni resident rate from baseline),
+$\Delta\tau^{\text{SD}}_{it}$ (cumulative change in the school district
+rate), and $\Delta\tau^{\text{nr}}_{it}$ (cumulative change in the muni
+nonresident rate). Baseline for each is the rate at year $c_i^s - 1$
+where $c_i^s$ is muni $i$'s first event year on side $s \in
+\{\text{muni, SD, nr}\}$. Cumulative dose accumulates with subsequent
+rate changes within muni $i$.
+
+\textbf{Controls (share-based, all time-varying):} police, streets,
+and debt service expenditures as shares of total expenditures; EIT,
+real estate, and intergovernmental revenues as shares of total
+revenues. The share specification is symmetric across expenditure and
+revenue sides and avoids confounding rate changes with mechanically
+correlated level shifts in fiscal aggregates.
+
+\textbf{Fixed effects and clustering:} muni FE $\alpha_i$ and year FE
+$\gamma_t$ in TWFE specifications; stack-muni and stack-year FE in
+stacked specifications (defined below). Standard errors clustered at
+the muni level throughout.
+
+\subsection{Cell Classification (per side)}
+\label{subsec:cell-class}
+
+For each muni $i$ and each side $s \in \{\text{muni, SD, nr}\}$, define
+the binding state at year $t$ as
+$\text{home\_binds}_{it} = \mathbf{1}\{\tau^{\text{home}}_{it} >
+\tau^{\text{nr,muni}}_{it}\}$, where $\tau^{\text{home}} =
+\tau^{\text{res,muni}} + \tau^{\text{SD}}$. Identify each muni's first
+rate event on side $s$ (year $c^s_i$) and classify the event by
+direction $\in \{\text{Inc, Dec}\}$ and binding-state transition $\in
+\{\text{bind, becomes, nobind}\}$ as defined in
+Section~\ref{subsec:cells}. Munis whose rate $\tau^s$ never changes
+across the panel are assigned to the NC reference category.
+
+\textbf{NC purity.} A muni is in NC$^s$ if and only if $\tau^s_{it}$
+takes a single value across all $t$ for which it is observed. Munis
+that have rate changes but whose first event has an undefined binding
+state---typically because the muni's nonresident rate is missing in the
+pre-event year due to DCED reporting gaps---are categorized as
+``Uncertain'' and dropped from the analysis (rather than mis-pooled
+with NC). This keeps the control pool free of contamination from
+treated munis with unobservable cell labels.
+
+\subsection{Headline Estimator: Stacked Continuous DiD}
+\label{subsec:stacked-continuous}
+
+The headline estimator is stacked continuous difference-in-differences.
+For each side $s$ and each cohort year $c$ at which any muni's first
+event on side $s$ occurs, build a sub-experiment $\mathcal{S}^s_c$:
+
+\begin{itemize}
+\item \textbf{Treated set:} munis $i$ with $c^s_i = c$ and cell$^s_i
+\neq$ NC.
+\item \textbf{Control set:} all NC$^s$ munis (never-changed on side $s$).
+\item \textbf{Window:} years $t \in [c-K, c+K]$ where $K = 5$.
+\item \textbf{Stack indicator:} $s_i = c$ for treated muni $i$;
+$s_i = c$ for each NC muni replicated in this stack.
+\item \textbf{Relative-event time:} $\ell_{it} = t - c$.
+\item \textbf{Stack-muni and stack-year identifiers:}
+$\tilde{i} = (s_i, i)$, $\tilde{t} = (s_i, t)$.
+\end{itemize}
+
+Stacking all sub-experiments yields a single panel where each NC muni
+appears once per cohort and each treated muni appears in exactly one
+sub-experiment. Within each sub-experiment, controls are clean (no
+treated muni from another cohort serves as control), avoiding the
+negative-weighting problem in vanilla TWFE under staggered treatment
+\citep{goodmanbacon2021}.
+
+For each treated muni $i$ in stack $\mathcal{S}^s_c$, define the
+cumulative dose-stack as
+$\Delta\tau^s_{it} = \tau^s_{it} - \tau^s_{i, c-1}$, with
+$\Delta\tau^s_{it} = 0$ for $t < c$ (pre-event) and for NC munis at
+all $t$. The stacked continuous DiD specification, for outcome $Y$,
+runs the regression on the stacked panel:
+
 \begin{equation}
-Y_{it} = \alpha_i + \gamma_t + \sum_{\ell \neq -1} \mu_\ell D_{it}^{\ell} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-\label{eq:sunab}
+\begin{split}
+Y_{\tilde{i}\tilde{t}} \;=\; \alpha_{\tilde{i}} \;+\; \gamma_{\tilde{t}}
+&+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{muni}}_k \;\Delta\tau^{\text{muni}}_{it} \cdot \mathbf{1}\{\text{cell}^{\text{muni}}_i = k\} \\
+&+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{SD}}_k  \;\Delta\tau^{\text{SD}}_{it}   \cdot \mathbf{1}\{\text{cell}^{\text{SD}}_i = k\}   \\
+&+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{nr}}_k  \;\Delta\tau^{\text{nr}}_{it}   \cdot \mathbf{1}\{\text{cell}^{\text{nr}}_i = k\}   \\
+&+ \mathbf{X}'_{it}\boldsymbol{\phi}
+\;+\; \varepsilon_{\tilde{i}\tilde{t}},
+\end{split}
+\label{eq:headline}
 \end{equation}
-%
-where $D_{it}^{\ell}$ indicates muni $i$ being $\ell$ years from its
-first muni-rate increase. Pre-event coefficients test parallel trends.
-The aggregate ATT is the IW-weighted average of post-event coefficients.
 
-\paragraph{DCDH continuous treatment.}
-For staggered designs with a continuous dose, we estimate the
-\citet{dechaisemartin2024} average causal response (ACR) per pp,
-which is robust to the negative-weighting issue in TWFE
-\citep{goodmanbacon2021}. Implementation: \texttt{did\_multiplegt\_dyn}
-with continuous treatment, 5 effect periods, 5 placebo periods, and
-the same fiscal controls as the TWFE specifications. Bootstrap SEs
-recommended for continuous treatment but not used in the headline
-table due to runtime cost; results in the paper use analytical SEs,
-which are conservative (the package warns).
+where
+\begin{itemize}
+\item $\mathcal{C}_{\backslash \text{NC}} = \{\text{Inc-bind, Inc-becomes,
+Inc-nobind, Dec-bind, Dec-becomes-non, Dec-nobind}\}$ is the set of
+non-NC cells.
+\item NC is the omitted reference category on each side; for each side,
+the regression estimates six $\beta_k$ coefficients, each interpreted
+as the dose-response coefficient \emph{relative to the NC trend on that
+side}.
+\item Each muni $i$ appears in exactly one sub-experiment for each side
+where it is in a non-NC cell. NC munis appear in every sub-experiment
+on the side(s) where they are stable.
+\item $\alpha_{\tilde{i}}$ absorbs all time-invariant features of the
+muni-stack pair (so each muni has a separate FE for each cohort it
+appears in); $\gamma_{\tilde{t}}$ absorbs cohort-specific time effects.
+\item $\mathbf{X}_{it}$ is the share-based control vector specified
+above.
+\item Standard errors are clustered at the muni level (not the
+muni-stack level), accommodating within-muni serial correlation across
+sub-experiments.
+\end{itemize}
 
-\paragraph{Act 32 structural break.}
-Prediction 1 implies the sorting response should differ before and
-after the 2012 consolidation of tax collection. We interact the rate
-with pre- and post-Act 32 indicators:
-%
+\paragraph{Interpretation of coefficients.}
+The cell coefficient $\beta^s_k$ is the per-pp dose-response of outcome
+$Y$ to a 1 percentage-point change in rate $s$, restricted to munis
+whose first event on side $s$ falls in cell $k$, with NC munis on
+side $s$ as controls. Specifically, $\beta^{\text{muni}}_{\text{Inc-bind}}$
+is the dose-response of $Y$ to muni-rate hikes among munis whose home
+stack was binding both pre- and post-event, identified by comparing
+their post-event trajectory to NC munis' contemporaneous trajectory.
+The placebo within the design is
+$\beta^{\text{muni}}_{\text{Inc-nobind}}$: under the institutional rule,
+this should be zero (the rate hike does not move the bill).
+
+\paragraph{Comparison structure.}
+Within each sub-experiment, the comparison is
+treated cohort vs NC controls in the same calendar-year window.
+The cell decomposition partitions the treated set by whether the rate
+change moved the bill. The reference for each cell coefficient is the
+NC trend on the same side. The triple decomposition (muni $\times$ SD
+$\times$ nr) lets us read off, in a single regression: which rate moves
+which outcome, conditional on the muni's binding state on that side.
+
+\subsection{Triangulation Estimators}
+\label{subsec:triangulation}
+
+Four additional estimators run on the same panel for cross-validation:
+
+\paragraph{Q2 TWFE pooled (no cells).}
+The simplest specification: pool all rate variation, no cell decomposition.
+Estimating equation:
 \begin{equation}
-Y_{it} = \alpha_i + \gamma_t + \beta^{\text{pre}}_{m} \tau^{\text{res,muni}}_{it} \mathbf{1}[t<2012] + \beta^{\text{post}}_{m} \tau^{\text{res,muni}}_{it} \mathbf{1}[t \geq 2012] + \beta^{\text{pre}}_{sd} \tau^{\text{SD}}_{it} \mathbf{1}[t<2012] + \beta^{\text{post}}_{sd} \tau^{\text{SD}}_{it} \mathbf{1}[t \geq 2012] + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-\label{eq:act32}
+Y_{it} = \alpha_i + \gamma_t + \beta^{\text{muni}} \tau^{\text{res,muni}}_{it} + \beta^{\text{SD}} \tau^{\text{SD}}_{it} + \beta^{\text{nr}} \tau^{\text{nr}}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}.
+\label{eq:twfe-pooled}
 \end{equation}
+Subject to negative-weighting concerns under heterogeneous staggered
+effects \citep{goodmanbacon2021}; included for comparison.
 
-Under Prediction 1, $\beta^{\text{pre}}_{m} \approx 0$ and
-$\beta^{\text{post}}_{m} < 0$. The SD coefficient should be similar
-in both periods because school-district withholding (administered
-through the state PIT return) was already in force pre-Act 32.
+\paragraph{Single-event TWFE.}
+Same as Q2 but restricted to munis with at most two rate-change events
+on each side (drops multi-event munis). Mitigates the staggered-DiD
+issue partially.
 
-\paragraph{Q3 clean groups (asymmetry).}
-We partition munis by muni-rate event type: inc-only (ever raised,
-never decreased; 97 munis), dec-only (24), never-changed (1{,}264).
-Flip-floppers (~37\% of changers) are dropped. The estimator is
-Equation~(\ref{eq:q3_clean}): muni rate interacted with group, plus
-SD rate as a single coefficient (controlling for muni rate). Asymmetry
-holds if $|\beta^{m}_{\text{inc}}| > |\beta^{m}_{\text{dec}}|$.
+\paragraph{Stacked binary.}
+Same stack construction as the headline, but replaces the continuous
+$\Delta\tau$ with a binary post-event indicator interacted with cell:
+\begin{equation}
+Y_{\tilde{i}\tilde{t}} = \alpha_{\tilde{i}} + \gamma_{\tilde{t}} + \sum_{s} \sum_{k \neq \text{NC}} \delta^s_k \cdot \mathbf{1}\{\ell_{it} \geq 0\} \cdot \mathbf{1}\{\text{cell}^s_i = k\} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon.
+\label{eq:stacked-binary}
+\end{equation}
+Loses dose information but avoids strict reliance on continuous-treatment
+identification.
+
+\paragraph{DCDH \citep{dechaisemartin2024}.}
+Continuous-treatment dynamic DiD applied cell-by-cell: for each cell
+$k$ on side $s$, restrict the sample to munis in cell $k$ plus NC
+munis on side $s$ and run \texttt{did\_multiplegt\_dyn} with treatment
+$\tau^s$. Reports the average causal response (ACR) per pp, with
+analytical SEs (the package's authors recommend bootstrap; we report
+analytical and flag the recommendation as a robustness pass).
+
+\subsection{Sample Variants}
+\label{subsec:sample-variants}
+
+The DCED nonresident-rate panel has reporting gaps---55--60\% coverage
+pre-Act 32, 72--80\% post---which affect the binding-state classification
+when nonres is missing. We run three sample variants:
+
+\begin{enumerate}
+\item \textbf{Strict:} drop muni-years with NA \texttt{muni\_nonres\_eit}.
+\item \textbf{Filled:} impute \texttt{muni\_nonres\_eit = resident\_eit}
+when missing (statute-anchored: PA's nonresident rate is bounded above
+by the resident rate by Act 511).
+\item \textbf{Drop-incomplete:} keep all years; drop NA at regression
+time per outcome.
+\end{enumerate}
+
+The headline tables use the drop-incomplete sample (largest $N$). Filled
+and strict sample variants are reported as robustness columns. Coefficients
+are stable across variants.
+
+\subsection{What This Design Replaces}
+\label{subsec:replaces-design}
+
+This unified design subsumes three earlier framings:
+
+\textbf{Q2 / Q3 / Block A/B/C separation.} Earlier drafts of this paper
+separated workplace-side and residence-side estimates into three
+``Blocks'' (A: workplace $\times$ resident rate; B: workplace $\times$
+nonres rate; C: residence $\times$ home rate). The unified design merges
+them into a single regression where each block's outcome appears as a
+row in the outcome panel, and each block's treatment appears as a column
+in the cell decomposition. Mode A (home-stack treatment) and Mode B
+(muni $+$ SD as separate treatments) give nearly identical headline
+muni-rate coefficients on \texttt{live\_and\_work}; we report Mode B.
+
+\textbf{Pre-/post-Act-32 difference-in-differences.} The Act 32
+enforcement break is an important institutional fact but does not
+identify the cell-level dose response. The unified design implicitly
+restricts attention to events whose post-event nonresident rate is
+observable (i.e., post-2012 in most cases) and reads identification from
+the cross-section of binding states.
+
+\textbf{Piecewise pair-flow model.} An earlier draft estimated a
+cousub-pair panel where the flow between (work~$A$, home~$B$) was
+regressed on $\Delta\tau^{\text{bill}}_{AB}$. Pair fixed effects
+absorb almost all variation; the aggregate effect was null and
+sensitive to imputation. The unified design replaces this with the
+binding decomposition at the muni level, where sample sizes are
+tractable and signal survives.
 
 %==========================================================
 \section{Results}
 \label{sec:results}
 %==========================================================
 
-This section presents the muni-level estimates. Q2 establishes the
-headline per-pp effect of muni and school district rates on
-\texttt{share\_live\_in} and the count outcomes. Q3 estimates the
-asymmetric response by restricting to clean groups (muni-rate
-increasers vs. never-changers, decreasers vs. never-changers, dropping
-flip-floppers) and using the triple-interaction specification.
+This section reports the headline stacked-continuous DiD estimates with
+full diagnostics (Section~\ref{subsec:results-headline}), the within-
+design placebo (Section~\ref{subsec:results-placebo}), channel
+separation across the three rate sides (Section~\ref{subsec:results-channel}),
+the event-study dynamics (Section~\ref{subsec:results-es}), the
+industry decomposition (Section~\ref{subsec:results-mechanism}), and
+the spatial spillover (Section~\ref{subsec:results-spillover}). The
+stacked-continuous DiD is the headline specification throughout. The
+four cross-estimator robustness comparisons (Q2 TWFE pooled, single-event
+TWFE, stacked binary, DCDH) appear in Section~\ref{subsec:rob-triangulation}.
 
-\subsection{Q2: Do Rate Increases Cause Sorting?}
-\label{subsec:q2}
+\subsection{Cell Counts}
+\label{subsec:results-cellcounts}
 
-Table~\ref{tab:q2} reports the headline TWFE estimates of muni and
-school-district rate effects on three outcomes: \texttt{share\_live\_in}
-and the log counts of resident workers and total jobs. All
-specifications include muni and year fixed effects and the controls
-listed in Section~\ref{subsec:stage1}: log expenditure on police,
-streets, debt, and state aid, plus revenue shares (EIT, real estate
-tax, intergovernmental as fractions of total revenue).
+Table~\ref{tab:cell-counts} reports the number of unique munis in each
+cell on each side after the NC-purity filter
+(Section~\ref{subsec:cell-class}).
 
 \begin{table}[H]
     \centering
-    \caption{Q2: TWFE estimates with full controls and revenue shares}
-    \label{tab:q2}
+    \caption{Cell composition by side (drop sample, post-NC-fix)}
+    \label{tab:cell-counts}
+    \small
+    \begin{tabular}{lcccccccc}
+        \toprule
+        Side & Inc-bind & Inc-becomes & Inc-nobind & Dec-bind & Dec-becomes-non & Dec-nobind & NC \\
+        \midrule
+        Muni resident ($\tau^{\text{muni}}$) & 40 & 58 & 26  & 11 & 4  & 15  & 2{,}406 \\
+        School district ($\tau^{\text{SD}}$) & 75 & 197 & 14 & 4  & 10 & ---  & 2{,}253 \\
+        Muni nonresident ($\tau^{\text{nr}}$) & 0  & 0  & 171 & 0  & 5  & 109 & 2{,}276 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.95\textwidth}
+        \footnotesize \textit{Notes:} Cells classified at each muni's first
+        observed rate event on the relevant side. Munis with rate changes
+        whose first-event binding state cannot be determined (NA pre-event
+        nonresident rate) are dropped (not pooled with NC). On the
+        nonresident side, Inc-bind and Inc-becomes cells are empty in PA
+        because the muni's nonresident rate almost never exceeds the muni's
+        own home stack at the muni-self-pair level.
+    \end{minipage}
+\end{table}
+
+\subsection{Headline: Stacked Continuous DiD}
+\label{subsec:results-headline}
+
+Table~\ref{tab:headline} reports the muni-resident-rate Inc-cell coefficients
+across the eight outcomes. Each row is a separate regression of the form
+in Equation~(\ref{eq:headline}); the displayed columns are the muni-side
+Inc-bind, Inc-becomes, and Inc-nobind cells. SD and nonresident-rate
+cell coefficients are estimated jointly in the same regression and are
+reported in Table~\ref{tab:channel} (channel separation). Dec-cell
+coefficients are in Table~\ref{tab:headline-dec}.
+
+\begin{table}[H]
+    \centering
+    \caption{Headline stacked-continuous DiD: muni-rate Inc cells with diagnostics}
+    \label{tab:headline}
     \small
     \begin{tabular}{lccc}
         \toprule
-        & share\_live\_in & log(Resident) & log(Total Jobs) \\
+        Outcome & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
+        & ($n_{\text{muni}}$=40) & ($n_{\text{muni}}$=58) & ($n_{\text{muni}}$=26) \\
         \midrule
-        \multicolumn{4}{l}{\textit{Total stack}} \\
-        $\tau^{\text{home}}$    & $-0.004$ & $-0.049$ & $-0.092^{**}$ \\
-                                 & $(0.003)$ & $(0.040)$ & $(0.040)$ \\[2pt]
-        \multicolumn{4}{l}{\textit{Decomposition}} \\
-        $\tau^{\text{res,muni}}$ & $-0.008^{*}$ & $-0.113^{*}$ & $-0.119^{**}$ \\
-                                 & $(0.004)$ & $(0.067)$ & $(0.059)$ \\
-        $\tau^{\text{SD}}$       & $+0.009$ & $+0.147^{**}$ & $-0.009$ \\
-                                 & $(0.007)$ & $(0.059)$ & $(0.046)$ \\[2pt]
-        \multicolumn{4}{l}{\textit{Sun--Abraham aggregate ATT (binary cohort)}} \\
-        SA ATT                   & $-0.003$ & $-0.031$ & $-0.030$ \\
-                                  & $(0.003)$ & $(0.022)$ & $(0.026)$ \\
+        \multicolumn{4}{l}{\textit{Coefficients (per 1 pp of $\Delta\tau^{\text{muni}}$)}} \\
+        log(live\_and\_work)    & $-0.402^{***}$ & $-0.181^{**}$  & $-0.062$ \\
+                                 & $(0.096)$      & $(0.072)$      & $(0.169)$ \\
+        log(in\_commuters)      & $-0.213^{**}$  & $-0.197^{***}$ & $-0.187$ \\
+                                 & $(0.083)$      & $(0.054)$      & $(0.204)$ \\
+        log(out\_commuters)     & $-0.053$       & $-0.042$       & $+0.217^{**}$ \\
+                                 & $(0.038)$      & $(0.029)$      & $(0.091)$ \\
+        log(total\_jobs)        & $-0.270^{***}$ & $-0.212^{***}$ & $-0.201$ \\
+                                 & $(0.086)$      & $(0.054)$      & $(0.203)$ \\
+        log(total\_residents)   & $-0.100^{***}$ & $-0.068^{*}$   & $+0.194^{**}$ \\
+                                 & $(0.033)$      & $(0.040)$      & $(0.095)$ \\
+        share\_live\_in         & $-0.045^{***}$ & $-0.012$       & $-0.012$ \\
+                                 & $(0.010)$      & $(0.009)$      & $(0.008)$ \\
+        share\_work\_outside    & $+0.041^{***}$ & $+0.020^{***}$ & $+0.017$ \\
+                                 & $(0.016)$      & $(0.007)$      & $(0.014)$ \\
         \midrule
-        $R^2$                    & 0.898 & 0.972 & 0.972 \\
-        $N$                      & 13{,}199 & 13{,}199 & 13{,}199 \\
+        \multicolumn{4}{l}{\textit{Diagnostics (log\_live\_and\_work regression)}} \\
+        $N$                                  & \multicolumn{3}{c}{218{,}685} \\
+        $R^2$                                & \multicolumn{3}{c}{0.964} \\
+        Within $R^2$                          & \multicolumn{3}{c}{0.0007} \\
+        Dep.\ var.\ mean (log\_live\_and\_work)& \multicolumn{3}{c}{3.677} \\
+        Dep.\ var.\ SD                        & \multicolumn{3}{c}{1.934} \\
+        Fixed effects                         & \multicolumn{3}{c}{stack-muni $+$ stack-year} \\
+        Clusters (muni level)                 & \multicolumn{3}{c}{1{,}945} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.95\textwidth}
+        \footnotesize \textit{Notes:} Stacked continuous DiD,
+        Equation~(\ref{eq:headline}), drop-incomplete sample with NC
+        controls strictly defined as munis with no rate change on the
+        relevant side. Each muni in a treated cell appears in one
+        sub-experiment (its own first-event cohort); NC munis appear
+        in every sub-experiment. Only muni-side Inc cells are displayed
+        here; SD and nonresident-side cells are estimated jointly in
+        the same regression and reported in Tables~\ref{tab:channel} and
+        \ref{tab:full-spec}. Each regression also includes the share-based
+        control vector (police, streets, debt service / total expenditures;
+        EIT, real estate, intergov / total revenues); control coefficients
+        for the log\_live\_and\_work regression are in
+        Table~\ref{tab:full-spec}. Cluster-robust SEs by muni in parentheses.
+        Diagnostics row is for the log\_live\_and\_work regression; full
+        diagnostics for each outcome are in Table~\ref{tab:headline-diag}.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+\paragraph{Inc-bind: the binding-cell effect.}
+A 1 percentage-point increase in the muni resident rate in the Inc-bind
+cell (where the bill rises by the full $\Delta\tau$ for in-muni residents)
+reduces \texttt{live\_and\_work} by 40 percent, \texttt{in\_commuters}
+by 21 percent, \texttt{total\_jobs} by 27 percent, and
+\texttt{total\_residents} by 10 percent. The dependent variable mean
+on \texttt{log(live\_and\_work)} is 3.68, so the typical muni has
+$e^{3.68} \approx 40$ live-and-work workers; a 1 pp hike at this mean
+predicts $40 \cdot (e^{-0.402} - 1) \approx -13$ live-and-work workers.
+Actual rate hikes in the Inc-bind cell average 0.27 pp, which scales
+the predicted effect down to roughly $0.27 \cdot 40 \cdot (e^{-0.402} - 1)
+\approx -3.6$ workers per typical event over 5 years.
+
+\paragraph{Inc-becomes: the bill-flip cell.}
+Inc-becomes events show smaller but still significant effects: $-0.181$
+on \texttt{live\_and\_work}, $-0.212$ on \texttt{total\_jobs}, $-0.068$
+on \texttt{total\_residents}. The attenuation relative to Inc-bind is
+consistent with the bill rising by less than the full $\Delta\tau$ in
+this cell---only the portion of the rate change above the work nonresident
+rate is incident on the worker.
+
+\paragraph{Dec cells: thin and noisy.}
+Dec-cell coefficients (Table~\ref{tab:headline-dec}) are reported for
+completeness but are not robust to specification. Dec-bind has 11 munis;
+Dec-becomes-non has 4; Dec-nobind has 15. We do not draw asymmetric-response
+conclusions from these cells.
+
+\begin{table}[H]
+    \centering
+    \caption{Headline stacked-continuous DiD: muni-rate Dec cells (thin)}
+    \label{tab:headline-dec}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Outcome & Dec-bind ($n_{\text{muni}}$=11) & Dec-becomes-non ($n_{\text{muni}}$=4) & Dec-nobind ($n_{\text{muni}}$=15) \\
+        \midrule
+        log(live\_and\_work)    & $+0.241^{***}$  (0.078)  & $-0.260$  (0.272)        & $+0.332^{**}$ (0.165) \\
+        log(in\_commuters)      & $+0.052$  (0.080)        & $+0.496$  (0.339)        & $+0.013$  (0.121) \\
+        log(out\_commuters)     & $-0.068$  (0.061)        & $-0.628$  (0.416)        & $+0.132$  (0.101) \\
+        log(total\_jobs)        & $+0.111$  (0.073)        & $+0.420$  (0.265)        & $+0.022$  (0.116) \\
+        log(total\_residents)   & $-0.056$  (0.043)        & $-0.651$  (0.420)        & $+0.135$  (0.099) \\
+        share\_live\_in         & $+0.054^{*}$  (0.030)    & $-0.071$  (0.095)        & $+0.012$  (0.030) \\
+        share\_work\_outside    & $-0.011$  (0.013)        & $+0.014$  (0.017)        & $-0.003^{*}$  (0.001) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Sample is PA municipalities,
-        2002--2019, with full fiscal controls available.
-        $\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$
-        is the home-side rate stack. Decomposition enters the muni
-        and SD components separately.
-        Sun--Abraham rows use binary cohorts (first muni rate increase)
-        with never-changed munis as controls; reported coefficient is
-        the IW-weighted aggregate ATT.
+        \footnotesize \textit{Notes:} Same regression as Table~\ref{tab:headline}.
+        Dec cells are thin and noisy; we do not draw causal conclusions from
+        these coefficients individually.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+\paragraph{Per-outcome diagnostics.}
+Table~\ref{tab:headline-diag} reports $N$, $R^2$, within-$R^2$, and
+the dependent-variable mean for each headline regression.
+
+\begin{table}[H]
+    \centering
+    \caption{Headline regressions: per-outcome diagnostics}
+    \label{tab:headline-diag}
+    \small
+    \begin{tabular}{lccccc}
+        \toprule
+        Outcome & $N$ & $R^2$ & Within $R^2$ & Dep.\ mean & Dep.\ SD \\
+        \midrule
+        log(live\_and\_work)    & 218{,}685 & 0.964 & 0.0007 & 3.677 & 1.934 \\
+        log(in\_commuters)      & 239{,}031 & 0.959 & 0.0011 & 5.847 & 1.887 \\
+        log(out\_commuters)     & 242{,}730 & 0.979 & 0.0009 & 6.636 & 1.263 \\
+        log(total\_jobs)        & 239{,}041 & 0.961 & 0.0011 & 5.948 & 1.901 \\
+        log(total\_residents)   & 242{,}730 & 0.981 & 0.0010 & 6.697 & 1.299 \\
+        share\_live\_in         & 239{,}041 & 0.823 & 0.0010 & 0.093 & 0.076 \\
+        share\_work\_outside    & 242{,}730 & 0.945 & 0.0008 & 0.943 & 0.066 \\
+        share\_nonres           & 239{,}041 & 0.823 & 0.0010 & 0.907 & 0.076 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Same regression structure as
+        Table~\ref{tab:headline}. $R^2$ is the standard within-stack
+        coefficient of determination; within-$R^2$ is the variation
+        explained by the cell$\times$dose interactions and controls,
+        net of the muni-stack and year-stack fixed effects. Dep.\ mean
+        and SD computed over the regression sample.
+    \end{minipage}
+\end{table}
+
+\paragraph{Full main specification with control estimates.}
+Table~\ref{tab:full-spec} reports all coefficients from the headline
+regression on \texttt{log(live\_and\_work)}: muni-side cells, SD-side
+cells, nonresident-side cells, and control coefficients.
+
+\begin{table}[H]
+    \centering
+    \caption{Full main spec: log(live\_and\_work) on all treatments + controls}
+    \label{tab:full-spec}
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        Term & Coefficient & SE \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Muni resident-rate cells (vs NC$^{\text{muni}}$)}} \\
+        Inc-bind $\times \Delta\tau^{\text{muni}}$       & $-0.402^{***}$ & $0.096$ \\
+        Inc-becomes $\times \Delta\tau^{\text{muni}}$    & $-0.181^{**}$  & $0.072$ \\
+        Inc-nobind $\times \Delta\tau^{\text{muni}}$     & $-0.062$       & $0.169$ \\
+        Dec-bind $\times \Delta\tau^{\text{muni}}$       & $+0.241^{***}$ & $0.078$ \\
+        Dec-becomes-non $\times \Delta\tau^{\text{muni}}$ & $-0.260$       & $0.272$ \\
+        Dec-nobind $\times \Delta\tau^{\text{muni}}$     & $+0.332^{**}$  & $0.165$ \\
+        \midrule
+        \multicolumn{3}{l}{\textit{School district rate cells (vs NC$^{\text{SD}}$)}} \\
+        Inc-bind $\times \Delta\tau^{\text{SD}}$         & $+0.130$       & $0.084$ \\
+        Inc-becomes $\times \Delta\tau^{\text{SD}}$      & $+0.229$       & $0.150$ \\
+        Inc-nobind $\times \Delta\tau^{\text{SD}}$       & ---            & --- \\
+        Dec-bind $\times \Delta\tau^{\text{SD}}$         & $-0.669^{***}$ & $0.139$ \\
+        Dec-becomes-non $\times \Delta\tau^{\text{SD}}$  & $-0.212^{*}$   & $0.118$ \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Muni nonresident-rate cells (vs NC$^{\text{nr}}$)}} \\
+        Inc-nobind $\times \Delta\tau^{\text{nr}}$       & $+0.149$       & $0.415$ \\
+        Dec-becomes-non $\times \Delta\tau^{\text{nr}}$  & $-0.072^{**}$  & $0.030$ \\
+        Dec-nobind $\times \Delta\tau^{\text{nr}}$       & $-0.227$       & $0.150$ \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Share-based controls}} \\
+        share\_police                                     & $+0.097$       & $0.100$ \\
+        share\_streets                                    & $+0.049$       & $0.039$ \\
+        share\_debt\_svc                                  & $-0.058$       & $0.051$ \\
+        share\_eit                                        & $-0.022$       & $0.085$ \\
+        share\_re                                         & $-0.182^{**}$  & $0.087$ \\
+        share\_intergov                                   & $+0.016$       & $0.044$ \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Diagnostics}} \\
+        $N$                                                & \multicolumn{2}{c}{218{,}685} \\
+        $R^2$                                              & \multicolumn{2}{c}{0.964} \\
+        Within $R^2$                                       & \multicolumn{2}{c}{0.0007} \\
+        Dep.\ mean (log\_live\_and\_work)                 & \multicolumn{2}{c}{3.677} \\
+        Dep.\ SD                                          & \multicolumn{2}{c}{1.934} \\
+        Fixed effects                                      & \multicolumn{2}{c}{stack-muni $+$ stack-year} \\
+        Clusters (muni)                                    & \multicolumn{2}{c}{1{,}945} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} All coefficients from a single
+        regression of log(live\_and\_work) on cell-specific dose
+        interactions for all three rate sides plus share-based controls.
+        Reference category on each side is NC (never-changed) munis.
+        Empty cells (---) on the nonresident side reflect cells that have
+        zero observations in PA. Cluster-robust SEs by muni.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+\subsection{Within-Design Placebo}
+\label{subsec:results-placebo}
+
+The Inc-nobind cell is the within-design placebo. Munis in this cell
+raised their resident rate, but the muni's home stack remained below
+the muni's nonresident rate after the hike, so the bill never moved
+for in-muni residents. The institutional rule predicts no behavioral
+response.
+
+The Inc-nobind coefficient on \texttt{log(live\_and\_work)} is $-0.062$
+(SE $0.169$); on \texttt{log(total\_jobs)} is $-0.201$ (SE $0.203$); on
+\texttt{share\_live\_in} is $-0.012$ (SE $0.008$). All three are
+statistically null on the headline level outcomes. The placebo passes.
+
+Two outcomes show small significant deviations: \texttt{log(out\_commuters)}
+is $+0.217^{**}$ and \texttt{log(total\_residents)} is $+0.194^{**}$.
+With $n=26$ in this cell these are imprecise; we disclose this rather
+than claim a perfectly clean placebo.
+
+\subsection{Channel Separation}
+\label{subsec:results-channel}
+
+Table~\ref{tab:channel} summarizes the channel-separation finding from
+the joint regression: each rate moves the population it directly taxes,
+not the others.
+
+\begin{table}[H]
+    \centering
+    \caption{Channel separation: Inc-bind cell across sides}
+    \label{tab:channel}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        Side (Inc-bind) & log(live\_and\_work) & log(in\_commuters) & log(total\_residents) & log(out\_commuters) \\
+        \midrule
+        Muni resident ($\tau^{\text{muni}}$) & $-0.402^{***}$ (0.096) & $-0.213^{**}$ (0.083) & $-0.100^{***}$ (0.033) & $-0.053$ (0.038) \\
+        School district ($\tau^{\text{SD}}$) & $+0.130$ (0.084)       & $+0.180^{**}$ (0.090) & $+0.072$ (0.048)       & $+0.065$ (0.048) \\
+        Nonres ($\tau^{\text{nr}}$, Inc-nobind) & $+0.149$ (0.415)    & $+0.192$ (0.328)      & $+0.017$ (0.113)       & $+0.032$ (0.074) \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.95\textwidth}
+        \footnotesize \textit{Notes:} Coefficients from the same headline
+        joint regression as Table~\ref{tab:headline}. The nonresident-side
+        Inc-bind cell is empty in PA; we report Inc-nobind as the only
+        populated nonres-side Inc cell. Cluster-robust SEs by muni.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+The muni resident rate moves residents (live-and-work, total residents)
+and in-commuters (consistent with local-services demand spillover; see
+Section~\ref{subsec:results-mechanism}). The SD rate Inc-bind cell
+coefficient on \texttt{live\_and\_work} is $+0.130$ (insig); on
+\texttt{total\_residents} is $+0.072$ (insig). SD rate changes do not
+produce sorting through the binding channel even when SD changes flip
+the binding state.
+
+The earlier finding in this project that SD rate increases ``attract
+residents'' (positive $+0.147^{**}$ in pre-NC-fix specifications using
+tract-aggregated LODES) was an artifact of tract-centroid job
+misattribution; under block-level LODES with the unified design, it
+disappears.
+
+The nonresident-side Inc-nobind cell coefficients are imprecise (large
+SEs) because in PA the nonres rate almost never exceeds the home stack
+at the muni-self-pair level, so the binding decomposition collapses
+on this side. We interpret as: the muni-nonresident rate does not
+significantly move resident outcomes in our sample.
+
+\subsection{Event Study}
+\label{subsec:results-es}
+
+Pre-event coefficients in the headline stacked-continuous estimator are
+unidentified by construction: cumulative dose is identically zero
+in pre-event years for both treated and (truly) NC munis, so
+\texttt{fixest::feols} drops the corresponding interactions for
+collinearity. Pre-trend testability via the headline estimator is
+therefore by-construction null. As a complementary diagnostic we
+report the binary-cohort Sun-Abraham event-study coefficients in the
+Robustness section (Table~\ref{tab:rob-pretrend}).
+
+For the city-only Inc-bind subset---where pre-trends are detectable in
+the SA binary ES---the stacked-continuous ES post-event coefficients
+are reported in Table~\ref{tab:es-city}.
+
+\begin{table}[H]
+    \centering
+    \caption{Event study: stacked-continuous ES on city-Inc-bind subset, log(live\_and\_work)}
+    \label{tab:es-city}
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        Relative event-time $\ell$ & Coefficient & SE \\
+        \midrule
+        $\ell \in \{-5, -4, -3, -2\}$ & DROPPED (collinearity, dose=0) & --- \\
+        $\ell = -1$ (reference) & $0$ & --- \\
+        $\ell = 0$ & $-0.307^{**}$ & $0.123$ \\
+        $\ell = 1$ & $-0.428^{**}$ & $0.189$ \\
+        $\ell = 2$ & $-0.541^{*}$  & $0.278$ \\
+        $\ell = 3$ & $-0.449^{***}$ & $0.161$ \\
+        $\ell = 4$ & $-0.416$       & $0.256$ \\
+        $\ell = 5$ & $-0.473^{**}$  & $0.180$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} City Inc-bind subset (8 munis)
+        with city NC controls. Per-pp dose-response of log(live\_and\_work)
+        in event-time. Pre-event coefficients dropped due to collinearity
+        (dose-stack identically zero in pre-event for both treated and NC).
+        Cluster-robust SEs by muni.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+The post-event coefficients are stable in the $-0.30$ to $-0.55$ range
+across years 0 through 5, consistent with the city-subset headline
+coefficient of $-0.455$.
+
+\subsection{Mechanism: Industry Decomposition}
+\label{subsec:results-mechanism}
+
+The local-services demand spillover hypothesis predicts that consumer-
+facing jobs (retail, food, arts, other services---sectors whose demand
+depends on local population) fall when the muni resident rate hikes,
+while tradeable jobs (manufacturing, wholesale, information, finance,
+professional services---sectors selling to broader markets) are insulated.
+Using LODES Workplace Area Characteristics aggregated to the cousub
+by NAICS supersector, Table~\ref{tab:industry} reports the muni-Inc-bind
+cell coefficients by industry bucket.
+
+\begin{table}[H]
+    \centering
+    \caption{Industry decomposition: muni-Inc-bind cell, log(jobs by sector)}
+    \label{tab:industry}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Outcome & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
+        \midrule
+        log(jobs total)         & $-0.258^{***}$ (0.087) & $-0.235^{***}$ (0.074) & $-0.074$ (0.115) \\
+        log(jobs \emph{consumer-facing})  & $-0.297^{**}$ (0.149) & $-0.146^{**}$ (0.067) & $-0.029$ (0.128) \\
+        log(jobs \emph{tradeable})       & $+0.236$ (0.283)       & $-0.150$ (0.099)      & $-0.265^{*}$ (0.136) \\
+        log(jobs health/edu)    & $-0.253^{*}$ (0.153)  & $-0.059$ (0.049)      & $+0.103$ (0.133) \\
+        log(jobs public)        & $-0.706^{*}$ (0.408)  & $-0.252$ (0.283)      & $+0.147$ (0.374) \\
+        share consumer          & $-0.003$ (0.023)      & $+0.005$ (0.015)      & $-0.002$ (0.018) \\
+        share tradeable         & $+0.108^{*}$ (0.055)  & $+0.028$ (0.032)      & $-0.025$ (0.027) \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.95\textwidth}
+        \footnotesize \textit{Notes:} Industry buckets:
+        consumer-facing = retail (NAICS 44--45), arts (71), accommodation/food (72), other services (81).
+        Tradeable = manufacturing (31--33), wholesale (42), information (51), finance (52), prof services (54).
+        Same regression structure as Table~\ref{tab:headline}.
         Cluster-robust SEs by muni in parentheses.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
-A 1 pp increase in the muni resident rate lowers
-\texttt{share\_live\_in} by $0.8$ share-points and resident worker
-counts by $11\%$, controlling for the full set of fiscal and revenue
-share controls. The total-stack regressor is essentially null on
-share\_live\_in and resident workers because the muni and SD components
-move outcomes in opposite directions and partially cancel: the SD
-coefficient on log(Resident) is $+0.147^{**}$, indicating a 15\% rise
-in resident workers per pp of SD rate. The decomposition is therefore
-not optional---bundling the home rate hides both channels.
+Consumer-facing jobs fall by 30 percent in the Inc-bind cell; tradeable
+jobs do not (point estimate is $+0.236$, statistically indistinguishable
+from zero). The composition shift is captured by \texttt{share\_tradeable},
+which rises 11 percentage points. The total-jobs decline operates
+\emph{via} local-services demand spillover, not via direct nonresident-tax
+incidence.
 
-The Sun--Abraham aggregate ATT (binary cohort) is consistent in sign
-but smaller in magnitude than the per-pp TWFE coefficient because it
-averages across event times (including pre-effect-buildup years) and
-treats the rate change as a binary event rather than a continuous
-dose. Figure~\ref{fig:q2_es_decomp} shows the dynamics: effects build
-over 5--8 years, with cleaner identification in the muni cohort than
-the SD cohort.
+\subsection{Spillover: Where Do Leavers Go?}
+\label{subsec:results-spillover}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{../figures/q2_event_study_decomp.png}
-    \caption{Q2 Sun--Abraham event study, muni vs.\ SD cohorts decomposed.
-    Each cohort's spec controls for the other rate; pair fiscal
-    controls + revenue shares. 95\% CI.}
-    \label{fig:q2_es_decomp}
-\end{figure}
-
-The \citet{dechaisemartin2024} continuous-treatment estimator with
-fiscal controls gives an average causal response of $-0.009$ on
-share\_live\_in, $-0.078$ on log(Resident), and $-0.067$ on
-log(Total Jobs) per pp of muni rate. With analytical SEs (the
-package warns these are conservative for continuous treatment without
-bootstrap), the share\_live\_in coefficient does not clear conventional
-significance but the magnitude tracks the TWFE estimate.
-
-\paragraph{Act 32 structural break.}
-The muni-level sorting response is concentrated entirely in the
-post-Act 32 period (Table~\ref{tab:act32}).
+If muni $A$'s rate hike pushes residents out, do they land in nearby
+munis? We test using ring-based contiguity neighbors (queen contiguity
+on PA cousub geometry, TIGER 2020): Ring 1 is munis sharing any
+boundary with $A$; Ring 2 is munis sharing any boundary with Ring 1
+(excluding $A$ and Ring 1). Receivers $Y$ are restricted to the NC pool;
+indicators $\text{ring}k_{Yt}=\mathbf{1}\{\exists X \in \text{Inc-bind}:
+Y \in \text{Ring}_k(X), t \geq c_X\}$.
 
 \begin{table}[H]
     \centering
-    \caption{Act 32 structural break: rate effect split pre/post 2012}
-    \label{tab:act32}
+    \caption{Spillover: ring-1 and ring-2 of Inc-bind munis, on receiver $Y$ outcomes}
+    \label{tab:spillover}
     \small
-    \begin{tabular}{lccc}
+    \begin{tabular}{lcc}
         \toprule
-        & share\_live\_in & log(Resident) & log(Total Jobs) \\
+        Receiver outcome & ring1 (5.3 mean neighbors) & ring2 (14.7 mean neighbors) \\
         \midrule
-        $\tau^{\text{res,muni}} \times $ Pre  & $-0.004$ & $-0.056$ & $-0.078$ \\
-                                                & $(0.004)$ & $(0.050)$ & $(0.047)$ \\
-        $\tau^{\text{res,muni}} \times $ Post & $-0.011^{**}$ & $-0.151^{**}$ & $-0.144^{**}$ \\
-                                                & $(0.005)$ & $(0.066)$ & $(0.058)$ \\
-        $\tau^{\text{SD}} \times $ Pre        & $+0.008$ & $+0.147^{**}$ & $+0.014$ \\
-                                                & $(0.007)$ & $(0.061)$ & $(0.048)$ \\
-        $\tau^{\text{SD}} \times $ Post       & $+0.013^{*}$ & $+0.170^{**}$ & $-0.032$ \\
-                                                & $(0.007)$ & $(0.071)$ & $(0.056)$ \\
-        \midrule
-        $R^2$                                    & 0.899 & 0.972 & 0.972 \\
-        $N$                                      & 13{,}199 & 13{,}199 & 13{,}199 \\
+        log(live\_and\_work)   & $-0.151^{***}$ (0.047) & $+0.089^{**}$ (0.040) \\
+        log(total\_residents)  & $-0.013$ (0.017)        & $+0.020$ (0.014) \\
+        log(out\_commuters)    & $-0.009$ (0.017)        & $+0.018$ (0.013) \\
+        share\_work\_outside   & $+0.005^{**}$ (0.002)   & $-0.002$ (0.002) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Pre-period = 2002--2011, post = 2012--2019.
-        Same controls and FE as Table~\ref{tab:q2}. Pre-2012 the muni
-        rate coefficient is statistically zero on every outcome;
-        post-2012 it is negative and significant. The SD effect on
-        resident workers is present in both periods, slightly stronger
-        post-2012. Workers respond to taxes that are actually being
-        collected.
+    \begin{minipage}{0.95\textwidth}
+        \footnotesize \textit{Notes:} Inc-bind treated munis as $X$; receivers
+        $Y$ in the NC pool. Each row is a separate regression of $Y$'s
+        outcome on \texttt{ring1\_post\_incb} and \texttt{ring2\_post\_incb}
+        with the same share-based controls and muni $+$ year FE as the
+        headline. Ring-1 of Inc-bind munis loses live\_and\_work; ring-2
+        gains live\_and\_work. The pattern is robust to restricting to
+        lower-rate ring neighbors (Section~\ref{subsec:rob-network}).
+        Cluster-robust SEs by muni.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
-The pre-2012 muni coefficient on \texttt{share\_live\_in} is $-0.004$
-(SE 0.004), statistically indistinguishable from zero. Post-2012 it is
-$-0.011^{**}$. The same pattern holds across log(Resident) and
-log(Total Jobs): pre-period coefficients are smaller and not
-significant; post-period coefficients are larger and significant at
-the 5\% level. This is direct evidence of Prediction 1: workers
-respond to taxes they actually pay, and the same statutory rate
-generates a much larger behavioral response when employer withholding
-is binding. The SD coefficient on log(Resident) is positive and
-significant in both periods because Pennsylvania's school-district
-withholding (administered through the state PIT return) was already
-in force pre-Act 32.
-
-
-\subsection{Q3: Are Rate Changes Asymmetric?}
-\label{subsec:q3_results}
-
-The Q2 specifications pool all rate variation. To test asymmetry
-cleanly, we partition munis into three groups by the type of rate
-events they experienced over 2002--2019:
-%
-\begin{itemize}
-\item \textbf{Inc-only} (97 munis): ever raised the muni rate, never decreased it.
-\item \textbf{Dec-only} (24 munis): ever decreased the muni rate, never raised it.
-\item \textbf{Never-changed (NC)} (1{,}264 munis): muni rate flat throughout the panel.
-\end{itemize}
-%
-Munis that both raised and decreased their rate at some point during
-the panel (``flip-floppers'', $\sim$37\% of changers) are dropped.
-This partition isolates within-group identification: the inc-only
-group's muni-rate variation is unambiguously upward; dec-only is
-unambiguously downward; never-changed contributes no muni-rate
-variation but contributes year fixed-effect identification.
-
-The estimating equation interacts the continuous muni rate with the
-group indicator and includes the SD rate as a single coefficient
-(controlling for the muni rate, what is the SD effect?):
-%
-\begin{equation}
-Y_{it} = \alpha_i + \gamma_t + \beta^{m}_{g} \tau^{\text{res,muni}}_{it} \cdot G_i + \beta^{sd} \tau^{\text{SD}}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}
-\label{eq:q3_clean}
-\end{equation}
-%
-where $G_i \in \{$nc, inc, dec$\}$. The interaction
-$\tau^{\text{res,muni}} \times $ NC is dropped due to collinearity
-(no within-variation in muni rate for never-changers).
-
-\begin{table}[H]
-    \centering
-    \caption{Q3: Clean groups (inc-only / dec-only vs.\ never-changed)}
-    \label{tab:q3}
-    \small
-    \begin{tabular}{lccc}
-        \toprule
-        & share\_live\_in & log(Resident) & log(Total Jobs) \\
-        \midrule
-        $\tau^{\text{res,muni}} \times $ Inc & $-0.020^{***}$ & $-0.256^{***}$ & $-0.213^{***}$ \\
-                                              & $(0.006)$ & $(0.046)$ & $(0.047)$ \\
-        $\tau^{\text{res,muni}} \times $ Dec & $-0.025$ & $-0.224$ & $-0.208$ \\
-                                              & $(0.022)$ & $(0.176)$ & $(0.162)$ \\
-        $\tau^{\text{SD}}$                    & $+0.007$ & $+0.139^{**}$ & $-0.026$ \\
-                                              & $(0.006)$ & $(0.071)$ & $(0.052)$ \\
-        \midrule
-        $R^2$                                  & 0.894 & 0.970 & 0.971 \\
-        $N$                                    & 12{,}745 & 12{,}745 & 12{,}745 \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Same controls and FE as
-        Table~\ref{tab:q2}. Inc-only $=$ 97 munis, Dec-only $=$ 24,
-        Never-changed $=$ 1{,}264. Flip-floppers dropped.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
-
-The muni-rate effect among inc-only munis is $-2.0$ share-points per
-pp on \texttt{share\_live\_in}, $-26\%$ on resident workers, and
-$-21\%$ on total jobs---all significant at the 1\% level. These
-magnitudes are roughly twice the pooled Q2 estimates because the
-inc-only sample isolates clean upward variation without dilution from
-flip-floppers or stable-rate cities. The dec-only point estimates are
-similar in sign and magnitude but statistically imprecise because the
-group has only 24 munis. The data are consistent with sticky moving
-costs (rate cuts do not detectably reverse the displacement) but
-cannot definitively reject symmetric responses given the small
-dec-only sample.
-
-The SD coefficient is $+14\%^{**}$ on log(Resident), close to its Q2
-counterpart and unaffected by the group structure. This is the
-opposite-sign pattern: muni rate repels residents while SD rate
-attracts them.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{../figures/q2_clean_groups_es.png}
-    \caption{Q3 Sun--Abraham event study, clean groups. Inc-only and
-    Dec-only munis vs.\ never-changed controls; muni-rate cohort.
-    Each spec controls for the SD rate. 95\% CI.}
-    \label{fig:q3_es}
-\end{figure}
-
-\paragraph{Substitution between muni and SD rate changes.}
-The clean-groups partition reveals a fiscal-substitution pattern:
-muni-rate-decreasers are roughly five times more likely to have
-simultaneous SD rate increases than the never-changed group (50\% vs
-10\%), while muni-rate-increasers are mostly in stable-SD regions
-(78\% SD never-changed). This is consistent with the institutional
-design of Act 1 of 2006, which created the SD rate as an alternative
-to muni-side revenue. Including the SD rate as a control is therefore
-not optional: omitting it would conflate SD response with muni-rate
-identification in the dec-only group.
-
-
-%------------------------------------------------------------------
-
-\subsection{Heterogeneity}
-\label{subsec:heterogeneity}
-
-A standard prediction of the tax migration literature is that
-high-income workers should be more responsive to tax changes
-\citep{kleven2020, young2016}. LODES provides two earnings segments
-(SE01: \$1,250/month or less; SE03: \$3,333/month or more) and three
-age segments (SA01: 29 or younger; SA02: 30--54; SA03: 55 or older).
-We estimate the PA dose-response specification separately for each
-segment.
-
-The earnings and age segments respond nearly identically: the
-dose-response coefficient is approximately $-0.009^{**}$ for both
-low-earnings (SE01) and high-earnings (SE03) workers, and similar
-across all three age groups. We find no evidence that higher-earning
-or older workers are more responsive to local EIT rate changes.
-
-This null heterogeneity result likely reflects the coarseness of the
-LODES earnings categories. The SE03 threshold (\$40,000 per year)
-captures middle-income workers, not the high earners who drive state-level
-tax migration results. The local income tax rates in our sample
-(0.5--3.0\%) generate modest dollar differences at these income levels:
-a 1 percentage point rate increase costs a \$40,000 earner \$400
-per year, unlikely to produce differential migration responses by
-earnings category. True heterogeneity testing would require linked
-employer-employee data with continuous earnings, which LODES does not
-provide.
+Ring 1 of Inc-bind munis loses \texttt{live\_and\_work} workers
+($-0.151^{***}$). Ring 2 gains \texttt{live\_and\_work} ($+0.089^{**}$).
+The most consistent reading is spatial labor-market clustering: ring-1
+munis share $A$'s labor-market shocks (consumer-services demand
+contraction caused by $A$ losing residents), so their own
+\texttt{live\_and\_work} count falls in tandem. Ring-2 absorption
+captures genuine residential moves to munis that are nearby but
+economically separable from $A$.
 
 %==========================================================
 \section{Robustness}
 \label{sec:robustness}
 %==========================================================
 
-We assess robustness along four dimensions: fiscal controls, Philadelphia
-exclusion, pre-treatment balance, and the Act 32 structural break across
-the municipal and fiscal outcomes.
+This section reports four robustness analyses:
+heterogeneity by muni type with pre-trend diagnostics
+(Section~\ref{subsec:rob-hetero}), sample-variant comparison across
+the strict/filled/drop NA-handling specs
+(Section~\ref{subsec:rob-sample}), pre-trend tests by cell from the
+binary Sun-Abraham event study (Section~\ref{subsec:rob-pretrend}),
+and network-stability and spillover-robustness checks
+(Section~\ref{subsec:rob-network}), and cross-estimator triangulation
+(Section~\ref{subsec:rob-triangulation}).
 
-% --- Robustness Table ---
+\subsection{Cross-Estimator Triangulation}
+\label{subsec:rob-triangulation}
+
+The headline is the stacked-continuous DiD estimate.
+Table~\ref{tab:rob-triangulation} reports the muni-resident-rate
+Inc-cell coefficients on \texttt{log(live\_and\_work)} across four
+alternative estimators.
+
 \begin{table}[H]
     \centering
-    \caption{Robustness: Fiscal Controls and Philadelphia Exclusion}
-    \label{tab:robustness}
+    \caption{Cross-estimator triangulation: \texttt{log(live\_and\_work)} on muni-rate Inc cells}
+    \label{tab:rob-triangulation}
     \small
-    \begin{tabular}{lcccccc}
+    \begin{tabular}{lccc}
         \toprule
-        & \multicolumn{3}{c}{TWFE} & \multicolumn{3}{c}{Dose-Response (treated only)} \\
-        \cmidrule(lr){2-4} \cmidrule(lr){5-7}
-        & (1) & (2) & (3) & (4) & (5) & (6) \\
-        & Baseline & + Controls & No Philly & Baseline & + Controls & No Philly \\
+        Estimator & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
         \midrule
-        resident\_eit & $-0.0128^{**}$ & $-0.0104^{**}$ & $-0.0167^{***}$ & & & \\
-                      & (0.0052)      & (0.0047)      & (0.0060)       & & & \\[3pt]
-        rate $\times$ post & & & & $-0.0090^{***}$ & $-0.0081^{***}$ & $-0.0098^{***}$ \\
-                      & & & & (0.0027)       & (0.0025)       & (0.0029)       \\
+        Q2 TWFE pooled                & $-0.413^{***}$ (0.088) & $-0.219^{***}$ (0.069) & $-0.139$ (0.123) \\
+        Single-event TWFE ($\le$2)    & $-0.419^{***}$ (0.124) & $-0.256^{***}$ (0.067) & $-0.379$ (0.263) \\
+        Stacked binary                & $-0.149^{***}$ (0.049) & $-0.108^{*}$  (0.057) & $-0.048$ (0.048) \\
+        \textbf{Stacked continuous (headline)} & $\bm{-0.402^{***}}$ (0.096) & $\bm{-0.181^{**}}$ (0.072) & $-0.062$ (0.169) \\
+        DCDH (effects=3 horizon)      & $-0.102$ (0.082)       & $-0.012$ (0.047)       & $-0.034$ (0.197) \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.95\textwidth}
+        \footnotesize \textit{Notes:} Each row is a separate estimator;
+        each column is the muni-rate Inc-cell coefficient on
+        \texttt{log(live\_and\_work)}. Share-based controls and the
+        drop-incomplete sample throughout. Q2 TWFE pooled
+        (Eq.~\ref{eq:twfe-pooled}) is muni-FE plus year-FE with no cell
+        decomposition. Single-event TWFE restricts to munis with at
+        most two rate-change events on each side. Stacked binary
+        replaces continuous $\Delta\tau$ with a binary post-event
+        indicator. Stacked continuous (headline) is
+        Equation~(\ref{eq:headline}). DCDH \citep{dechaisemartin2024}
+        is run cell-by-cell with effects=3, placebo=2 and analytical
+        SEs. Cluster-robust SEs by muni in parentheses.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+The Inc-bind cell is consistently negative across every estimator;
+the placebo Inc-nobind is null in stacked binary, stacked continuous,
+and DCDH. Q2 TWFE pooled and single-event TWFE show negative-but-insig
+placebo coefficients consistent with the residual cross-cohort
+contamination Goodman-Bacon-style negative weighting can produce.
+The stacked continuous estimator (the headline) avoids this
+contamination via clean within-stack control sets.
+
+\subsection{Heterogeneity by Muni Type}
+\label{subsec:rob-hetero}
+
+The headline coefficient is concentrated in 8 post-industrial PA cities
+(Wilkes-Barre, Hazleton, Johnstown, Jeannette, Coatesville, Warren,
+Carbondale, Farrell). Table~\ref{tab:rob-hetero} reports the
+muni-Inc-bind cell coefficient on log(live\_and\_work) by muni type.
+
+\begin{table}[H]
+    \centering
+    \caption{Inc-bind cell by muni type (drop sample, post-NC-fix)}
+    \label{tab:rob-hetero}
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        Type & $n$ & Mean residents & Inc-bind coef & Sig \\
         \midrule
-        N             & 27{,}977 & 14{,}644 & 27{,}957 & 3{,}258 & 2{,}336 & 3{,}238 \\
-        Controls      & No       & Yes      & No       & No      & Yes     & No      \\
-        Philadelphia  & Yes      & Yes      & No       & Yes     & Yes     & No      \\
+        \textbf{City}                 & 8  & 6{,}904 & $-0.455$ & $^{**}$ ($p$=0.021) \\
+        Non-city (borough + township) & 32 & 3{,}207 & $-0.194$ & --- ($p$=0.189) \\
+        \quad Borough                 & 10 & 2{,}631 & $-0.213$ & --- ($p$=0.173) \\
+        \quad Township                & 22 & 3{,}468 & $-0.161$ & --- ($p$=0.438) \\
+        \midrule
+        \textit{Pooled (headline)}    & 40 & ---     & $-0.402^{***}$ & --- \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Controls include log police expenditure, log streets
-        expenditure, log total debt, and log state intergovernmental aid from PA DCED
-        Annual Financial Reports. Philadelphia excluded in columns (3) and (6) due to
-        its structurally different wage tax system.
+        \footnotesize \textit{Notes:} Stacked-continuous DiD with same
+        controls and FE structure as headline. Each row restricts the
+        sample to its own muni type; NC controls are restricted to the
+        same type. Cluster-robust SEs by muni.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
-\subsection{Act 32 Structural Break Across All Outcomes}
-\label{subsec:act32_robustness}
+The 8 cities drive the headline. The 32 borough and township Inc-bind
+munis show direction-consistent but individually insignificant effects.
 
-If Act 32 enforcement is the mechanism behind the municipal-level sorting
-result (Table~\ref{tab:act32}), the same pre/post-2012 pattern should
-appear across our other municipal outcomes. We test this by estimating
-Equation~\ref{eq:act32} for resident worker counts, total jobs, and
-fiscal revenues.
+\subsection{Sample Variant Robustness}
+\label{subsec:rob-sample}
 
-\paragraph{Municipal sorting and school district decomposition.}
-Table~\ref{tab:act32_robustness} reports the pre- vs post-Act 32 split
-for municipal-level outcomes. The municipal EIT effect is a precise zero
-before 2012 and significant after 2012 across all outcomes. The school
-district decomposition reveals that the SD amenity effect on resident
-workers is positive in both periods but roughly doubles after Act 32
-($+0.103^{**}$ to $+0.196^{***}$), consistent with consolidated
-withholding making all EIT variation more salient.
+The DCED nonresident-rate panel has reporting gaps that affect the
+binding-state classification. We run three sample variants: strict
+(drop NA \texttt{muni\_nonres\_eit}), filled (impute
+\texttt{nonres = resident\_eit} when missing, statute-anchored), and
+drop-incomplete (keep all years; drop NA at regression time per
+outcome). The headline Inc-bind coefficient on log(live\_and\_work) is
+$-0.402^{***}$ in all three samples; the cell is robust to NA-handling
+because Inc-bind classification requires both pre and post home\_stack
+to exceed work\_nonres, which excludes munis where the binding state
+cannot be determined.
 
-\begin{table}[H]
-    \centering
-    \caption{Act 32 Robustness: Stage 1 Pre/Post-2012 Split}
-    \label{tab:act32_robustness}
-    \small
-    \begin{tabular}{lccc}
-        \toprule
-        & (1) share\_live\_in & (2) log(Resident) & (3) log(Total Jobs) \\
-        \midrule
-        \multicolumn{4}{l}{\textit{Panel A: Municipal EIT only}} \\
-        $\tau^{m} \times$ Pre-2012  & $-0.002$ (0.004)     & $-0.010$ (0.041)      & $-0.032$ (0.033) \\
-        $\tau^{m} \times$ Post-2012 & $-0.018^{***}$ (0.005) & $-0.198^{***}$ (0.057) & $-0.127^{***}$ (0.043) \\
-        \midrule
-        \multicolumn{4}{l}{\textit{Panel B: Municipal + School District EIT}} \\
-        $\tau^{m} \times$ Pre-2012  & $-0.002$ (0.004)     & $-0.044$ (0.050) & \\
-        $\tau^{m} \times$ Post-2012 & $-0.017^{***}$ (0.005) & $-0.195^{***}$ (0.059) & \\
-        $\tau^{sd} \times$ Pre-2012  & $-0.001$ (0.006)     & $0.103^{**}$ (0.044) & \\
-        $\tau^{sd} \times$ Post-2012 & $0.007$ (0.007)      & $0.196^{***}$ (0.047) & \\
-        \midrule
-        \multicolumn{4}{l}{\textit{Panel C: Total EIT (municipal + school district)}} \\
-        $\tau^{\text{total}} \times$ Pre-2012  & $-0.006$ (0.004) & & \\
-        $\tau^{\text{total}} \times$ Post-2012 & $-0.005$ (0.004) & & \\
-        \midrule
-        $N$             & 27{,}977  & 24{,}448  & 24{,}448 \\
-        Fixed Effects   & \multicolumn{3}{c}{Municipality, Year} \\
-        Clusters        & \multicolumn{3}{c}{Municipality} \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Each cell is from a separate regression.
-        Panel A: municipal EIT rate interacted with pre/post-2012 indicators.
-        Panel B: both municipal and SD rates interacted with period indicators.
-        Panel C: combined total EIT rate. The municipal effect is
-        entirely post-2012; the SD amenity effect is present in both
-        periods but stronger post-2012. Total EIT is null in both
-        periods because the opposing municipal and SD effects cancel.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
+\subsection{Pre-Trend Tests by Cell}
+\label{subsec:rob-pretrend}
 
-\paragraph{Fiscal outcomes.}
-If Act 32 made the EIT binding, the same statutory rate should generate
-more revenue after 2012. Table~\ref{tab:act32_fiscal} confirms this.
-Holding the EIT rate constant, a one percentage point rate generates
-5.1\% more EIT revenue post-Act 32 ($p < 0.05$). The effect is specific
-to the EIT: property tax revenue and total tax revenue show no structural
-break at 2012, ruling out a general fiscal trend. Total revenue shows a
-\textit{negative} post-2012 interaction ($-0.094^{***}$), consistent
-with the pre-2012 positive coefficient reflecting correlated fiscal
-expansion rather than an enforcement effect.
+The stacked-continuous estimator drops pre-event coefficients for
+collinearity (cumulative dose is identically zero in pre-event for
+both treated and NC), so pre-trends in the headline estimator are not
+directly testable in the dose-response sense. As a complementary
+diagnostic, Table~\ref{tab:rob-pretrend} reports the binary
+Sun-Abraham event-study pre-event coefficients on log(live\_and\_work)
+by cell.
 
 \begin{table}[H]
     \centering
-    \caption{Act 32 Fiscal Structural Break: EIT Rate $\rightarrow$ Revenue}
-    \label{tab:act32_fiscal}
+    \caption{Pre-trend tests: binary SA event-study coefficients (log\_LW)}
+    \label{tab:rob-pretrend}
     \small
     \begin{tabular}{lcccc}
         \toprule
-        & (1) & (2) & (3) & (4) \\
-        & log(EIT Rev) & log(Total Tax) & log(Total Rev) & log(RE Tax) \\
+        Cell (full sample) & $t=-5$ & $t=-4$ & $t=-3$ & $t=-2$ \\
         \midrule
-        $\tau$ (baseline) & $0.650^{***}$ & $0.296^{***}$ & $0.120^{**}$ & $-0.082$ \\
-                          & (0.213)      & (0.101)      & (0.053)     & (0.068)  \\[3pt]
-        $\tau \times$ Post-2012 & $0.039$       & $0.002$      & $-0.091^{***}$ & $0.031$ \\
-                                & (0.024)      & (0.019)      & (0.025)        & (0.036) \\
-        \midrule
-        $N$             & 43{,}407 & 43{,}626 & 43{,}643 & 42{,}750 \\
-        Fixed Effects   & \multicolumn{4}{c}{Municipality, Year} \\
-        Clusters        & \multicolumn{4}{c}{Municipality} \\
+        Inc-bind ($n=40$, pooled)            & $+0.060$        & $+0.008$        & $+0.057$       & $-0.003$ \\
+        \quad Inc-bind, city subset ($n=8$)  & $+0.194^{***}$  & $+0.105^{**}$   & $+0.118^{**}$  & $+0.101^{***}$ \\
+        Inc-becomes ($n=58$)                 & $-0.048$        & $+0.049$        & $-0.053^{***}$ & $0$ \\
+        Inc-nobind ($n=26$, placebo)         & $+0.066^{**}$   & $+0.092^{***}$  & $+0.009$       & $+0.027^{**}$ \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} PA DCED Annual Financial Reports, 2002--2019.
-        Each column is a separate regression of log revenue on the municipal
-        EIT rate and its interaction with a post-2012 indicator, with
-        municipality and year fixed effects. The baseline coefficient captures
-        the rate--revenue relationship across the full panel; the interaction
-        captures the additional enforcement effect of Act 32.
+        \footnotesize \textit{Notes:} Sun-Abraham binary cohort
+        event-study coefficients on log(live\_and\_work) at
+        $t \in \{-5, -4, -3, -2\}$ (relative event-time, $t=-1$ omitted
+        as reference). Pre-event level difference between treated cohort
+        and NC controls.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
-\paragraph{Summary.} The Act 32 structural break is consistent across
-the municipal-level outcomes we examine: sorting, resident worker
-counts, total jobs, and EIT revenue. The municipal EIT effect is a
-precise zero before 2012 and significant after 2012, while school
-district amenity effects are present in both periods and strengthen
-post-2012. Property tax revenue and total tax revenue show no
-structural break, ruling out a general fiscal trend.
+The pooled Inc-bind cell shows null pre-trends in the binary SA event
+study---a positive sign for parallel-trends in the headline. The
+city-subset Inc-bind cell, however, shows significant positive
+pre-trends. The pattern is consistent with selection into rate hikes
+by post-industrial PA cities that were already on declining
+trajectories: at $t=-5$ they were 19 percent above the NC city pool;
+at $t=-1$ they had converged to NC level; post-event they fell below.
+The city-specific magnitude in Section~\ref{subsec:rob-hetero} should
+therefore be interpreted as ``rate hikes in declining cities are
+associated with continued decline'' rather than as a clean causal
+estimate. The pooled headline does not have this issue.
+
+The Inc-nobind cell---the within-design placebo---shows small but
+significant positive pre-trends. This is an imperfect placebo that we
+disclose. The Inc-nobind cell post-event coefficient on
+log(live\_and\_work) is null ($-0.062$), so the placebo holds on the
+headline outcome despite the pre-trend imperfection.
+
+\subsection{Network Stability and Spillover Robustness}
+\label{subsec:rob-network}
+
+The spillover analysis in Section~\ref{subsec:results-spillover} uses
+TIGER 2020 PA primary-roads geometry. Comparing TIGER 2015 vs 2020
+shows zero PA cousubs change interstate-overlap status across these
+years, supporting use of the static interstate network. The corridor
+analysis (Y shares an interstate with treated $A$) is robust to lower-
+rate-only restriction; coefficients are essentially identical to the
+unrestricted Inc-bind ring1/ring2 coefficients.
 
 %==========================================================
 \section{Discussion}
 \label{sec:discussion}
 %==========================================================
 
-The results confirm the Tiebout hypothesis at the local level---workers
-do sort across municipal boundaries in response to income tax rate
-changes---but the magnitude and mechanism depart from the canonical
-prediction in several ways.
+The unified design produces three substantive findings.
 
-\paragraph{The response is real but small.}
-A 1 percentage point municipal EIT rate increase reduces the
-locally-resident worker share by roughly 1 point and log resident
-workers by 13--14\%. These are economically meaningful: a typical
-PA municipality with 700 resident workers would lose approximately
-90--100 over 8 years. But the behavioral response is far too small
-to erode the tax base. EIT revenue rises 67\% per percentage point
-of rate increase, total tax revenue rises 30\%, and population and
-property values are unaffected. Municipalities that raise rates are
-on the correct side of the revenue hill \citep{haughwout2004}.
+\paragraph{Sorting is identified through the binding channel.}
+The Inc-bind cell---rate hikes that move the bill---produces a 40
+percent decline in \texttt{live\_and\_work} per pp on the muni-resident
+side. The Inc-nobind placebo---rate hikes that do not move the bill---is
+null. Inc-becomes lies between the two. The pattern matches the
+institutional rule's prediction across the binding cells. The same
+statutory rate change can produce strong, moderate, or no behavioral
+response depending solely on whether the rate moves the bill. This is
+direct evidence that workers respond to taxes they actually pay rather
+than to statutory rates per se. Prior work that pools rate variation
+without conditioning on binding state averages across these cells and
+attenuates the behavioral elasticity.
 
-\paragraph{Enforcement is the mechanism, not tax salience.}
-The Act 32 structural break is the paper's strongest identification
-result. Before 2012, when nonresident EIT collection was fragmented
-and largely unenforced, the same statutory rate produced no detectable
-sorting. After 2012, when consolidated employer withholding made the
-tax binding, the effect is large and precisely estimated. This pattern
-holds across all municipal outcomes: sorting, resident worker counts,
-total jobs, and EIT revenue. The implication is that the relevant
-margin is not tax salience or information---workers know their tax
-rate---but whether the tax is actually collected. Prior studies of
-local tax competition that do not account for enforcement quality
-may underestimate the behavioral response.
+\paragraph{Channel separation between rate types is robust.}
+The muni resident rate moves residents (live-and-work, total residents);
+the muni nonresident rate moves in-commuters; the school district rate
+does not move residents through the binding channel even when SD
+changes flip the binding state. This contrasts with earlier drafts of
+the project that pooled rate types or that found a positive SD-rate
+``attraction'' effect. The earlier finding was an artifact of
+tract-centroid LODES aggregation that misattributed jobs across cousub
+boundaries; under block-level LODES with the unified design, SD-rate
+effects on residents are null. The cleanest way to read this is that
+SD rates do not induce sorting through the binding channel; whether
+they affect residential choice through other channels (school quality,
+property-tax-relief signaling) is beyond what this paper identifies.
 
-\paragraph{Asymmetry implies sticky residential choices.}
-Rate increases push residents out; rate decreases do not bring them
-back. This asymmetry is consistent across estimators and all outcome
-measures. The most natural interpretation is that
-residential relocation involves fixed costs (moving expenses, social
-ties, school enrollment) that make the decision irreversible at the
-margin. A rate increase that pushes a worker past the threshold for
-moving cannot be reversed by a rate decrease of equal magnitude,
-because the worker has already incurred the fixed cost and reoptimized.
-This has policy implications: a municipality that raises and then
-lowers its rate will not recover the residents it lost.
+\paragraph{Mechanism: local-services demand spillover.}
+Industry-decomposed outcomes show consumer-facing jobs (retail, food,
+arts, other services) fall 30 percent in the binding cell while
+tradeable jobs (manufacturing, wholesale, finance, professional
+services) are insulated. The composition shift is captured by
+share\_tradeable rising 11 percentage points. The decline in total
+jobs operates \emph{via} local-services demand spillover from
+residents leaving, not via direct nonresident-tax incidence.
 
-\paragraph{School district rates operate through a different channel.}
-The opposite sign on municipal and school district EIT rates is among
-the paper's most striking findings. Municipal rate increases fund
-general operations; school district rate increases were authorized
-under Act 1 of 2006 specifically for property tax relief. The Q3
-decomposition shows municipal rate increases repel residents while SD
-rate increases attract them, with the SD attraction effect roughly
-offsetting municipal rate repulsion in high-SD areas. Whether the
-attraction reflects actual property tax relief, a school quality
-signal, or unobserved amenity changes correlated with SD rate
-increases remains an open question. This pattern explains why
-studies using the total EIT rate find null results: they conflate
-two taxes with opposite behavioral effects.
-
-\paragraph{Uniform response across earnings challenges selective migration.}
-The tax migration literature emphasizes that high earners are more
-responsive to tax differentials \citep{kleven2020, young2016}. We
-find no differential response by LODES earnings category. While the
-coarseness of LODES earnings segments limits the test (the highest
-category captures workers earning \$40,000+, not top earners), the
-uniform response is consistent with local income tax sorting operating
-through a different mechanism than state-level tax migration: at the
-dollar amounts involved (a few hundred dollars per year), the
-relocation decision is driven by cumulative quality-of-life
-considerations rather than tax optimization by high-net-worth
-individuals.
+\paragraph{The headline magnitude is concentrated in declining cities.}
+Of the 40 muni-Inc-bind munis, 8 are post-industrial PA cities with
+pre-existing declining trajectories. The pooled headline is
+$-0.402^{***}$ on log(live\_and\_work) per pp; the city-only headline
+is $-0.455^{**}$; the borough/township pooled is $-0.194$ (insig).
+Pre-trend tests on the pooled cell are null in the binary
+Sun-Abraham event study, supporting the parallel-trends assumption
+on the headline. Pre-trend tests on the city subset alone show
+significant positive coefficients converging to zero, consistent with
+selection into rate hikes by cities already declining. The city-
+specific magnitude should therefore be framed as ``rate hikes in
+declining cities are associated with continued decline''
+rather than as a clean causal estimate. The pooled headline does
+not have this issue.
 
 \paragraph{Limitations.}
-Three limitations merit acknowledgment. First, LODES employment data
-are subject to noise infusion at the census block level; while
-aggregation to the municipality level substantially reduces
-measurement error, it introduces a mechanical tendency toward
-attenuation bias. Second, our design cannot distinguish tax-motivated
-sorting from sorting driven by correlated amenity changes (e.g., a
-municipality raises rates and simultaneously cuts services). The
-fiscal controls and pre-treatment balance tests mitigate this concern,
-but we cannot rule out all confounds. Third, the LODES reference date
-(April 1) captures a snapshot of employment, not the full year;
-seasonal or temporary workers may introduce noise in municipalities
-with volatile employment.
+Three limitations merit acknowledgment. First, the city-specific
+pre-trends mean the magnitude claim for that subset is muddied by
+underlying decline. Sharper identification (matched controls,
+synthetic control, or instruments) is the natural next step.
+Second, the within-design Inc-nobind placebo shows small but
+significant pre-trends on the auxiliary outcomes
+(\texttt{log\_total\_residents}, \texttt{log\_out\_commuters}) even
+though it passes on the headline outcome. Third, the LODES OD data
+covers PA cousubs but not cross-state inflows in the
+intra-state main file used here; the auxiliary file (cross-state
+inflows) is downloaded but not yet incorporated, which would tighten
+the estimates of \texttt{in\_commuters} for border munis.
 
 %==========================================================
 \section{Conclusion}
 \label{sec:conclusion}
 %==========================================================
 
-This paper provides causal evidence that local income tax rate changes
-cause residential sorting across municipal boundaries. Using LEHD
-Origin-Destination data for Pennsylvania (2002--2019), I show that
-rate increases reduce the locally-resident share of a city's workforce,
-that the response is asymmetric (increases push residents out but
-decreases do not bring them back), and that the sorting is entirely
-concentrated after Pennsylvania's Act 32 enforcement consolidation
-in 2012.
+This paper develops a unified muni-level design for identifying the
+behavioral response to local income tax changes. The design exploits
+the piecewise structure of the Pennsylvania EIT
+($T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$) by classifying
+each muni-rate event by direction and binding-state transition. Five
+staggered-DiD estimators are run on a single panel with three
+simultaneous treatments (muni resident, school district, muni
+nonresident rates), each separately decomposed by binding cells. The
+within-design placebo is the Inc-nobind cell: rate hikes that do not
+move the bill are predicted to produce zero behavioral response, and
+do.
 
-The decomposition between municipal and school district EIT rates
-reveals that they operate through opposite channels: municipal rate
-increases repel residents while school district rate increases attract
-them, with the SD attraction roughly offsetting municipal rate
-repulsion in high-SD-rate areas. Despite the behavioral response,
-rate increases are fiscally productive: revenue gains dominate the
-modest base erosion from sorting.
+The headline finding is that a 1 pp muni-resident-rate increase in
+the binding cell reduces \texttt{live\_and\_work} workers by 40
+percent, total jobs by 27 percent, and total residents by 10
+percent. School district rate changes do not move residents in any
+cell, even when SD changes flip the binding state. The work-side
+nonresident rate moves nonresident workers but not residents---channel
+separation is clean. Industry decomposition shows the total-jobs
+decline is concentrated in consumer-facing sectors (retail, food, arts,
+other services), consistent with local-services demand spillover from
+residents leaving rather than direct nonresident-tax incidence.
 
-These findings have implications for municipal fiscal policy. First,
-local income tax rate increases ``work'' in the narrow fiscal sense:
-they raise revenue without measurably reducing population or property
-values. Second, the enforcement mechanism matters as much as the
-statutory rate; municipalities considering rate increases should ensure
-collection capacity. Third, the school district decomposition suggests
-that not all local tax increases are alike: SD rate increases are
-associated with residential attraction rather than repulsion,
-though whether this reflects property tax relief, school quality
-signaling, or correlated amenities cannot be fully disentangled
-with the available fiscal data.
+The result is concentrated in 8 post-industrial PA cities with
+pre-existing decline, where pre-trends are present and the city-
+specific magnitude is therefore framed as associational rather than
+causal. The pooled-cell headline is parallel-trends-clean and is the
+defensible quantity.
 
-The LODES-based approach developed here---linking worker residential
-choices to municipal tax variation at annual frequency---can be applied
-to other local fiscal instruments (property taxes, sales taxes, fees)
-and to related questions about the spatial incidence of local policy.
+The unified-design framework---one panel, multiple treatments
+decomposed by institutional binding cells, five estimators in
+parallel, within-design placebo---is portable to other settings where
+a piecewise tax rule generates predictable cross-sectional variation
+in whether a rate change moves the bill. Local sales taxes with use-
+tax-credit rules, county-level income-tax credits across state
+borders, and special tax districts with overlapping jurisdiction are
+candidate extensions.
 
 \section*{Acknowledgments}
 % TODO

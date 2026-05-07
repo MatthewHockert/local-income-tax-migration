@@ -138,12 +138,18 @@ classify_treatment <- function(p, rate_var, tag) {
   c_v    <- paste0("c_", tag)
   base_v <- paste0("baseline_", tag)
   dose_v <- paste0("dose_", tag)
-  p2[is.na(get(cell_v)), (cell_v) := "NC"]
+  # FIX: True NC = no change in rate_var; Uncertain = had changes but cell unclassifiable
+  rate_changes <- p2[!is.na(get(rate_var)), .(
+    n = sum(abs(diff(get(rate_var))) > 1e-6, na.rm = TRUE)
+  ), by = muni]
+  truly_stable <- rate_changes[n == 0, muni]
+  p2[muni %in% truly_stable,                            (cell_v) := "NC"]
+  p2[!muni %in% truly_stable & is.na(get(cell_v)),     (cell_v) := "Uncertain"]
   p2[, (dose_v) := fifelse(!is.na(get(c_v)) & year >= get(c_v),
                            get(rate_var) - get(base_v), 0)]
   cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
                    "Dec-bind", "Dec-becomes-non", "Dec-nobind",
-                   "Inc-loses", "Dec-gains")
+                   "Inc-loses", "Dec-gains", "Uncertain")
   p2[, (cell_v) := factor(get(cell_v), levels = cell_levels)]
   return(p2)
 }
@@ -151,6 +157,15 @@ classify_treatment <- function(p, rate_var, tag) {
 panel <- classify_treatment(panel, "resident_eit",   "muni")
 panel <- classify_treatment(panel, "sd_eit",          "sd")
 panel <- classify_treatment(panel, "muni_nonres_eit", "nr")
+# Drop Uncertain munis
+u <- Reduce(union, list(unique(panel[cell_muni == "Uncertain", muni]),
+                         unique(panel[cell_sd   == "Uncertain", muni]),
+                         unique(panel[cell_nr   == "Uncertain", muni])))
+cat(sprintf("Industry: dropping %d uncertain munis\n", length(u)))
+panel <- panel[!muni %in% u]
+panel[, cell_muni := droplevels(cell_muni)]
+panel[, cell_sd   := droplevels(cell_sd)]
+panel[, cell_nr   := droplevels(cell_nr)]
 
 cat("\ncell_muni counts:\n"); print(unique(panel[, .(muni, cell_muni)])[, .N, by = cell_muni][order(cell_muni)])
 cat("cell_sd counts:\n");   print(unique(panel[, .(muni, cell_sd)])[, .N, by = cell_sd][order(cell_sd)])

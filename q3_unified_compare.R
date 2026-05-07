@@ -176,12 +176,19 @@ classify_treatment <- function(p, rate_var, bind_ref, tag) {
   c_v    <- paste0("c_", tag)
   base_v <- paste0("baseline_", tag)
   dose_v <- paste0("dose_", tag)
-  p2[is.na(get(cell_v)), (cell_v) := "NC"]
+  # FIX: NC = munis with NO change in rate_var ever; Uncertain = had changes but
+  # cell unclassifiable (e.g., NA pre-event binding state). Don't conflate.
+  rate_changes <- p2[!is.na(get(rate_var)), .(
+    n = sum(abs(diff(get(rate_var))) > 1e-6, na.rm = TRUE)
+  ), by = muni]
+  truly_stable <- rate_changes[n == 0, muni]
+  p2[muni %in% truly_stable,                            (cell_v) := "NC"]
+  p2[!muni %in% truly_stable & is.na(get(cell_v)),     (cell_v) := "Uncertain"]
   p2[, (dose_v) := fifelse(!is.na(get(c_v)) & year >= get(c_v),
                            get(rate_var) - get(base_v), 0)]
   cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
                    "Dec-bind", "Dec-becomes-non", "Dec-nobind",
-                   "Inc-loses", "Dec-gains")
+                   "Inc-loses", "Dec-gains", "Uncertain")
   p2[, (cell_v) := factor(get(cell_v), levels = cell_levels)]
   return(p2)
 }
@@ -214,6 +221,13 @@ cat("\n========== MODE A: homestack ==========\n")
 pA <- copy(panel_drop)
 pA <- classify_treatment(pA, "home_stack", "muni_nonres_eit", "home")
 pA <- classify_treatment(pA, "muni_nonres_eit", "home_stack", "nr")
+# Drop Uncertain munis (had rate changes but cell unclassifiable)
+uA <- union(unique(pA[cell_home == "Uncertain", muni]),
+            unique(pA[cell_nr   == "Uncertain", muni]))
+cat(sprintf("MODE A: dropping %d uncertain munis\n", length(uA)))
+pA <- pA[!muni %in% uA]
+pA[, cell_home := droplevels(cell_home)]
+pA[, cell_nr   := droplevels(cell_nr)]
 cat("cell_home counts:\n"); print(unique(pA[, .(muni, cell_home)])[, .N, by = cell_home][order(cell_home)])
 cat("cell_nr counts:\n");   print(unique(pA[, .(muni, cell_nr)])[, .N, by = cell_nr][order(cell_nr)])
 
@@ -323,6 +337,15 @@ pB <- copy(panel_drop)
 pB <- classify_treatment(pB, "resident_eit",   "muni_nonres_eit", "muni")
 pB <- classify_treatment(pB, "sd_eit",          "muni_nonres_eit", "sd")
 pB <- classify_treatment(pB, "muni_nonres_eit", "home_stack",       "nr")
+# Drop Uncertain munis
+uB <- Reduce(union, list(unique(pB[cell_muni == "Uncertain", muni]),
+                          unique(pB[cell_sd   == "Uncertain", muni]),
+                          unique(pB[cell_nr   == "Uncertain", muni])))
+cat(sprintf("MODE B: dropping %d uncertain munis\n", length(uB)))
+pB <- pB[!muni %in% uB]
+pB[, cell_muni := droplevels(cell_muni)]
+pB[, cell_sd   := droplevels(cell_sd)]
+pB[, cell_nr   := droplevels(cell_nr)]
 cat("cell_muni counts:\n"); print(unique(pB[, .(muni, cell_muni)])[, .N, by = cell_muni][order(cell_muni)])
 cat("cell_sd counts:\n");   print(unique(pB[, .(muni, cell_sd)])[, .N, by = cell_sd][order(cell_sd)])
 cat("cell_nr counts:\n");   print(unique(pB[, .(muni, cell_nr)])[, .N, by = cell_nr][order(cell_nr)])
