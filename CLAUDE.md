@@ -1,5 +1,23 @@
 # CLAUDE.md
 
+## Control variable convention (current spec)
+
+All current unified-design scripts (`q3_unified*.R`) use **share-based controls** in this exact set:
+
+```r
+ctrls <- c("share_police", "share_streets", "share_debt_svc",
+           "share_eit", "share_re", "share_intergov")
+```
+
+Where:
+- `share_police`, `share_streets`, `share_debt_svc` = expenditure / `total_expenditures`
+- `share_eit`, `share_re`, `share_intergov` = revenue / `total_revenues`
+- `share_intergov` is federal + state + local intergov revenue summed
+- All time-varying within muni × year (verified)
+- All future model runs MUST use this same six-control set unless explicitly motivated otherwise
+
+Older scripts (`run_slide_models.R`, `q3_robustness.R`, `q3_stacked.R`, `q3_residence.R`, `q3_nonres.R`, `pretreatment_balance.R`, `robustness.R`) still use `log_police + log_streets + log_debt + log_state_aid + share_eit + share_re` (mixed log/share). They are superseded by `q3_unified.R`; do not use their numbers as headline.
+
 ## Project Overview
 
 Do local income tax changes cause residential sorting? Uses LEHD LODES Origin-Destination data, aggregated from the **block** level to PA county subdivisions (cousubs), to measure whether workers relocate residence outside taxing municipalities. **PA-only** (Ohio dropped from the paper). The PA Earned Income Tax operates piecewise: each worker's bill = max(home_stack, work_nonresident_rate), with home_stack = muni_resident_rate + SD_rate. Act 32 of 2008 (effective 2012) made the EIT binding via consolidated employer withholding — the natural experiment.

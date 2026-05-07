@@ -677,6 +677,152 @@
     %
     \begin{frame}
     \fontfamily{cmr}
+    \frametitle{Spillover: Highway-Corridor Test}
+        \footnotesize
+        \textbf{Test:} does ring-2 absorption concentrate on cousubs that
+        share an interstate corridor with treated A? If leavers commute
+        back to A via highway, corridor-shared receivers should absorb more.
+        \medskip
+
+        \textbf{Network stability:} TIGER 2015 vs 2020 interstate networks
+        are identical at the cousub level (zero changes). 18\% of PA cousubs
+        (459 of 2{,}573) have an interstate passing through them; 13{,}501
+        unordered cousub-pairs share at least one interstate corridor.
+        \medskip
+
+        \textbf{Interaction spec} ($\Delta\tau^{\text{muni}}$ Inc-bind, drop sample):
+        \scriptsize
+        \renewcommand{\arraystretch}{1.15}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lcccc}
+            \toprule
+            & ring1 base & ring1 $\times$ corr & ring2 base & ring2 $\times$ corr \\
+            \midrule
+            log(live\_and\_work)  & $\bm{-0.171^{***}}$ & $+0.103$ & $\bm{+0.100^{**}}$ & $\bm{-0.114^{*}}$ ($p$=.05) \\
+            log(out\_commuters)   & $-0.023$            & $+0.060^{*}$ & $+0.016$        & $+0.011$ \\
+            log(total\_residents) & $-0.027$            & $+0.063^{**}$ & $+0.020$        & $+0.001$ \\
+            share\_work\_outside  & $\bm{+0.005^{**}}$  & $-0.003$ & $-0.003$            & $+0.009^{*}$ \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.10cm}
+        \scriptsize
+        \textbf{Total ring-2 effect on log(live\_and\_work):} non-corridor
+        $= +0.100^{**}$; corridor-shared $= +0.100 - 0.114 \approx -0.014$ (null).
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Reading the Highway Test}
+        \footnotesize
+        \textbf{Result is the opposite of the highway-leapfrog prediction.}
+        Ring-2 absorption ($+0.100^{**}$) is concentrated in
+        \emph{non-corridor-shared} neighbors. Cousubs that share an
+        interstate corridor with treated A do \emph{not} absorb leavers.
+        \medskip
+
+        \textbf{Interpretation: highway corridors connect labor markets.}
+        A ring-2 muni sharing an interstate with A is in the same regional
+        economy. When A's consumer-facing jobs fall 29\%, corridor-shared
+        ring-2 munis face the same demand shock --- they're losing
+        residents too, not absorbing A's leavers.
+        \medskip
+
+        \textbf{Refined story.} A's rate hike pushes residents out. They
+        land in ring-2 munis that are nearby \emph{but economically separable}
+        (no shared interstate corridor with A). They get \emph{new local jobs}
+        in those ring-2 munis ($+0.100^{**}$ on \texttt{live\_and\_work},
+        not \texttt{out\_commuters}). \textbf{Not "move and commute back."}
+        \medskip
+
+        \textbf{Caveat.} Corridor pairs are static (TIGER 2015 = 2020).
+        Power is limited (24--26 corridor-receiver-years per year). Read
+        the magnitude direction; precision is bounded.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Heterogeneity: Who Are the Inc-Bind Munis?}
+        \footnotesize
+        \textbf{The headline is concentrated in post-industrial cities.}
+        Inc-bind ($n$=40) breaks down as 22 townships, 10 boroughs, 8 cities,
+        but the 8 cities are mostly declining post-industrial PA cities.
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.15}
+        \setlength{\tabcolsep}{8pt}
+        \begin{tabular}{lcccc}
+            \toprule
+            Muni type & $n$ & Mean residents & Inc-bind coef on log(LW) & Sig \\
+            \midrule
+            \textbf{City}      & 8  & 6{,}904 & $\bm{-0.418}$ & ** ($p$=0.025) \\
+            Borough            & 10 & 2{,}631 & $-0.211$      & --- ($p$=0.180) \\
+            Township           & 22 & 3{,}468 & $-0.159$      & --- ($p$=0.443) \\
+            \midrule
+            \textit{Pooled (headline)} & 40 & ---  & $-0.388^{***}$ & --- \\
+            \bottomrule
+        \end{tabular}
+        \medskip
+
+        \textbf{The 8 Inc-bind cities} (in order of size): Wilkes-Barre,
+        Hazleton, Johnstown, Jeannette, Coatesville, Warren, Carbondale,
+        Farrell. All post-industrial; population declining since 1970s.
+        \medskip
+
+        \textbf{Implication.} Townships and boroughs (the suburbs/rural munis)
+        don't drive the headline. The result is real but \emph{specific}: rate
+        hikes in declining cities accelerate already-falling
+        \texttt{live\_and\_work} counts. Some portion of the $-0.418$ is the
+        underlying decline that prompted the hike, not pure tax-driven sorting.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Magnitudes in Absolute Terms}
+        \footnotesize
+        \textbf{The $-0.388$ headline is per 1pp.} Actual rate changes in
+        Inc-bind munis average $\sim$0.3pp. Predicted effect at typical dose:
+        $0.3 \times 0.388 = 12\%$.
+        \medskip
+
+        \textbf{Observed in raw means:}
+        \scriptsize
+        \renewcommand{\arraystretch}{1.10}
+        \setlength{\tabcolsep}{8pt}
+        \begin{tabular}{lcc}
+            \toprule
+            Years from event & Mean live-and-work in Inc-bind munis & $\Delta$ from pre \\
+            \midrule
+            $t = -1$ (pre)        & 592 & --- \\
+            $t = 0$               & 567 & $-4\%$ \\
+            $t = +3$              & 534 & $-10\%$ \\
+            $t = +5$              & 513 & \textbf{$-13\%$} \\
+            \bottomrule
+        \end{tabular}
+        \medskip
+
+        \footnotesize
+        Math is internally consistent: $-0.388$ per pp $\times$ 0.3 average dose
+        $\approx$ 12\% predicted, $\approx$ 13\% observed.
+        \medskip
+
+        \textbf{The honest framing.} A 1pp resident-rate hike in a post-industrial
+        PA city like Wilkes-Barre or Hazleton is associated with $\sim$40\%
+        decline in live-and-work workers over 5 years. Some of this is
+        rate-driven sorting; some is the pre-existing trajectory. Decomposing
+        these requires pre-trend tests + selection-on-observables checks
+        (open follow-up).
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
     \frametitle{Mechanism: Industry Decomposition of Total Jobs}
         \footnotesize
         Predicted by local-services-demand: consumer-facing jobs (retail,

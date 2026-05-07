@@ -36,6 +36,8 @@ wp <- as.data.table(readRDS(file.path(data_dir, "pa_panel.rds")))[year <= max_ye
 rp <- as.data.table(readRDS(file.path(data_dir, "pa_residence_panel.rds")))[year <= max_year]
 rate <- as.data.table(readRDS(file.path(data_dir, "pa_rate_panel.rds")))
 rings <- as.data.table(readRDS(file.path(data_dir, "pa_neighbors_rings.rds")))
+hwy_static <- as.data.table(readRDS(file.path(data_dir, "pa_highway_static.rds")))
+corridors <- as.data.table(readRDS(file.path(data_dir, "pa_highway_corridors.rds")))
 
 setnames(wp, "work_city", "muni", skip_absent = TRUE)
 setnames(rp, "home_city", "muni", skip_absent = TRUE)
@@ -209,12 +211,9 @@ build_ring_indicator <- function(panel, rings, treated_set, ring_num) {
 # home_stack at year t is below X's post-event home_stack.
 build_ring_indicator_lower <- function(panel, rings, treated_set, treated_postrate,
                                         ring_num) {
-  # treated_postrate = data.table(treated_muni, c_treated, post_homestack_X)
   r <- rings[ring == ring_num, .(muni, neighbor)]
   r2 <- merge(r, treated_postrate, by.x = "neighbor", by.y = "treated_muni",
               all = FALSE, allow.cartesian = TRUE)
-  # For each (Y, year) pair, find any neighbor (X) whose treatment is active
-  # AND X's post-event home_stack > Y's home_stack at year
   rec_hs <- panel[, .(muni, year, home_stack_Y = home_stack)]
   ind <- merge(rec_hs, r2[, .(muni, c_treated, post_homestack_X)],
                by = "muni", allow.cartesian = TRUE)
@@ -222,6 +221,27 @@ build_ring_indicator_lower <- function(panel, rings, treated_set, treated_postra
              !is.na(home_stack_Y) & !is.na(post_homestack_X) &
              home_stack_Y < post_homestack_X]
   ind <- unique(ind[, .(muni, year)])
+  ind[, post := 1L]
+  ind
+}
+
+# Corridor variant: receiver Y in ring k of treated X AND Y shares any
+# interstate corridor with X (from pa_highway_corridors.rds).
+build_ring_indicator_corridor <- function(panel, rings, treated_set, corridors,
+                                           ring_num) {
+  r <- rings[ring == ring_num, .(muni = muni, neighbor = neighbor)]
+  # neighbor here is the treated muni; muni is the receiver.
+  # Filter rings to only pairs where (receiver, treated) share corridor.
+  r_corr <- merge(r, corridors,
+                  by.x = c("muni", "neighbor"),
+                  by.y = c("muni_a", "muni_b"),
+                  all = FALSE)
+  r_corr <- merge(r_corr, treated_set, by.x = "neighbor", by.y = "treated_muni",
+                  all = FALSE, allow.cartesian = TRUE)
+  ind <- merge(panel[, .(muni, year)], r_corr[, .(muni, c_treated)],
+               by = "muni", allow.cartesian = TRUE)
+  ind <- ind[year >= c_treated, .(muni, year)]
+  ind <- unique(ind)
   ind[, post := 1L]
   ind
 }
@@ -256,13 +276,28 @@ ring2_lower <- build_ring_indicator_lower(panel, rings, incbind_munis,
                                           treated_postrate, 2L)
 setnames(ring2_lower, "post", "ring2_post_lower")
 
+# Corridor variants (Inc-bind treated, receiver shares interstate corridor with X)
+ring1_corridor <- build_ring_indicator_corridor(panel, rings, incb_set,
+                                                 corridors, 1L)
+setnames(ring1_corridor, "post", "ring1_post_corr")
+ring2_corridor <- build_ring_indicator_corridor(panel, rings, incb_set,
+                                                 corridors, 2L)
+setnames(ring2_corridor, "post", "ring2_post_corr")
+
 panel <- Reduce(function(x, y) merge(x, y, by = c("muni","year"), all.x = TRUE),
                 list(panel, ring1_bind, ring2_bind, ring1_incb, ring2_incb,
-                     ring1_lower, ring2_lower))
+                     ring1_lower, ring2_lower, ring1_corridor, ring2_corridor))
 for (v in c("ring1_post_bind","ring2_post_bind","ring1_post_incb","ring2_post_incb",
-            "ring1_post_lower","ring2_post_lower")) {
+            "ring1_post_lower","ring2_post_lower",
+            "ring1_post_corr","ring2_post_corr")) {
   panel[is.na(get(v)), (v) := 0L]
 }
+
+# Add receiver's own highway access for interaction
+panel <- merge(panel,
+               hwy_static[, .(muni = cousub_fips, has_interstate)],
+               by = "muni", all.x = TRUE)
+panel[is.na(has_interstate), has_interstate := 0L]
 
 # Drop receivers who are themselves treated munis (so we estimate pure spillover)
 panel_recv <- panel[cell_muni == "NC"]
@@ -279,7 +314,7 @@ print(panel_recv[, .(N = .N), by = .(ring1_post_bind, year)][year %in% c(2010, 2
 outcomes <- c("log_total_residents", "log_live_and_work",
               "log_out_commuters", "share_work_outside")
 
-run_spill <- function(p, outcome, ring_var = c("bind","incb","lower")) {
+run_spill <- function(p, outcome, ring_var = c("bind","incb","lower","corr")) {
   ring_var <- match.arg(ring_var)
   ring1 <- paste0("ring1_post_", ring_var)
   ring2 <- paste0("ring2_post_", ring_var)
@@ -331,12 +366,49 @@ for (o in outcomes) {
   res_lower[[length(res_lower) + 1L]] <- ct
 }
 
-# Coverage of lower-rate ring1 / ring2
+cat("\n========== Spillover: Inc-bind, CORRIDOR-SHARED neighbors only ==========\n")
+res_corr <- list()
+for (o in outcomes) {
+  m <- run_spill(panel_recv, o, "corr")
+  if (is.null(m)) next
+  ct <- as.data.table(m$coeftable, keep.rownames = "term")
+  setnames(ct, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
+           skip_absent = TRUE)
+  ct <- ct[grepl("^ring", term)]
+  ct[, outcome := o]; ct[, n := nobs(m)]; ct[, variant := "corr"]
+  res_corr[[length(res_corr) + 1L]] <- ct
+}
+
+# Joint spec: Inc-bind ring + ring x corridor interaction
+cat("\n========== Spillover: Inc-bind ring x corridor interaction ==========\n")
+res_intx <- list()
+for (o in outcomes) {
+  needed <- c(o, ctrls, "ring1_post_incb","ring2_post_incb",
+              "ring1_post_corr","ring2_post_corr","muni","year")
+  d <- panel_recv[, ..needed][complete.cases(panel_recv[, ..needed])]
+  if (nrow(d) == 0) next
+  f <- as.formula(paste0(o,
+       " ~ ring1_post_incb + ring2_post_incb + ",
+            "ring1_post_corr + ring2_post_corr + ",
+            ctrls_str, " | muni + year"))
+  m <- feols(f, data = d, cluster = ~muni)
+  ct <- as.data.table(m$coeftable, keep.rownames = "term")
+  setnames(ct, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
+           skip_absent = TRUE)
+  ct <- ct[grepl("^ring", term)]
+  ct[, outcome := o]; ct[, n := nobs(m)]; ct[, variant := "intx"]
+  res_intx[[length(res_intx) + 1L]] <- ct
+}
+
+# Coverage
 cat("\nLower-rate ring coverage (panel_recv):\n")
 print(panel_recv[, .(N1 = sum(ring1_post_lower), N2 = sum(ring2_post_lower)),
                  by = year][year %in% c(2010, 2015, 2019)])
+cat("\nCorridor-shared ring coverage (panel_recv):\n")
+print(panel_recv[, .(N1 = sum(ring1_post_corr), N2 = sum(ring2_post_corr)),
+                 by = year][year %in% c(2010, 2015, 2019)])
 
-results <- rbindlist(c(res_bind, res_incb, res_lower), fill = TRUE)
+results <- rbindlist(c(res_bind, res_incb, res_lower, res_corr, res_intx), fill = TRUE)
 results[, sig := fifelse(p < 0.01, "***",
                   fifelse(p < 0.05, "**",
                   fifelse(p < 0.10, "*", "")))]
