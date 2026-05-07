@@ -779,6 +779,80 @@ treated muni from another cohort serves as control), avoiding the
 negative-weighting problem in vanilla TWFE under staggered treatment
 \citep{goodmanbacon2021}.
 
+The stacked-DiD construction is in the lineage of
+\citet{cengiz2019} (138 minimum-wage events, stacked event-by-event
+with continuous treatment), \citet{fadlon2021} (severe health shocks,
+stacked with future-treated households as controls), and
+\citet{deshpande2019} (SSA field-office closings, stacked with
+future-closing ZIP codes as controls). Three differences are worth
+flagging.
+
+\textbf{Control-group choice.} \citet{fadlon2021} and
+\citet{deshpande2019} use \emph{future-treated} units (those that
+will be treated at $\tau + \Delta$) as controls, because never-treated
+units are scarce or selected in their settings (no never-dying
+households; selection into closing eligibility). \citet{cengiz2019}
+uses \emph{clean controls} (states with no minimum-wage events in the
+8-year window around the focal event), which permits states with
+events outside the window to serve as controls. We use the strictest
+specification: \emph{never-changed} (NC) munis, defined as those
+whose rate $\tau^s$ never changes across 2002--2019. Since 95\% of PA
+cousubs are NC on at least one rate side, the never-changed pool is
+abundant and we do not need to relax to future-treated or
+clean-within-window controls.
+
+\textbf{Continuous treatment.} \citet{cengiz2019} is the closest
+analogue on this dimension: their treatment is continuous
+(log minimum wage) within each stacked sub-experiment. Their
+identification logic---``aligning events by event-time, not calendar
+time, equivalent to a setting where the events happen all at once''
+\citep[Online Appendix C]{cengiz2019}---applies identically in our
+setup. We extend their continuous-treatment design by extracting
+\emph{cell-specific} dose-response coefficients via the
+$i(\text{cell}, \Delta\tau)$ interaction, which their pooled
+event-by-event spec does not produce.
+
+\textbf{Cell decomposition.} The binding-state cell partitioning is
+new relative to all three. \citet{cengiz2019} pools all minimum-wage
+events without a within-design taxonomy of treated units;
+\citet{fadlon2021} and \citet{deshpande2019} have homogeneous
+treatments (death, closure). Our decomposition exploits the piecewise
+PA EIT rule to partition treated munis into cells whose ex ante
+predicted response differs by binding state, generating a
+within-design placebo (Inc-nobind) that the standard stacked DiD
+cannot produce.
+
+\paragraph{Multi-event treated munis.}
+A treated muni $i$ may have more than one rate-change event over
+2002--2019. We classify each such muni by the binding-state transition
+of its \emph{first} event and assign $i$ to the corresponding cell on
+side $s$. The muni then appears in exactly one sub-experiment
+(its first-event cohort $c^s_i$), not in subsequent cohorts triggered
+by later events.
+
+Subsequent rate changes within the same muni accumulate into
+$\Delta\tau^s_{it}$, the \emph{cumulative} dose from the muni's
+pre-event baseline. Concretely: suppose muni $i$ has $\tau^s_i = 0.50$
+in years 2005--2009, $\tau^s_i = 0.70$ in 2010 (first event,
+$c^s_i = 2010$, baseline $= 0.50$), and $\tau^s_i = 1.00$ from 2014
+onward (second event). Then $\Delta\tau^s_{it} = 0$ for $t < 2010$,
+$\Delta\tau^s_{it} = 0.20$ for $t \in [2010, 2013]$, and
+$\Delta\tau^s_{it} = 0.50$ for $t \geq 2014$. The stacked-continuous
+specification absorbs this trajectory through the dose-stack
+interaction in a single regression on muni $i$'s 2005--2015 window
+(its first-event cohort 2010 with $K = 5$). Muni $i$ is \emph{not}
+duplicated as a 2014 cohort treated muni; it stays in its 2010
+cohort. The cumulative dose path encodes the second event by raising
+$\Delta\tau^s_{it}$ from $0.20$ to $0.50$ at year 2014.
+
+This first-event classification has three deliberate consequences.
+First, no treated muni serves as control to itself; each muni appears
+in exactly one stack. Second, multi-event treated munis do not receive
+disproportionate weight from appearing in multiple stacks. Third, the
+per-pp coefficient $\beta^s_k$ is interpretable as a dose-response
+elasticity over the cumulative rate change, which is the
+welfare-relevant magnitude for fiscal calibration.
+
 For each treated muni $i$ in stack $\mathcal{S}^s_c$, define the
 cumulative dose-stack as
 $\Delta\tau^s_{it} = \tau^s_{it} - \tau^s_{i, c-1}$, with
@@ -1677,6 +1751,100 @@ operates post-2012. Pre-Act-32 Inc-bind munis behaved like
 never-changed munis on all outcomes; post-Act-32 they show large
 sorting responses. The binding rule is the mechanism; enforcement is
 the precondition that activates it.
+
+\subsection{Dose-Magnitude Linearity}
+\label{subsec:rob-dose-tercile}
+
+The stacked-continuous specification imposes linearity in dose:
+$\beta^s_k \cdot \Delta\tau^s_{it}$. Whether the per-pp coefficient is
+constant across small and large rate changes is an assumption rather
+than an output of the design. We test it by splitting Inc-bind munis
+into terciles of total post-event dose and re-estimating
+the headline regression on \texttt{log(live\_and\_work)} for each
+tercile separately, with NC controls as in the headline.
+
+\begin{table}[H]
+    \centering
+    \caption{Dose-tercile robustness on Inc-bind, log(live\_and\_work)}
+    \label{tab:rob-tercile}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Dose tercile & $n$ munis & Coefficient & SE \\
+        \midrule
+        Small  & 23 & $-0.440^{*}$  & 0.259 \\
+        Medium &  4 & $-0.113$       & 0.748 \\
+        Large  & 13 & $-0.417^{***}$ & 0.091 \\
+        \midrule
+        Pooled (headline) & 40 & $-0.402^{***}$ & 0.096 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Inc-bind munis split by total
+        cumulative $\Delta\tau^{\text{muni}}$ at year +5 post-event
+        (or maximum observed). Small / medium / large terciles have
+        dose ranges $[0.10, 0.20]$ / tied at $0.20$ / $[0.30, 1.00]$
+        respectively; the medium tercile is thin ($n=4$) due to mass
+        ties at the 33rd percentile. Cluster-robust SEs by muni.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+The small and large dose terciles produce essentially identical per-pp
+coefficients ($-0.440$ vs $-0.417$). The medium tercile is too thin
+to identify but is direction-consistent. The linearity assumption is
+supported: the per-pp dose-response does not vary meaningfully across
+small and large rate hikes within the binding cell.
+
+\subsection{Alternative Control Group: Clean-in-Window}
+\label{subsec:rob-controls}
+
+Our headline uses NC munis (no rate change anywhere in 2002--2019) as
+controls. \citet{cengiz2019} use a slightly relaxed definition:
+``clean controls'' are units with no events in the window
+$[c - K, c + K]$ around each focal event, allowing units with events
+\emph{outside} this window to serve as controls in cohorts whose
+window does not contain their event. The clean-in-window pool is a
+strict superset of NC.
+
+Table~\ref{tab:rob-controls} compares the headline coefficients on
+Inc-bind, Inc-becomes, and Inc-nobind cells across the two control
+definitions on six outcomes.
+
+\begin{table}[H]
+    \centering
+    \caption{Alternative controls: NC vs clean-in-window}
+    \label{tab:rob-controls}
+    \small
+    \begin{tabular}{llcc}
+        \toprule
+        Outcome & Cell & NC-only (headline) & Clean-in-window \\
+        \midrule
+        log(live\_and\_work)    & Inc-bind     & $-0.402$ (0.096) & $-0.400$ (0.096) \\
+                                & Inc-becomes  & $-0.181$ (0.072) & $-0.181$ (0.071) \\
+                                & Inc-nobind   & $-0.062$ (0.169) & $-0.059$ (0.167) \\
+        log(in\_commuters)      & Inc-bind     & $-0.213$ (0.083) & $-0.206$ (0.082) \\
+        log(total\_residents)   & Inc-bind     & $-0.100$ (0.033) & $-0.100$ (0.033) \\
+        share\_live\_in         & Inc-bind     & $-0.045$ (0.010) & $-0.045$ (0.009) \\
+        share\_work\_outside    & Inc-bind     & $+0.041$ (0.016) & $+0.040$ (0.016) \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} NC-only restricts controls to
+        munis with no rate change anywhere in 2002--2019.
+        Clean-in-window extends the control pool to munis whose first
+        event falls outside the focal cohort's $[c - K, c + K]$ window.
+        Clean-in-window adds 692 munis to the control pool relative to
+        NC-only (1,945 vs 1,945 + 692 = 2,637 control-eligible munis).
+        Cluster-robust SEs by muni in parentheses.
+    \end{minipage}
+\end{table}
+
+Coefficients are essentially identical across the two control
+definitions. The result is robust to the strictness of the
+control-group restriction.
 
 \subsection{Network Stability and Spillover Robustness}
 \label{subsec:rob-network}
