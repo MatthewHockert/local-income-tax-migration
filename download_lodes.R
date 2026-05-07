@@ -47,6 +47,10 @@ for (seg in c("S000", "SE03")) {
   download_and_save("pa", "od", seg, state_part = "main", suffix = "_main")
 }
 
+# Pennsylvania WAC (Workplace Area Characteristics) for industry decomposition
+# WAC blocks include CNS01-CNS20 industry-supersector counts
+download_and_save("pa", "wac", "S000")
+
 cat("\nAll LODES data cached in", lodes_dir, "\n")
 
 beepr::beep()

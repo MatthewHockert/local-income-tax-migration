@@ -75,6 +75,7 @@ afr <- merge(afr, xw, by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
 afr[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
 fc <- afr[!is.na(cousub_fips), {
   total_rev <- as.numeric(ifelse(!is.na(total_revenues), total_revenues, revenues))
+  total_exp <- as.numeric(total_expenditures)
   eit_rev <- as.numeric(ifelse(!is.na(earned_income_tax_revenues),
                                earned_income_tax_revenues, earned_income_tax))
   re_tax  <- as.numeric(ifelse(!is.na(real_estate_tax_revenues),
@@ -85,16 +86,16 @@ fc <- afr[!is.na(cousub_fips), {
   loc_ig <- as.numeric(`intergovernmental_revenues-local_government`)
   intergov <- rowSums(cbind(fed_ig, sta_ig, loc_ig), na.rm = TRUE)
   intergov[is.na(fed_ig) & is.na(sta_ig) & is.na(loc_ig)] <- NA_real_
+  police_exp <- as.numeric(ifelse(!is.na(police_expenditures),
+                                   police_expenditures, police))
+  streets_exp <- as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
+                                    `public_works-highways_and_streets_expenditures`,
+                                    streets_and_roads))
+  debt_svc <- as.numeric(debt_service_expenditures)
   list(muni = cousub_fips, year = yr,
-       log_police    = log_pos(ifelse(!is.na(police_expenditures),
-                                       police_expenditures, police)),
-       log_streets   = log_pos(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
-                                       `public_works-highways_and_streets_expenditures`,
-                                       streets_and_roads)),
-       log_debt      = log_pos(as.numeric(total_debt)),
-       log_state_aid = log_pos(ifelse(!is.na(`intergovernmental_revenues-state_government`),
-                                       `intergovernmental_revenues-state_government`,
-                                       state_govt)),
+       share_police    = ifelse(total_exp > 0, police_exp  / total_exp, NA_real_),
+       share_streets   = ifelse(total_exp > 0, streets_exp / total_exp, NA_real_),
+       share_debt_svc  = ifelse(total_exp > 0, debt_svc    / total_exp, NA_real_),
        share_eit       = ifelse(total_rev > 0, eit_rev  / total_rev, NA_real_),
        share_re        = ifelse(total_rev > 0, re_tax   / total_rev, NA_real_),
        share_intergov  = ifelse(total_rev > 0, intergov / total_rev, NA_real_))
@@ -117,7 +118,7 @@ for (col in names(panel)) {
 outcomes <- c("log_live_and_work", "log_in_commuters", "log_out_commuters",
               "log_total_jobs", "log_total_residents",
               "share_live_in", "share_work_outside", "share_nonres")
-ctrls <- c("log_police", "log_streets", "log_debt", "log_state_aid",
+ctrls <- c("share_police", "share_streets", "share_debt_svc",
            "share_eit", "share_re", "share_intergov")
 ctrls_str <- paste(ctrls, collapse = " + ")
 

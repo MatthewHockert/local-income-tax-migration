@@ -188,8 +188,9 @@
             recover SD identifiers. Nonres rate has reporting gaps
             (handled via three sample variants).
             \item \textbf{DCED AFR}: muni fiscal panel for controls
-            (log spending: police, streets, debt, state aid; revenue
-            shares: EIT, real estate, intergov).
+            (share-based: police / streets / debt service as a share of
+            total expenditures; EIT / real estate / intergov as a share
+            of total revenues).
             \item \textbf{Sample}: $\sim$2{,}500 cousubs $\times$ 18 years.
         \end{itemize}
     \end{frame}
@@ -282,13 +283,19 @@
         \end{equation*}
         \footnotesize
         \begin{itemize}\setlength{\itemsep}{0.04cm}
-            \item Both treatments and their cell decompositions enter the
+            \item All three treatments and their cell decompositions enter the
             \emph{same} regression. No OD flows; no pair panel.
-            \item Reference cell on each side: NC (never-changed).
-            \item $\mathbf{X}_{it}$: log spending on police, streets,
-            debt, state aid; revenue shares (EIT, RE).
-            \item Fixed effects: muni $\alpha_i$, year $\gamma_t$.
-            SE clustered at muni.
+            \item \textbf{Control group:} NC (\emph{never-changed}) munis on each side.
+            For an NC muni, $\Delta\tau^{\text{muni}}=\Delta\tau^{\text{SD}}=\Delta\tau^{\text{nr}}=0$,
+            so all three cell-$\times$-dose terms drop. NC munis identify
+            $\gamma_t$ (the parallel time trend) and $\alpha_i$. Cell coefficients
+            $\beta_k$ are dose-response \emph{relative to NC's trend}.
+            Sample: $\sim$2{,}400 muni-rate NC, $\sim$2{,}250 SD NC, $\sim$2{,}275 nonres NC.
+            \item Reference cell in factor coding: \texttt{ref='NC'}.
+            \item $\mathbf{X}_{it}$: \textbf{share-based controls, all time-varying} ---
+            expenditure shares of total expenditures (police, streets, debt service);
+            revenue shares of total revenues (EIT, real estate, intergov).
+            \item Fixed effects: muni $\alpha_i$, year $\gamma_t$. SE clustered at muni.
         \end{itemize}
         \medskip
 
@@ -545,6 +552,176 @@
             \item \textbf{Nonres rate hike} $\to$ in-commuters leave; residents unaffected.
             \item Three rates, three populations: muni $\to$ residents; SD $\to$ no one;
             nonres $\to$ in-commuters.
+        \end{itemize}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Spillover: Where Do Leavers Go?}
+        \footnotesize
+        \textbf{Test (issue \#3):} when muni $X$ is in Inc-bind (or Inc-becomes),
+        do $X$'s ring-1 / ring-2 \emph{neighbors} (queen contiguity) gain
+        residents? Receivers restricted to muni-rate NC munis (no own-rate event).
+        \[
+            Y_{Yt} = \alpha_Y + \gamma_t + \pi_1\,\text{ring1\_post}_{Yt}
+                                     + \pi_2\,\text{ring2\_post}_{Yt}
+                                     + \mathbf{X}'_{Yt}\phi + \varepsilon
+        \]
+        where $\text{ring}k_{Yt}=\mathbf{1}\{\exists X\in \text{treated}: Y\in \text{Ring}_k(X), t\geq c_X\}$.
+        Same share-based controls. SE clustered at $Y$.
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.15}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lcc|cc}
+            \toprule
+            & \multicolumn{2}{c|}{Treated $\in$ Inc-bind \emph{or} Inc-becomes} & \multicolumn{2}{c}{Treated $\in$ Inc-bind only} \\
+            Outcome ($Y$) & ring1 & ring2 & ring1 & ring2 \\
+            \midrule
+            log(total\_residents) & $+0.008$       & $+0.025^{*}$  & $-0.013$           & $+0.021$ \\
+            log(live\_and\_work)  & $-0.044$       & $+0.050$      & $\bm{-0.153^{***}}$ & $\bm{+0.092^{**}}$ \\
+            log(out\_commuters)   & $+0.008$       & $+0.025^{*}$  & $-0.009$            & $+0.018$ \\
+            share\_work\_outside  & $+0.000$       & $+0.000$      & $\bm{+0.005^{**}}$  & $-0.002$ \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.10cm}
+        \begin{minipage}{0.95\textwidth}
+            \tiny \textit{Notes:} Inc-bind variant uses 40 treated munis, 5.3 ring-1 / 14.7
+            ring-2 neighbors on average. Receiver pool: 2{,}406 NC munis.
+            $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \end{minipage}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Spillover: Lower-Rate Neighbor Refinement}
+        \footnotesize
+        Sharper test: restrict to neighbors with home\_stack \emph{below} treated
+        X's post-event home\_stack. If leavers are seeking fiscal advantage, the
+        lower-rate restriction should sharpen the absorption signal.
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.15}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lcc|cc}
+            \toprule
+            & \multicolumn{2}{c|}{Inc-bind, all neighbors} & \multicolumn{2}{c}{Inc-bind, lower-rate only} \\
+            Outcome ($Y$) & ring1 & ring2 & ring1 & ring2 \\
+            \midrule
+            log(total\_residents) & $-0.013$           & $+0.021$       & $-0.006$            & $+0.023$ \\
+            log(live\_and\_work)  & $\bm{-0.153^{***}}$ & $\bm{+0.092^{**}}$ & $\bm{-0.148^{***}}$ & $\bm{+0.091^{**}}$ \\
+            log(out\_commuters)   & $-0.009$           & $+0.018$       & $-0.001$            & $+0.020$ \\
+            share\_work\_outside  & $\bm{+0.005^{**}}$ & $-0.002$       & $\bm{+0.006^{**}}$  & $-0.002$ \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.10cm}
+        \textbf{Lower-rate restriction does not sharpen the result.} Coefficients
+        are essentially identical to the unrestricted Inc-bind variant.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Reading the Spillover Pattern}
+        \footnotesize
+        \textbf{What we see:} ring-1 neighbors of Inc-bind munis \emph{lose}
+        live-and-work workers ($-15\%$); ring-2 neighbors \emph{gain} ($+9\%$).
+        Pattern is robust to lower-rate restriction.
+        \medskip
+
+        \textbf{What this rules out.} The "fiscal-advantage leapfrog" reading
+        (leavers specifically target lower-rate ring-2 munis) should produce
+        bigger coefficients under the lower-rate restriction. It doesn't.
+        Spillover pattern is geographic, not fiscal-differential-driven.
+        \medskip
+
+        \textbf{Most consistent reading: \emph{spatial labor-market clustering}.}
+        Ring-1 munis share X's labor market and consumer-services demand. When X
+        enters Inc-bind:
+        \begin{itemize}\setlength{\itemsep}{0.02cm}\scriptsize
+            \item Consumer-facing jobs in X fall 29\%. Ring-1 residents who
+            worked in X (or in similar nearby munis) lose those jobs $\to$
+            drop out of \texttt{live\_and\_work} in their muni.
+            \item Ring-1 munis share fiscal-pressure shocks with X (clustered geography).
+            \item Ring-2 is far enough that labor-market spillover is muted, but
+            close enough to absorb residential moves --- $+9\%$ live-and-work
+            consistent with new residents who got new ring-2 jobs.
+        \end{itemize}
+        \medskip
+
+        \textbf{Open extension (highway-network refinement).} Are ring-2 gains
+        concentrated along major highway corridors connecting back to X? If
+        leavers retain their X jobs and commute back, gains should be highest
+        in ring-2 munis on a highway corridor. Requires TIGER primary roads pull.
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Mechanism: Industry Decomposition of Total Jobs}
+        \footnotesize
+        Predicted by local-services-demand: consumer-facing jobs (retail,
+        food, arts, other services) sensitive to local population; tradeable
+        jobs (mfg, wholesale, info, finance, prof svcs) insulated.
+        Treatment = $\Delta\tau^{\text{muni}}$ in stacked continuous.
+        \medskip
+        \scriptsize
+        \renewcommand{\arraystretch}{1.15}
+        \setlength{\tabcolsep}{6pt}
+        \begin{tabular}{lcccc}
+            \toprule
+            Outcome & Inc-bind & Inc-becomes & Inc-nobind \emph{(placebo)} & Reading \\
+            \midrule
+            log(jobs total)       & $\bm{-0.251^{***}}$ & $\bm{-0.222^{***}}$ & $-0.079$    & total falls \\
+            log(jobs \textbf{consumer})    & $\bm{-0.291^{**}}$  & $\bm{-0.146^{**}}$  & $-0.028$    & \textcolor{GopherMaroon}{\textbf{29\% drop}} \\
+            log(jobs \textbf{tradeable})   & $+0.244$            & $-0.149$            & $-0.273^{**}$ & \textcolor{GopherMaroon}{\textbf{insulated}} \\
+            log(jobs health/edu)  & $-0.253^{*}$        & $-0.059$            & $+0.103$    & mixed sector \\
+            log(jobs public)      & $-0.706^{*}$        & $-0.252$            & $+0.147$    & noisy ($n$ small) \\
+            \midrule
+            share consumer        & $-0.003$            & $+0.005$            & $-0.002$    & \\
+            share tradeable       & $\bm{+0.108^{*}}$   & $+0.028$            & $-0.025$    & composition $\to$ tradeable \\
+            \bottomrule
+        \end{tabular}
+        \vspace{0.10cm}
+        \begin{minipage}{0.95\textwidth}
+            \tiny \textit{Notes:} Stacked-continuous DiD on industry-aggregated
+            workplace counts (LODES WAC, NAICS supersectors, aggregated to cousub
+            via block xwalk). Same regression structure as headline.
+            Cluster-robust SEs by muni.
+            $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+        \end{minipage}
+    \end{frame}
+    %
+
+    %
+    \begin{frame}
+    \fontfamily{cmr}
+    \frametitle{Reading the Industry Decomposition}
+        \footnotesize
+        \begin{itemize}\setlength{\itemsep}{0.10cm}
+            \item \textbf{Consumer-facing jobs fall 29\%} when the muni resident rate
+            hikes (Inc-bind cell). Retail, accommodation/food, arts, other services
+            --- all sectors whose demand depends on local population.
+            \item \textbf{Tradeable jobs are insulated.} Manufacturing, wholesale,
+            information, finance, professional services. Point estimate is
+            actually \emph{positive} ($+0.244$, insig). These sectors sell to
+            regional/national markets and don't depend on local residents.
+            \item \textbf{Composition shifts toward tradeables}: share\_tradeable
+            $+11$pp on Inc-bind. The consumer-facing denominator shrinks faster
+            than the tradeable numerator.
+            \item \textbf{The synthesis becomes positive, not just ``consistent with.''}
+            Total-jobs decline operates \emph{via} local-services demand spillover
+            from residents leaving --- direct evidence, not ruled-out alternatives.
+            \item \textbf{Placebo wrinkle}: Inc-nobind tradeable is $-0.273^{**}$
+            (consumer-facing $-0.028$, null). Could be small-$n$ (26 munis) or
+            signaling. The demand-spillover story holds for consumer-facing
+            specifically; tradeable response in the placebo is a known caveat.
         \end{itemize}
     \end{frame}
     %
