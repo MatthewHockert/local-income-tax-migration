@@ -1715,6 +1715,33 @@ cell-outcome cell.
 
 \input{tables/es_realized_block.tex}
 
+% --- Realized-dose ES figures, all 3 levels x 1 headline outcome each ---
+\begin{figure}[H]
+  \centering
+  \caption{Realized-dose Sun--Abraham ES, Inc-bind cell, headline outcome at each estimating unit}
+  \label{fig:es-realized-trio}
+  \begin{minipage}{\textwidth}
+    \centering
+    \includegraphics[width=0.32\textwidth]{../figures/headline_es_log_live_and_work.png}\hfill
+    \includegraphics[width=0.32\textwidth]{../figures/sd_es_log_live_and_work.png}\hfill
+    \includegraphics[width=0.32\textwidth]{../figures/block_es_full_log_home_count.png}
+  \end{minipage}
+  \vspace{0.4em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Each panel plots the per-pp realized-dose
+    coefficient $\beta_k$ at event-time $k$ from
+    Equation~(\ref{eq:realized-dose-es}), with the unit's eventual
+    cumulative $\Delta\tau$ at $+5$ as the constant treatment-magnitude
+    tag interacted with relative-event-time indicators. Reference
+    period $k = -1$ omitted. Pre-event leads $k \in [-5, -2]$ test
+    parallel trends across dose magnitudes. Cells are arranged as
+    facets within each level; the figure here shows the cousub-level
+    log(live\_and\_work) (left), the SD-level log(live\_and\_work)
+    (center), and the block-level log(home\_count) (right) for the
+    Inc-bind cell.
+  \end{minipage}
+\end{figure}
+
 \begin{table}[H]
     \centering
     \caption{Pre-trend tests: binary SA event-study coefficients (log\_LW)}

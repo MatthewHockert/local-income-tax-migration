@@ -275,4 +275,71 @@ make_es_att_table(file.path(in_dir, "block_es_full_att.csv"),
                   es_outcomes_block, muni_cells, "Block",
                   file.path(out_dir, "es_realized_block.tex"))
 
+# Binary Sun-Abraham IW ES tables (parallel structure to realized-dose)
+make_sa_table <- function(att_csv, outcomes, cells, level_label, out_path) {
+  if (!file.exists(att_csv) || file.size(att_csv) == 0) {
+    cat(sprintf("Skipping SA %s: %s missing or empty\n", level_label, att_csv))
+    return(invisible())
+  }
+  a <- fread(att_csv)
+  if (!"att_post" %in% names(a) || !"att_pre" %in% names(a)) {
+    cat(sprintf("Skipping SA %s: malformed att csv\n", level_label))
+    return(invisible())
+  }
+  rows <- character(0)
+  for (cl in cells) {
+    row_post <- paste0("\\textbf{", cl, "} (post) ")
+    row_pre  <- "             (pre) "
+    for (o in outcomes) {
+      r <- a[outcome == o & cell == cl]
+      if (nrow(r) == 1) {
+        t_pre <- if (!is.na(r$att_pre_se) && r$att_pre_se > 0)
+                 abs(r$att_pre / r$att_pre_se) else NA_real_
+        flag  <- if (!is.na(t_pre) && t_pre > 1.96) "$^{\\dagger}$" else ""
+        row_post <- paste0(row_post, " & ", fmt(r$att_post, 3),
+                           " (", fmt(r$att_post_se, 3), ")")
+        row_pre  <- paste0(row_pre,  " & ", fmt(r$att_pre,  3), flag,
+                           " (", fmt(r$att_pre_se, 3), ")")
+      } else {
+        row_post <- paste0(row_post, " & ---")
+        row_pre  <- paste0(row_pre,  " & ---")
+      }
+    }
+    rows <- c(rows, paste0(row_post, " \\\\"), paste0(row_pre, " \\\\"))
+  }
+  col_spec <- paste0("l", paste(rep("c", length(outcomes)), collapse = ""))
+  header   <- paste0("Cell & ",
+                     paste0("\\texttt{", sapply(outcomes, texsafe), "}",
+                            collapse = " & "),
+                     " \\\\")
+  body <- c(
+    "\\begin{table}[H]",
+    "  \\centering",
+    sprintf("  \\caption{Binary Sun--Abraham IW ES --- %s level: post-event mean ATT and pre-event lead. $^{\\dagger}$ flags pre-trend $|t| > 1.96$.}",
+            level_label),
+    sprintf("  \\label{tab:sa_binary_%s}", tolower(level_label)),
+    "  \\small",
+    sprintf("  \\begin{tabular}{%s}", col_spec),
+    "    \\toprule",
+    paste0("    ", header),
+    "    \\midrule",
+    paste0("    ", rows),
+    "    \\bottomrule",
+    "  \\end{tabular}",
+    "\\end{table}"
+  )
+  writeLines(body, out_path)
+  cat(sprintf("Wrote %s\n", out_path))
+}
+
+make_sa_table(file.path(in_dir, "sa_binary_cousub_att.csv"),
+              es_outcomes_cousub, muni_cells, "Cousub",
+              file.path(out_dir, "sa_binary_cousub.tex"))
+make_sa_table(file.path(in_dir, "sa_binary_sd_att.csv"),
+              es_outcomes_cousub, muni_cells, "SD",
+              file.path(out_dir, "sa_binary_sd.tex"))
+make_sa_table(file.path(in_dir, "sa_binary_block_att.csv"),
+              es_outcomes_block, muni_cells, "Block",
+              file.path(out_dir, "sa_binary_block.tex"))
+
 cat("\nDone. Tables written to paper/tables/.\n")

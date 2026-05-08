@@ -43,24 +43,25 @@ run_sa_binary <- function(panel, id_col, cell_col, c_col,
   es_results <- list(); att_results <- list()
 
   # NC must have NA cohort to be excluded from sunab interactions.
-  setnames(panel, c(id_col, cell_col, c_col), c("id","cell","c_event"),
-           skip_absent = TRUE)
-  panel[cell == "NC", c_event := NA]
+  panel <- copy(panel)
+  panel[get(cell_col) == "NC", (c_col) := NA]
+
+  cluster_cols <- all.vars(cluster_var)
 
   for (o in outcomes) {
     cat(sprintf("\n[%s | %s]\n", level_tag, o))
     for (cl in setdiff(cell_levels, "NC")) {
-      dd <- panel[cell %in% c("NC", cl)]
-      cols <- c("id","year","cell","c_event", o, ctrls)
+      dd <- panel[get(cell_col) %in% c("NC", cl)]
+      cols <- unique(c(id_col, "year", cell_col, c_col, cluster_cols, o, ctrls))
       cols <- intersect(cols, names(dd))
       dd <- dd[, ..cols]
-      dd <- dd[complete.cases(dd[, ..o])]  # outcome non-missing
-      if (sum(dd$cell == cl) == 0) {
+      dd <- dd[complete.cases(dd[, ..o])]
+      if (sum(dd[[cell_col]] == cl) == 0) {
         cat(sprintf("  %s skip (no treated)\n", cl)); next
       }
       f <- as.formula(paste0(o,
-           " ~ sunab(c_event, year) + ", ctrls_str,
-           " | id + year"))
+           " ~ sunab(", c_col, ", year) + ", ctrls_str,
+           " | ", id_col, " + year"))
       m <- tryCatch(feols(f, data = dd, cluster = cluster_var),
                      error = function(e) {
                        cat(sprintf("  %s feols error: %s\n", cl, conditionMessage(e))); NULL })
@@ -139,7 +140,7 @@ cat("Cousub-level binary Sun-Abraham IW event study\n")
 cat("========================================================\n")
 e_cousub <- new.env()
 sys.source(file.path(project_dir, "q3_unified_full_table.R"), envir = e_cousub)
-cousub_panel <- copy(e_cousub$panel)
+cousub_panel <- as.data.table(copy(e_cousub$panel))
 cousub_outcomes <- c("log_live_and_work","log_in_commuters","log_total_residents",
                       "share_live_in","share_work_outside")
 cousub_ctrls <- e_cousub$ctrls
@@ -155,7 +156,7 @@ cat("SD-level binary Sun-Abraham IW event study\n")
 cat("========================================================\n")
 e_sd <- new.env()
 sys.source(file.path(project_dir, "q3_unified_sd_level.R"), envir = e_sd)
-sd_panel <- copy(e_sd$sd_panel)
+sd_panel <- as.data.table(copy(e_sd$sd_panel))
 sd_outcomes <- c("log_live_and_work","log_in_commuters","log_total_residents",
                   "share_live_in","share_work_outside")
 sd_ctrls <- intersect(c("mean_muni_rate", e_sd$sd_share_ctrls), names(sd_panel))
@@ -172,6 +173,8 @@ cat("========================================================\n")
 # Lightweight block panel: load block panel, attach cell_muni / c_muni
 # from cousub_panel via muni key. Avoids the heavy 37M-row stacked panel.
 block_panel <- as.data.table(readRDS(file.path(data_dir, "pa_block_panel.rds")))
+# cousub_panel was loaded earlier when we sourced q3_unified_full_table
+# into e_cousub. Use that for cell_muni / c_muni / muni share controls.
 cousub_meta <- unique(cousub_panel[, .(muni, year, cell_muni, c_muni,
                                         share_police, share_streets, share_debt_svc,
                                         share_eit, share_re, share_intergov)])
