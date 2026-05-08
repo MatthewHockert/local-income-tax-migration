@@ -404,4 +404,61 @@ make_act32_table(file.path(in_dir, "act32_split_block.csv"),
                   es_outcomes_block, muni_cells, "Block",
                   file.path(out_dir, "act32_block.tex"))
 
+# ---------------------------------------------------------------------------
+# Dose-tercile linearity tables (Inc-bind only)
+# ---------------------------------------------------------------------------
+make_tercile_table <- function(coef_csv, level_label, out_path) {
+  if (!file.exists(coef_csv) || file.size(coef_csv) == 0) {
+    cat(sprintf("Skipping tercile %s\n", level_label)); return(invisible())
+  }
+  a <- fread(coef_csv)
+  outcomes <- unique(a$outcome)
+  rows <- character(0)
+  for (terc in c("small","medium","large")) {
+    label <- paste0("\\textbf{", terc, "} ($n = ",
+                    a[tercile == terc, n_units[1]], "$)")
+    r_row <- paste0(label, " ")
+    s_row <- paste0(strrep(" ", nchar(label) - 4), "(SE) ")
+    for (o in outcomes) {
+      r <- a[tercile == terc & outcome == o]
+      if (nrow(r) == 1) {
+        r_row <- paste0(r_row, " & ", fmt(r$est, 3), stars(r$p))
+        s_row <- paste0(s_row, " & (", fmt(r$se, 3), ")")
+      } else {
+        r_row <- paste0(r_row, " & ---"); s_row <- paste0(s_row, " & ")
+      }
+    }
+    rows <- c(rows, paste0(r_row, " \\\\"), paste0(s_row, " \\\\"))
+  }
+  col_spec <- paste0("l", paste(rep("c", length(outcomes)), collapse = ""))
+  header   <- paste0("Dose tercile & ",
+                     paste0("\\texttt{", sapply(outcomes, texsafe), "}",
+                            collapse = " & "),
+                     " \\\\")
+  body <- c(
+    "\\begin{table}[H]",
+    "  \\centering",
+    sprintf("  \\caption{Dose-magnitude linearity --- %s level. Inc-bind units split by tercile of cumulative $\\Delta\\tau$ at $+5$. Per-pp dose-response coefficients should be approximately constant across terciles under linearity.}", level_label),
+    sprintf("  \\label{tab:tercile_%s}", tolower(level_label)),
+    "  \\small",
+    sprintf("  \\begin{tabular}{%s}", col_spec),
+    "    \\toprule",
+    paste0("    ", header),
+    "    \\midrule",
+    paste0("    ", rows),
+    "    \\bottomrule",
+    "  \\end{tabular}",
+    "\\end{table}"
+  )
+  writeLines(body, out_path)
+  cat(sprintf("Wrote %s\n", out_path))
+}
+
+make_tercile_table(file.path(in_dir, "tercile_cousub.csv"), "Cousub",
+                    file.path(out_dir, "tercile_cousub.tex"))
+make_tercile_table(file.path(in_dir, "tercile_sd.csv"), "SD",
+                    file.path(out_dir, "tercile_sd.tex"))
+make_tercile_table(file.path(in_dir, "tercile_block.csv"), "Block",
+                    file.path(out_dir, "tercile_block.tex"))
+
 cat("\nDone. Tables written to paper/tables/.\n")

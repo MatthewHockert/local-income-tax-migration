@@ -1964,10 +1964,16 @@ the precondition that activates it.
 The stacked-continuous specification imposes linearity in dose:
 $\beta^s_k \cdot \Delta\tau^s_{it}$. Whether the per-pp coefficient is
 constant across small and large rate changes is an assumption rather
-than an output of the design. We test it by splitting Inc-bind munis
-into terciles of total post-event dose and re-estimating
-the headline regression on \texttt{log(live\_and\_work)} for each
-tercile separately, with NC controls as in the headline.
+than an output of the design. We test it by splitting Inc-bind units
+into terciles of total post-event dose at each estimating unit and
+re-estimating the headline regression for each tercile separately,
+with NC controls as in the headline.
+
+\input{tables/tercile_cousub.tex}
+
+\input{tables/tercile_sd.tex}
+
+\input{tables/tercile_block.tex}
 
 \begin{table}[H]
     \centering
