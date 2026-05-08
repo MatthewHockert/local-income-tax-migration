@@ -1123,6 +1123,21 @@ estimation of Equation~(\ref{eq:headline}) for one outcome.
 
 \input{tables/headline_muni_sd_side_results.tex}
 
+\begin{figure}[H]
+  \centering
+  \caption{Cousub-level realized-dose ES on \texttt{log(live\_and\_work)} by cell.}
+  \label{fig:cousub_es_logLW}
+  \includegraphics[width=0.95\textwidth]{../figures/headline_es_log_live_and_work.png}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} per-pp realized-dose coefficient at
+    each event-time, faceted by cell, cousub-level stacked-continuous
+    DiD with both muni and SD cell $\times$ dose interactions.
+    Reference period $k = -1$ omitted. Pre-event leads test parallel
+    trends across dose magnitudes. The Inc-bind facet has a positive
+    pre-event lead consistent with high-eventual-dose muni selection.
+  \end{minipage}
+\end{figure}
+
 \subsection{School-District-Level Results}
 \label{subsec:results-sd}
 
@@ -1134,6 +1149,21 @@ constituent muni rates as a control, and SD-level fiscal share controls
 constructed from Census F-33 data.
 
 \input{tables/headline_sd_cell_results.tex}
+
+\begin{figure}[H]
+  \centering
+  \caption{SD-level realized-dose ES on \texttt{log(live\_and\_work)} by cell.}
+  \label{fig:sd_es_logLW}
+  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_live_and_work.png}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} per-pp realized-dose coefficient at
+    each event-time, SD-level stacked-continuous DiD. The
+    SD-resident-rate Inc-bind coefficient is positive
+    (qualitatively different from cousub level), consistent with
+    SD-wide aggregation absorbing the within-cousub muni-local
+    response.
+  \end{minipage}
+\end{figure}
 
 \subsection{Block-Level Results}
 \label{subsec:results-block}
@@ -1151,6 +1181,28 @@ is exposed to a single muni and a single SD.
 \input{tables/headline_block_muni_results.tex}
 
 \input{tables/headline_block_sd_results.tex}
+
+\begin{figure}[H]
+  \centering
+  \caption{Block-level realized-dose ES on \texttt{log(home\_count)} by cell.}
+  \label{fig:block_es_homecount}
+  \includegraphics[width=0.95\textwidth]{../figures/block_es_full_log_home_count.png}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} per-pp realized-dose coefficient at
+    each event-time, block-level stacked-continuous DiD with
+    block-by-stack and year-by-stack FE, two-way clustered at muni
+    and SD. The Inc-bind facet shows a near-zero pre-event lead
+    ($\beta_{\text{pre}} = -0.027$, $|t| < 1$), the cleanest
+    parallel-trends test among the three estimating units.
+  \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{Block-level realized-dose ES on \texttt{home\_in\_muni\_share} by cell.}
+  \label{fig:block_es_homeinmuni}
+  \includegraphics[width=0.95\textwidth]{../figures/block_es_full_home_in_muni_share.png}
+\end{figure}
 
 \subsection{Cousub-Level Headline Detail}
 \label{subsec:results-headline-detail}
@@ -1626,6 +1678,21 @@ muni-resident-rate cell coefficients by industry bucket.
 
 \input{tables/industry_cousub.tex}
 
+\begin{figure}[H]
+  \centering
+  \caption{Industry decomposition: muni-Inc-bind cell coefficient on log(jobs) per pp, cousub level.}
+  \label{fig:industry_inc_bind}
+  \includegraphics[width=0.75\textwidth]{../figures/industry_inc_bind.png}
+  \begin{minipage}{0.85\textwidth}
+    \footnotesize \textit{Notes:} per-pp dose-response coefficient on
+    Inc-bind by industry bucket; 95\% CI bars. Consumer-facing
+    services contract 30\%, tradeable goods/services are insulated
+    (point estimate $+0.236$, statistically indistinguishable from
+    zero). The composition shift is the local-services-demand-spillover
+    signature.
+  \end{minipage}
+\end{figure}
+
 Consumer-facing jobs fall by 30 percent in the Inc-bind cell; tradeable
 jobs do not (point estimate is $+0.236$, statistically indistinguishable
 from zero). The composition shift is captured by \texttt{share\_tradeable},
@@ -1864,6 +1931,22 @@ parentheses.
 \input{tables/sa_binary_cousub.tex}
 
 \input{tables/sa_binary_sd.tex}
+
+\begin{figure}[H]
+  \centering
+  \caption{Binary Sun--Abraham IW ES on \texttt{log(live\_and\_work)}: cousub level (left) vs SD level (right).}
+  \label{fig:sa_binary_logLW}
+  \begin{minipage}{\textwidth}
+    \centering
+    \includegraphics[width=0.49\textwidth]{../figures/sa_binary_cousub_log_live_and_work.png}\hfill
+    \includegraphics[width=0.49\textwidth]{../figures/sa_binary_sd_log_live_and_work.png}
+  \end{minipage}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} interaction-weighted dynamic ATTs by
+    event-time, faceted by cell. Reference period $k = -1$ omitted.
+    Block-level SA-IW figures are not reported (see caveat below).
+  \end{minipage}
+\end{figure}
 
 \paragraph{Block-level SA-IW caveat.}
 The IW estimator at the block level is sensitive to the very large
