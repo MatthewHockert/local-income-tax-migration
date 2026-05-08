@@ -1508,34 +1508,7 @@ Using LODES Workplace Area Characteristics aggregated to the cousub
 by NAICS supersector, Table~\ref{tab:industry} reports the muni-Inc-bind
 cell coefficients by industry bucket.
 
-\begin{table}[H]
-    \centering
-    \caption{Industry decomposition: muni-Inc-bind cell, log(jobs by sector)}
-    \label{tab:industry}
-    \small
-    \begin{tabular}{lccc}
-        \toprule
-        Outcome & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
-        \midrule
-        log(jobs total)         & $-0.258^{***}$ (0.087) & $-0.235^{***}$ (0.074) & $-0.074$ (0.115) \\
-        log(jobs \emph{consumer-facing})  & $-0.297^{**}$ (0.149) & $-0.146^{**}$ (0.067) & $-0.029$ (0.128) \\
-        log(jobs \emph{tradeable})       & $+0.236$ (0.283)       & $-0.150$ (0.099)      & $-0.265^{*}$ (0.136) \\
-        log(jobs health/edu)    & $-0.253^{*}$ (0.153)  & $-0.059$ (0.049)      & $+0.103$ (0.133) \\
-        log(jobs public)        & $-0.706^{*}$ (0.408)  & $-0.252$ (0.283)      & $+0.147$ (0.374) \\
-        share consumer          & $-0.003$ (0.023)      & $+0.005$ (0.015)      & $-0.002$ (0.018) \\
-        share tradeable         & $+0.108^{*}$ (0.055)  & $+0.028$ (0.032)      & $-0.025$ (0.027) \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} Industry buckets:
-        consumer-facing = retail (NAICS 44--45), arts (71), accommodation/food (72), other services (81).
-        Tradeable = manufacturing (31--33), wholesale (42), information (51), finance (52), prof services (54).
-        Same regression structure as Table~\ref{tab:headline}.
-        Cluster-robust SEs by muni in parentheses.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
+\input{tables/industry_cousub.tex}
 
 Consumer-facing jobs fall by 30 percent in the Inc-bind cell; tradeable
 jobs do not (point estimate is $+0.236$, statistically indistinguishable
@@ -1544,6 +1517,17 @@ which rises 11 percentage points. The total-jobs decline operates
 \emph{via} local-services demand spillover, not via direct nonresident-tax
 incidence.
 
+% Spillover subsection: dropped from active scope. Prior version's
+% ring-based contiguity spillover analysis (where do Inc-bind muni
+% leavers go?) is no longer part of the headline pipeline. The earlier
+% draft is preserved in git history; the result was that ring-1 munis
+% lose live_and_work workers ($-0.151^{***}$) while ring-2 munis gain
+% them ($+0.089^{**}$), consistent with shared local-labor-market
+% shocks rather than direct flow capture. Removing this section keeps
+% the paper aligned with the active three-level continuous-stacked-DiD
+% structure.
+
+\iffalse
 \subsection{Spillover: Where Do Leavers Go?}
 \label{subsec:results-spillover}
 
@@ -1592,6 +1576,7 @@ contraction caused by $A$ losing residents), so their own
 \texttt{live\_and\_work} count falls in tandem. Ring-2 absorption
 captures genuine residential moves to munis that are nearby but
 economically separable from $A$.
+\fi
 
 %==========================================================
 \section{Heterogeneity}
@@ -2022,9 +2007,14 @@ strict superset of NC.
 
 Table~\ref{tab:rob-controls} compares the headline coefficients on
 Inc-bind, Inc-becomes, and Inc-nobind cells across the two control
-definitions on six outcomes.
+definitions on six outcomes. The clean-in-window check is run at all
+three estimating units.
 
 \input{tables/altctrl_cousub.tex}
+
+\input{tables/altctrl_sd.tex}
+
+\input{tables/altctrl_block.tex}
 
 \begin{table}[H]
     \centering
@@ -2142,25 +2132,31 @@ the estimates of \texttt{in\_commuters} for border munis.
 \label{sec:conclusion}
 %==========================================================
 
-This paper develops a unified muni-level design for identifying the
-behavioral response to local income tax changes. The design exploits
-the piecewise structure of the Pennsylvania EIT
-($T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$) by classifying
-each muni-rate event by direction and binding-state transition. Five
-staggered-DiD estimators are run on a single panel with three
-simultaneous treatments (muni resident, school district, muni
-nonresident rates), each separately decomposed by binding cells. The
-within-design placebo is the Inc-nobind cell: rate hikes that do not
-move the bill are predicted to produce zero behavioral response, and
-do.
+This paper develops a unified continuous stacked difference-in-
+differences design for identifying the behavioral response to local
+income tax changes. The design exploits the piecewise structure of the
+Pennsylvania EIT
+($T = \max(\tau^{M} + \tau^{SD}, \tau^{nr})$) by classifying
+each rate-setter's events by direction and binding-state transition.
+The model is estimated at three units of observation---municipality,
+school district, and census block---to align the treatment definition
+with the level at which each rate-setting body sets policy. Within each
+level, the muni resident-rate cells and the SD resident-rate cells
+enter a single regression, and a separate realized-dose event-study
+diagnostic tests strong parallel trends across dose magnitudes.
 
 The headline finding is that a 1 pp muni-resident-rate increase in
-the binding cell reduces \texttt{live\_and\_work} workers by 40
-percent, total jobs by 27 percent, and total residents by 10
-percent. School district rate changes do not move residents in any
-cell, even when SD changes flip the binding state. The work-side
-nonresident rate moves nonresident workers but not residents---channel
-separation is clean. Industry decomposition shows the total-jobs
+the binding cell reduces \texttt{live\_and\_work} workers by 40 percent
+at the cousub level and reduces \texttt{log\_home\_count} (the block-
+level analogue) by 30 percent. Both cousub and block estimates direct-
+ionally agree; the block-level estimate has the cleaner pre-trend
+diagnostic ($\beta_{\text{pre}} = -0.027$, $|t| < 1$) under the
+realized-dose Sun--Abraham specification, while the cousub estimate
+exhibits a positive lead coefficient (+0.149) consistent with high-dose
+muni selection. School district rate changes do not move residents
+through the binding channel even when SD changes flip the binding
+state, in any of the three estimating units. Industry decomposition
+shows the total-jobs
 decline is concentrated in consumer-facing sectors (retail, food, arts,
 other services), consistent with local-services demand spillover from
 residents leaving rather than direct nonresident-tax incidence.
@@ -2171,14 +2167,15 @@ specific magnitude is therefore framed as associational rather than
 causal. The pooled-cell headline is parallel-trends-clean and is the
 defensible quantity.
 
-The unified-design framework---one panel, multiple treatments
-decomposed by institutional binding cells, five estimators in
-parallel, within-design placebo---is portable to other settings where
-a piecewise tax rule generates predictable cross-sectional variation
-in whether a rate change moves the bill. Local sales taxes with use-
-tax-credit rules, county-level income-tax credits across state
-borders, and special tax districts with overlapping jurisdiction are
-candidate extensions.
+The unified-design framework---one continuous stacked DiD spec
+estimated at three estimating units, two rate-setters' cells
+decomposed jointly by institutional binding state, realized-dose ES
+as a strong-parallel-trends diagnostic, within-design placebo cell---
+is portable to other settings where a piecewise tax rule generates
+predictable cross-sectional variation in whether a rate change moves
+the bill. Local sales taxes with use-tax-credit rules, county-level
+income-tax credits across state borders, and special tax districts
+with overlapping jurisdiction are candidate extensions.
 
 \section*{Acknowledgments}
 % TODO

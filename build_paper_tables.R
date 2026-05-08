@@ -472,5 +472,21 @@ if (file.exists(file.path(in_dir, "altctrl_cousub.csv"))) {
     file.path(out_dir, "altctrl_cousub.tex"),
     "Alternative control group (clean-in-window): Cousub-level Inc cells")
 }
+if (file.exists(file.path(in_dir, "altctrl_sd.csv"))) {
+  make_cell_table(
+    file.path(in_dir, "altctrl_sd.csv"),
+    file.path(in_dir, "altctrl_sd_diag.csv"),
+    es_outcomes_cousub, muni_cells, "treat_cell",
+    file.path(out_dir, "altctrl_sd.tex"),
+    "Alternative control group (clean-in-window): SD-level Inc cells")
+}
+if (file.exists(file.path(in_dir, "altctrl_block.csv"))) {
+  make_cell_table(
+    file.path(in_dir, "altctrl_block.csv"),
+    file.path(in_dir, "altctrl_block_diag.csv"),
+    es_outcomes_block, muni_cells, "treat_cell",
+    file.path(out_dir, "altctrl_block.tex"),
+    "Alternative control group (clean-in-window): Block-level Inc cells")
+}
 
 cat("\nDone. Tables written to paper/tables/.\n")

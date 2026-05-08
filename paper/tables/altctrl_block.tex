@@ -1,0 +1,30 @@
+\begin{table}[H]
+  \centering
+  \caption{Alternative control group (clean-in-window): Block-level Inc cells}
+  \label{tab:altctrl_block}
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    Cell & \texttt{log\_home\_count} & \texttt{log\_work\_count} & \texttt{home\_in\_muni\_share} & \texttt{share\_work\_outside} \\
+    \midrule
+    \textbf{Inc-bind}  & -0.163$^{***}$ & 0.084 & -0.023 & 0.023 \\
+                  & (0.047) & (0.098) & (0.028) & (0.028) \\
+    \textbf{Inc-becomes}  & -0.025 & -0.003 & -0.037$^{***}$ & 0.037$^{***}$ \\
+                  & (0.027) & (0.053) & (0.009) & (0.009) \\
+    \textbf{Inc-nobind}  & 0.028 & -0.045 & -0.022 & 0.022 \\
+                  & (0.081) & (0.079) & (0.021) & (0.021) \\
+    \textbf{Dec-bind}  & 0.060 & 0.387 & -0.041 & 0.041 \\
+                  & (0.081) & (0.510) & (0.033) & (0.033) \\
+    \textbf{Dec-becomes-non}  & 0.544$^{*}$ & -0.336$^{**}$ & -0.046 & 0.046 \\
+                  & (0.319) & (0.169) & (0.063) & (0.063) \\
+    \textbf{Dec-nobind}  & 0.240$^{***}$ & -0.097 & 0.023$^{***}$ & -0.023$^{***}$ \\
+                  & (0.085) & (0.183) & (0.007) & (0.007) \\
+    \midrule
+    
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+  \end{minipage}
+\end{table}
