@@ -1698,6 +1698,61 @@ disclose. The Inc-nobind cell post-event coefficient on
 log(live\_and\_work) is null ($-0.062$), so the placebo holds on the
 headline outcome despite the pre-trend imperfection.
 
+\subsection{Pre-Trend Tests: Binary Sun--Abraham IW Event Study}
+\label{subsec:rob-sa-binary}
+
+The realized-dose event study in
+Section~\ref{subsec:rob-pretrend} uses each unit's eventual cumulative
+$\Delta\tau$ as a continuous treatment-magnitude tag interacted with
+relative-event-time indicators. As a complementary pre-trend
+diagnostic, I additionally estimate a binary Sun--Abraham
+interaction-weighted (IW) event study \citep{sunab2021}, which is
+robust to the negative-weighting problem that contaminates standard
+TWFE event-study coefficients under heterogeneous treatment effects
+across cohorts. Unlike the realized-dose specification, the binary
+SA-IW estimator does not test parallel trends across dose magnitudes;
+it tests the simpler condition that treated and never-changed units
+were on parallel pre-event trajectories on average.
+
+The estimating equation, run separately for each cell $c$ and outcome,
+is
+\begin{equation}
+Y_{it} = \alpha_i + \gamma_t
++ \sum_{e \in C_c} \sum_{k \neq -1} \delta^c_{e,k}\,
+\mathbf{1}\{c_i^M = e\}\,\mathbf{1}\{\ell_{it} = k\}
++ \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it},
+\label{eq:sunab-binary}
+\end{equation}
+where $C_c$ is the set of cohort years on which any unit in cell $c$
+experiences its first event, $\mathbf{1}\{c_i^M = e\}$ assigns each
+treated unit to its own cohort, and $\mathbf{1}\{\ell_{it} = k\}$ is the
+relative-event-time indicator. The IW aggregation reweights the
+cohort-specific dynamic effects $\delta^c_{e,k}$ into a single
+event-time coefficient $\widetilde{\delta}^c_k$ using cohort shares as
+weights, producing event-study coefficients that are unbiased for the
+average dynamic treatment effect at event-time $k$ even under arbitrary
+treatment-effect heterogeneity across cohorts.
+
+The two pre-trend diagnostics are complementary. The realized-dose ES
+tests \emph{strong} parallel trends (units with larger eventual
+treatment intensity should not show differential pre-event
+trajectories), the assumption required for continuous-DiD
+identification under the recent literature
+\citep{callawaygoodmanbaconsantanna2024,dechaisemartin2024}. The binary
+SA-IW ES tests the weaker average parallel-trends assumption (treated
+units on average should not differ from never-changed units in the
+pre-event period). Pass on both is reassuring; fail on the realized-
+dose but pass on the binary indicates that some high-dose units carry
+differential trajectories not captured by simple treated-vs-control
+comparison.
+
+% TODO: Implementation. Run via fixest's sunab() helper, e.g.
+%   feols(y ~ sunab(c_muni, year) + ctrls | muni + year, data = d,
+%         cluster = ~muni)
+% per cell, restricted to NC + that cell. Save IW-aggregated
+% pre-event leads at k = -5..-2 to data/q3_unified/sunab_binary_att.csv,
+% then build a table here parallel to Table~\ref{tab:rob-pretrend}.
+
 \subsection{Pre/Post Act 32 Decomposition}
 \label{subsec:rob-act32}
 
