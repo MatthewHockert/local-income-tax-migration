@@ -677,17 +677,20 @@ Census Bureau Building Permits Survey (BPS), place-level annual files,
 \end{figure}
 
 %==========================================================
-\section{Empirical Strategy: Unified Muni-Level Design}
+\section{Empirical Strategy}
 \label{sec:strategy}
 %==========================================================
 
-The unified empirical design is a single muni $\times$ year panel with
-three simultaneous treatments---muni resident rate, school district rate,
-muni nonresident rate---each separately decomposed into binding-state
-cells. Five staggered-DiD estimators are run on the same panel. The
-headline estimator is stacked continuous DiD; Q2 TWFE pooled,
-single-event TWFE, stacked binary, and DCDH \citep{dechaisemartin2024}
-provide triangulation.
+The empirical framework is a continuous stacked
+difference-in-differences design with binding-state cell decomposition,
+estimated at three units of observation: municipality, school district,
+and census block. Each estimating unit aligns the regression with a
+different level of treatment aggregation, producing a triangulation across
+units rather than across estimators. The first-difference dose-response
+specification estimates the post-event effect of a one percentage-point
+change in the relevant tax rate; a separate realized-dose event-study
+diagnostic tests for differential pre-event trajectories across units of
+varying eventual treatment intensity.
 
 \subsection{Setup}
 \label{subsec:setup}
@@ -915,43 +918,88 @@ NC trend on the same side. The triple decomposition (muni $\times$ SD
 $\times$ nr) lets us read off, in a single regression: which rate moves
 which outcome, conditional on the muni's binding state on that side.
 
-\subsection{Triangulation Estimators}
-\label{subsec:triangulation}
+\subsection{Three Estimating Units}
+\label{subsec:three-units}
 
-Four additional estimators run on the same panel for cross-validation:
+The headline equation~(\ref{eq:headline}) is estimated at three units of
+observation. The choice of unit interacts directly with how the two
+rate-setting bodies (muni and school district) enter the regression.
 
-\paragraph{Q2 TWFE pooled (no cells).}
-The simplest specification: pool all rate variation, no cell decomposition.
-Estimating equation:
+\paragraph{Municipality level.}
+Unit $= $ cousub $\times$ year. Workplace-panel and residence-panel
+outcomes are constructed by aggregating LODES origin--destination flows
+over blocks within the cousub. The municipal resident rate enters the
+regression at its native level. The school district resident rate is
+assigned to each muni-year as $\max(\tau^{SD})$ across the school
+districts the muni reports to in DCED records; for the 97.6\% of munis
+that report to a single SD this is exact, and for the 2.4\% that span
+multiple SDs the max-aggregation is conservative. Fiscal share controls
+are taken from the muni AFR. Fixed effects: muni-by-stack and year-by-stack.
+Standard errors clustered at the muni level.
+
+\paragraph{School district level.}
+Unit $= $ SD $\times$ year. Outcomes are constructed by aggregating
+LODES OD flows over blocks within the SD. The SD resident rate enters
+at its native level. The municipal resident rate is assigned to each
+SD-year as the within-SD aggregation across the SD's constituent
+munis. Fiscal share controls are taken from Census F-33 SD-level
+revenue and expenditure data, mirroring the muni AFR shares. Fixed
+effects: SD-by-stack and year-by-stack. Standard errors clustered at
+the SD level.
+
+\paragraph{Block level.}
+Unit $= $ census block $\times$ year. Each block is assigned its own
+muni and its own SD, so both rate-setters' policy variation enters the
+regression at its native level with no within-jurisdiction aggregation.
+Outcomes are block-defined: log of workers living in the block, log of
+workers working in the block, the share of block residents who work in
+the block's own municipality, and the share of block residents who
+work outside the municipality. Fiscal share controls include both muni
+AFR shares and F-33 SD shares, since each block is exposed to both
+governments. Fixed effects: block-by-stack and year-by-stack.
+Standard errors two-way clustered at the muni and SD levels.
+
+The block level provides the only specification in which both
+rate-setters enter the regression at their native level with no
+within-jurisdiction aggregation. The muni and SD levels remain useful
+because each aligns the unit of observation with a single rate-setter's
+jurisdiction, providing a cleaner identification of that body's own
+policy effect.
+
+\subsection{Pre-Trend Diagnostic: Realized-Dose Event Study}
+\label{subsec:realized-dose-es}
+
+Because the first-difference dose $\Delta\tau_{it}$ is mechanically
+zero in all pre-event periods by construction, the headline
+specification cannot estimate conventional pre-treatment lead
+coefficients. To assess parallel trends in the cross-dose sense
+required by the recent continuous-DiD literature
+\citep[][]{callawaygoodmanbaconsantanna2024,dechaisemartin2024}, I
+estimate a separate event-study specification using each unit's
+realized cumulative dose,
+$\widetilde{D}_i = \tau^M_{i, c+5} - \tau^M_{i,c-1}$, which is constant
+within unit and varies across units in proportion to eventual treatment
+intensity.
+
+Concretely, for each muni-side cell $c$, restrict to the subset of
+units in $\{$NC$, c\}$ and run
 \begin{equation}
-Y_{it} = \alpha_i + \gamma_t + \beta^{\text{muni}} \tau^{\text{res,muni}}_{it} + \beta^{\text{SD}} \tau^{\text{SD}}_{it} + \beta^{\text{nr}} \tau^{\text{nr}}_{it} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it}.
-\label{eq:twfe-pooled}
+Y_{it} = \alpha_{\tilde i} + \gamma_{\tilde t}
++ \sum_{k \neq -1} \beta^M_k\, \mathbf{1}\{\ell_{it} = k\}\,
+\widetilde{D}_i
++ \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon_{it},
+\label{eq:realized-dose-es}
 \end{equation}
-Subject to negative-weighting concerns under heterogeneous staggered
-effects \citep{goodmanbacon2021}; included for comparison.
+where $\ell_{it} = t - c_i^M$ is event-time relative to the muni's first
+rate event. The $\beta^M_k$ at pre-event leads ($k \leq -2$) test
+whether units with larger eventual rate changes were on differentially
+sloped pre-event trajectories; under parallel trends in the strong
+sense, these coefficients are zero.
 
-\paragraph{Single-event TWFE.}
-Same as Q2 but restricted to munis with at most two rate-change events
-on each side (drops multi-event munis). Mitigates the staggered-DiD
-issue partially.
-
-\paragraph{Stacked binary.}
-Same stack construction as the headline, but replaces the continuous
-$\Delta\tau$ with a binary post-event indicator interacted with cell:
-\begin{equation}
-Y_{\tilde{i}\tilde{t}} = \alpha_{\tilde{i}} + \gamma_{\tilde{t}} + \sum_{s} \sum_{k \neq \text{NC}} \delta^s_k \cdot \mathbf{1}\{\ell_{it} \geq 0\} \cdot \mathbf{1}\{\text{cell}^s_i = k\} + \mathbf{X}'_{it}\boldsymbol{\phi} + \varepsilon.
-\label{eq:stacked-binary}
-\end{equation}
-Loses dose information but avoids strict reliance on continuous-treatment
-identification.
-
-\paragraph{DCDH \citep{dechaisemartin2024}.}
-Continuous-treatment dynamic DiD applied cell-by-cell: for each cell
-$k$ on side $s$, restrict the sample to munis in cell $k$ plus NC
-munis on side $s$ and run \texttt{did\_multiplegt\_dyn} with treatment
-$\tau^s$. Reports the average causal response (ACR) per pp, with
-analytical SEs (the package's authors recommend bootstrap; we report
-analytical and flag the recommendation as a robustness pass).
+The post-event coefficients ($\beta^M_k$ for $k \geq 0$) recover the
+per-pp dose-response at each event time and average to the
+corresponding cell coefficient in the headline specification when the
+unit's rate path is a single step at the event year.
 
 \subsection{Sample Variants}
 \label{subsec:sample-variants}
@@ -1008,16 +1056,25 @@ tractable and signal survives.
 \label{sec:results}
 %==========================================================
 
-This section reports the headline stacked-continuous DiD estimates with
-full diagnostics (Section~\ref{subsec:results-headline}), the within-
-design placebo (Section~\ref{subsec:results-placebo}), channel
-separation across the three rate sides (Section~\ref{subsec:results-channel}),
-the event-study dynamics (Section~\ref{subsec:results-es}), the
-industry decomposition (Section~\ref{subsec:results-mechanism}), and
-the spatial spillover (Section~\ref{subsec:results-spillover}). The
-stacked-continuous DiD is the headline specification throughout. The
-four cross-estimator robustness comparisons (Q2 TWFE pooled, single-event
-TWFE, stacked binary, DCDH) appear in Section~\ref{subsec:rob-triangulation}.
+This section reports the continuous stacked-DiD dose-response estimates
+across the three estimating units (municipality, school district, and
+census block). The municipality-level results are reported in detail in
+Sections~\ref{subsec:results-cellcounts}--\ref{subsec:results-es}; the
+school-district-level and block-level results triangulate the
+municipality-level findings against treatment specifications that align
+the unit of observation with each rate-setting body's jurisdiction at
+its native level. The within-design placebo cell (Inc-nobind) appears
+in Section~\ref{subsec:results-placebo}, and the channel separation
+across the muni and SD resident rates appears in
+Section~\ref{subsec:results-channel}. Industry-decomposition,
+muni-type-heterogeneity, and pre-/post-Act-32 results are reported in
+the Heterogeneity section (Section~\ref{sec:heterogeneity}).
+
+% TODO: Add school-district-level and block-level subsections once the
+% updated regressions complete on the new (muni + SD cell x dose)
+% specification with SD-level fiscal share controls. Tables to be
+% built from data/q3_unified/sd_level_results.csv and
+% data/q3_unified/block_es_full_att.csv (or equivalent updated outputs).
 
 \subsection{Cell Counts}
 \label{subsec:results-cellcounts}
@@ -1490,69 +1547,21 @@ captures genuine residential moves to munis that are nearby but
 economically separable from $A$.
 
 %==========================================================
-\section{Robustness}
-\label{sec:robustness}
+\section{Heterogeneity}
+\label{sec:heterogeneity}
 %==========================================================
 
-This section reports four robustness analyses:
-heterogeneity by muni type with pre-trend diagnostics
-(Section~\ref{subsec:rob-hetero}), sample-variant comparison across
-the strict/filled/drop NA-handling specs
-(Section~\ref{subsec:rob-sample}), pre-trend tests by cell from the
-binary Sun-Abraham event study (Section~\ref{subsec:rob-pretrend}),
-and network-stability and spillover-robustness checks
-(Section~\ref{subsec:rob-network}), and cross-estimator triangulation
-(Section~\ref{subsec:rob-triangulation}).
+This section reports three sets of heterogeneity decompositions of the
+headline dose-response: by muni type
+(Section~\ref{subsec:rob-hetero}), industry composition of the
+job-side outcomes (Section~\ref{subsec:het-industry}), and the
+pre-/post-Act-32 institutional break (Section~\ref{subsec:rob-act32}).
+Each decomposition is reported across the three estimating units
+(muni, school district, block) where available.
 
-\subsection{Cross-Estimator Triangulation}
-\label{subsec:rob-triangulation}
-
-The headline is the stacked-continuous DiD estimate.
-Table~\ref{tab:rob-triangulation} reports the muni-resident-rate
-Inc-cell coefficients on \texttt{log(live\_and\_work)} across four
-alternative estimators.
-
-\begin{table}[H]
-    \centering
-    \caption{Cross-estimator triangulation: \texttt{log(live\_and\_work)} on muni-rate Inc cells}
-    \label{tab:rob-triangulation}
-    \small
-    \begin{tabular}{lccc}
-        \toprule
-        Estimator & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
-        \midrule
-        Q2 TWFE pooled                & $-0.413^{***}$ (0.088) & $-0.219^{***}$ (0.069) & $-0.139$ (0.123) \\
-        Single-event TWFE ($\le$2)    & $-0.419^{***}$ (0.124) & $-0.256^{***}$ (0.067) & $-0.379$ (0.263) \\
-        Stacked binary                & $-0.149^{***}$ (0.049) & $-0.108^{*}$  (0.057) & $-0.048$ (0.048) \\
-        \textbf{Stacked continuous (headline)} & $\bm{-0.402^{***}}$ (0.096) & $\bm{-0.181^{**}}$ (0.072) & $-0.062$ (0.169) \\
-        DCDH (effects=3 horizon)      & $-0.102$ (0.082)       & $-0.012$ (0.047)       & $-0.034$ (0.197) \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} Each row is a separate estimator;
-        each column is the muni-rate Inc-cell coefficient on
-        \texttt{log(live\_and\_work)}. Share-based controls and the
-        drop-incomplete sample throughout. Q2 TWFE pooled
-        (Eq.~\ref{eq:twfe-pooled}) is muni-FE plus year-FE with no cell
-        decomposition. Single-event TWFE restricts to munis with at
-        most two rate-change events on each side. Stacked binary
-        replaces continuous $\Delta\tau$ with a binary post-event
-        indicator. Stacked continuous (headline) is
-        Equation~(\ref{eq:headline}). DCDH \citep{dechaisemartin2024}
-        is run cell-by-cell with effects=3, placebo=2 and analytical
-        SEs. Cluster-robust SEs by muni in parentheses.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
-
-The Inc-bind cell is consistently negative across every estimator;
-the placebo Inc-nobind is null in stacked binary, stacked continuous,
-and DCDH. Q2 TWFE pooled and single-event TWFE show negative-but-insig
-placebo coefficients consistent with the residual cross-cohort
-contamination Goodman-Bacon-style negative weighting can produce.
-The stacked continuous estimator (the headline) avoids this
-contamination via clean within-stack control sets.
+% TODO: industry decomposition is currently in the Results section
+% (\ref{subsec:results-industry}); should be relocated here in a future
+% pass for cleaner narrative flow.
 
 \subsection{Heterogeneity by Muni Type}
 \label{subsec:rob-hetero}
@@ -1592,6 +1601,22 @@ muni-Inc-bind cell coefficient on log(live\_and\_work) by muni type.
 The 8 cities drive the headline. The 32 borough and township Inc-bind
 munis show direction-consistent but individually insignificant effects.
 
+%==========================================================
+\section{Robustness}
+\label{sec:robustness}
+%==========================================================
+
+This section reports robustness analyses of the headline dose-response:
+sample-variant comparison across the strict/filled/drop NA-handling
+specifications (Section~\ref{subsec:rob-sample}), the realized-dose
+event-study pre-trend diagnostic (Section~\ref{subsec:rob-pretrend}),
+dose-magnitude linearity (Section~\ref{subsec:rob-tercile}), and an
+alternative control-group definition
+(Section~\ref{subsec:rob-clean-controls}). Note: the pre-/post-Act-32
+decomposition (Section~\ref{subsec:rob-act32}) is a heterogeneity
+exercise but currently lives in this section pending paper-flow
+restructuring.
+
 \subsection{Sample Variant Robustness}
 \label{subsec:rob-sample}
 
@@ -1606,16 +1631,28 @@ because Inc-bind classification requires both pre and post home\_stack
 to exceed work\_nonres, which excludes munis where the binding state
 cannot be determined.
 
-\subsection{Pre-Trend Tests by Cell}
+\subsection{Pre-Trend Tests: Realized-Dose Event Study}
 \label{subsec:rob-pretrend}
 
-The stacked-continuous estimator drops pre-event coefficients for
-collinearity (cumulative dose is identically zero in pre-event for
-both treated and NC), so pre-trends in the headline estimator are not
-directly testable in the dose-response sense. As a complementary
-diagnostic, Table~\ref{tab:rob-pretrend} reports the binary
-Sun-Abraham event-study pre-event coefficients on log(live\_and\_work)
-by cell.
+The headline first-difference dose is mechanically zero in all
+pre-event periods by construction, so the stacked-continuous estimator
+drops pre-event leads for collinearity. To test parallel trends across
+units of varying eventual treatment intensity, I instead estimate
+Equation~(\ref{eq:realized-dose-es}): a Sun-Abraham continuous
+event-study using each unit's realized cumulative dose
+$\widetilde{D}_i$ (the eventual cumulative $\Delta\tau$ at $+5$,
+constant within unit and varying across units).
+Table~\ref{tab:rob-pretrend} reports the average pre-event lead and
+post-event lag coefficients on log(live\_and\_work) by cell. The
+binary Sun-Abraham event-study coefficients reported below are
+preserved from the prior paper version as a robustness comparison;
+the realized-dose specification is the canonical pre-trend diagnostic
+recommended by the recent continuous-DiD literature
+\citep{callawaygoodmanbaconsantanna2024,dechaisemartin2024}.
+
+% TODO: Replace Table~\ref{tab:rob-pretrend} with the realized-dose
+% lead/lag table built from data/q3_unified/headline_es_att.csv (cousub
+% level) and data/q3_unified/block_es_full_att.csv (block level).
 
 \begin{table}[H]
     \centering
@@ -1846,16 +1883,10 @@ Coefficients are essentially identical across the two control
 definitions. The result is robust to the strictness of the
 control-group restriction.
 
-\subsection{Network Stability and Spillover Robustness}
-\label{subsec:rob-network}
-
-The spillover analysis in Section~\ref{subsec:results-spillover} uses
-TIGER 2020 PA primary-roads geometry. Comparing TIGER 2015 vs 2020
-shows zero PA cousubs change interstate-overlap status across these
-years, supporting use of the static interstate network. The corridor
-analysis (Y shares an interstate with treated $A$) is robust to lower-
-rate-only restriction; coefficients are essentially identical to the
-unrestricted Inc-bind ring1/ring2 coefficients.
+% Network Stability and Spillover Robustness section dropped: spillover
+% analysis is not part of the active paper structure (the prior version
+% relied on TIGER interstate-corridor spillovers; the current paper focuses
+% on the three-level continuous-stacked-DiD framework).
 
 %==========================================================
 \section{Discussion}
