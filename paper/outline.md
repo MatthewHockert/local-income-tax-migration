@@ -169,21 +169,41 @@
 
 ## 8. Robustness
 
-### 8.1 Realized-dose event-study (pre-trend test)
-- Per cell × per outcome × per estimating unit
-- Pass/fail summary table
-- ES figures for Inc-bind on each headline outcome
+**Each robustness check below is run at all three estimating units
+(municipality, school district, census block). The triangulation across
+levels is itself a robustness on the headline cell × dose response.**
 
-### 8.2 Alternative control definitions
+### 8.1 Realized-dose event-study (strong parallel-trends test)
+- Run at each level: cousub, SD, block
+- Per cell × per outcome
+- Pass/fail summary table comparing pre-event leads to zero
+- ES figures for Inc-bind on each headline outcome at each level
+
+### 8.2 Binary Sun-Abraham IW event-study (average parallel-trends test)
+- Run at each level via `fixest::sunab()` interaction-weighted estimator
+- Complement to the realized-dose diagnostic
+- Pre-event leads tested against zero; post-event lags reported as
+  IW-aggregated dynamic ATTs
+
+### 8.3 Alternative control definitions
 - Tighter "no events in 8-year window" controls (Cengiz-style)
+- Run at each level
 - Compare to NC-only headline
 
-### 8.3 Sample restrictions
-- Drop flip-flopper munis
+### 8.4 Sample restrictions
+- Drop flip-flopper munis (reverse rate moves)
 - Drop top-quartile pre-event growth munis (gentrification check)
+- Run at each level
 
-### 8.4 Single-event subset
-- Munis with one event only
+### 8.5 Dose-magnitude linearity (tercile split)
+- Split Inc-bind by tercile of total Δτ
+- Tests whether per-pp coefficient is constant across dose magnitudes
+- Run at each level
+
+### 8.6 Single-event subset
+- Munis (or SDs / blocks) with one rate-change event only
+- Removes complications from cumulative multi-event dose
+- Run at each level
 
 ## 9. Discussion
 

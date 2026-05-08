@@ -1701,6 +1701,20 @@ recommended by the recent continuous-DiD literature
 % lead/lag table built from data/q3_unified/headline_es_att.csv (cousub
 % level) and data/q3_unified/block_es_full_att.csv (block level).
 
+The realized-dose ES is run at all three estimating units. Each table
+below reports the average per-pp dose-response coefficient over the
+post-event window ($k = 0..5$, ``post'' row) and over the pre-event
+leads ($k \leq -2$, ``pre'' row), with cluster-robust standard errors
+in parentheses. A $^{\dagger}$ on a pre-event coefficient flags
+$|t| > 1.96$ — a failed parallel-trends test at 5\% on that
+cell-outcome cell.
+
+\input{tables/es_realized_cousub.tex}
+
+\input{tables/es_realized_sd.tex}
+
+\input{tables/es_realized_block.tex}
+
 \begin{table}[H]
     \centering
     \caption{Pre-trend tests: binary SA event-study coefficients (log\_LW)}

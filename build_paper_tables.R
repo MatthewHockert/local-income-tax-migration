@@ -198,4 +198,81 @@ make_cell_table(
   file.path(out_dir, "headline_block_sd_results.tex"),
   "Block-level dose-response: SD resident-rate cells")
 
+# ---------------------------------------------------------------------------
+# Realized-dose ES pre-trend / post-event ATT tables
+# ---------------------------------------------------------------------------
+make_es_att_table <- function(att_csv, outcomes, cells, level_label, out_path) {
+  if (!file.exists(att_csv)) {
+    cat(sprintf("Skipping %s: %s not found\n", level_label, att_csv))
+    return(invisible())
+  }
+  a <- fread(att_csv)
+  # Some scripts use att_post_per_pp / att_post; harmonize
+  if ("att_post_per_pp" %in% names(a)) {
+    setnames(a, c("att_post_per_pp","att_pre_per_pp"), c("att_post","att_pre"),
+             skip_absent = TRUE)
+  }
+  rows <- character(0)
+  for (cl in cells) {
+    row_post <- paste0("\\textbf{", cl, "} (post) ")
+    row_pre  <- "             (pre) "
+    for (o in outcomes) {
+      r <- a[outcome == o & cell == cl]
+      if (nrow(r) == 1) {
+        # crude t-test on pre vs 0 to flag pre-trend
+        t_pre  <- if (!is.na(r$att_pre_se) && r$att_pre_se > 0)
+                  abs(r$att_pre / r$att_pre_se) else NA_real_
+        flag   <- if (!is.na(t_pre) && t_pre > 1.96) "$^{\\dagger}$" else ""
+        row_post <- paste0(row_post, " & ", fmt(r$att_post, 3),
+                           " (", fmt(r$att_post_se, 3), ")")
+        row_pre  <- paste0(row_pre,  " & ", fmt(r$att_pre,  3),
+                           flag,
+                           " (", fmt(r$att_pre_se, 3), ")")
+      } else {
+        row_post <- paste0(row_post, " & ---")
+        row_pre  <- paste0(row_pre,  " & ---")
+      }
+    }
+    rows <- c(rows, paste0(row_post, " \\\\"), paste0(row_pre, " \\\\"))
+  }
+  col_spec <- paste0("l", paste(rep("c", length(outcomes)), collapse = ""))
+  header   <- paste0("Cell & ",
+                     paste0("\\texttt{", sapply(outcomes, texsafe), "}",
+                            collapse = " & "),
+                     " \\\\")
+  body <- c(
+    "\\begin{table}[H]",
+    "  \\centering",
+    sprintf("  \\caption{Realized-dose event study --- %s level: post-event ATT (mean of $\\beta_k$, $k = 0..5$) and pre-event lead (mean of $\\beta_k$, $k \\leq -2$). $^{\\dagger}$ denotes pre-trend $|t| > 1.96$.}", level_label),
+    sprintf("  \\label{tab:realized_dose_es_%s}", tolower(level_label)),
+    "  \\small",
+    sprintf("  \\begin{tabular}{%s}", col_spec),
+    "    \\toprule",
+    paste0("    ", header),
+    "    \\midrule",
+    paste0("    ", rows),
+    "    \\bottomrule",
+    "  \\end{tabular}",
+    "\\end{table}"
+  )
+  writeLines(body, out_path)
+  cat(sprintf("Wrote %s\n", out_path))
+}
+
+es_outcomes_cousub <- c("log_live_and_work","log_in_commuters",
+                         "log_total_residents","share_live_in",
+                         "share_work_outside")
+es_outcomes_block  <- c("log_home_count","log_work_count",
+                         "home_in_muni_share","share_work_outside")
+
+make_es_att_table(file.path(in_dir, "headline_es_att.csv"),
+                  es_outcomes_cousub, muni_cells, "Cousub",
+                  file.path(out_dir, "es_realized_cousub.tex"))
+make_es_att_table(file.path(in_dir, "sd_es_att.csv"),
+                  es_outcomes_cousub, muni_cells, "SD",
+                  file.path(out_dir, "es_realized_sd.tex"))
+make_es_att_table(file.path(in_dir, "block_es_full_att.csv"),
+                  es_outcomes_block, muni_cells, "Block",
+                  file.path(out_dir, "es_realized_block.tex"))
+
 cat("\nDone. Tables written to paper/tables/.\n")

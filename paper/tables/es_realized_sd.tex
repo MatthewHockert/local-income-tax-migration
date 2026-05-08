@@ -1,0 +1,24 @@
+\begin{table}[H]
+  \centering
+  \caption{Realized-dose event study --- SD level: post-event ATT (mean of $\beta_k$, $k = 0..5$) and pre-event lead (mean of $\beta_k$, $k \leq -2$). $^{\dagger}$ denotes pre-trend $|t| > 1.96$.}
+  \label{tab:realized_dose_es_sd}
+  \small
+  \begin{tabular}{lccccc}
+    \toprule
+    Cell & \texttt{log\_live\_and\_work} & \texttt{log\_in\_commuters} & \texttt{log\_total\_residents} & \texttt{share\_live\_in} & \texttt{share\_work\_outside} \\
+    \midrule
+    \textbf{Inc-bind} (post)  & 0.101 (0.026) & 0.062 (0.015) & 0.149 (0.021) & 0.002 (0.002) & 0.002 (0.002) \\
+                 (pre)  & 0.061 (0.035) & 0.014 (0.027) & 0.002 (0.026) & -0.001 (0.004) & -0.006$^{\dagger}$ (0.003) \\
+    \textbf{Inc-becomes} (post)  & 2.015 (0.593) & 2.241 (0.516) & 1.467 (0.429) & -0.028 (0.017) & -0.049 (0.015) \\
+                 (pre)  & 0.955 (0.766) & 0.897 (0.652) & 0.827 (0.536) & -0.010 (0.019) & -0.037$^{\dagger}$ (0.016) \\
+    \textbf{Inc-nobind} (post)  & --- & --- & --- & --- & --- \\
+                 (pre)  & --- & --- & --- & --- & --- \\
+    \textbf{Dec-bind} (post)  & -0.088 (0.030) & 0.071 (0.038) & 0.126 (0.028) & -0.016 (0.009) & 0.021 (0.001) \\
+                 (pre)  & -0.214$^{\dagger}$ (0.030) & -0.334$^{\dagger}$ (0.038) & -0.003 (0.029) & 0.021$^{\dagger}$ (0.009) & 0.019$^{\dagger}$ (0.001) \\
+    \textbf{Dec-becomes-non} (post)  & --- & --- & --- & --- & --- \\
+                 (pre)  & --- & --- & --- & --- & --- \\
+    \textbf{Dec-nobind} (post)  & --- & --- & --- & --- & --- \\
+                 (pre)  & --- & --- & --- & --- & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}

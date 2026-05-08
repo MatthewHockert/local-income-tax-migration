@@ -1,0 +1,16 @@
+outcome,cell,att_post_per_pp,att_post_se,att_pre_per_pp,att_pre_se,n
+log_live_and_work,Inc-bind,0.101,0.026,0.061,0.035,51326
+log_live_and_work,Inc-becomes,2.015,0.593,0.955,0.766,50950
+log_live_and_work,Dec-bind,-0.088,0.03,-0.214,0.03,50962
+log_in_commuters,Inc-bind,0.062,0.015,0.014,0.027,51360
+log_in_commuters,Inc-becomes,2.241,0.516,0.897,0.652,50984
+log_in_commuters,Dec-bind,0.071,0.038,-0.334,0.038,50996
+log_total_residents,Inc-bind,0.149,0.021,0.002,0.026,51360
+log_total_residents,Inc-becomes,1.467,0.429,0.827,0.536,50984
+log_total_residents,Dec-bind,0.126,0.028,-0.003,0.029,50996
+share_live_in,Inc-bind,0.002,0.002,-0.001,0.004,51360
+share_live_in,Inc-becomes,-0.028,0.017,-0.01,0.019,50984
+share_live_in,Dec-bind,-0.016,0.009,0.021,0.009,50996
+share_work_outside,Inc-bind,0.002,0.002,-0.006,0.003,51360
+share_work_outside,Inc-becomes,-0.049,0.015,-0.037,0.016,50984
+share_work_outside,Dec-bind,0.021,0.001,0.019,0.001,50996
