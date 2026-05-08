@@ -1,185 +1,254 @@
 # CLAUDE.md
 
-## Control variable convention (current spec)
+## Active model (current paper)
 
-All current unified-design scripts (`q3_unified*.R`) use **share-based controls** in this exact set:
+The headline empirical framework is a **unified continuous stacked
+difference-in-differences design** estimated at three units of observation
+(municipality, school district, census block) with two simultaneous
+rate-setter treatments (muni resident rate $\tau^M$ and SD resident rate
+$\tau^{SD}$). The piecewise PA EIT formula
+$T = \max(\tau^M + \tau^{SD},\ \tau^{nr})$ enters via cell decomposition
+(Inc-bind / Inc-becomes / Inc-nobind / Dec-bind / Dec-becomes-non /
+Dec-nobind), where the work-side nonresident rate $\tau^{nr}$ is used to
+classify whether each rate-change event moves the worker's actual bill.
+The Inc-nobind cell is the within-design placebo.
 
-```r
-ctrls <- c("share_police", "share_streets", "share_debt_svc",
-           "share_eit", "share_re", "share_intergov")
-```
+**Pre-trend tests** are run as separate diagnostics:
+- *Realized-dose Sun-Abraham continuous ES* — each unit's eventual cumulative
+  $\Delta\tau$ at $+5$ as a constant treatment-magnitude tag interacted
+  with relative-event-time indicators. Tests strong parallel trends
+  across dose magnitudes (Callaway, Goodman-Bacon & Sant'Anna 2024).
+- *Binary Sun-Abraham IW ES* (`fixest::sunab()`) — tests average parallel
+  trends. Cousub and SD only; block-level IW is unstable due to thin
+  cohort × event-time cells.
 
-Where:
-- `share_police`, `share_streets`, `share_debt_svc` = expenditure / `total_expenditures`
-- `share_eit`, `share_re`, `share_intergov` = revenue / `total_revenues`
-- `share_intergov` is federal + state + local intergov revenue summed
-- All time-varying within muni × year (verified)
-- All future model runs MUST use this same six-control set unless explicitly motivated otherwise
+**Read `paper/guiding_principles.md` and `paper/outline.md` before making
+changes to the regression specs.** Those documents are the source of truth
+for the design choices.
 
-Older scripts (`run_slide_models.R`, `q3_robustness.R`, `q3_stacked.R`, `q3_residence.R`, `q3_nonres.R`, `pretreatment_balance.R`, `robustness.R`) still use `log_police + log_streets + log_debt + log_state_aid + share_eit + share_re` (mixed log/share). They are superseded by `q3_unified.R`; do not use their numbers as headline.
+## Control variable convention
+
+| Estimating unit | Fiscal controls |
+|---|---|
+| Cousub | Muni AFR shares: `share_police`, `share_streets`, `share_debt_svc`, `share_eit`, `share_re`, `share_intergov` |
+| School district | Census F-33 SD shares: `share_state_rev_sd`, `share_local_rev_sd`, `share_federal_rev_sd`, `share_property_tax_sd`, `share_instructional_sd`, `share_support_sd`, `share_capital_sd`, `share_debt_int_sd` plus `mean_muni_rate` (within-SD aggregate of muni rates) |
+| Block | Both muni AFR shares AND F-33 SD shares (each block exposed to both governments) |
+
+Each share is `<numerator> / <denominator>` (expenditure / total_exp or
+revenue / total_rev). Time-varying within unit × year. The previous
+muni-only / log-based control set has been retired; legacy scripts
+(`run_slide_models.R`, `q3_robustness.R`, `q3_stacked.R`,
+`pretreatment_balance.R`, `robustness.R`) still use it but are not in the
+active pipeline.
+
+## Fixed effects and clustering
+
+Per the rule: **fixed effects follow the stacked estimating unit;
+clustering follows the real policy jurisdiction that generates the tax
+variation.** Stacking creates repeated copies of NC controls; FE must be
+stack-interacted to keep within-cohort identification clean, but clusters
+must be at the underlying unit so within-muni / within-SD residual
+correlation is captured.
+
+| Estimating unit | FE | Cluster |
+|---|---|---|
+| Cousub | `muni^stack + year^stack` | `~muni` |
+| School district | `sd_id^stack + year^stack` | `~sd_id` |
+| Block | `block_geoid^stack + year^stack` | `~muni + sd_id` |
 
 ## Project Overview
 
-Do local income tax changes cause residential sorting? Uses LEHD LODES Origin-Destination data, aggregated from the **block** level to PA county subdivisions (cousubs), to measure whether workers relocate residence outside taxing municipalities. **PA-only** (Ohio dropped from the paper). The PA Earned Income Tax operates piecewise: each worker's bill = max(home_stack, work_nonresident_rate), with home_stack = muni_resident_rate + SD_rate. Act 32 of 2008 (effective 2012) made the EIT binding via consolidated employer withholding — the natural experiment.
+Do local income tax changes cause residential sorting? Uses LEHD LODES
+Origin-Destination data at the **block** level for PA, 2002-2019. The
+PA Earned Income Tax operates piecewise: each worker's bill is
+$\max(\tau^M + \tau^{SD}, \tau^{nr})$. Act 32 of 2008 (effective 2012)
+made the EIT binding via consolidated employer withholding — the
+natural experiment for cell decomposition. PA-only (Ohio dropped from
+the paper).
 
-## Headline Findings (current state, post block-level rebuild)
+## Headline Findings
 
-**Q2 muni rate decomposition, full sample TWFE:**
-- share_live_in: muni rate −0.012\*\*; SD rate **null** (was +0.147\*\* under the old tract-aggregated panel — that effect was an artifact of cousub-level job misattribution).
-- log(Resident workers): muni rate −0.201\*\*\*; SD rate null.
-- log(Total Jobs): muni rate −0.128\*\*\*; SD rate null.
+**Inc-bind cell across the three estimating units (per pp):**
 
-**Estimator triangulation (resident-side, log Resident workers):**
-- Q2 TWFE pooled: −0.201\*\*\* (likely inflated by negative weighting under heterogeneous staggered effects).
-- Single-event TWFE: −0.162\*\*\*.
-- DCDH ATE: −0.049 (CI spans 0; underpowered without bootstrap).
-- Stacked binary: ~0 (binary post collapses dose).
-- **Stacked continuous (recommended headline): −0.091\*\*** (≈9% drop in resident workers per pp; 7% on total jobs).
+| Outcome | Cousub | SD | Block |
+|---|---|---|---|
+| log_LW / log_home_count | **−0.401\*\*\*** | +0.066\* (sign reversed) | **−0.165\*\*\*** |
+| share_live_in / home_in_muni_share | **−0.045\*\*\*** | +0.003 (null) | **−0.067\*\*** |
+| log_total_residents | **−0.100\*\*\*** | +0.147\*\*\* (reversed) | n/a |
 
-**Act 32 structural break:** muni × Pre is null on share_live_in (−0.008); muni × Post is significant (−0.013\*\*); log(Resident) effect roughly *doubles* post-Act 32 (−0.139\*\*\* → −0.209\*\*\*). SD coefficient null in both periods.
+**Realized-dose ES pre-trend on Inc-bind:**
+- Cousub log_LW: pre = +0.149 (|t|=2.66) ⚠ FAILS
+- SD log_LW: pre = +0.061 (|t|=1.74) marginal (and post is wrong sign)
+- Block log_home_count: **pre = −0.027 (|t|=0.51) ✅ CLEAN**
 
-**Q3 clean groups (Inc-only / Dec-only / NC, flip-floppers dropped):** muni × Inc = −0.016\*\* on share_live_in, −0.221\*\*\* on log(Resident). Dec-only is too thin (15 munis) to identify; SA pre-trends underpowered, ATT not credibly estimated.
+**Block-level identification has the cleanest pre-trends** and is the
+defensible per-pp causal estimate. Cousub headline is overstated by
+selection (high-eventual-dose munis on declining trajectories); credible
+block-level estimate is roughly 40% the size of the cousub headline.
+SD-level identification doesn't recover the causal direction reliably.
 
-**Nonresident-side parallel build:** point estimates negative on log(Nonres workers) and log(Total jobs) (~−0.13 to −0.30 per pp) but no estimator crosses 5% — smaller treatment group, smaller dose variation. Direction consistent with resident side.
+**Industry decomposition (cousub Inc-bind, log jobs by sector):**
+- Total: −0.258\*\*\*; Consumer-facing: −0.297\*\*; Tradeable: +0.236 (null);
+  Health/Edu: −0.253\*; Public: −0.706\*; share_tradeable: +0.106\*.
+- Pattern matches local-services-demand-spillover prediction. SD-level
+  industry pattern direction-mixed (consistent with weak SD-level
+  identification overall).
 
-**Q3 unified decomposition** (replaces per-block estimator stack and the piecewise pair-flow model): single design splits each muni-rate event by direction (Inc/Dec) × binding state (post-event home_stack vs muni_nonres). Five estimators run on each block. Predicted-null placebo cell is Inc × non-binding (rate hike doesn't move bill). See `q3_unified_decomposition.R`.
+**Pre-/post-Act-32 split:**
+- Cousub log_LW Inc-bind: pre = −0.339, post = **−0.534** (effect
+  strengthens after enforcement made EIT binding).
+- Block log_home_count Inc-bind: pre = −0.173, post = −0.176 (similar;
+  block-level effect predates Act 32, contradicting the binding-rule
+  story at finer geography).
 
-**Asymmetry**: Inc-only effects identified; Dec-only not identified (15 munis, underpowered). Subsumed within the unified decomposition's Inc/Dec rows.
+## Active pipeline run order
 
-**Mechanism**: rate increases push residents out (residential margin); total jobs fall via local-services-demand spillover (not via direct nonresident taxation, since 74% of resident-rate hikes leave the nonres rate unchanged).
+Master script: `Rscript run_active.R`. Stages are gated by logical flags
+(`RUN_DATA_BUILD`, `RUN_MAIN_MUNI`, `RUN_MAIN_SD`, `RUN_MAIN_BLOCK`,
+`RUN_HET_ACT32`, `RUN_HET_INDUSTRY`, `RUN_HET_MUNI_TYPE`,
+`RUN_ROB_PRETREND`).
 
-## Run Order
+Sequence (manual, if not using `run_active.R`):
 
 ```bash
-# 1. Scrape PA tax rates and municipal finances
+# 1. Scrape rates / muni AFR / SD F-33 (one-time)
 python3 scrape_pa_dced_eit.py
 python3 scrape_pa_dced_afr.py
+python3 scrape_nces_sd_finance.py    # Census F-33; FY 2002-2019
+Rscript reparse_dced.R                # recover SD ID/name on DCED rates
+Rscript build_sd_controls.R           # F-33 -> SD share controls
 
-# 2. Reparse DCED XLS files to recover School District ID/name
-Rscript reparse_dced.R
-
-# 3. Download LODES at block level (PA only); ~4 GB, ~60 min
+# 2. LODES at block level (one-time, ~4 GB, ~60 min)
 Rscript download_lodes.R
 
-# 4. Build all intermediate datasets (block→cousub crosswalk + cousub OD panel)
-Rscript build_data.R
+# 3. Build cousub + block panels
+Rscript build_data.R                  # cousub-level rate / OD / fiscal panels
+Rscript build_block_panel.R           # block panel with rates + share controls
 
-# 5. Slide-model bundle: Q2 + Act 32 + Q3 clean groups + ES figures
-Rscript run_slide_models.R
+# 4. Main results (continuous stacked DiD per level)
+Rscript q3_unified_full_table.R       # cousub headline (muni + SD cells)
+Rscript q3_unified_sd_level.R         # SD-level model
+Rscript q3_unified_block_joint.R      # block-level joint TWFE
 
-# 6. Q3 robustness (resident side)
-Rscript q3_robustness.R          # single-event TWFE + DCDH on inc + NC
-Rscript q3_stacked.R             # stacked DiD binary + continuous
-Rscript make_dcdh_es_figure.R    # builds DCDH event-study from saved coefs
+# 5. Heterogeneity
+Rscript q3_unified_act32_3level.R     # pre/post Act 32 at each level
+Rscript q3_unified_industry.R         # cousub industry decomposition
+Rscript q3_unified_industry_sd.R      # SD-level industry (aggregated)
+Rscript q3_unified_heterogeneity.R    # city / borough / township
 
-# 7. Q3 nonresident-side parallel
-Rscript q3_nonres.R              # 4 estimators against muni_nonres_eit
+# 6. Robustness (pre-trend ES + sample / dose-magnitude / alt-control)
+Rscript q3_unified_headline_es.R      # cousub realized-dose ES
+Rscript q3_unified_sd_es.R            # SD realized-dose ES
+Rscript q3_unified_block_es_full.R    # block realized-dose ES
+Rscript q3_unified_sa_binary_es.R     # binary SA-IW ES (cousub + SD)
+Rscript q3_unified_tercile_3level.R   # dose-magnitude tercile
+Rscript q3_unified_altctrl_3level.R   # alt-control (Cengiz clean-in-window)
 
-# 8. Residence-side panel
-Rscript build_residence_panel.R  # aggregate LODES OD by home cousub
-Rscript q3_residence.R           # 4 estimators against home muni resident_eit
-
-# 9. Q3 unified decomposition (replaces piecewise pair-flow model)
-Rscript q3_unified_decomposition.R  # 5 estimators × 3 blocks × Inc/Dec × bind/no-bind
-
-# 10. SD heterogeneity diagnostic (confirms SD attraction was an artifact)
-Rscript sd_heterogeneity.R
-
-# Legacy / reference
-# Rscript local_income_tax_migration.R   # 4400-line master, mostly superseded
-# Rscript companion_outcomes.R           # earlier decomposition
-# Rscript pretreatment_balance.R         # 11-outcome balance + SA pre-trends
-# Rscript robustness.R                   # Philly + Act 32 + fiscal robustness
-# Rscript run_paper_models.R             # earlier paper-ready SA models
-# Rscript run_dcdh.R                     # earlier DCDH (slow, kept for reference)
+# 7. Build paper tables and figures
+Rscript build_paper_tables.R          # all LaTeX tables -> paper/tables/
+Rscript build_industry_figure.R       # industry bar chart
 ```
 
-## Scripts
+## Active scripts
 
 | Script | Purpose |
 |--------|---------|
-| `scrape_pa_dced_eit.py` | PA EIT rates → `data/pa_eit_rate_panel.csv` |
-| `scrape_pa_dced_afr.py` | PA municipal finances → `data/pa_afr_panel.csv` |
-| `reparse_dced.R` | Reparse PA DCED XLS files keeping School District ID/name (the original parser dropped these) |
-| `download_lodes.R` | PA LODES at block level (`agg_geo = "block"`) → `data/lodes_block/*.rds`. ~4 GB. Legacy OH tract files remain in `data/lodes/`. |
-| `build_data.R` | Rate panels, block→cousub crosswalk (`pa_block_xwalk.rds`), neighbors (80km), cousub-level OD panels via `build_city_od_block()` |
-| `run_slide_models.R` | Slide-relevant models: Q2 TWFE total stack + decomposition, Act 32 break, Q3 clean groups (Inc/Dec/NC), Sun-Abraham event-study figures |
-| `q3_robustness.R` | Single-event TWFE on inc-only with exactly one increase + DCDH continuous on inc + NC; rate-events-by-year and events-per-muni figures |
-| `q3_stacked.R` | Stacked DiD binary + continuous Δτ on single-event Inc + NC; ±5-yr window, NC-only controls |
-| `q3_nonres.R` | Same four estimators as resident-side, but treatment = `muni_nonres_eit`, outcomes = `log_live_outside`, `share_nonres`, `log_total_jobs` |
-| `q3_unified_decomposition.R` | Replaces the piecewise pair-flow model. Decomposes each muni-rate event by direction (Inc/Dec) × binding (post home_stack vs muni_nonres). Runs 5 estimators on Blocks A/B/C with cell × Δτ interactions. |
-| `make_dcdh_es_figure.R` | Renders DCDH event-study figure from saved per-period effects/placebos |
-| `build_residence_panel.R` | Residence-side aggregation by home cousub: residents_employed, residents_work_in_own, residents_work_outside, share_work_outside |
-| `sd_heterogeneity.R` | Diagnostic: confirms SD attraction effect was an artifact of tract-centroid job misattribution |
-| `pilot_block_lodes.R` | One-year pilot used to validate the block migration (kept for reference) |
-| `paper/main.tex` | LaTeX manuscript (PA-only) |
-| `paper/slides.tex` | 56-page slide deck (advisor presentation) |
-| `references/local_income_taxes.bib` | BibTeX (current; LODES technical citations included) |
+| `scrape_pa_dced_eit.py` | DCED EIT rates → `data/pa_eit_rate_panel.csv` |
+| `scrape_pa_dced_afr.py` | DCED muni AFR → `data/pa_afr_panel.csv` |
+| `scrape_nces_sd_finance.py` | Census F-33 SD finances → `data/pa_sd_finance_raw.csv` |
+| `build_sd_controls.R` | F-33 → SD share controls + NCES↔DCED ID crosswalk (500/500 SDs match) |
+| `reparse_dced.R` | Reparse DCED XLS keeping SD ID/name |
+| `download_lodes.R` | PA block-level LODES |
+| `build_data.R` | Cousub panels + block→cousub crosswalk |
+| `build_block_panel.R` | Block × year panel inheriting rates/shares from cousub |
+| `q3_unified_full_table.R` | Cousub headline: muni + SD cell × dose, with diagnostics |
+| `q3_unified_sd_level.R` | SD-level analog with F-33 controls |
+| `q3_unified_block_joint.R` | Block-level joint TWFE (muni + SD cells) |
+| `q3_unified_headline_es.R` | Cousub realized-dose ES |
+| `q3_unified_sd_es.R` | SD-level realized-dose ES |
+| `q3_unified_block_es_full.R` | Block-level realized-dose ES (heavy — stacked panel ~30M rows) |
+| `q3_unified_sa_binary_es.R` | Binary Sun-Abraham IW ES, all 3 levels |
+| `q3_unified_act32_3level.R` | Pre/post Act 32 split, all 3 levels |
+| `q3_unified_industry.R` | Cousub industry decomposition |
+| `q3_unified_industry_sd.R` | SD-level industry (aggregated from cousub) |
+| `q3_unified_heterogeneity.R` | City / borough / township |
+| `q3_unified_tercile_3level.R` | Dose-magnitude tercile, all 3 levels |
+| `q3_unified_altctrl_3level.R` | Alt-control (Cengiz clean-in-window), all 3 levels |
+| `build_paper_tables.R` | LaTeX tables for paper |
+| `build_industry_figure.R` | Industry bar chart |
+| `run_active.R` | Master pipeline (calls above scripts; gated flags) |
+| `paper/main.tex` | LaTeX manuscript |
+| `paper/guiding_principles.md` | Design principles document |
+| `paper/outline.md` / `paper/outline.tex` | Detailed paper outline |
+
+## Legacy scripts (kept for reference, not in active pipeline)
+
+`run_slide_models.R`, `q3_robustness.R`, `q3_stacked.R`,
+`q3_residence.R`, `q3_nonres.R`, `pretreatment_balance.R`, `robustness.R`,
+`q3_unified.R` (older 5-estimator version), `q3_unified_act32.R`
+(cousub-only Act 32), `q3_unified_block_level.R` (older block stack),
+`q3_unified_block_es.R` (muni-only block ES), `q3_unified_block_es_sd.R`
+(SD-only block ES), `q3_unified_compare.R`, `q3_unified_es_realized.R`
+(cousub muni-only realized-dose), `make_dcdh_es_figure.R`,
+`q3_unified_robustness_passes.R`, `sd_heterogeneity.R`,
+`q3_unified_decomposition.R`, `pilot_block_lodes.R`,
+`build_residence_panel.R`, `build_industry_panel.R`,
+`build_neighbors_rings.R`, `build_highway_panel.R`,
+`q3_unified_industry.R` (kept for cousub-level industry — used by
+active pipeline through `build_industry_table.R`).
+
+To run a legacy script intentionally, source it directly: `Rscript <name>.R`.
 
 ## Sample: 2002–2019
 
-Trimmed at load time (`max_year <- 2019`) to exclude COVID-contaminated LODES 2020–2021 and ARPA-distorted fiscal data 2020–2023. Estimation samples typically further restrict to `total_jobs > 50` and require non-missing fiscal controls.
+Trimmed at load time (`max_year <- 2019`) to exclude COVID-contaminated
+LODES 2020–2021 and ARPA-distorted fiscal data 2020–2023. Estimation
+samples typically further restrict to non-missing fiscal controls and,
+at the cousub level, `total_jobs > 50`.
 
-## Data
+## Data files
 
 | File | Contents |
 |------|----------|
-| `data/lodes_block/` | PA block-level LODES (current pipeline): pa_od_S000_main.rds, pa_od_SE03_main.rds, pa_rac_*.rds |
-| `data/lodes/` | Legacy tract-level LODES (OH + earlier PA tract files) |
-| `data/pa_block_xwalk.rds` | Block GEOID → cousub crosswalk (TIGER 2020 blocks via centroid `st_within`). Recovers all 2,561 PA cousubs vs 1,479 under tract-centroid join. |
-| `data/pa_eit_rate_panel.csv` | DCED rates with School District ID/name preserved (rebuilt by `reparse_dced.R`) |
-| `data/pa_afr_panel.csv` | PA municipal finances (56K rows, 71 cols, 2002–2023) |
-| `data/pa_rate_panel.rds` | PA muni × year rate panel with cousub_fips, resident_eit, sd_eit, total_eit, muni_nonres_eit (post-2012 backfill applied), event_type |
-| `data/pa_panel.rds` | Workplace-side cousub × year panel: total_jobs, live_and_work, live_outside, share_live_in + rates |
-| `data/pa_residence_panel.rds` | Residence-side cousub × year panel: residents_employed, residents_work_in_own, residents_work_outside + home rates |
-| `data/pa_pair_panel.rds` | Cousub-pair × year panel for piecewise model: flow, home_stack, tau_nr_w, work_binds, transition |
-| `data/pa_fiscal_controls.rds` | log police/streets/debt/state aid + revenue shares |
-| `data/pa_neighbors.rds` | Cousub pairs within 80km centroid distance |
+| `data/lodes_block/` | PA block-level LODES (~4 GB) |
+| `data/pa_block_xwalk.rds` | Block GEOID → cousub crosswalk (TIGER 2020) |
+| `data/pa_eit_rate_panel.csv` | DCED rates with SD ID/name |
+| `data/pa_afr_panel.csv` | PA muni AFR (56K rows, 2002–2023) |
+| `data/pa_sd_finance_raw.csv` | Census F-33 SD finance, raw (10,790 SD-years, 146 cols) |
+| `data/pa_sd_controls.rds` | F-33 SD share controls, matched to DCED sd_id |
+| `data/pa_sd_id_xwalk.rds` | NCES `LEAID` → DCED `sd_id` crosswalk (500/500) |
+| `data/pa_rate_panel.rds` | Muni × year rate panel |
+| `data/pa_panel.rds` | Cousub × year workplace+residence panel |
+| `data/pa_block_panel.rds` | Block × year panel (~5M rows) |
+| `data/pa_residence_panel.rds` | Residence-side cousub panel |
+| `data/pa_fiscal_controls.rds` | Legacy log-based controls (superseded) |
+| `data/pa_industry_panel.rds` | Cousub × year × industry-bucket job counts |
+| `data/pa_neighbors.rds` | Cousub-pair distances |
 | `data/pa_cousub.rds` | PA cousub geometry (TIGER 2020) |
-| `data/crime_data/ucr_offenses_known_monthly/` | FBI UCR annual RDS (1960–present; legacy) |
-| `figures/` | Publication-ready PNGs (300 DPI) |
-| `paper/main.tex`, `paper/slides.tex` | Manuscript and slides |
-| `references/local_income_taxes.bib` | BibTeX (active) |
+| `data/q3_unified/` | All current results CSVs (headline / ES / Act 32 / tercile / altctrl / industry / SA-IW) |
+| `data/literature_comparison.csv` | 20-paper lit-comparison spreadsheet |
+| `figures/` | Publication-ready PNGs |
+| `paper/main.tex` | Manuscript |
+| `paper/tables/` | Auto-built LaTeX table fragments |
+| `references/local_income_taxes.bib` | BibTeX |
 
-## Key Joins
+## Key joins
 
-- **LODES → cousub**: block-level LODES merged via `pa_block_xwalk.rds`. Blocks nest within cousubs in the 2020 Census hierarchy, so the assignment is exact.
-- **PA**: DCED `municipality_id` → Census `COUSUBFP` via municipality name + county matching (~99.6% match).
-- **UCR crime**: `fips_place_code` → `cousub_fips` (93.5% match).
-- **BPS permits**: `fips_mcd_code` → `cousub_fips` (93.3% match).
-- **Muni → SD rate**: each (muni, year) cell gets `max(sd_eit_rate)` across the SDs reported by DCED. Only 2.4% of munis straddle multiple SDs (61 of 2,505), so the max-aggregation is correct for 97.6% of munis. Diagnosed in `sd_heterogeneity.R`; the prior +0.147\*\* SD attraction effect was traced to tract-centroid job misattribution, not multi-SD measurement.
+- **LODES → cousub**: block-level LODES merged via `pa_block_xwalk.rds`. Blocks nest in cousubs (Census 2020 hierarchy), exact assignment.
+- **DCED muni → Census cousub**: `municipality_id` → `COUSUBFP` via name + county matching, ~99.6% match.
+- **NCES SD → DCED SD**: `LEAID` → `sd_id` via name normalization with abbreviation-expansion + fuzzy fallback (Jaro-Winkler) + 2 manual overrides for completely-renamed SDs (KNOCH ↔ SOUTH BUTLER CO; RIVER VALLEY ↔ BLAIRSVILLE SALTSBURG). 500/500 DCED SDs matched.
+- **Muni → SD rate (cousub-level model)**: each (muni, year) gets `max(sd_eit_rate)` across DCED-reported SDs. 97.6% of munis report to a single SD; max-aggregation is exact for those, conservative for the 2.4% multi-SD munis.
+- **Muni → SD ID (block-level model)**: primary SD per muni = modal `sd_id` across years from raw DCED panel. Each block inherits its muni's primary SD.
 
-## Slide Deck Structure (paper/slides.tex)
-
-Resident-side Q3:
-- Q2 Answer (TWFE total stack + decomposition)
-- Act 32 Answer (pre/post-2012 split)
-- Q3 Sample (Inc-only / Dec-only / NC)
-- Q3 Answer + Q3 Full Results
-- Binding-relevance slide (84% of resident-rate increases bind)
-- (1) Single-event TWFE — table + ES (Sun-Abraham)
-- (2) DCDH — table + ES
-- (3) Stacked binary — table + ES
-- (4) Stacked continuous — table + ES (recommended headline)
-- (5) Piecewise binding model — setup, transition distribution, decomposition, ES
-- Estimator triangulation (resident)
-
-Nonresident-side Q3 (parallel):
-- Motivation + group composition
-- (1)–(4) same four estimators with table + ES on `log_live_outside`, `share_nonres`, `log_total_jobs`
-- Nonres triangulation
-
-Each slide has the estimating equation written out.
-
-## Significance Convention
+## Significance convention
 
 `* p < .1, ** p < .05, *** p < .01` (set via `setFixest_etable`).
 
 ## Dependencies
 
-**R**: `sf`, `dplyr`, `tidyr`, `stringr`, `data.table`, `fixest`, `ggplot2`, `lehdr`, `tigris`, `readxl`, `janitor`, `tidycensus`, `beepr`, `DIDmultiplegtDYN`
+**R**: `sf`, `dplyr`, `tidyr`, `stringr`, `data.table`, `fixest`, `ggplot2`, `lehdr`, `tigris`, `readxl`, `janitor`, `tidycensus`, `beepr`, `stringdist` (for SD name fuzzy matching), `xlrd` (Python).
 
-**Python** (scrapers only): `requests`, `pandas`, `xlrd`
+**Python** (scrapers only): `requests`, `pandas`, `xlrd`.
 
 ## GitHub
 
