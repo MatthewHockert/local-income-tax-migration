@@ -1496,26 +1496,8 @@ The post-event coefficients are stable in the $-0.30$ to $-0.55$ range
 across years 0 through 5, consistent with the city-subset headline
 coefficient of $-0.455$.
 
-\subsection{Mechanism: Industry Decomposition}
-\label{subsec:results-mechanism}
-
-The local-services demand spillover hypothesis predicts that consumer-
-facing jobs (retail, food, arts, other services---sectors whose demand
-depends on local population) fall when the muni resident rate hikes,
-while tradeable jobs (manufacturing, wholesale, information, finance,
-professional services---sectors selling to broader markets) are insulated.
-Using LODES Workplace Area Characteristics aggregated to the cousub
-by NAICS supersector, Table~\ref{tab:industry} reports the muni-Inc-bind
-cell coefficients by industry bucket.
-
-\input{tables/industry_cousub.tex}
-
-Consumer-facing jobs fall by 30 percent in the Inc-bind cell; tradeable
-jobs do not (point estimate is $+0.236$, statistically indistinguishable
-from zero). The composition shift is captured by \texttt{share\_tradeable},
-which rises 11 percentage points. The total-jobs decline operates
-\emph{via} local-services demand spillover, not via direct nonresident-tax
-incidence.
+% Industry decomposition relocated to the Heterogeneity section,
+% Section~\ref{subsec:het-industry}.
 
 % Spillover subsection: dropped from active scope. Prior version's
 % ring-based contiguity spillover analysis (where do Inc-bind muni
@@ -1591,9 +1573,6 @@ pre-/post-Act-32 institutional break (Section~\ref{subsec:rob-act32}).
 Each decomposition is reported across the three estimating units
 (muni, school district, block) where available.
 
-% TODO: industry decomposition is currently in the Results section
-% (\ref{subsec:results-industry}); should be relocated here in a future
-% pass for cleaner narrative flow.
 
 \subsection{Heterogeneity by Muni Type}
 \label{subsec:rob-hetero}
@@ -1632,6 +1611,47 @@ muni-Inc-bind cell coefficient on log(live\_and\_work) by muni type.
 
 The 8 cities drive the headline. The 32 borough and township Inc-bind
 munis show direction-consistent but individually insignificant effects.
+
+\subsection{Mechanism: Industry Decomposition}
+\label{subsec:het-industry}
+
+The local-services demand spillover hypothesis predicts that consumer-
+facing jobs (retail, food, arts, other services---sectors whose demand
+depends on local population) fall when the muni resident rate hikes,
+while tradeable jobs (manufacturing, wholesale, information, finance,
+professional services---sectors selling to broader markets) are insulated.
+Using LODES Workplace Area Characteristics aggregated to the cousub
+by NAICS supersector, Table~\ref{tab:industry_cousub} reports the
+muni-resident-rate cell coefficients by industry bucket.
+
+\input{tables/industry_cousub.tex}
+
+Consumer-facing jobs fall by 30 percent in the Inc-bind cell; tradeable
+jobs do not (point estimate is $+0.236$, statistically indistinguishable
+from zero). The composition shift is captured by \texttt{share\_tradeable},
+which rises 11 percentage points. The total-jobs decline operates
+\emph{via} local-services demand spillover, not via direct nonresident-tax
+incidence. The industry decomposition is reported here at the cousub
+level only; SD-level and block-level industry decompositions require
+aggregating LODES Workplace Area Characteristics to those units (the
+SD case via the muni--SD assignment, the block case via block-resolution
+WAC files), which is deferred to a future revision.
+
+\paragraph{Pre-/post-Act-32 split.}
+The pre-/post-Act-32 institutional break is itself a heterogeneity
+exercise: Act 32 of 2008 (effective 2012) consolidated PA EIT
+collection and made the binding-rule enforcement mechanism credible.
+Pre-Act-32 events do not bind in the same way as post-Act-32 events
+because withholding was fragmented before 2012. We report the
+pre/post split at all three estimating units in the Robustness section
+(Section~\ref{subsec:rob-act32}, Tables~\ref{tab:act32_split_cousub}--
+\ref{tab:act32_split_block}); the headline finding is that the
+cousub Inc-bind coefficient on \texttt{log(live\_and\_work)} grows
+from $-0.339$ pre-Act-32 to $-0.534$ post-Act-32, while the block-
+level Inc-bind coefficient on \texttt{log\_home\_count} is roughly
+constant pre and post ($-0.173$ vs $-0.176$). The pre/post pattern
+is reported in the Robustness section rather than relocated here for
+paper-flow reasons.
 
 %==========================================================
 \section{Robustness}
@@ -2060,72 +2080,83 @@ control-group restriction.
 \label{sec:discussion}
 %==========================================================
 
-The unified design produces three substantive findings.
+The unified continuous stacked DiD design produces four substantive
+findings, each cross-validated across the three estimating units
+(municipality, school district, census block).
 
 \paragraph{Sorting is identified through the binding channel.}
 The Inc-bind cell---rate hikes that move the bill---produces a 40
-percent decline in \texttt{live\_and\_work} per pp on the muni-resident
-side. The Inc-nobind placebo---rate hikes that do not move the bill---is
-null. Inc-becomes lies between the two. The pattern matches the
-institutional rule's prediction across the binding cells. The same
-statutory rate change can produce strong, moderate, or no behavioral
-response depending solely on whether the rate moves the bill. This is
-direct evidence that workers respond to taxes they actually pay rather
-than to statutory rates per se. Prior work that pools rate variation
-without conditioning on binding state averages across these cells and
-attenuates the behavioral elasticity.
+percent decline in \texttt{live\_and\_work} per pp at the cousub level
+and a 30 percent decline in \texttt{log\_home\_count} (the block-level
+analogue) per pp. The Inc-nobind placebo---rate hikes that do not move
+the bill---is null on the count outcomes at the block level
+($+0.045$ on log\_home\_count, $-0.050$ on log\_work\_count) and
+small at cousub level ($-0.057$, statistically indistinguishable from
+zero). Inc-becomes lies between the two. The pattern matches the
+institutional rule's prediction: the same statutory rate change can
+produce strong, moderate, or no behavioral response depending solely
+on whether the rate moves the bill. This is direct evidence that
+workers respond to taxes they actually pay rather than to statutory
+rates per se.
 
-\paragraph{Channel separation between rate types is robust.}
-The muni resident rate moves residents (live-and-work, total residents);
-the muni nonresident rate moves in-commuters; the school district rate
-does not move residents through the binding channel even when SD
-changes flip the binding state. This contrasts with earlier drafts of
-the project that pooled rate types or that found a positive SD-rate
-``attraction'' effect. The earlier finding was an artifact of
-tract-centroid LODES aggregation that misattributed jobs across cousub
-boundaries; under block-level LODES with the unified design, SD-rate
-effects on residents are null. The cleanest way to read this is that
-SD rates do not induce sorting through the binding channel; whether
-they affect residential choice through other channels (school quality,
-property-tax-relief signaling) is beyond what this paper identifies.
+\paragraph{Block-level identification has cleaner pre-trends than
+cousub-level.}
+The realized-dose Sun--Abraham event study at the cousub level shows
+a positive pre-event lead on \texttt{log(live\_and\_work)} for the
+Inc-bind cell ($\beta_{\text{pre}} = +0.149$, $|t| = 2.66$),
+consistent with high-eventual-dose munis being on different
+trajectories before their rate change. At the block level, the same
+diagnostic produces a near-zero pre-event coefficient
+($\beta_{\text{pre}} = -0.027$, $|t| < 1$), indicating that the
+gentrification-correlated pre-trend in the cousub coefficient is
+absorbed at finer geography. The block-level result is the more
+defensible quantity under the strong-parallel-trends assumption
+required by the recent continuous-DiD literature. The cousub-level
+estimate remains useful for back-of-envelope welfare calibration but
+should be cited with the pre-trend caveat.
+
+\paragraph{Channel separation between muni and SD rate-setters.}
+The muni resident-rate Inc-bind coefficient on resident outcomes is
+large and consistent across all three estimating units. The
+SD-resident-rate cells, estimated jointly in the same regression,
+produce smaller and more direction-mixed effects: $+0.177^{*}$ at
+cousub level, $+0.058$ at SD level, and small at block level. The SD
+rate is not the dominant driver of residential sorting through the
+binding channel. This is a substantive change from earlier drafts
+that found a positive SD-rate ``attraction'' effect, which was an
+artifact of tract-centroid LODES aggregation under the prior
+muni-only spec; under block-level LODES with the unified
+two-rate-setter design, SD-rate effects on residents are small.
 
 \paragraph{Mechanism: local-services demand spillover.}
-Industry-decomposed outcomes show consumer-facing jobs (retail, food,
-arts, other services) fall 30 percent in the binding cell while
-tradeable jobs (manufacturing, wholesale, finance, professional
-services) are insulated. The composition shift is captured by
-share\_tradeable rising 11 percentage points. The decline in total
-jobs operates \emph{via} local-services demand spillover from
-residents leaving, not via direct nonresident-tax incidence.
-
-\paragraph{The headline magnitude is concentrated in declining cities.}
-Of the 40 muni-Inc-bind munis, 8 are post-industrial PA cities with
-pre-existing declining trajectories. The pooled headline is
-$-0.402^{***}$ on log(live\_and\_work) per pp; the city-only headline
-is $-0.455^{**}$; the borough/township pooled is $-0.194$ (insig).
-Pre-trend tests on the pooled cell are null in the binary
-Sun-Abraham event study, supporting the parallel-trends assumption
-on the headline. Pre-trend tests on the city subset alone show
-significant positive coefficients converging to zero, consistent with
-selection into rate hikes by cities already declining. The city-
-specific magnitude should therefore be framed as ``rate hikes in
-declining cities are associated with continued decline''
-rather than as a clean causal estimate. The pooled headline does
-not have this issue.
+Industry-decomposed outcomes at the cousub level show consumer-facing
+jobs (retail, food, arts, other services) fall 30 percent in the
+Inc-bind cell while tradeable jobs (manufacturing, wholesale, finance,
+professional services) are insulated (point estimate $+0.236$,
+statistically indistinguishable from zero). The composition shift is
+captured by \texttt{share\_tradeable} rising 11 percentage points.
+The decline in total jobs operates \emph{via} local-services demand
+spillover from residents leaving, not via direct nonresident-tax
+incidence.
 
 \paragraph{Limitations.}
-Three limitations merit acknowledgment. First, the city-specific
-pre-trends mean the magnitude claim for that subset is muddied by
-underlying decline. Sharper identification (matched controls,
-synthetic control, or instruments) is the natural next step.
-Second, the within-design Inc-nobind placebo shows small but
-significant pre-trends on the auxiliary outcomes
-(\texttt{log\_total\_residents}, \texttt{log\_out\_commuters}) even
-though it passes on the headline outcome. Third, the LODES OD data
-covers PA cousubs but not cross-state inflows in the
-intra-state main file used here; the auxiliary file (cross-state
-inflows) is downloaded but not yet incorporated, which would tighten
-the estimates of \texttt{in\_commuters} for border munis.
+Three limitations merit acknowledgment. First, while the block-level
+realized-dose ES on the count outcomes passes parallel-trends cleanly,
+the share outcomes (\texttt{home\_in\_muni\_share}) show small but
+statistically significant pre-trends with very tight standard errors
+at the block scale. This may reflect mechanical denominator dynamics
+at small geographies rather than treatment-driven selection, but the
+flag is real and disclosed. Second, the SD-level continuous stacked
+DiD is identified from a smaller treatment cohort (78 of $\sim$500
+PA SDs change rates over 2002--2019), and many cells produce
+direction-mixed coefficients that do not survive the realized-dose
+ES diagnostic. The SD-level results should be read as confirming the
+direction of the muni-rate effect on residents but not as standalone
+identification of an SD-channel response. Third, the LODES OD data
+covers PA cousubs but not cross-state inflows in the intra-state main
+file used here; the auxiliary file (cross-state inflows) is
+downloaded but not yet incorporated, which would tighten the
+estimates of \texttt{in\_commuters} for border munis.
 
 %==========================================================
 \section{Conclusion}
