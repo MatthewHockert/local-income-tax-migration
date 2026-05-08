@@ -1867,6 +1867,18 @@ not even publish a nonresident rate. The binding-rule mechanism in our
 design only operates when the rate change actually moves a worker's bill,
 which requires the rule to be enforced.
 
+We test this by re-running the headline cell $\times$ dose specification
+on subsamples defined by the cohort's first event year: pre-Act-32
+cohorts ($c < 2012$) and post-Act-32 cohorts ($c \geq 2012$). The split
+is run at all three estimating units. Tables below report the muni-rate
+Inc-cell coefficients pre and post.
+
+\input{tables/act32_cousub.tex}
+
+\input{tables/act32_sd.tex}
+
+\input{tables/act32_block.tex}
+
 We test this by interacting each cell $\times$ dose term with a post-2012
 indicator. Table~\ref{tab:rob-act32} reports the muni-resident-rate
 Inc-cell coefficients on six outcomes, split pre- and post-2012.

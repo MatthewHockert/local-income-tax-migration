@@ -33,9 +33,11 @@ run_act32_split <- function(stk, c_col, cell_col, dose_col,
                                 levels = c("NC","Inc-bind","Inc-becomes",
                                             "Inc-nobind","Dec-bind",
                                             "Dec-becomes-non","Dec-nobind"))]
+    fe_cols <- trimws(unlist(strsplit(fe_str, "[+^]")))
+    fe_cols <- fe_cols[fe_cols != ""]
     for (o in outcomes) {
       cols <- intersect(c(o, dose_col, cell_col, ctrls,
-                           all.vars(cluster_var), strsplit(fe_str, "\\+|\\^")[[1]]),
+                           all.vars(cluster_var), fe_cols),
                          names(sub))
       d <- sub[, ..cols]
       d <- d[complete.cases(d)]

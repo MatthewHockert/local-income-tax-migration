@@ -342,4 +342,66 @@ make_sa_table(file.path(in_dir, "sa_binary_block_att.csv"),
               es_outcomes_block, muni_cells, "Block",
               file.path(out_dir, "sa_binary_block.tex"))
 
+# ---------------------------------------------------------------------------
+# Pre/Post Act 32 split tables
+# ---------------------------------------------------------------------------
+make_act32_table <- function(coef_csv, outcomes, cells, level_label, out_path) {
+  if (!file.exists(coef_csv) || file.size(coef_csv) == 0) {
+    cat(sprintf("Skipping Act32 %s\n", level_label)); return(invisible())
+  }
+  a <- fread(coef_csv)
+  rows <- character(0)
+  for (cl in cells) {
+    for (per in c("pre","post")) {
+      label <- paste0("\\textbf{", cl, "} (", per, "-Act32)")
+      r_row <- paste0(label, " ")
+      s_row <- paste0(strrep(" ", nchar(label) - nchar("(SE)")), "(SE) ")
+      for (o in outcomes) {
+        r <- a[cell == cl & period == per & outcome == o]
+        if (nrow(r) == 1) {
+          r_row <- paste0(r_row, " & ", fmt(r$est, 3), stars(r$p))
+          s_row <- paste0(s_row, " & (", fmt(r$se, 3), ")")
+        } else {
+          r_row <- paste0(r_row, " & ---")
+          s_row <- paste0(s_row, " & ")
+        }
+      }
+      rows <- c(rows, paste0(r_row, " \\\\"), paste0(s_row, " \\\\"))
+    }
+  }
+  col_spec <- paste0("l", paste(rep("c", length(outcomes)), collapse = ""))
+  header   <- paste0("Cell (period) & ",
+                     paste0("\\texttt{", sapply(outcomes, texsafe), "}",
+                            collapse = " & "),
+                     " \\\\")
+  body <- c(
+    "\\begin{table}[H]",
+    "  \\centering",
+    sprintf("  \\caption{Pre-/post-Act-32 split --- %s level. Treated cohorts split at $c < 2012$ (pre) and $c \\geq 2012$ (post). Per-pp dose-response coefficients.}",
+            level_label),
+    sprintf("  \\label{tab:act32_split_%s}", tolower(level_label)),
+    "  \\small",
+    sprintf("  \\begin{tabular}{%s}", col_spec),
+    "    \\toprule",
+    paste0("    ", header),
+    "    \\midrule",
+    paste0("    ", rows),
+    "    \\bottomrule",
+    "  \\end{tabular}",
+    "\\end{table}"
+  )
+  writeLines(body, out_path)
+  cat(sprintf("Wrote %s\n", out_path))
+}
+
+make_act32_table(file.path(in_dir, "act32_split_cousub.csv"),
+                  es_outcomes_cousub, muni_cells, "Cousub",
+                  file.path(out_dir, "act32_cousub.tex"))
+make_act32_table(file.path(in_dir, "act32_split_sd.csv"),
+                  es_outcomes_cousub, muni_cells, "SD",
+                  file.path(out_dir, "act32_sd.tex"))
+make_act32_table(file.path(in_dir, "act32_split_block.csv"),
+                  es_outcomes_block, muni_cells, "Block",
+                  file.path(out_dir, "act32_block.tex"))
+
 cat("\nDone. Tables written to paper/tables/.\n")
