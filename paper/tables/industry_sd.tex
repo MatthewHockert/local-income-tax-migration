@@ -1,0 +1,30 @@
+\begin{table}[H]
+  \centering
+  \caption{Industry decomposition --- SD level. Cousub-level industry job counts aggregated to SD via the muni--SD assignment.}
+  \label{tab:industry_sd}
+  \small
+  \begin{tabular}{lccccc}
+    \toprule
+    Cell & \texttt{log\_jobs\_total} & \texttt{log\_jobs\_consumer} & \texttt{log\_jobs\_tradeable} & \texttt{share\_consumer} & \texttt{share\_tradeable} \\
+    \midrule
+    \textbf{Inc-bind}  & 0.039 & 0.094$^{**}$ & -0.056 & 0.014$^{*}$ & -0.031$^{*}$ \\
+                  & (0.030) & (0.046) & (0.077) & (0.008) & (0.017) \\
+    \textbf{Inc-becomes}  & 0.456$^{*}$ & 0.313$^{***}$ & 0.482$^{***}$ & -0.023 & 0.027 \\
+                  & (0.252) & (0.074) & (0.139) & (0.052) & (0.028) \\
+    \textbf{Inc-nobind}  & --- & --- & --- & --- & --- \\
+                  &  &  &  &  &  \\
+    \textbf{Dec-bind}  & 0.051 & 0.070 & 0.000 & 0.001 & -0.015 \\
+                  & (0.071) & (0.073) & (0.132) & (0.007) & (0.017) \\
+    \textbf{Dec-becomes-non}  & --- & --- & --- & --- & --- \\
+                  &  &  &  &  &  \\
+    \textbf{Dec-nobind}  & --- & --- & --- & --- & --- \\
+                  &  &  &  &  &  \\
+    \midrule
+    
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+  \end{minipage}
+\end{table}

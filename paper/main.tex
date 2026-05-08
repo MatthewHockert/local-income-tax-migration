@@ -1631,11 +1631,27 @@ jobs do not (point estimate is $+0.236$, statistically indistinguishable
 from zero). The composition shift is captured by \texttt{share\_tradeable},
 which rises 11 percentage points. The total-jobs decline operates
 \emph{via} local-services demand spillover, not via direct nonresident-tax
-incidence. The industry decomposition is reported here at the cousub
-level only; SD-level and block-level industry decompositions require
-aggregating LODES Workplace Area Characteristics to those units (the
-SD case via the muni--SD assignment, the block case via block-resolution
-WAC files), which is deferred to a future revision.
+incidence.
+
+The same decomposition at the SD level
+(Table~\ref{tab:industry_sd}) is qualitatively different: aggregating
+cousub-level industry counts to school district via the muni--SD
+assignment produces a positive Inc-bind coefficient on
+\texttt{log\_jobs\_consumer} ($+0.094^{**}$), a null on
+\texttt{log\_jobs\_tradeable}, and a negative Inc-bind coefficient
+on \texttt{share\_tradeable} ($-0.031^{*}$). The SD-level pattern
+indicates that the consumer-services contraction documented at the
+cousub scale is a within-cousub, muni-local response that averages
+out (or even partially reverses) when aggregated to the school-
+district level. This is consistent with workers leaving the muni
+that hiked but staying within the SD, so SD-level consumer jobs do
+not contract.
+
+\input{tables/industry_sd.tex}
+
+Block-level industry decomposition is deferred: it requires
+block-resolution LODES Workplace Area Characteristics files which
+are not currently in the data tree.
 
 \paragraph{Pre-/post-Act-32 split.}
 The pre-/post-Act-32 institutional break is itself a heterogeneity

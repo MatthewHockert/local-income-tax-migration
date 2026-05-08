@@ -404,6 +404,19 @@ make_act32_table(file.path(in_dir, "act32_split_block.csv"),
                   es_outcomes_block, muni_cells, "Block",
                   file.path(out_dir, "act32_block.tex"))
 
+# Industry SD table (parallel to industry_cousub)
+if (file.exists(file.path(in_dir, "industry_sd.csv")) &&
+    file.size(file.path(in_dir, "industry_sd.csv")) > 0) {
+  make_cell_table(
+    file.path(in_dir, "industry_sd.csv"),
+    file.path(in_dir, "industry_sd_diag.csv"),
+    c("log_jobs_total","log_jobs_consumer","log_jobs_tradeable",
+       "share_consumer","share_tradeable"),
+    muni_cells, "treat_cell",
+    file.path(out_dir, "industry_sd.tex"),
+    "Industry decomposition --- SD level. Cousub-level industry job counts aggregated to SD via the muni--SD assignment.")
+}
+
 # ---------------------------------------------------------------------------
 # Dose-tercile linearity tables (Inc-bind only)
 # ---------------------------------------------------------------------------
