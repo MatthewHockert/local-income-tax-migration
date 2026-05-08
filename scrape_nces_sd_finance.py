@@ -35,11 +35,11 @@ os.makedirs(RAW_DIR, exist_ok=True)
 YEARS = range(2002, 2020)
 
 URL_PATTERN_XLS = (
-    "https://www.census.gov/programs-surveys/school-finances/tables/"
+    "https://www2.census.gov/programs-surveys/school-finances/tables/"
     "{yyyy}/secondary-education-finance/elsec{yy}.xls"
 )
 URL_PATTERN_TXT = (
-    "https://www.census.gov/programs-surveys/school-finances/tables/"
+    "https://www2.census.gov/programs-surveys/school-finances/tables/"
     "{yyyy}/secondary-education-finance/elsec{yy}.txt"
 )
 # Alternate: some early years (pre-2010) live in a slightly different
@@ -104,26 +104,18 @@ def parse_year(path, year):
         print(f"  {year}: parse error: {e}")
         return None
 
-    # Filter to PA (state FIPS 42 in F-33; col is usually STATE or FIPST)
-    cands = [c for c in df.columns
-             if c.upper() in ("STATE","FIPST","STATENAME","ST")]
-    pa = None
-    for c in cands:
-        col = df[c].astype(str).str.strip()
-        if col.eq("42").any():
-            pa = col.eq("42")
-            break
-        if col.str.upper().eq("PA").any():
-            pa = col.str.upper().eq("PA")
-            break
-    if pa is None:
-        # Try every column for code "42"
-        for c in df.columns:
-            if df[c].astype(str).str.strip().eq("42").any():
-                pa = df[c].astype(str).str.strip().eq("42")
-                break
-    if pa is None:
-        print(f"  {year}: could not identify PA filter column")
+    # Filter to PA via NCESID prefix (NCESID is FIPS-based: first 2 digits
+    # are the state FIPS code, where 42 = Pennsylvania). The F-33 STATE
+    # column is the Census Bureau internal state code which is NOT FIPS.
+    if "NCESID" not in df.columns:
+        print(f"  {year}: no NCESID column")
+        return None
+    pa = df["NCESID"].astype(str).str.strip().str.startswith("42")
+    if not pa.any():
+        # Some early years pad NCESID to 7 chars; try with leading zero strip
+        pa = df["NCESID"].astype(str).str.lstrip("0").str.startswith("42")
+    if not pa.any():
+        print(f"  {year}: no PA SDs found via NCESID prefix")
         return None
     df_pa = df.loc[pa].copy()
     df_pa["fy"] = year

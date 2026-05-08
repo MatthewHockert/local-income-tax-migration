@@ -1,0 +1,236 @@
+% paper/outline.tex
+% Detailed outline of the paper structure. Companion to
+% paper/guiding_principles.md. Intended as a planning document, not for
+% inclusion in the final paper. Not compiled standalone.
+
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage[margin=1in]{geometry}
+
+\title{Paper Outline: Local Income Taxes and Residential Sorting}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\begin{itemize}
+  \item The question: do local income tax rate changes induce residential
+    sorting?
+  \item The institutional opportunity: PA EIT's piecewise rule + Act 32
+    (2012) consolidation
+  \item Headline findings preview (per-pp dose-response on Inc-bind cell,
+    three estimating units)
+  \item Contribution to the continuous stacked DiD literature
+    (Cengiz 2019; Callaway, Goodman-Bacon \& Sant'Anna 2024;
+    de Chaisemartin \& D'Haultf{\oe}uille 2024)
+\end{itemize}
+
+\section{Institutional Background}
+\begin{itemize}
+  \item PA EIT structure: muni resident rate + SD resident rate (home
+    stack) vs.\ work-muni nonresident rate
+  \item Piecewise rule:
+    \( T = \max(\tau^M + \tau^{SD},\ \tau^{nr}) \)
+  \item DCED rate-setting and reporting
+  \item Act 32 of 2008 (effective 2012): consolidated employer
+    withholding; the natural experiment for binding
+\end{itemize}
+
+\section{Conceptual Framework}
+\begin{itemize}
+  \item Why piecewise creates a within-design placebo (Inc-nobind)
+  \item Cell decomposition:
+    Inc-bind / Inc-becomes / Inc-nobind /
+    Dec-bind / Dec-becomes-non / Dec-nobind
+  \item Predicted-null cell: Inc-nobind
+  \item Predicted-magnitude ordering across cells
+\end{itemize}
+
+\section{Data}
+
+\subsection{LEHD LODES Origin--Destination at the block level}
+\begin{itemize}
+  \item Coverage 2002--2019; PA only
+  \item Block-level OD; aggregated up where required
+\end{itemize}
+
+\subsection{Tax rate panel}
+\begin{itemize}
+  \item DCED muni and SD rate panels
+  \item Construction of total\_eit, home\_stack, muni\_nonres\_eit
+  \item Coverage and event counts
+\end{itemize}
+
+\subsection{Municipal fiscal controls}
+\begin{itemize}
+  \item AFR (Annual Financial Report) muni share-based controls:
+    share\_police, share\_streets, share\_debt\_svc,
+    share\_eit, share\_re, share\_intergov
+\end{itemize}
+
+\subsection{School district fiscal controls}
+\begin{itemize}
+  \item Census Bureau F-33 SD revenue/expenditure data; share-based
+    controls parallel to muni AFR shares: share\_state\_rev\_sd,
+    share\_local\_rev\_sd, share\_property\_tax\_sd,
+    share\_instructional\_sd, share\_support\_sd, share\_capital\_sd,
+    share\_debt\_int\_sd
+\end{itemize}
+
+\subsection{Three estimating panels}
+
+\paragraph{Municipality-level panel}
+Unit = cousub $\times$ year. Workplace and residence outcomes
+constructed by aggregating LODES OD over blocks within the cousub.
+Treatment side: muni resident rate is exact; school district resident
+rate is assigned as max(sd\_eit) across the school districts the muni
+reports to in DCED. Justification: 97.6\% of munis report to one SD;
+the max is correct for those, conservative for the 2.4\% multi-SD
+munis. Fiscal controls: muni AFR shares only.
+
+\paragraph{School-district-level panel}
+Unit = SD $\times$ year. Outcomes constructed by aggregating LODES OD
+over blocks within the SD. Treatment side: SD resident rate is exact;
+municipal resident rate is assigned as the within-SD aggregation across
+the SD's constituent munis. Fiscal controls: F-33 SD shares only.
+
+\paragraph{Block-level panel}
+Unit = block $\times$ year. Each block is assigned its own muni and its
+own SD. Both muni and SD resident rates enter the regression at their
+native level with no within-jurisdiction aggregation. Outcome variables
+are block-defined: log\_home\_count, log\_work\_count,
+home\_in\_muni\_share, share\_work\_outside. Fiscal controls: both muni
+AFR shares and F-33 SD shares (each block is exposed to both
+governments).
+
+\subsection{Sample restrictions}
+\begin{itemize}
+  \item 2002--2019 (drops COVID-affected and ARPA-affected fiscal years)
+  \item Min thresholds (e.g., total\_jobs $> 50$ at cousub level) where
+    applicable
+\end{itemize}
+
+\section{Empirical Strategy}
+
+\subsection{Continuous stacked DiD: main framework}
+\begin{itemize}
+  \item Stacked cohort design (Cengiz)
+  \item Treatment intensity:
+    \(\Delta\tau_{it} = \tau_{it} - \tau_{i,c-1}\), time-varying, zero
+    pre-event
+  \item NC controls (never-changed jurisdictions)
+\end{itemize}
+
+\subsection{Cell-decomposed dose-response specification}
+\begin{equation*}
+\begin{split}
+Y_{it} = \alpha_{i \times s} + \gamma_{t \times s}
+&+ \sum_{c \neq NC} \beta^{M}_c \mathbf{1}\{\text{cell}^M_i = c\}
+    \cdot \Delta\tau^M_{it} \\
+&+ \sum_{c \neq NC} \beta^{SD}_c \mathbf{1}\{\text{cell}^{SD}_i = c\}
+    \cdot \Delta\tau^{SD}_{it} \\
+&+ X_{it}\phi + \varepsilon_{it}
+\end{split}
+\end{equation*}
+Run at all three estimating units: muni, SD, block.
+
+\subsection{Fixed effects}
+Unit-by-stack and year-by-stack. Cengiz-style sub-experiment
+isolation.
+
+\subsection{Clustering}
+Cluster at the policy-jurisdiction level. Muni: $\sim$muni. SD:
+$\sim$sd\_id. Block: two-way $\sim$muni + sd\_id.
+
+\subsection{Pre-trend diagnostic: realized-dose event study}
+\begin{itemize}
+  \item Spec: $i(\text{rel}, \widetilde{D}_m, \text{ref} = -1)$, with
+    $\widetilde{D}_m$ defined as the unit's eventual cumulative
+    $\Delta\tau$ at $+5$
+  \item Pre-event leads identified from cross-unit variation in
+    eventual treatment intensity
+  \item Reported for each estimating unit and each headline outcome
+\end{itemize}
+
+\section{Main Results}
+
+\subsection{Municipality-level results}
+All cells $\times$ all outcomes. Highlight: Inc-bind, Inc-becomes,
+Inc-nobind (placebo).
+
+\subsection{School-district-level results}
+Same structure. Discuss SD-side framing.
+
+\subsection{Block-level results}
+Block-defined outcomes. Note: treatment variation now exact (no
+aggregation function).
+
+\subsection{Cross-level comparison}
+Triangulation table: same cell $\times$ outcome at all three levels.
+
+\section{Heterogeneity Decompositions}
+
+\subsection{Pre-/post-Act 32 split}
+Run for each estimating unit (muni, SD, block). Predicted: Inc-bind
+effects concentrated post-2012 (when EIT became binding via
+consolidated withholding). Headline cell $\times$ pre-Act 32 vs
+post-Act 32 interactions.
+
+\subsection{Industry decomposition (job-side outcomes)}
+Services vs non-services using LODES WAC supersector codes. Run on
+log\_total\_jobs (or log\_work\_count at block level). Predicted:
+services more elastic than non-services. Run for each estimating unit.
+
+\subsection{Muni-type heterogeneity}
+City vs borough vs township. Run on each level. Predicted: cities
+(denser, more exit options) show larger effects.
+
+\section{Robustness}
+
+\subsection{Realized-dose event-study (pre-trend test)}
+Per cell $\times$ per outcome $\times$ per estimating unit. Pass/fail
+summary table. ES figures for Inc-bind on each headline outcome.
+
+\subsection{Alternative control definitions}
+Tighter ``no events in 8-year window'' controls (Cengiz-style).
+Compare to NC-only headline.
+
+\subsection{Sample restrictions}
+Drop flip-flopper munis. Drop top-quartile pre-event growth munis
+(gentrification check).
+
+\subsection{Single-event subset}
+Munis with one event only.
+
+\section{Discussion}
+\begin{itemize}
+  \item Magnitude in welfare / fiscal-calibration terms
+  \item Implications for local government fiscal autonomy
+  \item Limits: PA-only, residence margin only, etc.
+\end{itemize}
+
+\section{Conclusion}
+
+\section*{What's dropped from the previous paper structure}
+\begin{itemize}
+  \item Single-event TWFE as a separate estimator section
+  \item DCDH cell-by-cell as a separate estimator
+  \item Stacked binary DiD as a separate estimator
+  \item Piecewise binding model on cousub-pair flows
+  \item Resident vs nonresident-side parallel build (nonresident deferred)
+\end{itemize}
+
+\section*{What's added}
+\begin{itemize}
+  \item Three-level estimation structure (muni / SD / block) with
+    explicit treatment-aggregation rules
+  \item Industry decomposition (services vs non-services) on job-side
+    outcomes
+  \item Pre/post Act 32 split as a heterogeneity section, run at each level
+  \item Realized-dose event study as the canonical pre-trend diagnostic
+\end{itemize}
+
+\end{document}
