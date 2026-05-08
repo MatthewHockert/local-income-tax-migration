@@ -1834,12 +1834,26 @@ dose but pass on the binary indicates that some high-dose units carry
 differential trajectories not captured by simple treated-vs-control
 comparison.
 
-% TODO: Implementation. Run via fixest's sunab() helper, e.g.
-%   feols(y ~ sunab(c_muni, year) + ctrls | muni + year, data = d,
-%         cluster = ~muni)
-% per cell, restricted to NC + that cell. Save IW-aggregated
-% pre-event leads at k = -5..-2 to data/q3_unified/sunab_binary_att.csv,
-% then build a table here parallel to Table~\ref{tab:rob-pretrend}.
+The SA-IW ES is run at all three estimating units. Tables below report
+the IW-aggregated post-event ATT (mean of $\widetilde{\delta}^c_k$ for
+$k = 0..5$, ``post'' row) and pre-event lead (mean for $k \leq -2$,
+``pre'' row) by cell, with cluster-robust standard errors in
+parentheses.
+
+\input{tables/sa_binary_cousub.tex}
+
+\input{tables/sa_binary_sd.tex}
+
+\paragraph{Block-level SA-IW caveat.}
+The IW estimator at the block level is sensitive to the very large
+number of cohort $\times$ event-time cells produced when each block
+inherits its muni's cohort. The aggregate variance estimates are
+unstable (extremely large standard errors), and we therefore do not
+report block-level SA-IW point estimates as a meaningful diagnostic.
+The realized-dose continuous ES at the block level
+(Table~\ref{tab:realized_dose_es_block}) is the recommended pre-trend
+test at this scale; the SA-IW results are preserved in the data
+appendix (\texttt{sa\_binary\_block\_att.csv}) for transparency.
 
 \subsection{Pre/Post Act 32 Decomposition}
 \label{subsec:rob-act32}
