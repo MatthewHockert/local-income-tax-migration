@@ -1109,8 +1109,55 @@ cell on each side after the NC-purity filter
     \end{minipage}
 \end{table}
 
-\subsection{Headline: Stacked Continuous DiD}
+\subsection{Cousub-Level Results}
 \label{subsec:results-headline}
+
+Table~\ref{tab:headline_muni_cell_results} reports the cousub-level
+dose-response coefficients on the muni resident-rate cells, with full
+diagnostics. The corresponding SD-resident-rate cells from the same
+unified regression are reported in
+Table~\ref{tab:headline_muni_sd_side_results}. Each column is a separate
+estimation of Equation~(\ref{eq:headline}) for one outcome.
+
+\input{tables/headline_muni_cell_results.tex}
+
+\input{tables/headline_muni_sd_side_results.tex}
+
+\subsection{School-District-Level Results}
+\label{subsec:results-sd}
+
+Table~\ref{tab:headline_sd_cell_results} reports the SD-level
+dose-response coefficients. Each column is a separate estimation with
+unit $= $ SD $\times$ year, the SD's own resident rate as treatment
+(decomposed into binding-state cells), the within-SD aggregate of
+constituent muni rates as a control, and SD-level fiscal share controls
+constructed from Census F-33 data.
+
+\input{tables/headline_sd_cell_results.tex}
+
+\subsection{Block-Level Results}
+\label{subsec:results-block}
+
+Table~\ref{tab:headline_block_muni_results} reports block-level
+dose-response on the muni-rate cells, and
+Table~\ref{tab:headline_block_sd_results} reports the SD-rate cells from
+the same unified regression. Block-level outcomes are block-defined
+analogues of the cousub-level outcomes (workers living in vs. working in
+the block, plus the share of block residents who work in the block's
+own muni). Both rate-setters' policy variation enters the regression at
+its native level (no within-jurisdiction aggregation) since each block
+is exposed to a single muni and a single SD.
+
+\input{tables/headline_block_muni_results.tex}
+
+\input{tables/headline_block_sd_results.tex}
+
+\subsection{Cousub-Level Headline Detail}
+\label{subsec:results-headline-detail}
+
+The remainder of this subsection retains the prior detailed cousub-level
+headline analysis (Inc-cell coefficients with full diagnostics from
+Equation~\ref{eq:headline}) for completeness.
 
 Table~\ref{tab:headline} reports the muni-resident-rate Inc-cell coefficients
 across the eight outcomes. Each row is a separate regression of the form

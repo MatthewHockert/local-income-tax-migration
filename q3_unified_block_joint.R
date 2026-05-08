@@ -15,8 +15,13 @@ data_dir    <- file.path(project_dir, "data")
 out_dir     <- file.path(data_dir, "q3_unified"); dir.create(out_dir, showWarnings = FALSE)
 K <- 5L
 
-ctrls <- c("share_police","share_streets","share_debt_svc",
-           "share_eit","share_re","share_intergov")
+muni_ctrls <- c("share_police","share_streets","share_debt_svc",
+                "share_eit","share_re","share_intergov")
+sd_ctrls   <- c("share_state_rev_sd","share_local_rev_sd",
+                "share_federal_rev_sd","share_property_tax_sd",
+                "share_instructional_sd","share_support_sd",
+                "share_capital_sd","share_debt_int_sd")
+ctrls <- c(muni_ctrls, sd_ctrls)
 ctrls_str <- paste(ctrls, collapse = " + ")
 
 outcomes <- c("log_home_count","log_work_count",
@@ -120,6 +125,29 @@ b <- merge(b, cell_sd,    by = c("muni","sd_id"), all.x = TRUE)
 b <- merge(b, mu_pre,     by = "muni", all.x = TRUE)
 b <- merge(b, sd_pre,     by = "sd_id", all.x = TRUE)
 b <- b[!is.na(cell_muni) & !is.na(cell_sd)]
+
+# Merge SD-level fiscal share controls (Census F-33; build_sd_controls.R).
+# pa_sd_controls.rds may have multiple rows per (sd_id, year) due to SCHLEV
+# variations and many-to-one fuzzy/manual matches; collapse to one row by
+# averaging numeric share columns.
+sd_ctrls_path <- file.path(data_dir, "pa_sd_controls.rds")
+if (file.exists(sd_ctrls_path)) {
+  sd_ctrl_dt <- as.data.table(readRDS(sd_ctrls_path))
+  sd_ctrl_keep <- intersect(c("sd_id","year", sd_ctrls), names(sd_ctrl_dt))
+  sd_ctrl_dt <- sd_ctrl_dt[, ..sd_ctrl_keep]
+  sd_ctrl_dt <- sd_ctrl_dt[, lapply(.SD, function(x)
+                            if (is.numeric(x)) mean(x, na.rm = TRUE) else first(x)),
+                            by = .(sd_id, year)]
+  for (cc in sd_ctrls) {
+    set(sd_ctrl_dt, which(!is.finite(sd_ctrl_dt[[cc]])), cc, NA_real_)
+  }
+  b <- merge(b, sd_ctrl_dt, by = c("sd_id","year"), all.x = TRUE)
+  cat(sprintf("Merged SD fiscal controls: %d / %d block-years\n",
+              sum(!is.na(b$share_state_rev_sd)), nrow(b)))
+} else {
+  cat("WARNING: data/pa_sd_controls.rds missing; SD controls absent.\n")
+  for (cc in sd_ctrls) b[, (cc) := NA_real_]
+}
 
 # Doses (zero for NC by construction since pre_mean = 0 and rate = 0 wouldn't apply,
 # so use cell == NC -> dose = 0)

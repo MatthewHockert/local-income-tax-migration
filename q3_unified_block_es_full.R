@@ -21,8 +21,13 @@ out_dir     <- file.path(data_dir, "q3_unified"); dir.create(out_dir, showWarnin
 fig_dir     <- file.path(project_dir, "figures"); dir.create(fig_dir, showWarnings = FALSE)
 K_stack <- 5L
 
-ctrls <- c("share_police","share_streets","share_debt_svc",
-           "share_eit","share_re","share_intergov")
+muni_ctrls <- c("share_police","share_streets","share_debt_svc",
+                "share_eit","share_re","share_intergov")
+sd_ctrls   <- c("share_state_rev_sd","share_local_rev_sd",
+                "share_federal_rev_sd","share_property_tax_sd",
+                "share_instructional_sd","share_support_sd",
+                "share_capital_sd","share_debt_int_sd")
+ctrls <- c(muni_ctrls, sd_ctrls)
 ctrls_str <- paste(ctrls, collapse = " + ")
 
 outcomes <- c("log_home_count","log_work_count",
@@ -73,6 +78,30 @@ rd <- rbind(rd, data.table(muni = nc_munis, realized_dose_muni = 0))
 # 4. Merge cousub-level metadata onto block panel
 b <- merge(b, cousub_meta, by = c("muni","year"), all.x = TRUE)
 b <- merge(b, rd, by = "muni", all.x = TRUE)
+
+# Merge SD-level fiscal share controls (Census F-33; built by
+# build_sd_controls.R). Each block inherits its SD's fiscal posture.
+sd_ctrls_path <- file.path(data_dir, "pa_sd_controls.rds")
+if (file.exists(sd_ctrls_path)) {
+  sd_ctrl <- as.data.table(readRDS(sd_ctrls_path))
+  sd_ctrl_cols <- c("sd_id","year", sd_ctrls)
+  sd_ctrl_cols <- intersect(sd_ctrl_cols, names(sd_ctrl))
+  sd_ctrl <- sd_ctrl[, ..sd_ctrl_cols]
+  # Collapse multiple (sd_id, year) rows (SCHLEV variants etc.) to one
+  sd_ctrl <- sd_ctrl[, lapply(.SD, function(x)
+                       if (is.numeric(x)) mean(x, na.rm = TRUE) else first(x)),
+                     by = .(sd_id, year)]
+  for (cc in sd_ctrls) {
+    set(sd_ctrl, which(!is.finite(sd_ctrl[[cc]])), cc, NA_real_)
+  }
+  b <- merge(b, sd_ctrl, by = c("sd_id","year"), all.x = TRUE)
+  cat(sprintf("\nMerged SD fiscal controls: %d / %d block-years matched\n",
+              sum(!is.na(b$share_state_rev_sd)),
+              nrow(b)))
+} else {
+  cat("\nWARNING: data/pa_sd_controls.rds not found; SD fiscal controls absent.\n")
+  for (cc in sd_ctrls) b[, (cc) := NA_real_]
+}
 b[is.na(realized_dose_muni), realized_dose_muni := 0]
 
 cat("\nMuni cell distribution (block-year):\n")

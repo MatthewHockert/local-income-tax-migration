@@ -97,6 +97,27 @@ cat(sprintf("\nSD panel: %s SD-years, %d unique SDs\n",
 cat(sprintf("Mean munis per SD: %.1f\n",
             mean(sd_panel$n_munis_in_sd, na.rm = TRUE)))
 
+# Merge in SD-level fiscal share controls (Census F-33; built by
+# build_sd_controls.R). Parallel to the muni AFR shares used in the
+# cousub-level model but for school districts.
+sd_ctrls_path <- file.path(data_dir, "pa_sd_controls.rds")
+if (file.exists(sd_ctrls_path)) {
+  sd_ctrl <- as.data.table(readRDS(sd_ctrls_path))
+  sd_ctrl_cols <- c("sd_id","year",
+                    "share_state_rev_sd","share_local_rev_sd",
+                    "share_federal_rev_sd","share_property_tax_sd",
+                    "share_instructional_sd","share_support_sd",
+                    "share_capital_sd","share_debt_int_sd")
+  sd_ctrl_cols <- intersect(sd_ctrl_cols, names(sd_ctrl))
+  sd_ctrl <- unique(sd_ctrl[, ..sd_ctrl_cols])
+  sd_panel <- merge(sd_panel, sd_ctrl, by = c("sd_id","year"), all.x = TRUE)
+  cat(sprintf("Merged SD fiscal controls: %d / %d SD-years matched\n",
+              sum(!is.na(sd_panel$share_state_rev_sd)),
+              nrow(sd_panel)))
+} else {
+  cat("WARNING: data/pa_sd_controls.rds not found; SD fiscal controls skipped.\n")
+}
+
 # ---------------------------------------------------------------------------
 # 3. SD treatment cells (binding-state classification)
 # ---------------------------------------------------------------------------
@@ -206,10 +227,18 @@ outcomes <- c("log_live_and_work","log_in_commuters","log_out_commuters",
               "log_total_jobs","log_total_residents",
               "share_live_in","share_work_outside","share_nonres")
 
+sd_share_ctrls <- intersect(c("share_state_rev_sd","share_local_rev_sd",
+                                "share_federal_rev_sd","share_property_tax_sd",
+                                "share_instructional_sd","share_support_sd",
+                                "share_capital_sd","share_debt_int_sd"),
+                             names(sd_panel))
+
 run_sd_headline <- function(stk, outcome, ctrls_str) {
-  d <- stk[, c("sd_id","year","treat_cell","dose_stack","stack_sd",
+  needed_cols <- unique(c("sd_id","year","treat_cell","dose_stack","stack_sd",
                 "stack_year","mean_muni_rate","pop_weighted_muni_rate",
-                outcome), with = FALSE]
+                outcome, sd_share_ctrls))
+  needed_cols <- intersect(needed_cols, names(stk))
+  d <- stk[, ..needed_cols]
   d <- d[complete.cases(d)]
   if (nrow(d) == 0) return(NULL)
   f <- as.formula(paste0(outcome,
@@ -219,8 +248,11 @@ run_sd_headline <- function(stk, outcome, ctrls_str) {
   feols(f, data = d, cluster = ~sd_id)
 }
 
-ctrls_sd <- "mean_muni_rate"   # control for muni rate level within SD
-ctrls_sd_pop <- "pop_weighted_muni_rate"  # alternative
+# Headline controls: mean muni rate (within-SD aggregate of muni rates,
+# the SD-level analog of the cousub model's SD-rate-as-control) plus
+# F-33 SD-level fiscal share controls.
+ctrls_sd <- paste(c("mean_muni_rate", sd_share_ctrls), collapse = " + ")
+ctrls_sd_pop <- paste(c("pop_weighted_muni_rate", sd_share_ctrls), collapse = " + ")
 
 cat("\n--- SD-level stacked-continuous DiD (control: mean muni rate) ---\n")
 results <- list()

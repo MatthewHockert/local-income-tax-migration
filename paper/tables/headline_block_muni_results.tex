@@ -1,0 +1,30 @@
+\begin{table}[H]
+  \centering
+  \caption{Block-level dose-response: muni resident-rate cells}
+  \label{tab:headline_block_muni_results}
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    Cell & \texttt{log\_home\_count} & \texttt{log\_work\_count} & \texttt{home\_in\_muni\_share} & \texttt{share\_work\_outside} \\
+    \midrule
+    \textbf{Inc-bind}  & -0.165$^{***}$ & -0.111$^{***}$ & -0.067$^{**}$ & 0.067$^{**}$ \\
+                  & (0.019) & (0.040) & (0.027) & (0.027) \\
+    \textbf{Inc-becomes}  & -0.029 & -0.028 & -0.051$^{***}$ & 0.051$^{***}$ \\
+                  & (0.031) & (0.026) & (0.014) & (0.014) \\
+    \textbf{Inc-nobind}  & 0.060$^{***}$ & -0.031 & -0.057$^{***}$ & 0.057$^{***}$ \\
+                  & (0.022) & (0.029) & (0.005) & (0.005) \\
+    \textbf{Dec-bind}  & -0.018 & -0.086 & -0.030$^{***}$ & 0.030$^{***}$ \\
+                  & (0.055) & (0.072) & (0.007) & (0.007) \\
+    \textbf{Dec-becomes-non}  & -0.088 & 0.722$^{***}$ & -0.073 & 0.073 \\
+                  & (0.177) & (0.066) & (0.121) & (0.121) \\
+    \textbf{Dec-nobind}  & 0.379$^{***}$ & -0.282 & 0.019$^{***}$ & -0.019$^{***}$ \\
+                  & (0.087) & (0.352) & (0.003) & (0.003) \\
+    \midrule
+    
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+  \end{minipage}
+\end{table}

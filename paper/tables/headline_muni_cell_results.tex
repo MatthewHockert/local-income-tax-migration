@@ -1,0 +1,34 @@
+\begin{table}[H]
+  \centering
+  \caption{Cousub-level dose-response: muni resident-rate cells}
+  \label{tab:headline_muni_cell_results}
+  \small
+  \begin{tabular}{lccccc}
+    \toprule
+    Cell & \texttt{log\_live\_and\_work} & \texttt{log\_in\_commuters} & \texttt{log\_total\_residents} & \texttt{share\_live\_in} & \texttt{share\_work\_outside} \\
+    \midrule
+    \textbf{Inc-bind}  & -0.401$^{***}$ & -0.212$^{**}$ & -0.100$^{***}$ & -0.045$^{***}$ & 0.041$^{***}$ \\
+                  & (0.096) & (0.083) & (0.033) & (0.009) & (0.016) \\
+    \textbf{Inc-becomes}  & -0.185$^{***}$ & -0.203$^{***}$ & -0.068$^{*}$ & -0.012 & 0.020$^{***}$ \\
+                  & (0.068) & (0.067) & (0.039) & (0.009) & (0.007) \\
+    \textbf{Inc-nobind}  & -0.057 & -0.250 & 0.074 & -0.014 & 0.022 \\
+                  & (0.178) & (0.251) & (0.065) & (0.011) & (0.018) \\
+    \textbf{Dec-bind}  & 0.220$^{**}$ & 0.049 & -0.054 & 0.052$^{*}$ & -0.010 \\
+                  & (0.102) & (0.108) & (0.191) & (0.030) & (0.008) \\
+    \textbf{Dec-becomes-non}  & -0.291 & 0.422$^{*}$ & -0.682 & -0.073 & 0.016 \\
+                  & (0.854) & (0.241) & (0.721) & (0.066) & (0.014) \\
+    \textbf{Dec-nobind}  & 0.308$^{**}$ & -0.014 & 0.131 & 0.013 & -0.003$^{*}$ \\
+                  & (0.126) & (0.194) & (0.171) & (0.026) & (0.002) \\
+    \midrule
+    R2  & 0.964 & 0.959 & 0.981 & 0.823 & 0.945 \\
+    Within R2  & 0.001 & 0.001 & 0.001 & 0.001 & 0.001 \\
+    Dep mean  & 3.677 & 5.847 & 6.697 & 0.093 & 0.943 \\
+    Dep SD  & 1.934 & 1.887 & 1.299 & 0.076 & 0.066 \\
+    N  & 218,685 & 239,031 & 242,730 & 239,041 & 242,730 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+  \end{minipage}
+\end{table}
