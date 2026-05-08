@@ -1,0 +1,9 @@
+outcome,n,R2,Within_R2,dep_mean,dep_sd
+log_live_and_work,49965,0.9853,0.0042,6.2587,1.2922
+log_in_commuters,49999,0.9864,0.0069,8.3348,1.1965
+log_out_commuters,49999,0.9855,0.0054,8.6617,0.8696
+log_total_jobs,49999,0.9875,0.0073,8.4713,1.1976
+log_total_residents,49999,0.9869,0.0056,8.7714,0.9033
+share_live_in,49999,0.9529,1e-04,0.1245,0.0681
+share_work_outside,49999,0.9769,9e-04,0.9001,0.0761
+share_nonres,49999,0.9529,1e-04,0.8755,0.0681

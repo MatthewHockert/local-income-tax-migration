@@ -19,3 +19,25 @@ Thumbs.db
 
 # Archive of old scripts
 archive/
+
+# Additional large dirs (added 2026-05-08)
+data/lodes_block/
+data/crime_data/
+data/pde_afr/
+data/pa_sd_afr_raw/
+.RDataTmp
+.claude/
+figures/_old_for_compare/
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.nav
+paper/*.out
+paper/*.snm
+paper/*.toc
+paper/*.synctex.gz
+paper/*.bbl
+paper/*.blg
