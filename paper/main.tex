@@ -41,16 +41,18 @@ $T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
 $\tau^{\text{home}}$ stacks the muni resident rate and the school
 district rate. A rate hike only \emph{moves the bill} when the relevant
 side of the max binds. I exploit this structure with a unified
-muni-level design that decomposes each rate-change event by direction
-(Inc/Dec) and binding-state transition (already-binding,
-becomes-binding, non-binding-throughout), running five staggered-DiD
-estimators on a single panel with three treatments (muni resident
-rate, school district rate, muni nonresident rate). The within-design
+continuous stacked DiD design that decomposes each rate-change event
+by direction (Inc/Dec) and binding-state transition (already-binding,
+becomes-binding, non-binding-throughout), and that estimates the
+dose-response coefficient at three estimating units (municipality,
+school district, census block) on two simultaneous rate-setter
+treatments (muni resident rate and SD resident rate). The within-design
 placebo is the Inc-nobind cell---rate hikes whose post-event home stack
-remains below the nonresident rate, so the bill never moves. Using
-stacked continuous DiD, a 1 percentage-point muni resident rate hike in
-the binding cell reduces \texttt{live\_and\_work} workers by 40 percent,
-total jobs by 27 percent, and total residents by 10 percent; the share
+remains below the work-side nonresident rate, so the bill never moves.
+The headline finding is that a 1 percentage-point muni resident rate
+hike in the binding cell reduces \texttt{live\_and\_work} workers by
+40 percent at the cousub level and \texttt{home\_count} by 30 percent
+at the block level; the share
 of residents commuting out rises 4.1 percentage points. The Inc-nobind
 placebo cell is null on every level outcome. School district rate
 changes do not produce sorting at any binding state, even when SD
@@ -128,12 +130,17 @@ NC controls). The within-design placebo is the Inc-nobind cell: rate
 hikes whose post-event home stack stays below the nonresident rate, so
 the bill never moves and theory predicts no behavioral response.
 
-Second, the empirical design is a unified muni-level panel with three
-simultaneous treatments---muni resident rate, school district rate, and
-muni nonresident rate, each separately decomposed by binding cells---and
-five staggered-DiD estimators run in parallel. The headline estimator is
-stacked continuous DiD; Q2 TWFE pooled, single-event TWFE, stacked
-binary, and DCDH \citep{dechaisemartin2024} provide triangulation.
+Second, the empirical design is a unified continuous stacked DiD with
+two simultaneous rate-setter treatments---muni resident rate and SD
+resident rate, each separately decomposed by binding cells---estimated
+at three units of observation (municipality, school district, census
+block). Triangulation across estimating units replaces the
+cross-estimator triangulation of an earlier draft: each level aligns
+the regression with a different rate-setter's jurisdiction and exposes
+different pre-trend behavior. Pre-trend tests are reported via two
+complementary diagnostics: a realized-dose Sun-Abraham continuous
+event study \citep{callawaygoodmanbaconsantanna2024,dechaisemartin2024}
+and a binary Sun-Abraham IW event study \citep{sunab2021}.
 Controls are share-based throughout: police, streets, and debt service
 as shares of total expenditures; EIT, real estate, and intergovernmental
 revenue as shares of total revenues. The never-changed control pool is
@@ -695,56 +702,77 @@ varying eventual treatment intensity.
 \subsection{Setup}
 \label{subsec:setup}
 
-\textbf{Unit of observation:} a Pennsylvania cousub $i$ in year $t$,
-2002--2019. One row per $(i,t)$. The panel covers $\sim$2{,}500 PA
-cousubs over 18 years.
+This subsection describes the elements of the design that are common
+across the three estimating units (cousub, school district, census
+block); unit-specific choices for treatment construction, fiscal
+controls, fixed effects, and clustering are described in
+Section~\ref{subsec:three-units}.
 
-\textbf{Outcomes (eight, run in parallel):} log of the count of
-\texttt{live\_and\_work} (residents employed in the muni),
-\texttt{in\_commuters} (workers in the muni from elsewhere),
-\texttt{out\_commuters} (residents employed elsewhere),
-\texttt{total\_jobs} (= live\_and\_work + in\_commuters), and
-\texttt{total\_residents} (= live\_and\_work + out\_commuters); plus
-the three shares $\texttt{share\_live\_in} = \text{live\_and\_work} /
-\text{total\_jobs}$, $\texttt{share\_nonres} = \text{in\_commuters} /
-\text{total\_jobs}$, and $\texttt{share\_work\_outside} = \text{out\_
-commuters} / \text{total\_residents}$. These outcomes share the same
-underlying LODES OD data, viewed from workplace and residence
-perspectives in a single panel.
+\textbf{Sample period.} 2002--2019. Pre-2002 data are not consistently
+available in LODES; post-2019 years are excluded because COVID-19
+disrupted commuting patterns and ARPA fiscal transfers distorted
+muni budgets.
 
-\textbf{Three rate treatments:} $\Delta\tau^{\text{muni}}_{it}$
-(cumulative change in the muni resident rate from baseline),
-$\Delta\tau^{\text{SD}}_{it}$ (cumulative change in the school district
-rate), and $\Delta\tau^{\text{nr}}_{it}$ (cumulative change in the muni
-nonresident rate). Baseline for each is the rate at year $c_i^s - 1$
-where $c_i^s$ is muni $i$'s first event year on side $s \in
-\{\text{muni, SD, nr}\}$. Cumulative dose accumulates with subsequent
-rate changes within muni $i$.
+\textbf{Outcomes.} The continuous-stacked-DiD specification is run in
+parallel across a set of cousub-level workplace and residence
+outcomes: log of the count of \texttt{live\_and\_work} (residents
+employed in the muni), \texttt{in\_commuters} (workers in the muni
+from elsewhere), \texttt{out\_commuters} (residents employed
+elsewhere), \texttt{total\_jobs}, and \texttt{total\_residents};
+plus the shares $\texttt{share\_live\_in}$, $\texttt{share\_nonres}$,
+and $\texttt{share\_work\_outside}$. SD-level regressions use the
+same outcomes aggregated to the SD via the muni--SD assignment. At
+the block level, outcomes are redefined as block-level analogues
+(\texttt{log\_home\_count}, \texttt{log\_work\_count},
+\texttt{home\_in\_muni\_share}, \texttt{share\_work\_outside}); see
+Section~\ref{subsec:three-units}.
 
-\textbf{Controls (share-based, all time-varying):} police, streets,
-and debt service expenditures as shares of total expenditures; EIT,
-real estate, and intergovernmental revenues as shares of total
-revenues. The share specification is symmetric across expenditure and
-revenue sides and avoids confounding rate changes with mechanically
-correlated level shifts in fiscal aggregates.
+\textbf{Two rate treatments.} The unified resident-side specification
+includes two simultaneous rate-setter treatments:
+$\Delta\tau^{\text{muni}}_{it}$ (cumulative change in the muni
+resident rate from baseline) and $\Delta\tau^{\text{SD}}_{it}$
+(cumulative change in the school district rate). Baseline for each
+is the rate at year $c_i^s - 1$ where $c_i^s$ is the unit's first
+event year on side $s \in \{\text{muni, SD}\}$. Cumulative dose
+accumulates with subsequent rate changes within unit $i$. The work-side
+nonresident rate $\tau^{\text{nr}}$ enters the binding-state
+classification of cells (Section~\ref{subsec:cell-class}) but is not
+itself a treatment in the headline regression; we focus on the
+resident-side mechanism in this paper and defer the work-side
+behavioral response to a separate analysis.
 
-\textbf{Fixed effects and clustering:} muni FE $\alpha_i$ and year FE
-$\gamma_t$ in TWFE specifications; stack-muni and stack-year FE in
-stacked specifications (defined below). Standard errors clustered at
-the muni level throughout.
+\textbf{Cell decomposition.} Each rate-change event is classified by
+direction $\in \{\text{Inc, Dec}\}$ and binding-state transition $\in
+\{\text{bind, becomes, nobind}\}$, yielding six non-NC cells per
+side. The classification rule is given in
+Section~\ref{subsec:cell-class}. Units whose rate $\tau^s$ never
+changes across the panel are assigned to the NC reference category
+on side $s$.
+
+\textbf{Fiscal controls.} Share-based, all time-varying. The exact
+control set differs by estimating unit and is described in
+Section~\ref{subsec:three-units}. Cousub-level regressions use muni
+AFR shares (police, streets, debt service / total expenditures; EIT,
+real estate, intergovernmental / total revenues). SD-level
+regressions use Census F-33 SD shares (state, local, federal,
+property-tax revenue shares; instructional, support, capital, debt-
+interest expenditure shares). Block-level regressions use both,
+since each block is exposed to both rate-setters' fiscal posture.
 
 \subsection{Cell Classification (per side)}
 \label{subsec:cell-class}
 
-For each muni $i$ and each side $s \in \{\text{muni, SD, nr}\}$, define
-the binding state at year $t$ as
+For each unit $i$ and each rate-setter side $s \in \{\text{muni, SD}\}$,
+define the binding state at year $t$ as
 $\text{home\_binds}_{it} = \mathbf{1}\{\tau^{\text{home}}_{it} >
 \tau^{\text{nr,muni}}_{it}\}$, where $\tau^{\text{home}} =
-\tau^{\text{res,muni}} + \tau^{\text{SD}}$. Identify each muni's first
-rate event on side $s$ (year $c^s_i$) and classify the event by
+\tau^{\text{res,muni}} + \tau^{\text{SD}}$. The work-side nonresident
+rate $\tau^{\text{nr}}$ enters the binding-state classification but is
+not itself a rate-setter side in the regression. Identify each unit's
+first rate event on side $s$ (year $c^s_i$) and classify the event by
 direction $\in \{\text{Inc, Dec}\}$ and binding-state transition $\in
 \{\text{bind, becomes, nobind}\}$ as defined in
-Section~\ref{subsec:cells}. Munis whose rate $\tau^s$ never changes
+Section~\ref{subsec:cells}. Units whose rate $\tau^s$ never changes
 across the panel are assigned to the NC reference category.
 
 \textbf{NC purity.} A muni is in NC$^s$ if and only if $\tau^s_{it}$
@@ -868,7 +896,6 @@ runs the regression on the stacked panel:
 Y_{\tilde{i}\tilde{t}} \;=\; \alpha_{\tilde{i}} \;+\; \gamma_{\tilde{t}}
 &+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{muni}}_k \;\Delta\tau^{\text{muni}}_{it} \cdot \mathbf{1}\{\text{cell}^{\text{muni}}_i = k\} \\
 &+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{SD}}_k  \;\Delta\tau^{\text{SD}}_{it}   \cdot \mathbf{1}\{\text{cell}^{\text{SD}}_i = k\}   \\
-&+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{nr}}_k  \;\Delta\tau^{\text{nr}}_{it}   \cdot \mathbf{1}\{\text{cell}^{\text{nr}}_i = k\}   \\
 &+ \mathbf{X}'_{it}\boldsymbol{\phi}
 \;+\; \varepsilon_{\tilde{i}\tilde{t}},
 \end{split}
@@ -880,13 +907,14 @@ where
 \item $\mathcal{C}_{\backslash \text{NC}} = \{\text{Inc-bind, Inc-becomes,
 Inc-nobind, Dec-bind, Dec-becomes-non, Dec-nobind}\}$ is the set of
 non-NC cells.
-\item NC is the omitted reference category on each side; for each side,
-the regression estimates six $\beta_k$ coefficients, each interpreted
-as the dose-response coefficient \emph{relative to the NC trend on that
-side}.
-\item Each muni $i$ appears in exactly one sub-experiment for each side
-where it is in a non-NC cell. NC munis appear in every sub-experiment
-on the side(s) where they are stable.
+\item NC is the omitted reference category on each side; for each of
+the two rate-setter sides (muni and SD), the regression estimates
+six $\beta_k$ coefficients, each interpreted as the dose-response
+coefficient \emph{relative to the NC trend on that side}, holding the
+other side's cell $\times$ dose interaction fixed.
+\item Each unit $i$ appears in exactly one sub-experiment for each
+side where it is in a non-NC cell. NC units appear in every sub-
+experiment on the side(s) where they are stable.
 \item $\alpha_{\tilde{i}}$ absorbs all time-invariant features of the
 muni-stack pair (so each muni has a separate FE for each cohort it
 appears in); $\gamma_{\tilde{t}}$ absorbs cohort-specific time effects.
@@ -1387,16 +1415,11 @@ cells, nonresident-side cells, and control coefficients.
         Dec-nobind $\times \Delta\tau^{\text{muni}}$     & $+0.332^{**}$  & $0.165$ \\
         \midrule
         \multicolumn{3}{l}{\textit{School district rate cells (vs NC$^{\text{SD}}$)}} \\
-        Inc-bind $\times \Delta\tau^{\text{SD}}$         & $+0.130$       & $0.084$ \\
-        Inc-becomes $\times \Delta\tau^{\text{SD}}$      & $+0.229$       & $0.150$ \\
-        Inc-nobind $\times \Delta\tau^{\text{SD}}$       & ---            & --- \\
-        Dec-bind $\times \Delta\tau^{\text{SD}}$         & $-0.669^{***}$ & $0.139$ \\
-        Dec-becomes-non $\times \Delta\tau^{\text{SD}}$  & $-0.212^{*}$   & $0.118$ \\
-        \midrule
-        \multicolumn{3}{l}{\textit{Muni nonresident-rate cells (vs NC$^{\text{nr}}$)}} \\
-        Inc-nobind $\times \Delta\tau^{\text{nr}}$       & $+0.149$       & $0.415$ \\
-        Dec-becomes-non $\times \Delta\tau^{\text{nr}}$  & $-0.072^{**}$  & $0.030$ \\
-        Dec-nobind $\times \Delta\tau^{\text{nr}}$       & $-0.227$       & $0.150$ \\
+        Inc-bind $\times \Delta\tau^{\text{SD}}$         & $+0.177^{*}$   & $0.099$ \\
+        Inc-becomes $\times \Delta\tau^{\text{SD}}$      & $+0.103$       & $0.090$ \\
+        Dec-bind $\times \Delta\tau^{\text{SD}}$         & $-0.721^{***}$ & $0.191$ \\
+        Dec-becomes-non $\times \Delta\tau^{\text{SD}}$  & $-0.223^{**}$  & $0.109$ \\
+        Dec-nobind $\times \Delta\tau^{\text{SD}}$       & $+0.048$       & $0.179$ \\
         \midrule
         \multicolumn{3}{l}{\textit{Share-based controls}} \\
         share\_police                                     & $+0.097$       & $0.100$ \\
@@ -1420,10 +1443,12 @@ cells, nonresident-side cells, and control coefficients.
     \begin{minipage}{0.92\textwidth}
         \footnotesize \textit{Notes:} All coefficients from a single
         regression of log(live\_and\_work) on cell-specific dose
-        interactions for all three rate sides plus share-based controls.
-        Reference category on each side is NC (never-changed) munis.
-        Empty cells (---) on the nonresident side reflect cells that have
-        zero observations in PA. Cluster-robust SEs by muni.
+        interactions for the two rate-setter sides (muni resident and
+        SD resident) plus muni-AFR share-based controls. Reference
+        category on each side is NC (never-changed) units. The
+        work-side nonresident rate $\tau^{\text{nr}}$ enters the cell
+        classification (binding state) but is not itself a treatment
+        in this regression. Cluster-robust SEs by muni.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
@@ -1456,35 +1481,36 @@ not the others.
 
 \begin{table}[H]
     \centering
-    \caption{Channel separation: Inc-bind cell across sides}
+    \caption{Channel separation: Inc-bind cell across rate-setter sides}
     \label{tab:channel}
     \small
     \begin{tabular}{lcccc}
         \toprule
         Side (Inc-bind) & log(live\_and\_work) & log(in\_commuters) & log(total\_residents) & log(out\_commuters) \\
         \midrule
-        Muni resident ($\tau^{\text{muni}}$) & $-0.402^{***}$ (0.096) & $-0.213^{**}$ (0.083) & $-0.100^{***}$ (0.033) & $-0.053$ (0.038) \\
-        School district ($\tau^{\text{SD}}$) & $+0.130$ (0.084)       & $+0.180^{**}$ (0.090) & $+0.072$ (0.048)       & $+0.065$ (0.048) \\
-        Nonres ($\tau^{\text{nr}}$, Inc-nobind) & $+0.149$ (0.415)    & $+0.192$ (0.328)      & $+0.017$ (0.113)       & $+0.032$ (0.074) \\
+        Muni resident ($\tau^{\text{muni}}$) & $-0.401^{***}$ (0.096) & $-0.212^{**}$ (0.083) & $-0.100^{***}$ (0.033) & $-0.053$ (0.038) \\
+        School district ($\tau^{\text{SD}}$) & $+0.177^{*}$ (0.099)   & $+0.160^{*}$ (0.092)  & $+0.063$ (0.046)       & $+0.052$ (0.046) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.95\textwidth}
         \footnotesize \textit{Notes:} Coefficients from the same headline
-        joint regression as Table~\ref{tab:headline}. The nonresident-side
-        Inc-bind cell is empty in PA; we report Inc-nobind as the only
-        populated nonres-side Inc cell. Cluster-robust SEs by muni.
+        joint regression as Table~\ref{tab:headline_muni_cell_results} (muni
+        cells) and Table~\ref{tab:headline_muni_sd_side_results} (SD cells).
+        The work-side nonresident rate $\tau^{\text{nr}}$ enters the
+        binding-state classification but is not itself a treatment in this
+        regression. Cluster-robust SEs by muni.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
 The muni resident rate moves residents (live-and-work, total residents)
 and in-commuters (consistent with local-services demand spillover; see
-Section~\ref{subsec:results-mechanism}). The SD rate Inc-bind cell
-coefficient on \texttt{live\_and\_work} is $+0.130$ (insig); on
-\texttt{total\_residents} is $+0.072$ (insig). SD rate changes do not
-produce sorting through the binding channel even when SD changes flip
-the binding state.
+Section~\ref{subsec:het-industry}). The SD rate Inc-bind cell
+coefficient on \texttt{live\_and\_work} is $+0.177^{*}$ (positive but
+imprecise); on \texttt{total\_residents} is $+0.063$ (insig). SD rate
+changes do not produce a clean sorting response through the binding
+channel even when SD changes flip the binding state.
 
 The earlier finding in this project that SD rate increases ``attract
 residents'' (positive $+0.147^{**}$ in pre-NC-fix specifications using
