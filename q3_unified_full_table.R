@@ -211,13 +211,23 @@ outcomes <- c("log_live_and_work", "log_in_commuters", "log_out_commuters",
               "share_live_in", "share_work_outside", "share_nonres")
 
 run_headline <- function(stk, outcome) {
-  d <- stk[, c("muni","year","treat_cell","dose_stack","stack_muni",
-                "stack_year", outcome, ctrls), with = FALSE]
+  # Unified resident-side spec: muni AND SD cell x dose in one regression.
+  # cell_sd / dose_sd are computed in the panel build above; bring them in.
+  cols <- c("muni","year","treat_cell","dose_stack",
+             "cell_sd","dose_sd","stack_muni","stack_year",
+             outcome, ctrls)
+  cols <- intersect(cols, names(stk))
+  d <- stk[, ..cols]
+  if (!is.null(d$dose_sd)) d[is.na(dose_sd), dose_sd := 0]
   d <- d[complete.cases(d)]
   if (nrow(d) == 0) return(NULL)
-  # Stacked continuous: i(treat_cell, dose_stack, ref='NC') = treatment side
+  # Resident-side unified: muni + SD cell x dose interactions.
+  # NOTE: nonresident side intentionally excluded per current paper scope.
+  # NOTE: SD-level fiscal share controls TBD (will be added once NCES F-33
+  #       data is processed; currently uses only muni-level fiscal shares).
   f <- as.formula(paste0(outcome,
-       " ~ i(treat_cell, dose_stack, ref='NC') + ",
+       " ~ i(treat_cell, dose_stack, ref='NC') ",
+       "+ i(cell_sd, dose_sd, ref='NC') + ",
        paste(ctrls, collapse=" + "),
        " | stack_muni + stack_year"))
   feols(f, data = d, cluster = ~muni)
