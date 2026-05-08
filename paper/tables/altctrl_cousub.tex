@@ -1,0 +1,30 @@
+\begin{table}[H]
+  \centering
+  \caption{Alternative control group (clean-in-window): Cousub-level Inc cells}
+  \label{tab:altctrl_cousub}
+  \small
+  \begin{tabular}{lccccc}
+    \toprule
+    Cell & \texttt{log\_live\_and\_work} & \texttt{log\_in\_commuters} & \texttt{log\_total\_residents} & \texttt{share\_live\_in} & \texttt{share\_work\_outside} \\
+    \midrule
+    \textbf{Inc-bind}  & -0.321$^{***}$ & -0.032 & -0.085$^{**}$ & -0.046$^{***}$ & 0.036$^{**}$ \\
+                  & (0.102) & (0.100) & (0.042) & (0.010) & (0.015) \\
+    \textbf{Inc-becomes}  & -0.143$^{*}$ & -0.041 & -0.081$^{**}$ & -0.018$^{*}$ & 0.017$^{**}$ \\
+                  & (0.075) & (0.082) & (0.034) & (0.010) & (0.007) \\
+    \textbf{Inc-nobind}  & 0.127 & 0.100 & 0.215$^{**}$ & -0.018$^{*}$ & 0.014 \\
+                  & (0.173) & (0.195) & (0.085) & (0.009) & (0.013) \\
+    \textbf{Dec-bind}  & 0.041 & -0.043 & -0.047 & 0.040 & -0.005 \\
+                  & (0.132) & (0.147) & (0.211) & (0.032) & (0.009) \\
+    \textbf{Dec-becomes-non}  & -0.501 & -0.083 & -0.583 & -0.087 & 0.028$^{*}$ \\
+                  & (0.865) & (0.265) & (0.776) & (0.071) & (0.015) \\
+    \textbf{Dec-nobind}  & 0.260$^{**}$ & 0.042 & 0.089 & 0.005 & -0.006$^{*}$ \\
+                  & (0.126) & (0.130) & (0.144) & (0.022) & (0.003) \\
+    \midrule
+    
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+  \end{minipage}
+\end{table}

@@ -461,4 +461,16 @@ make_tercile_table(file.path(in_dir, "tercile_sd.csv"), "SD",
 make_tercile_table(file.path(in_dir, "tercile_block.csv"), "Block",
                     file.path(out_dir, "tercile_block.tex"))
 
+# ---------------------------------------------------------------------------
+# Alt-control (Cengiz-style clean-in-window) table
+# ---------------------------------------------------------------------------
+if (file.exists(file.path(in_dir, "altctrl_cousub.csv"))) {
+  make_cell_table(
+    file.path(in_dir, "altctrl_cousub.csv"),
+    file.path(in_dir, "altctrl_cousub_diag.csv"),  # may not exist; ok
+    es_outcomes_cousub, muni_cells, "treat_cell",
+    file.path(out_dir, "altctrl_cousub.tex"),
+    "Alternative control group (clean-in-window): Cousub-level Inc cells")
+}
+
 cat("\nDone. Tables written to paper/tables/.\n")
