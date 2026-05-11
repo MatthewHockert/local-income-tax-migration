@@ -71,7 +71,7 @@ stk_sd[, treat_cell := factor(treat_cell, levels = cell_levels)]
 
 industry_outcomes <- c("log_jobs_total","log_jobs_consumer","log_jobs_tradeable",
                         "share_consumer","share_tradeable")
-results <- list()
+results <- list(); diags <- list()
 for (o in industry_outcomes) {
   cols <- intersect(c("sd_id","year","stack_sd","stack_year","treat_cell",
                        "dose_stack", o, ctrls_sd), names(stk_sd))
@@ -89,9 +89,18 @@ for (o in industry_outcomes) {
   ic[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
   ic[, outcome := o]; ic[, n := nobs(m)]
   results[[length(results)+1L]] <- ic[, .(outcome, cell, est, se, p, n)]
+  dep_vec <- m$residuals + m$fitted.values
+  diags[[o]] <- data.table(
+    outcome   = o, n = nobs(m),
+    R2        = round(fitstat(m, "r2",  simplify = TRUE), 4),
+    Within_R2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+    dep_mean  = round(mean(dep_vec, na.rm = TRUE), 4),
+    dep_sd    = round(sd(dep_vec,   na.rm = TRUE), 4))
 }
 out <- rbindlist(results, fill = TRUE)
 fwrite(out, file.path(out_dir, "industry_sd.csv"))
+fwrite(rbindlist(diags, fill = TRUE),
+       file.path(out_dir, "industry_sd_diag.csv"))
 cat(sprintf("\nSaved data/q3_unified/industry_sd.csv (%d rows)\n", nrow(out)))
 print(out[cell %in% c("Inc-bind","Inc-becomes","Inc-nobind"),
           .(outcome, cell, est = round(est,3), se = round(se,3), p = round(p,4))])

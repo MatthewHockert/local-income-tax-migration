@@ -1,0 +1,5 @@
+outcome,n,R2,Within_R2,dep_mean,dep_sd
+log_home_count,1808733,0.1837,2e-04,2.4125,1.1718
+log_work_count,792167,0.0604,1e-04,2.3607,1.6944
+home_in_muni_share,1808733,0.5225,8e-04,0.1801,0.2164
+share_work_outside,1808733,0.5225,8e-04,0.8199,0.2164

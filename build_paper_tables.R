@@ -519,15 +519,29 @@ write_tercile_table <- function(coef_csv, caption, label_id, out_name) {
   }
   coefs <- rbindlist(rows, fill = TRUE)
   row_labels <- c("small","medium","large")
-  diag <- data.table(outcome = outcomes,
-                     n = NA_integer_, r2 = NA_real_, wr2 = NA_real_,
-                     dep_mean = NA_real_, dep_sd = NA_real_)
+  diag_csv <- sub("\\.csv$", "_diag.csv", coef_csv)
+  if (file.exists(diag_csv) && file.size(diag_csv) > 0) {
+    dd <- fread(diag_csv)
+    diag <- dd[, .(n        = max(n, na.rm = TRUE),
+                   r2       = mean(R2, na.rm = TRUE),
+                   wr2      = mean(Within_R2, na.rm = TRUE),
+                   dep_mean = mean(dep_mean, na.rm = TRUE),
+                   dep_sd   = mean(dep_sd, na.rm = TRUE)),
+                by = outcome]
+    diag_fields <- c("n","r2","wr2","dep_mean","dep_sd")
+  } else {
+    diag <- data.table(outcome = outcomes,
+                       n = NA_integer_, r2 = NA_real_, wr2 = NA_real_,
+                       dep_mean = NA_real_, dep_sd = NA_real_)
+    diag_fields <- character(0)
+  }
   body <- build_pub_table(coefs, diag, outcomes, row_labels, caption, label_id,
                             short_labels = TRUE,
-                            diag_fields = character(0),
+                            diag_fields = diag_fields,
                             notes = c(paste("Inc-bind units split by tercile of cumulative",
                                             "$\\Delta\\tau$ at $+5$. Per-pp dose-response",
-                                            "should be approximately constant under linearity.")))
+                                            "should be approximately constant under linearity."),
+                                      "Diagnostics ($N$, $R^2$, Dep.\\ mean/SD) are averaged across terciles within each outcome (FE structure is identical across terciles)."))
   writeLines(body, file.path(out_dir, out_name))
   cat(sprintf("Wrote %s\n", out_name))
 }

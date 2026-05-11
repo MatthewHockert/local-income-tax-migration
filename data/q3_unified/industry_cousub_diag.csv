@@ -1,0 +1,9 @@
+outcome,n,R2,Within_R2,dep_mean,dep_sd
+log_jobs_total,239001,0.961,0.0012,5.9955,1.8985
+log_jobs_consumer,225691,0.9521,5e-04,4.5534,1.9352
+log_jobs_tradeable,219237,0.9346,7e-04,4.6387,2.0257
+log_jobs_health_edu,209221,0.9329,2e-04,4.4145,2.158
+log_jobs_public,175293,0.8448,0.0018,2.6208,1.5978
+log_jobs_other,227485,0.9248,0.0018,4.4759,1.8061
+share_consumer,239001,0.7596,8e-04,0.2491,0.1893
+share_tradeable,239001,0.7795,0.0012,0.2496,0.2024

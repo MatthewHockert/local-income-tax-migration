@@ -40,6 +40,29 @@ for (cl in cells) {
                           paste(values, collapse = " & "), " \\\\"))
 }
 
+## Diagnostics block (N, R^2, Within R^2, Dep mean, Dep SD per outcome)
+diag_path <- file.path(project_dir, "data/q3_unified/industry_cousub_diag.csv")
+diag_rows <- character(0)
+if (file.exists(diag_path) && file.size(diag_path) > 0) {
+  dd <- fread(diag_path)
+  setkey(dd, outcome)
+  pick <- function(field, fmt = "%s") {
+    sapply(outcomes, function(o) {
+      v <- dd[o, on = "outcome"][[field]]
+      if (length(v) == 0 || all(is.na(v))) "---" else sprintf(fmt, v)
+    })
+  }
+  fmt_n <- function(x) format(x, big.mark = ",")
+  diag_rows <- c(
+    paste0("$N$ & ", paste(sapply(pick("n"), function(x) {
+      if (x == "---") x else fmt_n(as.integer(x))
+    }), collapse = " & "), " \\\\"),
+    paste0("$R^2$ & ", paste(pick("R2", "%.3f"), collapse = " & "), " \\\\"),
+    paste0("Within $R^2$ & ", paste(pick("Within_R2", "%.3f"), collapse = " & "), " \\\\"),
+    paste0("Dep.\\ mean & ", paste(pick("dep_mean", "%.3f"), collapse = " & "), " \\\\"),
+    paste0("Dep.\\ SD & ", paste(pick("dep_sd", "%.3f"), collapse = " & "), " \\\\"))
+}
+
 col_spec <- paste0("l", paste(rep("c", length(outcomes)), collapse = ""))
 header <- paste0("Cell & ", paste(out_lbl, collapse = " & "), " \\\\")
 body <- c(
@@ -54,6 +77,7 @@ body <- c(
   paste0("    ", header),
   "    \\midrule",
   paste0("    ", rows),
+  if (length(diag_rows)) c("    \\midrule", paste0("    ", diag_rows)) else NULL,
   "    \\bottomrule",
   "  \\end{tabular}",
   "  }",

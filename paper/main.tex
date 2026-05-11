@@ -82,16 +82,19 @@ hypothesis predicts that households ``vote with their feet'' by
 sorting across jurisdictions offering different bundles of taxes and
 public services \citep{tiebout1956}, and a large literature
 documents tax-driven migration at the state level for high earners
-\citep{kleven2020, young2016, moretti2017} and at sub-national
+\citep{kleven2020, young2016, morettiEffectStateTaxes2017} and at sub-national
 borders for sales taxes \citep{agrawal2015gradient}. Yet sub-state
 income-tax sorting---the canonical Tiebout margin, where moving
 costs are small and tax boundaries are crossed by a short
-relocation---is essentially untested in the United States. Two
-recent studies of Indiana and Maryland local income taxes
-\citep{yang2025, heim2017} use county-level IRS data and find
-county-level migration responses but cannot resolve the muni-level
-variation that defines the actual tax boundary. A literature survey
-by \citet{agrawal2025} explicitly identifies sub-state
+relocation---is essentially untested in the United States. Recent
+work on Indiana local income taxes
+\citep{yangRESPONSIVENESSINCOMELOCAL2017} uses county-level IRS
+data and finds county-level migration responses, but cannot
+resolve the muni-level variation that defines the actual tax
+boundary; the canonical U.S. sub-state place-of-taxation studies
+\citep{coomes2008,rohlinTaxAvoidanceBusiness2014} likewise operate
+at the state-border / county level. A literature survey
+by \citet{agrawalLessonsStateLocal} explicitly identifies sub-state
 local-income-tax sorting as an open question, and
 \citet{agrawalLocalPolicyChoice2022} characterize the empirical
 evidence as ``thin.''
@@ -447,15 +450,14 @@ cross-state inflows) is in the Companion Appendix
 \paragraph{LODES Origin-Destination Data.}
 LEHD LODES Version 8, 2002--2019. Block-level residence--workplace
 links derived from state Unemployment Insurance wage records and the
-Quarterly Census of Employment and Wages \citep{abowd2009lehd}. We
+Quarterly Census of Employment and Wages \citep{abowdProducerDynamicsNew2009}. We
 trim 2020--2021 due to COVID-related disruptions in both employment
 patterns and LODES coverage. The Census Bureau applies synthetic
 noise infusion at the block level to protect respondent
 confidentiality; the mechanism is calibrated so that aggregation to
 larger geographies produces estimates that approximate ground truth
 and have been validated against external sources at the tract level
-and above \citep{machanavajjhala2008, graham2014lodes,
-lodes_techdoc_v8}. We aggregate blocks to county subdivisions
+and above \citep{grahamDESIGNCOMPARISONLODES}. We aggregate blocks to county subdivisions
 (municipalities) using the TIGER 2020 block-to-municipality crosswalk described
 in Section~\ref{subsec:pipeline}, item~3.
 
@@ -736,21 +738,21 @@ appears once per cohort and each treated muni appears in exactly one
 sub-experiment. Within each sub-experiment, controls are clean (no
 treated muni from another cohort serves as control), avoiding the
 negative-weighting problem in vanilla TWFE under staggered treatment
-\citep{goodmanbacon2021}.
+\citep{goodman-baconDifferenceindifferencesVariationTreatment2021}.
 
 The stacked-DiD construction is in the lineage of
-\citet{cengiz2019} (138 minimum-wage events, stacked event-by-event
-with continuous treatment), \citet{fadlon2021} (severe health shocks,
+\citet{cengizEffectMinimumWages2019a} (138 minimum-wage events, stacked event-by-event
+with continuous treatment), \citet{fadlonFamilyLaborSupply2021a} (severe health shocks,
 stacked with future-treated households as controls), and
-\citet{deshpande2019} (SSA field-office closings, stacked with
+\citet{deshpandeWhoScreenedOut2019a} (SSA field-office closings, stacked with
 future-closing ZIP codes as controls). Three differences are worth
 flagging.
 
-\textbf{Control-group choice.} \citet{fadlon2021} and
-\citet{deshpande2019} use \emph{future-treated} units (those that
+\textbf{Control-group choice.} \citet{fadlonFamilyLaborSupply2021a} and
+\citet{deshpandeWhoScreenedOut2019a} use \emph{future-treated} units (those that
 will be treated at $\tau + \Delta$) as controls, because never-treated
 units are scarce or selected in their settings (no never-dying
-households; selection into closing eligibility). \citet{cengiz2019}
+households; selection into closing eligibility). \citet{cengizEffectMinimumWages2019a}
 uses \emph{clean controls} (states with no minimum-wage events in the
 8-year window around the focal event), which permits states with
 events outside the window to serve as controls. We use the strictest
@@ -760,21 +762,21 @@ municipalities are NC on at least one rate side, the never-changed pool is
 abundant and we do not need to relax to future-treated or
 clean-within-window controls.
 
-\textbf{Continuous treatment.} \citet{cengiz2019} is the closest
+\textbf{Continuous treatment.} \citet{cengizEffectMinimumWages2019a} is the closest
 analogue on this dimension: their treatment is continuous
 (log minimum wage) within each stacked sub-experiment. Their
 identification logic---``aligning events by event-time, not calendar
 time, equivalent to a setting where the events happen all at once''
-\citep[Online Appendix C]{cengiz2019}---applies identically in our
+\citep[Online Appendix C]{cengizEffectMinimumWages2019a}---applies identically in our
 setup. We extend their continuous-treatment design by extracting
 \emph{cell-specific} dose-response coefficients via the
 $i(\text{cell}, \Delta\tau)$ interaction, which their pooled
 event-by-event spec does not produce.
 
 \textbf{Cell decomposition.} The binding-state cell partitioning is
-new relative to all three. \citet{cengiz2019} pools all minimum-wage
+new relative to all three. \citet{cengizEffectMinimumWages2019a} pools all minimum-wage
 events without a within-design taxonomy of treated units;
-\citet{fadlon2021} and \citet{deshpande2019} have homogeneous
+\citet{fadlonFamilyLaborSupply2021a} and \citet{deshpandeWhoScreenedOut2019a} have homogeneous
 treatments (death, closure). Our decomposition exploits the piecewise
 PA EIT rule to partition treated munis into cells whose ex ante
 predicted response differs by binding state, generating a
@@ -931,7 +933,7 @@ for any rate decrease). The pooled regression is the
 literature-comparable baseline: it answers ``what is the average per-pp
 effect of a muni-rate hike on residents, ignoring binding state?'',
 which is the elasticity reported in prior local-tax-incidence work
-\citep{yang2025,heim2017,bagchiEffectsIntroducingWithholding2022}. The
+\citep{yangRESPONSIVENESSINCOMELOCAL2017,bagchiEffectsIntroducingWithholding2022}. The
 binding-state decomposition that follows in
 Equation~(\ref{eq:headline}) then explains \emph{which} sub-population
 of the treated muni cohort drives the pooled coefficient.
@@ -1057,7 +1059,7 @@ mean differences regardless of dose.
 \label{subsec:realized-dose-es}
 
 To assess parallel trends in the cross-dose sense
-\citep[][]{callawaygoodmanbaconsantanna2024,dechaisemartin2024}, I
+\citep[][]{callaway2021,dechaisemartin2024}, I
 estimate a separate event-study specification using each unit's
 realized cumulative dose,
 $\widetilde{D}_i = \tau^M_{i, c+5} - \tau^M_{i,c-1}$, which is
@@ -1937,7 +1939,7 @@ small and large rate hikes within the binding cell.
 \label{subsec:rob-controls}
 
 Our headline uses NC munis (no rate change anywhere in 2002--2019) as
-controls. \citet{cengiz2019} use a slightly relaxed definition:
+controls. \citet{cengizEffectMinimumWages2019a} use a slightly relaxed definition:
 ``clean controls'' are units with no events in the window
 $[c - K, c + K]$ around each focal event, allowing units with events
 \emph{outside} this window to serve as controls in cohorts whose
@@ -2064,6 +2066,32 @@ shift is captured by the share of tradeable jobs rising approximately
 11 percentage points in the binding cell. The decline in total jobs
 operates \emph{via} local-services demand spillover from departing
 residents, not via direct nonresident-tax incidence.
+
+\paragraph{Revenue implications.}
+The block-level Inc-bind elasticity has a direct implication for
+municipal revenue. Following \citet{saezUsingElasticitiesDerive2001}
+and the calculation in
+\citet{agrawalRelocationRichMigration2019}, the first-order revenue
+effect of a small rate increase $d\tau$ at baseline rate $\tau$
+with residential semi-elasticity
+$\beta = \partial \ln N / \partial \tau$ is
+$dR/d\tau = W \cdot N \cdot (1 + \tau\beta)$, where the first term
+is the mechanical revenue gain on the existing tax base and the
+second is the behavioral offset from residents leaving. At the PA
+muni baseline of $\tau \approx 1\%$ and the block-level Inc-bind
+estimate of $\beta \approx -21$ per unit rate ($-0.21$ log points
+per pp), $\tau\beta \approx -0.21$, so the behavioral response
+offsets roughly $21\%$ of the mechanical revenue gain. The hike
+remains unambiguously revenue-positive, in line with the Spanish
+regional finding in \citet{agrawalRelocationRichMigration2019}. The
+implied revenue-neutral rate is
+$\tau^{\ast} = 1/|\beta| \approx 4.8\%$, well above the statutory
+PA EIT range; the entire policy-relevant range of muni resident
+rates is therefore in the revenue-positive region. The headline
+sorting estimate is consistent with a revenue gain to the raising
+municipality at the muni boundary, with the welfare cost accruing
+elsewhere through residents relocating and the local-services
+demand spillover documented above.
 
 \paragraph{Limitations.}
 Three limitations merit acknowledgment. First, while the block-level

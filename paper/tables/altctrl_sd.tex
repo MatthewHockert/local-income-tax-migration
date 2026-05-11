@@ -8,23 +8,27 @@
     \toprule
     Outcome & Log(work in own muni) & Log(in-commuters) & Log(employed residents) & Share live in muni & Share work outside \\
     \midrule
-    \textbf{Inc-bind} & 0.046 & 0.175\sym{***} & 0.132\sym{**} & -0.016\sym{**} & 0.012 \\
-                      & (0.076) & (0.065) & (0.064) & (0.007) & (0.009) \\
-    \textbf{Inc-becomes} & 1.732\sym{*} & 2.005\sym{**} & 1.136 & -0.034 & -0.005 \\
-                      & (1.027) & (0.946) & (0.729) & (0.026) & (0.032) \\
-    \textbf{Dec-bind} & 0.114 & 0.029 & 0.148\sym{***} & 0.009 & -0.001 \\
-                      & (0.110) & (0.113) & (0.051) & (0.007) & (0.008) \\
+    \textbf{Inc-bind} & 0.020 & 0.186\sym{**} & 0.100\sym{*} & -0.016\sym{**} & 0.005 \\
+                      & (0.068) & (0.071) & (0.053) & (0.006) & (0.007) \\
+    \textbf{Inc-becomes} & 0.226 & 0.275\sym{**} & 0.289\sym{**} & -0.015 & 0.022 \\
+                      & (0.159) & (0.131) & (0.131) & (0.011) & (0.013) \\
+    \textbf{Inc-nobind} & 0.656 & 1.083\sym{*} & 0.313 & -0.054\sym{**} & 0.025 \\
+                      & (0.541) & (0.630) & (0.195) & (0.021) & (0.025) \\
+    \textbf{Dec-bind} & 0.087 & 0.012 & 0.124\sym{***} & 0.005\sym{*} & -0.005 \\
+                      & (0.078) & (0.091) & (0.029) & (0.003) & (0.005) \\
+    \textbf{Dec-nobind} & -0.099 & -0.182 & 0.001 & 0.014 & 0.015 \\
+                      & (0.253) & (0.203) & (0.161) & (0.017) & (0.019) \\
     \midrule
-    $N$ & --- & --- & --- & --- & --- \\
-    $R^2$ & --- & --- & --- & --- & --- \\
-    Within $R^2$ & --- & --- & --- & --- & --- \\
-    Dep.\ mean & --- & --- & --- & --- & --- \\
-    Dep.\ SD & --- & --- & --- & --- & --- \\
+    $N$ & 3,314 & 3,314 & 3,314 & 3,314 & 3,314 \\
+    $R^2$ & 0.975 & 0.985 & 0.987 & 0.898 & 0.944 \\
+    Within $R^2$ & 0.043 & 0.072 & 0.061 & 0.043 & 0.133 \\
+    Dep.\ mean & 6.099 & 8.264 & 8.695 & 0.111 & 0.912 \\
+    Dep.\ SD & 1.100 & 1.047 & 0.843 & 0.046 & 0.055 \\
     \bottomrule
   \end{tabular}
   }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Control pool restricted to SDs with no rate change anywhere in the event window. Rows omitted (no estimable coefficients in any outcome column): Inc-nobind, Dec-becomes-non, Dec-nobind. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Control pool restricted to SDs with no rate change anywhere in the event window. Rows omitted (no estimable coefficients in any outcome column): Dec-becomes-non. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

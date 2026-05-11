@@ -74,7 +74,7 @@ run_altctrl_cousub <- function() {
 
   outcomes <- c("log_live_and_work","log_in_commuters",
                  "log_total_residents","share_live_in","share_work_outside")
-  results <- list()
+  results <- list(); diags <- list()
   for (o in outcomes) {
     cols <- intersect(c("muni","year","stack_muni","stack_year","treat_cell",
                           "dose_stack", o, ctrls), names(stk))
@@ -93,10 +93,19 @@ run_altctrl_cousub <- function() {
     ic[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
     ic[, outcome := o]; ic[, n := nobs(m)]
     results[[length(results)+1L]] <- ic[, .(outcome, cell, est, se, p, n)]
+    dep_vec <- m$residuals + m$fitted.values
+    diags[[o]] <- data.table(
+      outcome   = o, n = nobs(m),
+      R2        = round(fitstat(m, "r2",  simplify = TRUE), 4),
+      Within_R2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean  = round(mean(dep_vec, na.rm = TRUE), 4),
+      dep_sd    = round(sd(dep_vec,   na.rm = TRUE), 4))
   }
   out <- rbindlist(results, fill = TRUE)
   fwrite(out, file.path(out_dir, "altctrl_cousub.csv"))
-  cat(sprintf("Saved altctrl_cousub.csv (%d rows)\n", nrow(out)))
+  fwrite(rbindlist(diags, fill = TRUE),
+         file.path(out_dir, "altctrl_cousub_diag.csv"))
+  cat(sprintf("Saved altctrl_cousub.csv (%d rows) + diag\n", nrow(out)))
 }
 
 run_altctrl_cousub()
@@ -149,7 +158,7 @@ run_altctrl_sd <- function() {
 
   outcomes <- c("log_live_and_work","log_in_commuters",
                  "log_total_residents","share_live_in","share_work_outside")
-  results <- list()
+  results <- list(); diags <- list()
   for (o in outcomes) {
     cols <- intersect(c("sd_id","year","stack_sd","stack_year","treat_cell",
                           "dose_stack", o, ctrls), names(stk))
@@ -167,10 +176,19 @@ run_altctrl_sd <- function() {
     ic[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
     ic[, outcome := o]; ic[, n := nobs(m)]
     results[[length(results)+1L]] <- ic[, .(outcome, cell, est, se, p, n)]
+    dep_vec <- m$residuals + m$fitted.values
+    diags[[o]] <- data.table(
+      outcome   = o, n = nobs(m),
+      R2        = round(fitstat(m, "r2",  simplify = TRUE), 4),
+      Within_R2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean  = round(mean(dep_vec, na.rm = TRUE), 4),
+      dep_sd    = round(sd(dep_vec,   na.rm = TRUE), 4))
   }
   out <- rbindlist(results, fill = TRUE)
   fwrite(out, file.path(out_dir, "altctrl_sd.csv"))
-  cat(sprintf("Saved altctrl_sd.csv (%d rows)\n", nrow(out)))
+  fwrite(rbindlist(diags, fill = TRUE),
+         file.path(out_dir, "altctrl_sd_diag.csv"))
+  cat(sprintf("Saved altctrl_sd.csv (%d rows) + diag\n", nrow(out)))
 }
 
 run_altctrl_sd()
@@ -261,7 +279,7 @@ run_altctrl_block <- function() {
   cat(sprintf("Block clean-in-window stack: %s rows\n",
               format(nrow(stk), big.mark = ",")))
 
-  results <- list()
+  results <- list(); diags <- list()
   for (o in block_outcomes) {
     cols <- intersect(c("block_geoid","year","muni","sd_id","stack_muni",
                           "stack_year","treat_cell","dose_stack",
@@ -281,9 +299,18 @@ run_altctrl_block <- function() {
     ic[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
     ic[, outcome := o]; ic[, n := nobs(m)]
     results[[length(results)+1L]] <- ic[, .(outcome, cell, est, se, p, n)]
+    dep_vec <- m$residuals + m$fitted.values
+    diags[[o]] <- data.table(
+      outcome   = o, n = nobs(m),
+      R2        = round(fitstat(m, "r2",  simplify = TRUE), 4),
+      Within_R2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean  = round(mean(dep_vec, na.rm = TRUE), 4),
+      dep_sd    = round(sd(dep_vec,   na.rm = TRUE), 4))
   }
   out <- rbindlist(results, fill = TRUE)
   fwrite(out, file.path(out_dir, "altctrl_block.csv"))
+  fwrite(rbindlist(diags, fill = TRUE),
+         file.path(out_dir, "altctrl_block_diag.csv"))
   cat(sprintf("Saved altctrl_block.csv (%d rows)\n", nrow(out)))
 }
 

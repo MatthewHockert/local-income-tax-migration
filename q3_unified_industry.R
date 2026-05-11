@@ -279,6 +279,7 @@ for (o in outcomes) {
 }
 
 cat("\n-- Stacked continuous (industry outcomes) --\n")
+diag_list <- list()
 for (sd_tag in c("muni","sd","nr")) {
   dose_col <- paste0("dose_", sd_tag)
   for (o in outcomes) {
@@ -287,7 +288,20 @@ for (sd_tag in c("muni","sd","nr")) {
     rr <- extract_treat_cell(m, sd_tag)
     rr[, `:=`(estimator = "stacked_continuous", outcome = o)]
     results_long[[length(results_long) + 1L]] <- rr
+    if (sd_tag == "muni") {
+      dep_vec <- m$residuals + m$fitted.values
+      diag_list[[o]] <- data.table(
+        outcome   = o, n = nobs(m),
+        R2        = round(fitstat(m, "r2",  simplify = TRUE), 4),
+        Within_R2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+        dep_mean  = round(mean(dep_vec, na.rm = TRUE), 4),
+        dep_sd    = round(sd(dep_vec,   na.rm = TRUE), 4))
+    }
   }
+}
+if (length(diag_list)) {
+  fwrite(rbindlist(diag_list, fill = TRUE),
+         file.path(out_dir, "industry_cousub_diag.csv"))
 }
 
 results <- rbindlist(results_long, fill = TRUE)

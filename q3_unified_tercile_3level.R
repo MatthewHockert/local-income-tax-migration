@@ -21,10 +21,14 @@ run_tercile <- function(stk, c_col, cell_col, dose_col, rate_col,
 
   # Compute total dose per Inc-bind unit (cumulative Delta-tau at +5)
   units_inc_bind <- stk[get(cell_col) == "Inc-bind", unique(get(c_col[1]))]
-  if (length(units_inc_bind) < 9) {
+  if (length(units_inc_bind) < 6) {
     cat(sprintf("[%s] too few Inc-bind units (%d); skip\n",
                 level_tag, length(units_inc_bind)))
     return(invisible())
+  }
+  if (length(units_inc_bind) < 9) {
+    cat(sprintf("[%s] only %d Inc-bind units; tercile splits will be thin\n",
+                level_tag, length(units_inc_bind)))
   }
 
   inc_bind_unit_col <- if (level_tag == "cousub") "muni"
@@ -55,7 +59,7 @@ run_tercile <- function(stk, c_col, cell_col, dose_col, rate_col,
                    max_dose = round(max(total_dose),3)),
               by = tercile])
 
-  results <- list()
+  results <- list(); diags <- list()
   nc_units <- unique(stk[get(cell_col) == "NC", get(inc_bind_unit_col)])
   for (terc in c("small","medium","large")) {
     munis_t <- doses[tercile == terc][[inc_bind_unit_col]]
@@ -86,11 +90,21 @@ run_tercile <- function(stk, c_col, cell_col, dose_col, rate_col,
           tercile = terc, outcome = o,
           n_units = length(munis_t),
           est = ic$est, se = ic$se, p = ic$p, n = nobs(m))
+        dep_vec <- m$residuals + m$fitted.values
+        diags[[length(diags)+1L]] <- data.table(
+          tercile   = terc, outcome = o, n = nobs(m),
+          R2        = round(fitstat(m, "r2",  simplify = TRUE), 4),
+          Within_R2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+          dep_mean  = round(mean(dep_vec, na.rm = TRUE), 4),
+          dep_sd    = round(sd(dep_vec,   na.rm = TRUE), 4))
       }
     }
   }
   out <- rbindlist(results, fill = TRUE)
   fwrite(out, file.path(out_dir, paste0("tercile_", level_tag, ".csv")))
+  if (length(diags))
+    fwrite(rbindlist(diags, fill = TRUE),
+           file.path(out_dir, paste0("tercile_", level_tag, "_diag.csv")))
   cat(sprintf("\n[%s] tercile output saved (%d rows).\n", level_tag, nrow(out)))
   print(out)
   invisible(out)
