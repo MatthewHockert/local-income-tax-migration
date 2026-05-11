@@ -570,46 +570,105 @@ Census Bureau Building Permits Survey (BPS), place-level annual files,
     (the robustness section (Section~\ref{sec:robustness})).
 \end{enumerate}
 
-% --- Summary Statistics Table ---
-\begin{table}[H]
-    \centering
-    \caption{Summary Statistics}
-    \label{tab:summary}
-    \small
-    \begin{tabular}{lrrrrr}
-        \toprule
-        Variable & Mean & Median & SD & Min & Max \\
-        \midrule
-        share\_live\_in              & 0.149  & 0.127  & 0.097 & 0     & 0.700 \\
-        Resident EIT rate (\%)      & 0.542  & 0.500  & 0.199 & 0     & 4.331 \\
-        Total jobs                  & 3{,}624 & 1{,}224 &       &       &       \\
-        Resident workers            & 674    & 154    &       &       &       \\
-        \midrule
-        Municipality $\times$ years & \multicolumn{5}{l}{26{,}650 (1{,}479 municipalities)} \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Pennsylvania municipality-year panel,
-        2002--2019. Sample restricted to municipalities with $>50$ total jobs.
-        share\_live\_in = workers who live and work in municipality / total
-        workers in municipality. Municipalities are Census county subdivisions.
-    \end{minipage}
-\end{table}
+\subsection{Descriptive Statistics}
+\label{subsec:descriptive}
 
-% --- Treatment Geography Figures ---
+This section reports summary statistics and key distributions of the
+estimation panels. Table~\ref{tab:summary_muni} reports the
+municipality-year panel; Table~\ref{tab:summary_block} reports the
+block-year panel that underlies the headline causal estimate.
+Table~\ref{tab:summary_sd} reports the school-district aggregation.
+Table~\ref{tab:cell_counts_summary} summarizes the binding-state
+cell classification on the muni resident-rate side, including the
+dose magnitude in each cell.
+
+\input{tables/summary_muni.tex}
+
+\input{tables/summary_block.tex}
+
+\input{tables/summary_sd.tex}
+
+\input{tables/cell_counts_summary.tex}
+
+Figure~\ref{fig:rate_double_histogram} plots the joint distribution
+of the three rate variables that enter the piecewise max-rule: the
+muni resident rate $\tau^M$, the muni nonresident rate
+$\tau^{nr,M}$, and the home stack $\tau^M + \tau^{SD}$. Resident
+rates concentrate around 0.5--1\%; nonresident rates have a long
+right tail in the 1\% region (reflecting the cap at the higher of
+home- and work-side rates under Act 511); the home stack distribution
+sits to the right of the resident-rate distribution, with the SD
+component shifting mass by a typical 0.5--1.5 pp. The overlap of
+the two distributions is the variation the binding-state
+decomposition exploits.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{../figures/rate_double_histogram.png}
+    \caption{Distribution of PA EIT rates, 2002--2019. Resident rate
+    $\tau^{M}$, nonresident rate $\tau^{nr,M}$, and the home stack
+    $\tau^{M}+\tau^{SD}$.}
+    \label{fig:rate_double_histogram}
+\end{figure}
+
+Figure~\ref{fig:rate_changes_by_year} reports the timing of muni
+resident-rate changes across the panel. Resident-rate increases
+(red, above zero) and decreases (blue, below zero) occur in roughly
+similar numbers in any given year, with increases dominating after
+Act 32 takes effect in 2012.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{../figures/rate_changes_by_year.png}
+    \caption{Number of PA municipalities changing their resident
+    rate, by year. Increases shown above zero; decreases shown below.
+    Dashed line: 2012, when Act 32 consolidated withholding.}
+    \label{fig:rate_changes_by_year}
+\end{figure}
+
+Figure~\ref{fig:act32_cdf} documents the institutional break at
+Act 32. Before 2012, fewer than 60\% of PA munis reported a
+nonresident rate to DCED; after 2012, when consolidated withholding
+made the max-rule mechanically binding, coverage rises sharply.
+This is the pre-/post-Act-32 enforcement break used in the
+heterogeneity test of Section~\ref{subsec:rob-act32}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/act32_cdf.png}
+    \caption{Share of PA municipalities reporting a nonresident
+    rate to DCED, by year. The break at 2012 reflects the Act 32
+    requirement that employers withhold at the higher of the home
+    resident and work nonresident rates.}
+    \label{fig:act32_cdf}
+\end{figure}
+
+Figure~\ref{fig:pa_rate_trajectories} disaggregates the rate-change
+variation across PA's most-active rate-setters. The left panels
+show the 20 municipalities with the largest cumulative
+$|\Delta\tau|$ over 2002--2019; the right panels show the 20 with
+the largest number of rate-change events. The two rankings overlap
+but are distinct: some munis change frequently in small steps,
+others rarely but in large jumps. Both subsets contribute to the
+identifying variation; the binding-state decomposition then
+splits each of these events by whether it actually moved the worker's bill.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/pa_rate_trajectories.png}
+    \caption{PA muni resident-rate trajectories for top
+    rate-changers, 2002--2019. Left: top 20 by cumulative
+    $|\Delta\tau|$. Right: top 20 by number of rate-change events.}
+    \label{fig:pa_rate_trajectories}
+\end{figure}
+
+% --- Treatment Geography Map ---
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{../figures/pa_map.png}
-    \caption{Pennsylvania EIT Rate Changes (2000--2019). Red = increased; blue = decreased; purple = both; grey = no change.}
+    \caption{Pennsylvania EIT rate changes, 2000--2019. Red =
+    increased; blue = decreased; purple = both; grey = no change.}
     \label{fig:pa_map}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.75\textwidth]{../figures/pa_rate_scatter.png}
-    \caption{Pennsylvania: Distribution of EIT Rate Changes Over Time}
-    \label{fig:pa_rate_scatter}
 \end{figure}
 
 %==========================================================
