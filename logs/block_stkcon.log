@@ -1,0 +1,104 @@
+Loading block panel...
+Rows: 5,030,958; blocks: 309,680; munis: 2561; SDs: 489
+
+Cell distribution (muni level):
+Key: <cell_muni>
+         cell_muni     N
+            <char> <int>
+1: Dec-becomes-non     4
+2:        Dec-bind    11
+3:      Dec-nobind    16
+4:     Inc-becomes    58
+5:        Inc-bind    40
+6:      Inc-nobind    24
+7:              NC  2395
+8:       Uncertain    13
+
+Analysis sample: 4,993,113 rows; 307,852 blocks
+
+=========================================================
+(1) Q2 TWFE pooled
+=========================================================
+Null data.table (0 rows and 0 cols)
+
+=========================================================
+(2) Single-event TWFE (Inc with <=2 events) + NC
+=========================================================
+Null data.table (0 rows and 0 cols)
+
+Building stacked panel (this is large)...
+Stacked panel: 36,944,113 rows; treated blocks: 55,563; NC blocks: 251,449
+
+=========================================================
+(3) Stacked binary DiD
+=========================================================
+Null data.table (0 rows and 0 cols)
+
+=========================================================
+(4) Stacked continuous DiD (HEADLINE)
+=========================================================
+  Outcome log_home_count, N=27,746,809 ... NOTE: 115,250/0 fixed-effect singletons were removed (115,250 observations).
+done
+  Outcome log_work_count, N=10,339,821 ... NOTE: 293,395/0 fixed-effect singletons were removed (293,395 observations).
+done
+  Outcome home_in_muni_share, N=27,746,809 ... NOTE: 115,250/0 fixed-effect singletons were removed (115,250 observations).
+done
+  Outcome share_work_outside, N=27,746,809 ... NOTE: 115,250/0 fixed-effect singletons were removed (115,250 observations).
+done
+             estimator            outcome            cell          est
+                <char>             <char>          <char>        <num>
+ 1: stacked_continuous     log_home_count        Inc-bind -0.200622496
+ 2: stacked_continuous     log_home_count     Inc-becomes -0.020780828
+ 3: stacked_continuous     log_home_count      Inc-nobind -0.078337162
+ 4: stacked_continuous     log_home_count        Dec-bind  0.324960757
+ 5: stacked_continuous     log_home_count Dec-becomes-non  0.138586820
+ 6: stacked_continuous     log_home_count      Dec-nobind  0.235641128
+ 7: stacked_continuous     log_work_count        Inc-bind -0.099163404
+ 8: stacked_continuous     log_work_count     Inc-becomes -0.057058605
+ 9: stacked_continuous     log_work_count      Inc-nobind -0.165414828
+10: stacked_continuous     log_work_count        Dec-bind  0.197783847
+11: stacked_continuous     log_work_count Dec-becomes-non  0.362560119
+12: stacked_continuous     log_work_count      Dec-nobind -0.057070337
+13: stacked_continuous home_in_muni_share        Inc-bind -0.034303513
+14: stacked_continuous home_in_muni_share     Inc-becomes -0.043676037
+15: stacked_continuous home_in_muni_share      Inc-nobind -0.040393078
+16: stacked_continuous home_in_muni_share        Dec-bind -0.042900138
+17: stacked_continuous home_in_muni_share Dec-becomes-non -0.055040611
+18: stacked_continuous home_in_muni_share      Dec-nobind  0.007201353
+19: stacked_continuous share_work_outside        Inc-bind  0.034303513
+20: stacked_continuous share_work_outside     Inc-becomes  0.043676037
+21: stacked_continuous share_work_outside      Inc-nobind  0.040393078
+22: stacked_continuous share_work_outside        Dec-bind  0.042900138
+23: stacked_continuous share_work_outside Dec-becomes-non  0.055040611
+24: stacked_continuous share_work_outside      Dec-nobind -0.007201353
+             estimator            outcome            cell          est
+             se            p        n        r2          wr2  dep_mean
+          <num>        <num>    <int>     <num>        <num>     <num>
+ 1: 0.056443219 4.159996e-04 27631559 0.8565831 6.763701e-05 2.2090696
+ 2: 0.031597614 5.110623e-01 27631559 0.8565831 6.763701e-05 2.2090696
+ 3: 0.100240173 4.348937e-01 27631559 0.8565831 6.763701e-05 2.2090696
+ 4: 0.201833587 1.080404e-01 27631559 0.8565831 6.763701e-05 2.2090696
+ 5: 0.283295223 6.249247e-01 27631559 0.8565831 6.763701e-05 2.2090696
+ 6: 0.087133291 7.084365e-03 27631559 0.8565831 6.763701e-05 2.2090696
+ 7: 0.052328437 5.868548e-02 10046426 0.8628816 3.901513e-05 2.2572586
+ 8: 0.023913927 1.741628e-02 10046426 0.8628816 3.901513e-05 2.2572586
+ 9: 0.088827169 6.317928e-02 10046426 0.8628816 3.901513e-05 2.2572586
+10: 0.361514204 5.845633e-01 10046426 0.8628816 3.901513e-05 2.2572586
+11: 0.169463747 3.289837e-02 10046426 0.8628816 3.901513e-05 2.2572586
+12: 0.248978077 8.187961e-01 10046426 0.8628816 3.901513e-05 2.2572586
+13: 0.030780149 2.656313e-01 27631559 0.5529320 1.710104e-04 0.1123642
+14: 0.009942854 1.376313e-05 27631559 0.5529320 1.710104e-04 0.1123642
+15: 0.014865775 6.819906e-03 27631559 0.5529320 1.710104e-04 0.1123642
+16: 0.025449802 9.250262e-02 27631559 0.5529320 1.710104e-04 0.1123642
+17: 0.029412121 6.189848e-02 27631559 0.5529320 1.710104e-04 0.1123642
+18: 0.005780436 2.134351e-01 27631559 0.5529320 1.710104e-04 0.1123642
+19: 0.030780149 2.656313e-01 27631559 0.5529320 1.710104e-04 0.8876358
+20: 0.009942854 1.376313e-05 27631559 0.5529320 1.710104e-04 0.8876358
+21: 0.014865775 6.819906e-03 27631559 0.5529320 1.710104e-04 0.8876358
+22: 0.025449802 9.250262e-02 27631559 0.5529320 1.710104e-04 0.8876358
+23: 0.029412121 6.189848e-02 27631559 0.5529320 1.710104e-04 0.8876358
+24: 0.005780436 2.134351e-01 27631559 0.5529320 1.710104e-04 0.8876358
+             se            p        n        r2          wr2  dep_mean
+
+Saved data/q3_unified/block_level_results.csv (24 rows)
+Done.

@@ -1,30 +1,25 @@
 # run_active.R
 # Master pipeline for the ACTIVE paper structure (continuous stacked DiD,
 # three-level unified resident-side design). Mirrors the structure in
-# paper/outline.md.
+# paper/outline.md and the script list in CLAUDE.md / README.md.
 #
-# Legacy scripts are NOT called from here. They remain in the repo for
-# reference but are not part of the current paper pipeline. To run a
-# legacy script intentionally, source it directly:
-#   Rscript q3_robustness.R      (single-event TWFE robustness)
-#   Rscript q3_stacked.R         (stacked binary DiD)
-#   Rscript run_dcdh.R           (DCDH cell-by-cell)
-#   etc.
+# Legacy scripts are NOT called from here. To run a legacy script
+# intentionally, source it directly: `Rscript <name>.R`.
 #
-# Stages of the active pipeline:
-#   1. Data construction (muni / SD / block panels)
+# Stages:
+#   1. Data construction (muni AFR / SD F-33 / LODES / cousub / block panels)
 #   2. Main results (continuous stacked DiD per level)
 #   3. Heterogeneity (Act 32, industry, muni type)
-#   4. Robustness (realized-dose ES pre-trend test)
+#   4. Robustness (realized-dose ES, SA-IW binary ES, tercile, alt-control)
+#   5. Paper artifacts (LaTeX tables + figures)
 #
-# Each stage is gated by a logical flag so individual stages can be
-# rerun without redoing the whole pipeline.
+# Each stage is gated by a logical flag so stages can be rerun in isolation.
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"
 setwd(project_dir)
 
 # ---------------------------------------------------------------------------
-# Run-stage flags. Set to FALSE to skip a stage.
+# Run-stage flags. Set to FALSE to skip.
 # ---------------------------------------------------------------------------
 RUN_DATA_BUILD     <- TRUE
 RUN_MAIN_MUNI      <- TRUE
@@ -34,6 +29,10 @@ RUN_HET_ACT32      <- TRUE
 RUN_HET_INDUSTRY   <- TRUE
 RUN_HET_MUNI_TYPE  <- TRUE
 RUN_ROB_PRETREND   <- TRUE
+RUN_ROB_SA_BINARY  <- TRUE
+RUN_ROB_TERCILE    <- TRUE
+RUN_ROB_ALTCTRL    <- TRUE
+RUN_PAPER_BUILD    <- TRUE
 
 cat("================================================================\n")
 cat("ACTIVE PIPELINE: continuous stacked DiD, three-level unified design\n")
@@ -44,10 +43,9 @@ cat("================================================================\n\n")
 # ---------------------------------------------------------------------------
 if (RUN_DATA_BUILD) {
   cat("[1] Data construction\n")
-  source("build_data.R")           # cousub panel + rate panel + neighbors
-  source("build_block_panel.R")    # block panel inheriting cousub rates
-  # build_residence_panel.R is the residence-panel builder (already part
-  # of build_data via build_city_od_block in current code).
+  source("build_sd_controls.R")     # F-33 -> SD share controls + ID xwalk
+  source("build_data.R")            # cousub panel + rate panel + neighbors
+  source("build_block_panel.R")     # block panel inheriting cousub rates
 }
 
 # ---------------------------------------------------------------------------
@@ -55,7 +53,7 @@ if (RUN_DATA_BUILD) {
 # ---------------------------------------------------------------------------
 if (RUN_MAIN_MUNI) {
   cat("\n[2a] Main results: municipality level\n")
-  source("q3_unified_full_table.R")     # unified spec, cousub level
+  source("q3_unified_full_table.R")     # cousub headline (stacked)
 }
 
 if (RUN_MAIN_SD) {
@@ -65,24 +63,21 @@ if (RUN_MAIN_SD) {
 
 if (RUN_MAIN_BLOCK) {
   cat("\n[2c] Main results: block level\n")
-  source("q3_unified_block_joint.R")     # unstacked joint TWFE at block level
-  # Stacked block-level main results: q3_unified_block_es_full.R also
-  # produces post-event coefficients alongside ES, but as a diagnostic
-  # script. The unstacked joint is the cleaner main-results spec.
+  source("q3_unified_block_joint.R")     # block headline (stacked)
 }
 
 # ---------------------------------------------------------------------------
 # 3. Heterogeneity
 # ---------------------------------------------------------------------------
 if (RUN_HET_ACT32) {
-  cat("\n[3a] Heterogeneity: pre/post Act 32\n")
-  source("q3_unified_act32.R")           # currently cousub level only
-  # TODO: extend Act 32 split to SD and block levels
+  cat("\n[3a] Heterogeneity: pre/post Act 32 (all 3 levels)\n")
+  source("q3_unified_act32_3level.R")
 }
 
 if (RUN_HET_INDUSTRY) {
-  cat("\n[3b] Heterogeneity: industry decomposition (services vs non-services)\n")
-  source("q3_unified_industry.R")        # job-side outcomes
+  cat("\n[3b] Heterogeneity: industry decomposition\n")
+  source("q3_unified_industry.R")        # cousub
+  source("q3_unified_industry_sd.R")     # SD (aggregated)
 }
 
 if (RUN_HET_MUNI_TYPE) {
@@ -91,13 +86,38 @@ if (RUN_HET_MUNI_TYPE) {
 }
 
 # ---------------------------------------------------------------------------
-# 4. Robustness: realized-dose event study (pre-trend diagnostic)
+# 4. Robustness: pre-trend ES + binary SA-IW + tercile + alt-control
 # ---------------------------------------------------------------------------
 if (RUN_ROB_PRETREND) {
-  cat("\n[4] Pre-trend test: realized-dose event study\n")
-  source("q3_unified_headline_es.R")     # cousub realized-dose ES
-  source("q3_unified_block_es_full.R")   # block realized-dose ES
-  # TODO: SD-level realized-dose ES (analog to be built)
+  cat("\n[4a] Pre-trend test: realized-dose event study (all 3 levels)\n")
+  source("q3_unified_headline_es.R")     # cousub
+  source("q3_unified_sd_es.R")           # SD
+  source("q3_unified_block_es_full.R")   # block (heavy)
+}
+
+if (RUN_ROB_SA_BINARY) {
+  cat("\n[4b] Binary Sun-Abraham IW ES (cousub + SD; block-level IW unstable)\n")
+  source("q3_unified_sa_binary_es.R")
+}
+
+if (RUN_ROB_TERCILE) {
+  cat("\n[4c] Dose-magnitude tercile (all 3 levels)\n")
+  source("q3_unified_tercile_3level.R")
+}
+
+if (RUN_ROB_ALTCTRL) {
+  cat("\n[4d] Alt-control (Cengiz clean-in-window; all 3 levels)\n")
+  source("q3_unified_altctrl_3level.R")
+}
+
+# ---------------------------------------------------------------------------
+# 5. Paper artifacts
+# ---------------------------------------------------------------------------
+if (RUN_PAPER_BUILD) {
+  cat("\n[5] Building paper tables and figures\n")
+  source("build_industry_table.R")
+  source("build_paper_tables.R")
+  source("build_industry_figure.R")
 }
 
 cat("\n================================================================\n")

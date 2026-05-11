@@ -1,30 +1,30 @@
 \begin{table}[H]
   \centering
-  \caption{Industry decomposition --- SD level. Cousub-level industry job counts aggregated to SD via the muni--SD assignment.}
+  \caption{Industry decomposition --- school district level}
   \label{tab:industry_sd}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lccccc}
     \toprule
-    Cell & \texttt{log\_jobs\_total} & \texttt{log\_jobs\_consumer} & \texttt{log\_jobs\_tradeable} & \texttt{share\_consumer} & \texttt{share\_tradeable} \\
+    Outcome & Log(total jobs) & Log(consumer jobs) & Log(tradeable jobs) & Consumer share & Tradeable share \\
     \midrule
-    \textbf{Inc-bind}  & 0.039 & 0.094$^{**}$ & -0.056 & 0.014$^{*}$ & -0.031$^{*}$ \\
-                  & (0.030) & (0.046) & (0.077) & (0.008) & (0.017) \\
-    \textbf{Inc-becomes}  & 0.456$^{*}$ & 0.313$^{***}$ & 0.482$^{***}$ & -0.023 & 0.027 \\
-                  & (0.252) & (0.074) & (0.139) & (0.052) & (0.028) \\
-    \textbf{Inc-nobind}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
-    \textbf{Dec-bind}  & 0.051 & 0.070 & 0.000 & 0.001 & -0.015 \\
-                  & (0.071) & (0.073) & (0.132) & (0.007) & (0.017) \\
-    \textbf{Dec-becomes-non}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
-    \textbf{Dec-nobind}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
+    \textbf{Inc-bind} & 0.039 & 0.094\sym{**} & -0.056 & 0.014\sym{*} & -0.031\sym{*} \\
+                      & (0.030) & (0.046) & (0.077) & (0.008) & (0.017) \\
+    \textbf{Inc-becomes} & 0.456\sym{*} & 0.313\sym{***} & 0.482\sym{***} & -0.023 & 0.027 \\
+                      & (0.252) & (0.074) & (0.139) & (0.052) & (0.028) \\
+    \textbf{Dec-bind} & 0.051 & 0.070 & 0.000 & 0.001 & -0.015 \\
+                      & (0.071) & (0.073) & (0.132) & (0.007) & (0.017) \\
     \midrule
-    
+    $N$ & --- & --- & --- & --- & --- \\
+    $R^2$ & --- & --- & --- & --- & --- \\
+    Within $R^2$ & --- & --- & --- & --- & --- \\
+    Dep.\ mean & --- & --- & --- & --- & --- \\
+    Dep.\ SD & --- & --- & --- & --- & --- \\
     \bottomrule
   \end{tabular}
+  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Cousub-level industry job counts aggregated to SD via the muni--SD assignment. Rows omitted (no estimable coefficients in any outcome column): Inc-nobind, Dec-becomes-non, Dec-nobind. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

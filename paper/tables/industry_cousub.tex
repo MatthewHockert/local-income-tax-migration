@@ -1,11 +1,12 @@
 \begin{table}[H]
   \centering
-  \caption{Industry decomposition --- cousub level. Coefficients on the muni resident-rate cells from Equation~(\ref{eq:headline}) re-estimated with industry-bucket outcomes (LODES WAC supersector grouping into consumer-facing services [NAICS 44-45, 71, 72, 81] vs tradeable goods/services [NAICS 31-33, 42, 51, 52, 54]).}
+  \caption{Industry decomposition --- municipality level.}
   \label{tab:industry_cousub}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lccccc}
     \toprule
-    Cell & \texttt{log\_jobs\_total} & \texttt{log\_jobs\_consumer} & \texttt{log\_jobs\_tradeable} & \texttt{share\_consumer} & \texttt{share\_tradeable} \\
+    Cell & Log(total jobs) & Log(consumer jobs) & Log(tradeable jobs) & Consumer share & Tradeable share \\
     \midrule
     \textbf{Inc-bind} & -0.258*** & -0.297** & 0.236 & -0.001 & 0.106* \\
     \textbf{Inc-becomes} & -0.235*** & -0.146** & -0.150 & 0.008 & 0.028 \\
@@ -15,4 +16,15 @@
     \textbf{Dec-nobind} & -0.019 & 0.195** & 0.347** & 0.031 & 0.031* \\
     \bottomrule
   \end{tabular}
+  }
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Coefficients on the muni
+    resident-rate cells from the headline equation re-estimated with
+    industry-bucket outcomes (LODES WAC supersector grouping into
+    consumer-facing services [NAICS 44--45, 71, 72, 81] vs tradeable
+    goods/services [NAICS 31--33, 42, 51, 52, 54]). Cluster-robust
+    standard errors in parentheses.
+    $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+  \end{minipage}
 \end{table}

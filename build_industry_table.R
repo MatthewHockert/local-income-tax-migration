@@ -9,6 +9,7 @@
 suppressMessages({ library(data.table) })
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"
+source(file.path(project_dir, "paper_helpers.R"))
 in_path  <- file.path(project_dir, "data/q3_unified/industry_table_stacked_continuous.csv")
 out_path <- file.path(project_dir, "paper/tables/industry_cousub.tex")
 
@@ -20,11 +21,7 @@ muni_cols <- paste0("muni_", cells)
 
 outcomes <- c("log_jobs_total","log_jobs_consumer","log_jobs_tradeable",
                "share_consumer","share_tradeable")
-out_lbl  <- c("\\texttt{log\\_jobs\\_total}",
-               "\\texttt{log\\_jobs\\_consumer}",
-               "\\texttt{log\\_jobs\\_tradeable}",
-               "\\texttt{share\\_consumer}",
-               "\\texttt{share\\_tradeable}")
+out_lbl  <- outcome_label(outcomes, short = TRUE)
 
 a_sub <- a[outcome %in% outcomes]
 a_sub[, ord := match(outcome, outcomes)]
@@ -48,9 +45,10 @@ header <- paste0("Cell & ", paste(out_lbl, collapse = " & "), " \\\\")
 body <- c(
   "\\begin{table}[H]",
   "  \\centering",
-  "  \\caption{Industry decomposition --- cousub level. Coefficients on the muni resident-rate cells from Equation~(\\ref{eq:headline}) re-estimated with industry-bucket outcomes (LODES WAC supersector grouping into consumer-facing services [NAICS 44-45, 71, 72, 81] vs tradeable goods/services [NAICS 31-33, 42, 51, 52, 54]).}",
+  "  \\caption{Industry decomposition --- municipality level.}",
   "  \\label{tab:industry_cousub}",
   "  \\small",
+  "  \\resizebox{\\textwidth}{!}{",
   sprintf("  \\begin{tabular}{%s}", col_spec),
   "    \\toprule",
   paste0("    ", header),
@@ -58,6 +56,17 @@ body <- c(
   paste0("    ", rows),
   "    \\bottomrule",
   "  \\end{tabular}",
+  "  }",
+  "  \\vspace{0.3em}",
+  "  \\begin{minipage}{0.95\\textwidth}",
+  "    \\footnotesize \\textit{Notes:} Coefficients on the muni",
+  "    resident-rate cells from the headline equation re-estimated with",
+  "    industry-bucket outcomes (LODES WAC supersector grouping into",
+  "    consumer-facing services [NAICS 44--45, 71, 72, 81] vs tradeable",
+  "    goods/services [NAICS 31--33, 42, 51, 52, 54]). Cluster-robust",
+  "    standard errors in parentheses.",
+  "    $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.",
+  "  \\end{minipage}",
   "\\end{table}"
 )
 writeLines(body, out_path)

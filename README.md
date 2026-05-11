@@ -49,12 +49,14 @@ structure, see `paper/outline.md`.
 A 1 percentage-point muni resident-rate increase in the binding cell
 reduces:
 
-- **Cousub-level** `log(live_and_work)` by **40 percent** (per pp);
-  pre-trend on this outcome is positive (+0.149, $|t|=2.66$),
-  so the magnitude is partly inflated by selection.
-- **Block-level** `log(home_count)` by **30 percent** (per pp), with a
-  near-zero pre-trend ($\beta_{\text{pre}}=-0.027$, $|t|<1$). This
-  is the cleaner per-pp causal estimate.
+- **Cousub-level** `log(live_and_work)` by **~33 percent** per pp
+  ($-0.40$ log-point coefficient); pre-trend on this outcome is
+  positive (+0.149, $|t|=2.66$), so the magnitude is partly inflated
+  by selection.
+- **Block-level** `log(home_count)` by **~19 percent** per pp ($-0.21$
+  log-point coefficient, stacked DiD), with a near-zero pre-trend
+  ($\beta_{\text{pre}}=-0.027$, $|t|<1$). This is the cleaner per-pp
+  causal estimate.
 - **`share_live_in`** (workers living and working in the same muni)
   drops 4–7 percentage points across cousub and block specs.
 

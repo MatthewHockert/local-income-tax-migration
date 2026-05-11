@@ -22,6 +22,7 @@ suppressMessages({ library(data.table); library(fixest); library(ggplot2) })
 setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"
+source(file.path(project_dir, "paper_helpers.R"))
 data_dir    <- file.path(project_dir, "data")
 out_dir     <- file.path(data_dir, "q3_unified"); dir.create(out_dir, showWarnings = FALSE)
 fig_dir     <- file.path(project_dir, "figures"); dir.create(fig_dir, showWarnings = FALSE)
@@ -129,12 +130,16 @@ for (o in outcomes) {
 
     post <- ic[rel >= 0 & rel <= 5]
     pre  <- ic[rel <= -2]
+    wp <- wald_pretrend(m, \"^rel::-[2-9]\")
     att_results[[length(att_results)+1L]] <- data.table(
       outcome = o, cell = cl,
       att_post_per_pp = round(mean(post$est, na.rm = TRUE), 3),
       att_post_se     = round(sqrt(mean(post$se^2, na.rm = TRUE) / max(nrow(post),1)), 3),
       att_pre_per_pp  = round(mean(pre$est, na.rm = TRUE), 3),
       att_pre_se      = round(sqrt(mean(pre$se^2, na.rm = TRUE) / max(nrow(pre),1)), 3),
+      wald_pre_stat = round(wp$stat, 3),
+      wald_pre_df = wp$df,
+      wald_pre_p = round(wp$p, 4),
       n = nobs(m))
     cat(sprintf("  %-16s post=%6.3f (SE %.3f)  pre=%6.3f (SE %.3f)  N=%s\n",
                 cl, mean(post$est, na.rm=TRUE),

@@ -1,0 +1,9 @@
+outcome,direction,att_post,att_post_se,att_pre,att_pre_se,wald_pre_stat,wald_pre_df,wald_pre_p,n
+log_home_count,Inc,-0.032,0.021,0.079,0.02,17.076,4,0.0019,21522469
+log_work_count,Inc,-0.053,0.014,0.028,0.011,5.835,4,0.2118,8033429
+home_in_muni_share,Inc,-0.035,0.005,0.008,0.005,21.528,4,2e-04,21522469
+share_work_outside,Inc,0.035,0.005,-0.008,0.005,21.528,4,2e-04,21522469
+log_home_count,Dec,0.217,0.046,0.171,0.052,48.163,4,0,21284613
+log_work_count,Dec,0.123,0.1,0.16,0.118,29.09,4,0,7926459
+home_in_muni_share,Dec,-0.045,0.007,0.018,0.01,16.776,4,0.0021,21284613
+share_work_outside,Dec,0.045,0.007,-0.018,0.01,16.776,4,0.0021,21284613

@@ -1,0 +1,11 @@
+period,outcome,n,r2,wr2,dep_mean,dep_sd
+pre,log_live_and_work,51382,0.9856,0.0038,6.2607,1.2979
+pre,log_in_commuters,51416,0.9867,0.0034,8.3351,1.2025
+pre,log_total_residents,51416,0.9873,0.0041,8.769,0.9088
+pre,share_live_in,51416,0.9534,0.004,0.1246,0.0678
+pre,share_work_outside,51416,0.9768,0.0034,0.8998,0.0761
+post,log_live_and_work,50947,0.9859,0.0027,6.2616,1.2972
+post,log_in_commuters,50981,0.987,9e-04,8.3352,1.2033
+post,log_total_residents,50981,0.9874,0.003,8.7696,0.9085
+post,share_live_in,50981,0.9534,0.0043,0.1247,0.0678
+post,share_work_outside,50981,0.9768,0.0051,0.8997,0.0761

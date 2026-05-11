@@ -1,0 +1,101 @@
+Loading block panel...
+Merged SD fiscal controls: 4335295 / 4587700 block-years
+
+Muni cell distribution (block-year):
+Key: <cell_muni>
+         cell_muni       N
+            <fctr>   <int>
+1:              NC 3701901
+2:        Inc-bind  149327
+3:     Inc-becomes  492538
+4:      Inc-nobind  150574
+5:        Dec-bind   48484
+6: Dec-becomes-non    3876
+7:      Dec-nobind   41000
+
+SD cell distribution (block-year):
+Key: <cell_sd>
+           cell_sd       N
+            <fctr>   <int>
+1:              NC 4048166
+2:        Inc-bind  143231
+3:     Inc-becomes  268222
+4:      Inc-nobind   85961
+5:        Dec-bind    3232
+6: Dec-becomes-non    7086
+7:      Dec-nobind   31802
+
+[log_home_count] N=3,204,968 ... NOTE: 5,189/0 fixed-effect singletons were removed (5,189 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+done.
+
+[log_work_count] N=1,267,568 ... NOTE: 18,587/0 fixed-effect singletons were removed (18,587 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+done.
+
+[home_in_muni_share] N=3,204,968 ... NOTE: 5,189/0 fixed-effect singletons were removed (5,189 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+done.
+
+[share_work_outside] N=3,204,968 ... NOTE: 5,189/0 fixed-effect singletons were removed (5,189 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+done.
+
+--- Joint block-level fully-parameterized results ---
+               outcome   side            cell    est    se      p         n
+                <char> <char>          <char>  <num> <num>  <num>    <char>
+ 1:     log_home_count   muni        Inc-bind -0.165 0.019 0.0000 3,199,779
+ 2:     log_home_count   muni     Inc-becomes -0.029 0.031 0.3556 3,199,779
+ 3:     log_home_count   muni      Inc-nobind  0.060 0.022 0.0065 3,199,779
+ 4:     log_home_count   muni        Dec-bind -0.018 0.055 0.7412 3,199,779
+ 5:     log_home_count   muni Dec-becomes-non -0.088 0.177 0.6203 3,199,779
+ 6:     log_home_count   muni      Dec-nobind  0.379 0.087 0.0000 3,199,779
+ 7:     log_home_count     sd        Inc-bind  0.063 0.056 0.2636 3,199,779
+ 8:     log_home_count     sd     Inc-becomes  0.052 0.032 0.1007 3,199,779
+ 9:     log_home_count     sd      Inc-nobind -0.104 0.053 0.0484 3,199,779
+10:     log_home_count     sd        Dec-bind  0.183 0.012 0.0000 3,199,779
+11:     log_home_count     sd Dec-becomes-non -0.013 0.011 0.2175 3,199,779
+12:     log_home_count     sd      Dec-nobind  0.377 0.104 0.0003 3,199,779
+13:     log_work_count   muni        Inc-bind -0.111 0.040 0.0061 1,248,981
+14:     log_work_count   muni     Inc-becomes -0.028 0.026 0.2930 1,248,981
+15:     log_work_count   muni      Inc-nobind -0.031 0.029 0.2827 1,248,981
+16:     log_work_count   muni        Dec-bind -0.086 0.072 0.2346 1,248,981
+17:     log_work_count   muni Dec-becomes-non  0.722 0.066 0.0000 1,248,981
+18:     log_work_count   muni      Dec-nobind -0.282 0.352 0.4241 1,248,981
+19:     log_work_count     sd        Inc-bind -0.013 0.065 0.8430 1,248,981
+20:     log_work_count     sd     Inc-becomes -0.042 0.035 0.2324 1,248,981
+21:     log_work_count     sd      Inc-nobind  0.120 0.096 0.2115 1,248,981
+22:     log_work_count     sd        Dec-bind  0.053 0.009 0.0000 1,248,981
+23:     log_work_count     sd Dec-becomes-non -0.036 0.008 0.0000 1,248,981
+24:     log_work_count     sd      Dec-nobind  2.700 0.115 0.0000 1,248,981
+25: home_in_muni_share   muni        Inc-bind -0.067 0.027 0.0142 3,199,779
+26: home_in_muni_share   muni     Inc-becomes -0.051 0.014 0.0003 3,199,779
+27: home_in_muni_share   muni      Inc-nobind -0.057 0.005 0.0000 3,199,779
+28: home_in_muni_share   muni        Dec-bind -0.030 0.007 0.0000 3,199,779
+29: home_in_muni_share   muni Dec-becomes-non -0.073 0.121 0.5444 3,199,779
+30: home_in_muni_share   muni      Dec-nobind  0.019 0.003 0.0000 3,199,779
+31: home_in_muni_share     sd        Inc-bind  0.023 0.008 0.0050 3,199,779
+32: home_in_muni_share     sd     Inc-becomes -0.005 0.010 0.5955 3,199,779
+33: home_in_muni_share     sd      Inc-nobind  0.000 0.007 0.9958 3,199,779
+34: home_in_muni_share     sd        Dec-bind -0.018 0.006 0.0066 3,199,779
+35: home_in_muni_share     sd Dec-becomes-non -0.015 0.007 0.0386 3,199,779
+36: home_in_muni_share     sd      Dec-nobind  0.050 0.019 0.0072 3,199,779
+37: share_work_outside   muni        Inc-bind  0.067 0.027 0.0142 3,199,779
+38: share_work_outside   muni     Inc-becomes  0.051 0.014 0.0003 3,199,779
+39: share_work_outside   muni      Inc-nobind  0.057 0.005 0.0000 3,199,779
+40: share_work_outside   muni        Dec-bind  0.030 0.007 0.0000 3,199,779
+41: share_work_outside   muni Dec-becomes-non  0.073 0.121 0.5444 3,199,779
+42: share_work_outside   muni      Dec-nobind -0.019 0.003 0.0000 3,199,779
+43: share_work_outside     sd        Inc-bind -0.023 0.008 0.0050 3,199,779
+44: share_work_outside     sd     Inc-becomes  0.005 0.010 0.5955 3,199,779
+45: share_work_outside     sd      Inc-nobind  0.000 0.007 0.9958 3,199,779
+46: share_work_outside     sd        Dec-bind  0.018 0.006 0.0066 3,199,779
+47: share_work_outside     sd Dec-becomes-non  0.015 0.007 0.0386 3,199,779
+48: share_work_outside     sd      Dec-nobind -0.050 0.019 0.0072 3,199,779
+               outcome   side            cell    est    se      p         n
+
+Saved data/q3_unified/block_joint_results.csv

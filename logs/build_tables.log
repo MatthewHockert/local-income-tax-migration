@@ -1,0 +1,6 @@
+Wrote /Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/tables/headline_muni_cell_results.tex
+Wrote /Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/tables/headline_muni_sd_side_results.tex
+Error in .checkTypos(e, names_x) : 
+  Object 'term' not found amongst [outcome, cell, est, se, p, n, sig, cell_parsed]
+Calls: make_cell_table ... <Anonymous> -> .checkTypos -> stopf -> raise_condition -> signal
+Execution halted

@@ -1,0 +1,6 @@
+outcome,direction,att_post,att_post_se,att_pre,att_pre_se,wald_pre_stat,wald_pre_df,wald_pre_p,n
+log_home_count,Inc,0.022,0.017,-0.126,0.04,9.155,4,0.0573,19980122
+log_work_count,Inc,-0.012,0.014,-0.003,0.047,12.324,4,0.0151,7969441
+share_work_outside,Inc,-0.012,0.004,-0.024,0.015,5.441,4,0.245,19980122
+log_work_count,Dec,0.322,0.063,0.54,0.131,1082.542,4,0,7927012
+home_in_muni_share,Dec,-0.117,0.011,-0.012,0.008,14.206,4,0.0067,19861851

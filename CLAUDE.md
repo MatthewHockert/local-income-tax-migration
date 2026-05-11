@@ -70,10 +70,10 @@ the paper).
 
 **Inc-bind cell across the three estimating units (per pp):**
 
-| Outcome | Cousub | SD | Block |
+| Outcome | Cousub | SD | Block (stacked) |
 |---|---|---|---|
-| log_LW / log_home_count | **−0.401\*\*\*** | +0.066\* (sign reversed) | **−0.165\*\*\*** |
-| share_live_in / home_in_muni_share | **−0.045\*\*\*** | +0.003 (null) | **−0.067\*\*** |
+| log_LW / log_home_count | **−0.401\*\*\*** | +0.066\* (sign reversed) | **−0.208\*\*\*** |
+| share_live_in / home_in_muni_share | **−0.045\*\*\*** | +0.003 (null) | −0.035 (null) |
 | log_total_residents | **−0.100\*\*\*** | +0.147\*\*\* (reversed) | n/a |
 
 **Realized-dose ES pre-trend on Inc-bind:**
@@ -84,8 +84,11 @@ the paper).
 **Block-level identification has the cleanest pre-trends** and is the
 defensible per-pp causal estimate. Cousub headline is overstated by
 selection (high-eventual-dose munis on declining trajectories); credible
-block-level estimate is roughly 40% the size of the cousub headline.
-SD-level identification doesn't recover the causal direction reliably.
+block-level estimate (stacked DiD; block^stack + year^stack FE) is
+about half the size of the cousub headline on log counts (−0.21 vs
+−0.40), but the block-level `home_in_muni_share` is null once the
+stack-interacted FE absorbs the within-stack composition. SD-level
+identification doesn't recover the causal direction reliably.
 
 **Industry decomposition (cousub Inc-bind, log jobs by sector):**
 - Total: −0.258\*\*\*; Consumer-facing: −0.297\*\*; Tradeable: +0.236 (null);
@@ -176,6 +179,7 @@ Rscript build_industry_figure.R       # industry bar chart
 | `q3_unified_altctrl_3level.R` | Alt-control (Cengiz clean-in-window), all 3 levels |
 | `build_paper_tables.R` | LaTeX tables for paper |
 | `build_industry_figure.R` | Industry bar chart |
+| `build_industry_table.R` | Industry-decomposition LaTeX table fragment |
 | `run_active.R` | Master pipeline (calls above scripts; gated flags) |
 | `paper/main.tex` | LaTeX manuscript |
 | `paper/guiding_principles.md` | Design principles document |
@@ -193,9 +197,7 @@ Rscript build_industry_figure.R       # industry bar chart
 `q3_unified_robustness_passes.R`, `sd_heterogeneity.R`,
 `q3_unified_decomposition.R`, `pilot_block_lodes.R`,
 `build_residence_panel.R`, `build_industry_panel.R`,
-`build_neighbors_rings.R`, `build_highway_panel.R`,
-`q3_unified_industry.R` (kept for cousub-level industry — used by
-active pipeline through `build_industry_table.R`).
+`build_neighbors_rings.R`, `build_highway_panel.R`.
 
 To run a legacy script intentionally, source it directly: `Rscript <name>.R`.
 

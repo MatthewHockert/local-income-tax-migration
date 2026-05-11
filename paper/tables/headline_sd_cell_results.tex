@@ -3,32 +3,32 @@
   \caption{School-district-level dose-response by binding-state cell}
   \label{tab:headline_sd_cell_results}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lccccc}
     \toprule
-    Cell & \texttt{log\_live\_and\_work} & \texttt{log\_in\_commuters} & \texttt{log\_total\_residents} & \texttt{share\_live\_in} & \texttt{share\_work\_outside} \\
+    Outcome & Log(work in own muni) & Log(in-commuters) & Log(employed residents) & Share live in muni & Share work outside \\
     \midrule
-    \textbf{Inc-bind}  & 0.066$^{*}$ & 0.057 & 0.147$^{***}$ & 0.003 & 0.006 \\
-                  & (0.039) & (0.036) & (0.039) & (0.003) & (0.005) \\
-    \textbf{Inc-becomes}  & 1.633$^{*}$ & 1.863$^{**}$ & 1.065 & -0.020 & -0.034 \\
-                  & (0.983) & (0.944) & (0.669) & (0.024) & (0.027) \\
-    \textbf{Inc-nobind}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
-    \textbf{Dec-bind}  & -0.009 & 0.089 & 0.140$^{***}$ & -0.012 & 0.011$^{**}$ \\
-                  & (0.070) & (0.078) & (0.040) & (0.010) & (0.005) \\
-    \textbf{Dec-becomes-non}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
-    \textbf{Dec-nobind}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
+    \textbf{Inc-bind} & 0.027 & 0.057 & 0.106\sym{***} & 0.003 & 0.000 \\
+                      & (0.038) & (0.046) & (0.030) & (0.004) & (0.004) \\
+    \textbf{Inc-becomes} & 0.271\sym{*} & 0.184 & 0.318\sym{**} & 0.004 & 0.012 \\
+                      & (0.154) & (0.137) & (0.131) & (0.006) & (0.010) \\
+    \textbf{Inc-nobind} & 0.793 & 1.149\sym{*} & 0.422\sym{***} & -0.035 & -0.015 \\
+                      & (0.506) & (0.633) & (0.148) & (0.023) & (0.021) \\
+    \textbf{Dec-bind} & 0.060 & 0.050 & 0.178\sym{***} & 0.000 & 0.006\sym{***} \\
+                      & (0.077) & (0.111) & (0.045) & (0.004) & (0.002) \\
+    \textbf{Dec-nobind} & -0.126\sym{***} & 0.154\sym{***} & 0.076\sym{***} & -0.032\sym{***} & 0.021\sym{***} \\
+                      & (0.025) & (0.028) & (0.016) & (0.002) & (0.003) \\
     \midrule
-    R2  & 0.986 & 0.987 & 0.987 & 0.953 & 0.977 \\
-    Within R2  & 0.006 & 0.008 & 0.007 & 0.004 & 0.004 \\
-    Dep mean  & 6.260 & 8.335 & 8.769 & 0.125 & 0.900 \\
-    Dep SD  & 1.298 & 1.202 & 0.909 & 0.068 & 0.076 \\
-    N  & 51,420 & 51,454 & 51,454 & 51,454 & 51,454 \\
+    $N$ & 51,420 & 51,454 & 51,454 & 51,454 & 51,454 \\
+    $R^2$ & 0.986 & 0.987 & 0.987 & 0.953 & 0.977 \\
+    Within $R^2$ & 0.004 & 0.004 & 0.005 & 0.004 & 0.004 \\
+    Dep.\ mean & 6.260 & 8.335 & 8.769 & 0.125 & 0.900 \\
+    Dep.\ SD & 1.298 & 1.202 & 0.909 & 0.068 & 0.076 \\
     \bottomrule
   \end{tabular}
+  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with SD-by-stack and year-by-stack fixed effects; standard errors clustered at the school-district level. Unit of observation is SD$\times$year. Binding-cell classification uses the within-SD mean of $\tau^{\text{nr,muni}}$ as the work-side comparator, aggregating the institutional nonresident-rate field over the SD's constituent munis. Rows omitted (no estimable coefficients in any outcome column): Dec-becomes-non. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

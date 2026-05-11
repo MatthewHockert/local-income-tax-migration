@@ -3,28 +3,34 @@
   \caption{Block-level dose-response: muni resident-rate cells}
   \label{tab:headline_block_muni_results}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lcccc}
     \toprule
-    Cell & \texttt{log\_home\_count} & \texttt{log\_work\_count} & \texttt{home\_in\_muni\_share} & \texttt{share\_work\_outside} \\
+    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
     \midrule
-    \textbf{Inc-bind}  & -0.165$^{***}$ & -0.111$^{***}$ & -0.067$^{**}$ & 0.067$^{**}$ \\
-                  & (0.019) & (0.040) & (0.027) & (0.027) \\
-    \textbf{Inc-becomes}  & -0.029 & -0.028 & -0.051$^{***}$ & 0.051$^{***}$ \\
-                  & (0.031) & (0.026) & (0.014) & (0.014) \\
-    \textbf{Inc-nobind}  & 0.060$^{***}$ & -0.031 & -0.057$^{***}$ & 0.057$^{***}$ \\
-                  & (0.022) & (0.029) & (0.005) & (0.005) \\
-    \textbf{Dec-bind}  & -0.018 & -0.086 & -0.030$^{***}$ & 0.030$^{***}$ \\
-                  & (0.055) & (0.072) & (0.007) & (0.007) \\
-    \textbf{Dec-becomes-non}  & -0.088 & 0.722$^{***}$ & -0.073 & 0.073 \\
-                  & (0.177) & (0.066) & (0.121) & (0.121) \\
-    \textbf{Dec-nobind}  & 0.379$^{***}$ & -0.282 & 0.019$^{***}$ & -0.019$^{***}$ \\
-                  & (0.087) & (0.352) & (0.003) & (0.003) \\
+    \textbf{Inc-bind} & -0.208\sym{***} & -0.097\sym{*} & -0.035 & 0.035 \\
+                      & (0.054) & (0.052) & (0.031) & (0.031) \\
+    \textbf{Inc-becomes} & -0.013 & -0.053\sym{**} & -0.043\sym{***} & 0.043\sym{***} \\
+                      & (0.032) & (0.022) & (0.010) & (0.010) \\
+    \textbf{Inc-nobind} & -0.056 & -0.113 & -0.037\sym{**} & 0.037\sym{**} \\
+                      & (0.098) & (0.075) & (0.015) & (0.015) \\
+    \textbf{Dec-bind} & 0.269\sym{*} & 0.167 & -0.049 & 0.049 \\
+                      & (0.153) & (0.353) & (0.031) & (0.031) \\
+    \textbf{Dec-becomes-non} & 0.193 & 0.413\sym{***} & -0.080\sym{**} & 0.080\sym{**} \\
+                      & (0.299) & (0.137) & (0.033) & (0.033) \\
+    \textbf{Dec-nobind} & 0.242\sym{***} & -0.053 & 0.006 & -0.006 \\
+                      & (0.086) & (0.254) & (0.006) & (0.006) \\
     \midrule
-    
+    $N$ & 23,567,655 & 8,751,581 & 23,567,655 & 23,567,655 \\
+    $R^2$ & 0.858 & 0.865 & 0.563 & 0.563 \\
+    Within $R^2$ & 0.000 & 0.000 & 0.000 & 0.000 \\
+    Dep.\ mean & 2.238 & 2.318 & 0.121 & 0.879 \\
+    Dep.\ SD & 1.186 & 1.655 & 0.184 & 0.184 \\
     \bottomrule
   \end{tabular}
+  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with block-by-stack and year-by-stack fixed effects; standard errors two-way clustered at the muni and SD levels. Each block is exposed to one municipality and one school district; both rate-setters' policy variation enters at its native level. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

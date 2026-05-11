@@ -1,0 +1,29 @@
+\begin{table}[H]
+  \centering
+  \caption{Pooled Inc/Dec headline --- school district level (binary event)}
+  \label{tab:pooled_binary_sd}
+  \small
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lccccc}
+    \toprule
+    Outcome & Log(work in own muni) & Log(in-commuters) & Log(employed residents) & Share live in muni & Share work outside \\
+    \midrule
+    \textbf{School district rate ($\tau^{SD}$)} & & & & & \\
+    \quad $\Delta\tau > 0$ (Inc) & 0.089\sym{*} & 0.091\sym{**} & 0.129\sym{***} & 0.000 & 0.005 \\
+                           & (0.051) & (0.046) & (0.035) & (0.003) & (0.004) \\
+    \quad $\Delta\tau < 0$ (Dec) & -0.007 & -0.072\sym{***} & -0.069\sym{***} & 0.008\sym{*} & -0.006\sym{***} \\
+                           & (0.042) & (0.020) & (0.023) & (0.004) & (0.002) \\
+    \midrule
+    $N$ & 51,440 & 51,474 & 51,474 & 51,474 & 51,474 \\
+    $R^2$ & 0.986 & 0.987 & 0.987 & 0.953 & 0.977 \\
+    Within $R^2$ & 0.004 & 0.007 & 0.006 & 0.006 & 0.005 \\
+    Dep.\ mean & 6.260 & 8.335 & 8.768 & 0.125 & 0.900 \\
+    Dep.\ SD & 1.298 & 1.202 & 0.909 & 0.068 & 0.076 \\
+    \bottomrule
+  \end{tabular}
+  }
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Binary post-treatment indicator: 1 in the event year and after. Cluster-robust standard errors in parentheses. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
+\end{table}

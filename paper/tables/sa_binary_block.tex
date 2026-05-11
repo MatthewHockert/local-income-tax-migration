@@ -1,24 +1,42 @@
 \begin{table}[H]
   \centering
-  \caption{Binary Sun--Abraham IW ES --- Block level: post-event mean ATT and pre-event lead. $^{\dagger}$ flags pre-trend $|t| > 1.96$.}
+  \caption{Binary Sun--Abraham IW ES --- block level}
   \label{tab:sa_binary_block}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lcccc}
     \toprule
-    Cell & \texttt{log\_home\_count} & \texttt{log\_work\_count} & \texttt{home\_in\_muni\_share} & \texttt{share\_work\_outside} \\
+    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
     \midrule
-    \textbf{Inc-bind} (post)  & -0.042 (24.687) & 0.025 (0.013) & 0.008 (7.511) & -0.008 (7.511) \\
-                 (pre)  & 0.034 (55.371) & -0.098$^{\dagger}$ (0.034) & 0.011 (16.841) & -0.011 (16.842) \\
-    \textbf{Inc-becomes} (post)  & -0.025 (340.330) & -0.802 (1398.641) & -0.015 (126.348) & 0.015 (126.064) \\
-                 (pre)  & 0.045 (287.314) & -0.261 (717.898) & -0.013 (106.666) & 0.013 (106.426) \\
-    \textbf{Inc-nobind} (post)  & 0.152 (22.688) & 0.001 (0.012) & -0.012 (11.095) & 0.012 (11.092) \\
-                 (pre)  & 0.111 (14.384) & 0.095$^{\dagger}$ (0.020) & 0.002 (7.034) & -0.002 (7.032) \\
-    \textbf{Dec-bind} (post)  & -0.015 (0.010) & 0.039 (0.019) & -0.013 (0.003) & 0.013 (0.003) \\
-                 (pre)  & -0.339$^{\dagger}$ (0.012) & -0.267$^{\dagger}$ (0.030) & -0.024$^{\dagger}$ (0.005) & 0.024$^{\dagger}$ (0.005) \\
-    \textbf{Dec-becomes-non} (post)  & -0.033 (0.000) & 0.049 (0.000) & -0.012 (0.000) & 0.012 (0.000) \\
-                 (pre)  & -0.046 (0.000) & 0.330 (0.000) & 0.045 (0.000) & -0.045 (0.000) \\
-    \textbf{Dec-nobind} (post)  & -0.185 (0.010) & 0.050 (0.028) & -0.008 (0.001) & 0.008 (0.001) \\
-                 (pre)  & 0.125$^{\dagger}$ (0.009) & 1.384$^{\dagger}$ (0.034) & 0.092$^{\dagger}$ (0.001) & -0.092$^{\dagger}$ (0.001) \\
+    \textbf{Inc-bind (post)} & -0.042 & 0.025\sym{*} & 0.008 & -0.008 \\
+                      & (24.687) & (0.013) & (7.511) & (7.511) \\
+    \textbf{Inc-bind (pre)} & 0.034 & -0.098\sym{***} & 0.011 & -0.011 \\
+                      & (55.371) & (0.034) & (16.841) & (16.842) \\
+    \textbf{Inc-becomes (post)} & -0.025 & -0.802 & -0.015 & 0.015 \\
+                      & (340.330) & (1398.641) & (126.348) & (126.064) \\
+    \textbf{Inc-becomes (pre)} & 0.045 & -0.261 & -0.013 & 0.013 \\
+                      & (287.314) & (717.898) & (106.666) & (106.426) \\
+    \textbf{Inc-nobind (post)} & 0.152 & 0.001 & -0.012 & 0.012 \\
+                      & (22.688) & (0.012) & (11.095) & (11.092) \\
+    \textbf{Inc-nobind (pre)} & 0.111 & 0.095\sym{***} & 0.002 & -0.002 \\
+                      & (14.384) & (0.020) & (7.034) & (7.032) \\
+    \textbf{Dec-bind (post)} & -0.015 & 0.039\sym{**} & -0.013\sym{***} & 0.013\sym{***} \\
+                      & (0.010) & (0.019) & (0.003) & (0.003) \\
+    \textbf{Dec-bind (pre)} & -0.339\sym{***} & -0.267\sym{***} & -0.024\sym{***} & 0.024\sym{***} \\
+                      & (0.012) & (0.030) & (0.005) & (0.005) \\
+    \textbf{Dec-becomes-non (post)} & -0.033 & 0.049 & -0.012 & 0.012 \\
+                      & (0.000) & (0.000) & (0.000) & (0.000) \\
+    \textbf{Dec-becomes-non (pre)} & -0.046 & 0.330 & 0.045 & -0.045 \\
+                      & (0.000) & (0.000) & (0.000) & (0.000) \\
+    \textbf{Dec-nobind (post)} & -0.185\sym{***} & 0.050\sym{*} & -0.008\sym{***} & 0.008\sym{***} \\
+                      & (0.010) & (0.028) & (0.001) & (0.001) \\
+    \textbf{Dec-nobind (pre)} & 0.125\sym{***} & 1.384\sym{***} & 0.092\sym{***} & -0.092\sym{***} \\
+                      & (0.009) & (0.034) & (0.001) & (0.001) \\
     \bottomrule
   \end{tabular}
+  }
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Binary Sun--Abraham interaction-weighted ES. Post = mean of $\beta_k$ for $k=0..5$; pre = mean for $k\leq-2$. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
 \end{table}

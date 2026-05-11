@@ -1,34 +1,34 @@
 \begin{table}[H]
   \centering
-  \caption{Cousub-level dose-response: SD resident-rate cells (partial)}
+  \caption{Municipality-level dose-response: SD resident-rate cells (partial)}
   \label{tab:headline_muni_sd_side_results}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lccccc}
     \toprule
-    Cell & \texttt{log\_live\_and\_work} & \texttt{log\_in\_commuters} & \texttt{log\_total\_residents} & \texttt{share\_live\_in} & \texttt{share\_work\_outside} \\
+    Outcome & Log(work in own muni) & Log(in-commuters) & Log(employed residents) & Share live in muni & Share work outside \\
     \midrule
-    \textbf{Inc-bind}  & 0.177$^{*}$ & 0.160$^{*}$ & 0.063 & 0.005 & -0.009$^{***}$ \\
-                  & (0.099) & (0.092) & (0.046) & (0.007) & (0.002) \\
-    \textbf{Inc-becomes}  & 0.103 & 0.081 & 0.045 & 0.008 & 0.002 \\
-                  & (0.090) & (0.086) & (0.052) & (0.007) & (0.005) \\
-    \textbf{Inc-nobind}  & --- & --- & --- & --- & --- \\
-                  &  &  &  &  &  \\
-    \textbf{Dec-bind}  & -0.721$^{***}$ & -0.293$^{***}$ & 0.212$^{**}$ & -0.034$^{***}$ & 0.008$^{***}$ \\
-                  & (0.191) & (0.060) & (0.090) & (0.013) & (0.003) \\
-    \textbf{Dec-becomes-non}  & -0.223$^{**}$ & -0.140 & -0.006 & 0.005 & 0.004 \\
-                  & (0.109) & (0.090) & (0.031) & (0.006) & (0.003) \\
-    \textbf{Dec-nobind}  & 0.048 & -0.241 & -0.413$^{***}$ & -0.007 & 0.016 \\
-                  & (0.179) & (0.423) & (0.110) & (0.010) & (0.017) \\
+    \textbf{Inc-bind} & 0.177\sym{*} & 0.160\sym{*} & 0.063 & 0.005 & -0.009\sym{***} \\
+                      & (0.099) & (0.092) & (0.046) & (0.007) & (0.002) \\
+    \textbf{Inc-becomes} & 0.103 & 0.081 & 0.045 & 0.008 & 0.002 \\
+                      & (0.090) & (0.086) & (0.052) & (0.007) & (0.005) \\
+    \textbf{Dec-bind} & -0.721\sym{***} & -0.293\sym{***} & 0.212\sym{**} & -0.034\sym{***} & 0.008\sym{***} \\
+                      & (0.191) & (0.060) & (0.090) & (0.013) & (0.003) \\
+    \textbf{Dec-becomes-non} & -0.223\sym{**} & -0.140 & -0.006 & 0.005 & 0.004 \\
+                      & (0.109) & (0.090) & (0.031) & (0.006) & (0.003) \\
+    \textbf{Dec-nobind} & 0.048 & -0.241 & -0.413\sym{***} & -0.007 & 0.016 \\
+                      & (0.179) & (0.423) & (0.110) & (0.010) & (0.017) \\
     \midrule
-    R2  & 0.964 & 0.959 & 0.981 & 0.823 & 0.945 \\
-    Within R2  & 0.001 & 0.001 & 0.001 & 0.001 & 0.001 \\
-    Dep mean  & 3.677 & 5.847 & 6.697 & 0.093 & 0.943 \\
-    Dep SD  & 1.934 & 1.887 & 1.299 & 0.076 & 0.066 \\
-    N  & 218,685 & 239,031 & 242,730 & 239,041 & 242,730 \\
+    $N$ & 218,685 & 239,031 & 242,730 & 239,041 & 242,730 \\
+    $R^2$ & 0.964 & 0.959 & 0.981 & 0.823 & 0.945 \\
+    Within $R^2$ & 0.001 & 0.001 & 0.001 & 0.001 & 0.001 \\
+    Dep.\ mean & 3.677 & 5.847 & 6.697 & 0.093 & 0.943 \\
+    Dep.\ SD & 1.934 & 1.887 & 1.299 & 0.076 & 0.066 \\
     \bottomrule
   \end{tabular}
+  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Estimating equation: $y = \alpha_{i \times s} + \gamma_{t \times s} + \sum_c \beta^M_c \mathbf{1}\{cell^M = c\} \Delta\tau^M + \sum_c \beta^{SD}_c \mathbf{1}\{cell^{SD} = c\} \Delta\tau^{SD} + X'\phi + \varepsilon$. Cluster-robust standard errors in parentheses. $^{*}p < 0.10$, $^{**}p < 0.05$, $^{***}p < 0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with municipality-by-stack and year-by-stack fixed effects; standard errors clustered at the municipality level. SD-side cell$\times$dose coefficients from the same regression as the muni-side cell table; the muni-side interaction is partialled out. Rows omitted (no estimable coefficients in any outcome column): Inc-nobind. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

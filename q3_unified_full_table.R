@@ -223,8 +223,8 @@ run_headline <- function(stk, outcome) {
   if (nrow(d) == 0) return(NULL)
   # Resident-side unified: muni + SD cell x dose interactions.
   # NOTE: nonresident side intentionally excluded per current paper scope.
-  # NOTE: SD-level fiscal share controls TBD (will be added once NCES F-33
-  #       data is processed; currently uses only muni-level fiscal shares).
+  # NOTE: Cousub-level model intentionally uses only muni AFR shares; the
+  #       SD F-33 shares enter at the SD- and block-level specifications.
   f <- as.formula(paste0(outcome,
        " ~ i(treat_cell, dose_stack, ref='NC') ",
        "+ i(cell_sd, dose_sd, ref='NC') + ",

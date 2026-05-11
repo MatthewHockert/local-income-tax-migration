@@ -65,6 +65,17 @@ panel_cousub <- merge(panel_cousub, muni_sd_assign[, .(muni, year, sd_id,
                       by = c("muni","year"), all.x = TRUE)
 panel_cousub <- panel_cousub[!is.na(sd_id)]
 
+# Merge in muni_nonres_eit from the canonical rate panel (the actual work-side
+# nonresident rate paid by an out-of-muni worker, distinct from the muni
+# resident rate). We aggregate this to the SD level below.
+rate_nr <- rate[!is.na(cousub_fips) & year <= max_year,
+                .(muni = cousub_fips, year,
+                  muni_nonres_eit = as.numeric(muni_nonres_eit))]
+rate_nr <- rate_nr[, .(muni_nonres_eit = mean(muni_nonres_eit, na.rm = TRUE)),
+                   by = .(muni, year)]
+rate_nr[!is.finite(muni_nonres_eit), muni_nonres_eit := NA_real_]
+panel_cousub <- merge(panel_cousub, rate_nr, by = c("muni","year"), all.x = TRUE)
+
 # ---------------------------------------------------------------------------
 # 2. Aggregate cousub → SD
 # ---------------------------------------------------------------------------
@@ -76,8 +87,10 @@ sd_panel <- panel_cousub[, .(
   total_jobs       = sum(total_jobs, na.rm = TRUE),
   total_residents  = sum(total_residents, na.rm = TRUE),
   sd_eit_rate      = first(sd_eit_rate),                          # one SD rate per SD-year
-  mean_muni_rate   = mean(muni_eit_rate, na.rm = TRUE),           # avg muni rate in SD (control)
+  mean_muni_rate   = mean(muni_eit_rate, na.rm = TRUE),           # avg muni resident rate in SD (control)
   pop_weighted_muni_rate = weighted.mean(muni_eit_rate, total_residents, na.rm = TRUE),
+  mean_muni_nonres = mean(muni_nonres_eit, na.rm = TRUE),         # avg work-side nonres rate in SD
+  max_muni_nonres  = max(muni_nonres_eit, na.rm = TRUE),          # peak nonres rate in SD
   n_munis_in_sd    = uniqueN(muni)
 ), by = .(sd_id, year)]
 
@@ -121,20 +134,18 @@ if (file.exists(sd_ctrls_path)) {
 # ---------------------------------------------------------------------------
 # 3. SD treatment cells (binding-state classification)
 # ---------------------------------------------------------------------------
-# For SD-level binding: home_stack is approximately mean_muni_rate + sd_rate.
-# Compare to typical work_nonres for residents of this SD. We approximate
-# work_nonres at SD level using the mean nonres rate of munis whose residents
-# typically work nearby. For simplicity, use the mean_muni_rate as a proxy for
-# work_nonres at the SD level (since most workers commute within their SD's
-# region). The result is essentially "did the SD rate change push the SD's
-# typical worker over the binding threshold?"
+# SD-level binding-state classification.
+# Home stack for an SD's typical resident = (mean muni resident rate within
+# the SD) + (SD resident rate). Work-side nonresident comparator = within-SD
+# mean of muni_nonres_eit (the actual nonresident-rate field, aggregated over
+# the SD's constituent munis). The earlier version of this script used
+# mean_muni_rate (i.e., the resident rate) as a proxy for the nonres rate;
+# that proxy is now retired -- we aggregate the institutional nonres field
+# directly. Most PA workers commute within or close to their home SD, so a
+# within-SD mean of muni_nonres_eit is a sensible approximation of the
+# "typical worker's" work-side nonres rate at the SD aggregation level.
 sd_panel[, home_stack := mean_muni_rate + sd_eit_rate]
-# Use mean nonres rate from the rate panel
-nr_lookup <- panel_cousub[, .(work_nonres_avg = mean(muni_eit_rate, na.rm = TRUE)),
-                          by = .(sd_id, year)]
-# Approximate: work_nonres ~ avg muni nonres rate; we don't have per-SD
-# nonres directly, so use mean_muni_rate as a plausible proxy
-sd_panel <- merge(sd_panel, nr_lookup, by = c("sd_id","year"), all.x = TRUE)
+sd_panel[, work_nonres_avg := mean_muni_nonres]
 sd_panel[, sd_home_binds := as.integer(home_stack > work_nonres_avg)]
 
 setorder(sd_panel, sd_id, year)

@@ -1,0 +1,11 @@
+outcome,direction,att_post,att_post_se,att_pre,att_pre_se,wald_pre_stat,wald_pre_df,wald_pre_p,n
+log_live_and_work,Inc,-0.197,0.026,0.094,0.034,29.895,4,0,198385
+log_in_commuters,Inc,-0.218,0.028,0.01,0.058,9.427,4,0.0513,216622
+log_total_residents,Inc,-0.039,0.014,0.054,0.032,3.464,4,0.4834,219853
+share_live_in,Inc,-0.015,0.003,0.011,0.006,3.312,4,0.5071,216632
+share_work_outside,Inc,0.018,0.003,-0.014,0.003,11.483,4,0.0216,219853
+log_live_and_work,Dec,0.674,0.178,0.19,0.217,124.378,4,0,197904
+log_in_commuters,Dec,0.264,0.091,-0.139,0.1,83.137,4,0,216092
+log_total_residents,Dec,0.175,0.041,0.169,0.044,20.918,4,3e-04,219309
+share_live_in,Dec,0.02,0.008,0.004,0.007,24.498,4,1e-04,216102
+share_work_outside,Dec,0,0.004,0.006,0.007,104.033,4,0,219309

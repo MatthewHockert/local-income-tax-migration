@@ -1,18 +1,22 @@
 \begin{table}[H]
   \centering
-  \caption{Dose-magnitude linearity --- Cousub level. Inc-bind units split by tercile of cumulative $\Delta\tau$ at $+5$. Per-pp dose-response coefficients should be approximately constant across terciles under linearity.}
+  \caption{Dose-magnitude linearity --- municipality level}
   \label{tab:tercile_cousub}
   \small
   \begin{tabular}{lccc}
     \toprule
-    Dose tercile & \texttt{log\_live\_and\_work} & \texttt{log\_total\_residents} & \texttt{share\_live\_in} \\
+    Outcome & Log(work in own muni) & Log(employed residents) & Share live in muni \\
     \midrule
-    \textbf{small} ($n = 23$)  & -0.448$^{*}$ & 0.116 & -0.038$^{*}$ \\
-                         (SE)  & (0.258) & (0.116) & (0.021) \\
-    \textbf{medium} ($n = 4$)  & -0.114 & 0.004 & -0.076 \\
-                         (SE)  & (0.751) & (0.170) & (0.069) \\
-    \textbf{large} ($n = 13$)  & -0.416$^{***}$ & -0.136$^{***}$ & -0.043$^{***}$ \\
-                         (SE)  & (0.091) & (0.024) & (0.010) \\
+    \textbf{small} & -0.448\sym{*} & 0.116 & -0.038\sym{*} \\
+                      & (0.258) & (0.116) & (0.021) \\
+    \textbf{medium} & -0.114 & 0.004 & -0.076 \\
+                      & (0.751) & (0.170) & (0.069) \\
+    \textbf{large} & -0.416\sym{***} & -0.136\sym{***} & -0.043\sym{***} \\
+                      & (0.091) & (0.024) & (0.010) \\
     \bottomrule
   \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Inc-bind units split by tercile of cumulative $\Delta\tau$ at $+5$. Per-pp dose-response should be approximately constant under linearity. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
 \end{table}

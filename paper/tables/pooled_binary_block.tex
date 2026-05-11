@@ -1,0 +1,34 @@
+\begin{table}[H]
+  \centering
+  \caption{Pooled Inc/Dec headline --- block level (binary event)}
+  \label{tab:pooled_binary_block}
+  \small
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccc}
+    \toprule
+    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
+    \midrule
+    \textbf{Municipality rate ($\tau^{M}$)} & & & & \\
+    \quad $\Delta\tau > 0$ (Inc) & -0.052\sym{**} & -0.038\sym{**} & -0.018\sym{**} & 0.018\sym{**} \\
+                           & (0.025) & (0.016) & (0.008) & (0.008) \\
+    \quad $\Delta\tau < 0$ (Dec) & -0.050\sym{***} & -0.028 & 0.013\sym{***} & -0.013\sym{***} \\
+                           & (0.017) & (0.053) & (0.004) & (0.004) \\
+    \textbf{School district rate ($\tau^{SD}$)} & & & & \\
+    \quad $\Delta\tau > 0$ (Inc) & 0.003 & -0.000 & 0.001 & -0.001 \\
+                           & (0.006) & (0.007) & (0.001) & (0.001) \\
+    \quad $\Delta\tau < 0$ (Dec) & 0.008 & 0.066\sym{***} & 0.005\sym{***} & -0.005\sym{***} \\
+                           & (0.006) & (0.015) & (0.001) & (0.001) \\
+    \midrule
+    $N$ & 23,567,655 & 8,751,581 & 23,567,655 & 23,567,655 \\
+    $R^2$ & 0.858 & 0.865 & 0.563 & 0.563 \\
+    Within $R^2$ & 0.000 & 0.000 & 0.000 & 0.000 \\
+    Dep.\ mean & 2.238 & 2.318 & 0.121 & 0.879 \\
+    Dep.\ SD & 1.186 & 1.655 & 0.184 & 0.184 \\
+    \bottomrule
+  \end{tabular}
+  }
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Binary post-treatment indicator: 1 in the event year and after. Cluster-robust standard errors in parentheses. Each regression includes both rate-setters' direction-pooled treatments jointly; the four reported coefficients are $\beta^M_{\text{Inc}}$, $\beta^M_{\text{Dec}}$, $\beta^{SD}_{\text{Inc}}$, $\beta^{SD}_{\text{Dec}}$. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
+\end{table}
