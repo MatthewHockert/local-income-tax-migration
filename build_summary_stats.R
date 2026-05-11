@@ -12,6 +12,7 @@
 
 suppressMessages({
   library(data.table); library(ggplot2); library(scales); library(patchwork)
+  library(sf); library(ggrepel)
 })
 
 project_dir <- "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration"
@@ -371,5 +372,73 @@ g_traj <- g_cum | g_cnt
 ggsave(file.path(fig_dir, "pa_rate_trajectories.png"), g_traj,
        width = 16, height = 9, dpi = 180)
 cat("Saved pa_rate_trajectories.png\n")
+
+# ---------------------------------------------------------------------------
+# 9. Figure: PA map with major rate-changing cities labeled
+# ---------------------------------------------------------------------------
+cat("Building labeled PA map...\n")
+pa_cs <- st_as_sf(readRDS(file.path(data_dir, "pa_cousub.rds")))
+
+# Per-muni change classification from the rate panel
+chg <- rate[year >= 2002 & year <= 2019 & !is.na(rate_change),
+            .(n_inc = sum(rate_change >  1e-6),
+              n_dec = sum(rate_change < -1e-6)),
+            by = .(cousub_fips, municipality)]
+chg[, change_type := fcase(
+  n_inc > 0 & n_dec > 0, "Both",
+  n_inc > 0, "Increased",
+  n_dec > 0, "Decreased",
+  default = "No change")]
+
+# Pull jobs counts to rank cities for labeling
+jobs <- cousub[, .(total_jobs = mean(total_jobs, na.rm = TRUE)),
+                by = .(muni = as.character(work_city))]
+
+map_dt <- pa_cs |>
+  dplyr::left_join(chg, by = c("COUSUBFP" = "cousub_fips")) |>
+  dplyr::left_join(jobs, by = c("COUSUBFP" = "muni")) |>
+  dplyr::mutate(change_type = ifelse(is.na(change_type), "No change", change_type))
+
+# Centroids for labeling the top rate-changers by jobs
+label_dt <- map_dt[!is.na(map_dt$municipality) &
+                     map_dt$change_type %in% c("Increased","Decreased","Both"), ]
+label_dt <- label_dt[order(-label_dt$total_jobs), ][1:30, ]
+label_dt <- label_dt[!is.na(label_dt$municipality), ]
+label_centroids <- suppressWarnings(st_centroid(label_dt))
+lc_coords <- st_coordinates(label_centroids)
+label_centroids$x <- lc_coords[, 1]
+label_centroids$y <- lc_coords[, 2]
+label_centroids$muni_lbl <- tools::toTitleCase(tolower(label_centroids$municipality))
+
+g_map <- ggplot() +
+  geom_sf(data = map_dt[map_dt$change_type == "No change", ],
+          fill = "grey92", color = "grey80", linewidth = 0.03) +
+  geom_sf(data = map_dt[map_dt$change_type == "Increased", ],
+          fill = PAPER_RED, color = "grey50", linewidth = 0.06, alpha = 0.75) +
+  geom_sf(data = map_dt[map_dt$change_type == "Decreased", ],
+          fill = PAPER_BLUE, color = "grey50", linewidth = 0.06, alpha = 0.75) +
+  geom_sf(data = map_dt[map_dt$change_type == "Both", ],
+          fill = "#7B2CBF", color = "grey50", linewidth = 0.06, alpha = 0.75) +
+  geom_point(data = label_centroids,
+             aes(x = x, y = y), color = "black", size = 0.6) +
+  geom_text_repel(data = label_centroids,
+             aes(x = x, y = y, label = muni_lbl),
+             size = 2.8, color = "black",
+             box.padding = 0.35, point.padding = 0.15,
+             segment.size = 0.25, segment.color = "grey40",
+             min.segment.length = 0,
+             max.overlaps = 30, force = 3) +
+  coord_sf() +
+  labs(title = NULL,
+       caption = "Red: muni raised resident rate. Blue: lowered. Purple: both directions. Grey: no change. 30 highest-jobs rate-changers labeled.") +
+  theme_paper() +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.caption = element_text(size = 8, hjust = 0))
+ggsave(file.path(fig_dir, "pa_map.png"), g_map,
+       width = 11, height = 7, dpi = 200)
+cat("Saved pa_map.png\n")
 
 cat("\nDone. Tables in paper/tables/, figures in figures/.\n")
