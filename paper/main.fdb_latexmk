@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex main"] 1778521450 "main.aux" "main.bbl" "main" 1778528245
+["bibtex main"] 1778532568 "main.aux" "main.bbl" "main" 1778532675
   "../references/local_income_taxes.bib" 1778428388 16092 124d152f33258710b0a337dc04dccfbb ""
   "/usr/local/texlive/2021/texmf-dist/bibtex/bst/base/apalike.bst" 1292289607 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "main.aux" 1778528244 29113 aac8f11236dd758cb9e76b5c9a5a8fc0 "pdflatex"
+  "main.aux" 1778532573 29086 e28641de7e4c97cf06badaadc94b39aa "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
-["pdflatex"] 1778528239 "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.tex" "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.pdf" "main" 1778528245
+["pdflatex"] 1778532568 "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.tex" "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.pdf" "main" 1778532675
   "../figures/block_es_overlay_home_in_muni_share.png" 1778505792 443868 3ab262fecdb58e41a2330f92b38a7eff ""
   "../figures/block_es_overlay_log_home_count.png" 1778505791 425332 10c789cbd0a13cbf1f76e85035de490a ""
   "../figures/industry_inc_bind.png" 1778503750 85290 748309a4b5e7a32c065d4d1fcdb8696c ""
@@ -19,8 +19,8 @@
   "../figures/support_dose_distribution.png" 1778172771 69626 0703925a17c762942c037d3f2f004daf ""
   "../figures/support_dose_trajectory.png" 1778172771 155039 3e7f595460b7bd0ff8fdd74ee13d0d4e ""
   "../figures/support_stack_coverage.png" 1778172771 106845 8e8d46c8142a54aaff6785f7dc86142c ""
-  "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.aux" 1778528244 29113 aac8f11236dd758cb9e76b5c9a5a8fc0 ""
-  "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.tex" 1778528239 112440 69a81ed257a5e4e1203b8815d9ba9e3c ""
+  "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.aux" 1778532573 29086 e28641de7e4c97cf06badaadc94b39aa ""
+  "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.tex" 1778532675 116841 e385405148d71a1448e01c3dc2ef427b ""
   "/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2021/texmf-dist/fonts/tfm/jknappen/ec/tcrm0700.tfm" 1136768653 1536 73da8e8f1d2a4c957d51ca133585586b ""
@@ -163,10 +163,10 @@
   "/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1616695603 5169178 a2ce6e2d73f603b690db6777d06dbccb ""
   "/usr/local/texlive/2021/texmf-var/web2c/pdftex/pdflatex.fmt" 1648306306 2724742 017fac85294d91ea4e8b8c753c38d874 ""
   "/usr/local/texlive/2021/texmf.cnf" 1616695596 577 4c1911a7228e554c6032256d3cf5567d ""
-  "main.aux" 1778528244 29113 aac8f11236dd758cb9e76b5c9a5a8fc0 "pdflatex"
-  "main.bbl" 1778521450 1746 a5ee602bf57a8e0296dc6ec797774ed7 "bibtex main"
-  "main.out" 1778528244 6842 6c2b99411104ebb53091369ae5804b48 "pdflatex"
-  "main.tex" 1778528239 112440 69a81ed257a5e4e1203b8815d9ba9e3c ""
+  "main.aux" 1778532573 29086 e28641de7e4c97cf06badaadc94b39aa "pdflatex"
+  "main.bbl" 1778532568 1993 56fee042299fd327f05cde8b7b6769e3 "bibtex main"
+  "main.out" 1778532573 6957 1aaaec29d1f2c758dd86babb8043cf0a "pdflatex"
+  "main.tex" 1778532675 116841 e385405148d71a1448e01c3dc2ef427b ""
   "tables/act32_block.tex" 1778528180 3268 a19c4a60c25af8e29b1cdf082e5fa0f8 ""
   "tables/act32_cousub.tex" 1778528180 3604 bbbe6323202d51bee3b3eebaa0a9cfb8 ""
   "tables/act32_sd.tex" 1778528180 2580 94a05dfabc6e1cb9ac1f5fcb8dba062f ""
@@ -192,8 +192,8 @@
   "tables/tercile_sd.tex" 1778528180 971 15958164d9a5ac99b7a73302f4ee790a ""
   (generated)
   "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.pdf"
-  "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.log"
-  "main.out"
+  "main.pdf"
   "main.log"
   "main.aux"
-  "main.pdf"
+  "main.out"
+  "/Users/matthewhockert/Desktop/Personal Info/local_income_tax_migration/paper/main.log"

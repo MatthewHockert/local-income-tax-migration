@@ -24,8 +24,10 @@ dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 muni_outcomes  <- c("log_live_and_work","log_in_commuters",
                     "log_total_residents","share_live_in",
                     "share_work_outside")
-block_outcomes <- c("log_home_count","log_work_count",
-                    "home_in_muni_share","share_work_outside")
+block_outcomes        <- c("log_home_count","log_work_count",
+                           "home_in_muni_share","share_work_outside")
+block_outcomes_main   <- c("log_home_count","log_work_count")
+block_outcomes_shares <- c("home_in_muni_share","share_work_outside")
 cells_main     <- c("Inc-bind","Inc-becomes","Inc-nobind",
                     "Dec-bind","Dec-becomes-non","Dec-nobind")
 
@@ -161,25 +163,52 @@ block_notes <- c(
   paste("Each block is exposed to one municipality and one school district;",
         "both rate-setters' policy variation enters at its native level.")
 )
+## Main (count outcomes only)
 write_cell_table(
   coef_csv = file.path(in_dir, "block_joint_results.csv"),
   diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
   side     = "muni",
-  outcomes = block_outcomes, cells = cells_main,
-  caption  = "Block-level dose-response: muni resident-rate cells",
+  outcomes = block_outcomes_main, cells = cells_main,
+  caption  = "Block-level dose-response: muni resident-rate cells (count outcomes)",
   label_id = "tab:headline_block_muni_results",
   out_name = "headline_block_muni_results.tex",
-  notes    = block_notes
+  notes    = c(block_notes,
+               "Share outcomes are reported in the appendix; sparse block-level denominators make share estimates mechanically fragile.")
 )
 write_cell_table(
   coef_csv = file.path(in_dir, "block_joint_results.csv"),
   diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
   side     = "sd",
-  outcomes = block_outcomes, cells = cells_main,
-  caption  = "Block-level dose-response: SD resident-rate cells",
+  outcomes = block_outcomes_main, cells = cells_main,
+  caption  = "Block-level dose-response: SD resident-rate cells (count outcomes)",
   label_id = "tab:headline_block_sd_results",
   out_name = "headline_block_sd_results.tex",
-  notes    = block_notes
+  notes    = c(block_notes,
+               "Share outcomes are reported in the appendix.")
+)
+
+## Appendix (share outcomes only)
+write_cell_table(
+  coef_csv = file.path(in_dir, "block_joint_results.csv"),
+  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
+  side     = "muni",
+  outcomes = block_outcomes_shares, cells = cells_main,
+  caption  = "Block-level dose-response: muni resident-rate cells (share outcomes, supporting)",
+  label_id = "tab:headline_block_muni_shares",
+  out_name = "headline_block_muni_shares.tex",
+  notes    = c(block_notes,
+               "Block-level share outcomes are reported for completeness. Sparse denominators and endogenous denominator dynamics make these estimates mechanically fragile at block geography; they are not used to identify the headline causal effect.")
+)
+write_cell_table(
+  coef_csv = file.path(in_dir, "block_joint_results.csv"),
+  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
+  side     = "sd",
+  outcomes = block_outcomes_shares, cells = cells_main,
+  caption  = "Block-level dose-response: SD resident-rate cells (share outcomes, supporting)",
+  label_id = "tab:headline_block_sd_shares",
+  out_name = "headline_block_sd_shares.tex",
+  notes    = c(block_notes,
+               "Block-level share outcomes are reported for completeness; not used for headline identification.")
 )
 
 # ---------------------------------------------------------------------------

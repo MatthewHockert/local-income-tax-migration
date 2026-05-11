@@ -21,8 +21,8 @@
     urlcolor=blue
 }
 
-\title{Local Income Taxes and Residential Sorting: \\
-\large Evidence from Pennsylvania LEHD Origin-Destination Data}
+\title{When Do Local Income Taxes Cause Residential Sorting? \\
+\large Evidence from Pennsylvania's Piecewise EIT System}
 \author{Matthew Hockert\thanks{University of Minnesota. Email: hocke043@umn.edu}}
 \date{\today}
 
@@ -31,44 +31,43 @@
 \maketitle
 
 \begin{abstract}
-Do local income tax rate changes cause residential sorting across
-municipal boundaries? Using LEHD Origin-Destination data linking
-each worker's residence block to their workplace block at annual
-frequency, I estimate the effect of Pennsylvania municipal Earned
-Income Tax (EIT) rate changes on residential and workplace outcomes
-for $\sim$2{,}500 municipalities over 2002--2019. The PA EIT bill
-is piecewise:
-$T_{ji} = \max(\tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j,\
-\tau^{\text{nr,muni}}_i)$, where $j$ is the worker's home muni and
-$i$ is the work muni. A rate hike only \emph{moves the bill} when
-the relevant side of the max binds. I exploit this structure with a
+Do local income taxes cause residential sorting across sub-county
+boundaries? I use LEHD Origin-Destination data linking each
+worker's residence block to their workplace block at annual
+frequency, covering approximately 2{,}500 Pennsylvania
+municipalities and 500 school districts over 2002--2019.
+
+Pennsylvania's Earned Income Tax operates a piecewise max-rule:
+each worker's bill is
+$T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
+$\tau^{\text{home}}$ stacks the municipal and school-district
+resident rates and $\tau^{\text{nr,work}}$ is the work-location
+nonresident rate. A statutory rate change only moves the bill when
+the changed side of the max binds. I exploit this structure with a
 continuous stacked difference-in-differences design that decomposes
-each rate event by direction (Inc/Dec) and binding-state transition
-(already-binding, becomes-binding, non-binding-throughout), and
-that estimates the per-pp dose-response coefficient at the census
-block level---where both rate-setters' policy variation enters the
-regression at its native level---with municipality- and
-school-district-level aggregations reported as cross-checks. The
-within-design placebo is the Inc-nobind cell: rate hikes whose
-post-event home stack remains below the work-side nonresident rate,
-so the bill never moves and theory predicts no behavioral response.
-The headline finding is that a 1 percentage-point muni resident-rate
-increase in the binding cell reduces the block-level count of workers living in the block (in logs) by approximately 19 percent ($-0.21$ log
-points, $\text{SE}=0.054$) with a clean realized-dose parallel-trends
-test ($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The municipality-level analogue reduces the count of residents working in their own municipality (in logs) by approximately
-33 percent ($-0.40$ log points) and raises the share of residents
-commuting out by 4.1 percentage points, though the muni-level pooled
-Inc-bind pre-trend fails parallel trends ($\beta_{\text{pre}} = +0.149$,
-$|t| = 2.66$), consistent with selection of post-industrial cities
-into rate hikes. The Inc-nobind placebo is null on the headline count
-outcomes at both levels. School district rate changes do not produce
-sorting at any binding state, even when SD changes flip the home-stack
-binding state. Industry-decomposed outcomes show consumer-facing jobs
-(retail, food, arts, other services) fall in the binding cell while
-tradeable jobs (manufacturing, wholesale, finance, professional
-services) are insulated, consistent with a local-services demand
-spillover from residents leaving rather than direct nonresident-tax
-incidence.
+each rate event by direction and binding-state transition, generating
+a within-design placebo: rate hikes whose post-event home stack
+stays below the nonresident rate (Inc-nobind) do not change the bill
+and should not move residents.
+
+The preferred causal estimate is at the census block, where both
+rate-setting jurisdictions enter at their native geography. A 1
+percentage-point municipal resident-rate increase in the binding
+cell reduces the log count of workers living in the block by
+$-0.21$ log points (approximately $19\%$), with a clean realized-dose
+pre-trend ($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The Inc-nobind
+within-design placebo is statistically null on the same count
+outcome.
+
+The municipality-level Inc-bind coefficient is larger ($-0.40$ log
+points on residents working in their own municipality) but
+pre-trended; I report it as policy-jurisdiction magnitude calibration
+rather than as the causal headline. School-district rate changes do
+not produce robust evidence of sorting and are treated as an
+aggregation diagnostic. Industry decomposition shows consumer-facing
+jobs fall in the binding cell while tradeable jobs are insulated,
+consistent with a local-services demand spillover from departing
+residents rather than direct nonresident-tax incidence.
 \end{abstract}
 
 \newpage
@@ -78,113 +77,102 @@ incidence.
 \label{sec:intro}
 %==========================================================
 
-The Tiebout hypothesis---that households ``vote with their feet'' by
+Do local income taxes cause residential sorting? The Tiebout
+hypothesis predicts that households ``vote with their feet'' by
 sorting across jurisdictions offering different bundles of taxes and
-public services \citep{tiebout1956}---remains a central organizing
-principle in local public finance. A large empirical literature
+public services \citep{tiebout1956}, and a large literature
 documents tax-driven migration at the state level for high earners
-\citep{kleven2020, young2016, moretti2017} and at sub-national borders
-for sales taxes \citep{agrawal2015gradient}. Yet sub-state income-tax
-sorting---the canonical Tiebout margin, where moving costs are small
-and tax boundaries are crossed by a short relocation---is essentially
-untested in the United States. Two recent studies of Indiana and
-Maryland local income taxes \citep{yang2025, heim2017} use
-county-level IRS data and find county-level migration responses but
-cannot resolve the muni-level variation that defines the actual tax
-boundary. A literature survey by \citet{agrawal2025} explicitly
-identifies sub-state local-income-tax sorting as an open question, and
-\citet{agrawal2022} characterize the empirical evidence as ``thin.''
+\citep{kleven2020, young2016, moretti2017} and at sub-national
+borders for sales taxes \citep{agrawal2015gradient}. Yet sub-state
+income-tax sorting---the canonical Tiebout margin, where moving
+costs are small and tax boundaries are crossed by a short
+relocation---is essentially untested in the United States. Two
+recent studies of Indiana and Maryland local income taxes
+\citep{yang2025, heim2017} use county-level IRS data and find
+county-level migration responses but cannot resolve the muni-level
+variation that defines the actual tax boundary. A literature survey
+by \citet{agrawal2025} explicitly identifies sub-state
+local-income-tax sorting as an open question, and
+\citet{agrawalLocalPolicyChoice2022} characterize the empirical
+evidence as ``thin.''
 
-The gap persists for two reasons. First, the jurisdictions that levy
-local income taxes are sub-county, so standard migration data sources
-do not see them. The IRS Statistics of Income tracks county-to-county
-migration; the American Community Survey measures place-level
-population but does not link workers to employers. Second, local
-income-tax systems feature credit mechanisms, overlapping
-school-district taxes, and uneven enforcement that complicate the
-mapping from statutory rates to effective tax burden. A naive
-comparison of rates and population changes conflates tax incidence
-with amenity valuation, fiscal capacity, and enforcement quality.
+The gap persists for two reasons. First, the jurisdictions that
+levy local income taxes are sub-county, so standard migration data
+sources do not observe the correct margins: the IRS Statistics of
+Income tracks county-to-county migration, and the American
+Community Survey measures place-level population without linking
+workers to employers. Second, local income-tax systems feature
+credit mechanisms, overlapping school-district taxes, and uneven
+enforcement that complicate the mapping from statutory rates to
+effective tax burden. A naive comparison of rates and population
+changes conflates tax incidence with amenity valuation, fiscal
+capacity, and enforcement quality.
 
-This paper addresses both challenges using LEHD Origin-Destination
+I use Pennsylvania (2002--2019) and the LEHD Origin-Destination
 Employment Statistics (LODES), the only administrative data source
-that links each worker's residence tract to their workplace tract at
-annual frequency. The setting is Pennsylvania, 2002--2019. Pennsylvania
-operates a universal Earned Income Tax under Act 511 of 1965 with
-continuous rate variation across approximately 2{,}500 municipalities
-and 500 school districts, and a quasi-experimental enforcement break:
-Act 32 of 2008 (effective January 1, 2012) consolidated EIT collection
-into 69 Tax Collection Districts and mandated employer withholding at
-the higher of the home resident rate or the work nonresident rate.
-Before Act 32, withholding was fragmented and many municipalities did
-not even publish a nonresident rate. The structural break in
-enforcement---same statutory rates, very different effective tax
-burden---anchors causal identification.
+that links each worker's residence to their workplace at annual
+frequency and at sub-municipal geography. Pennsylvania's Earned
+Income Tax (EIT) is unusual along two dimensions that the empirical
+design exploits. First, the EIT operates a piecewise max-rule: each
+worker's bill is
+$T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
+$\tau^{\text{home}}$ is the municipal-plus-school-district stack at
+the worker's residence and $\tau^{\text{nr,work}}$ is the
+nonresident rate at the work location. A statutory rate change only
+moves the worker's bill when the changed side binds. Second, Act 32
+of 2008 (effective 2012) consolidated EIT collection into
+county-based Tax Collection Districts and mandated employer
+withholding at the higher of the two rates, which made the
+max-rule mechanically enforced and provides an enforcement-break
+heterogeneity test.
 
-This paper makes three contributions. First, it identifies the binding
-structure of the PA EIT as the central margin for empirical
-identification. The bill is piecewise in
-$\max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, so a rate change
-only moves the bill when its side binds. I classify each muni-rate
-event by direction (Inc/Dec) and binding-state transition relative to
-the muni's nonresident rate, yielding seven cells (six event cells +
-NC controls). The within-design placebo is the Inc-nobind cell: rate
-hikes whose post-event home stack stays below the nonresident rate, so
-the bill never moves and theory predicts no behavioral response.
+The max-rule turns a single statutory rate change into
+heterogeneous predicted effects depending on the binding-state
+transition. I classify each rate event by direction (Increase /
+Decrease) and binding-state transition into six cells per side, of
+which three are central. In the Inc-bind cell the home stack was
+binding before and after, so the bill rises by the full $\Delta\tau$
+and the predicted response is strongest. In the Inc-becomes cell
+the home stack flips from non-binding to binding, so the bill rises
+partially and the predicted response is intermediate. In the
+Inc-nobind cell the home stack stays below the nonresident rate
+throughout, so the bill does not move and the predicted response is
+zero. Inc-nobind is therefore a within-design placebo: if the same
+statutory increase produces a response in Inc-bind and no response
+in Inc-nobind, the mechanism interpretation is credible; if
+Inc-nobind moves, the mechanism interpretation fails.
 
-Second, the empirical design is a unified continuous stacked DiD with
-two simultaneous rate-setter treatments---muni resident rate and SD
-resident rate, each separately decomposed by binding cells---estimated
-at three units of observation (municipality, school district, census
-block). Triangulation across estimating units replaces the
-cross-estimator triangulation of an earlier draft: each level aligns
-the regression with a different rate-setter's jurisdiction and exposes
-different pre-trend behavior. Pre-trend tests are reported via two
-complementary diagnostics: a realized-dose Sun-Abraham continuous
-event study \citep{callawaygoodmanbaconsantanna2024,dechaisemartin2024}
-and a binary Sun-Abraham IW event study \citep{sunab2021}.
-Controls are share-based throughout: police, streets, and debt service
-as shares of total expenditures; EIT, real estate, and intergovernmental
-revenue as shares of total revenues. The never-changed control pool is
-strictly defined as munis whose rate never changed across the panel,
-not the broader set of munis whose first event could be cell-classified.
+At the block level, a 1 percentage-point municipal resident-rate
+increase in the Inc-bind cell reduces the log count of workers
+living in the block by $-0.21$ log points, approximately $19\%$,
+with a clean realized-dose pre-trend
+($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The Inc-nobind
+within-design placebo is statistically null on the same count
+outcome. The block-level decomposition is the preferred causal
+estimate because both rate-setting jurisdictions---the municipality
+and the school district---enter at their native geography and the
+pre-trend is clean. The municipality-level Inc-bind coefficient is
+larger in absolute value ($-0.40$ on the log count of residents
+working in their own municipality) but its realized-dose pre-trend
+fails parallel trends, consistent with high-eventual-dose
+municipalities, often post-industrial cities, already on declining
+trajectories before their rate hikes. I therefore report the
+municipality-level estimate as policy-jurisdiction magnitude
+calibration rather than as the causal headline. School-district
+rate changes do not produce robust evidence of sorting and are
+treated as an aggregation diagnostic. Industry decomposition shows
+that consumer-facing jobs fall in the binding cell while tradeable
+jobs are insulated, consistent with a local-services demand
+spillover from departing residents rather than with direct
+nonresident-tax incidence on jobs.
 
-Third, the headline finding is that the muni resident rate moves
-residents through the binding channel only. The block-level estimate
-(Inc-bind on the log count of workers living in the block) is $-0.21$ log points per
-pp---approximately a 19 percent decline in resident workers per
-percentage-point of $\tau^{\text{res,muni}}$, with a clean realized-
-dose parallel-trends diagnostic. The municipality-level analogue is
-larger ($-0.40$ log points on the log count of residents working in their own municipality,
-$\approx 33\%$ per pp; $-0.27$ on log total jobs,
-$\approx 24\%$; $-0.10$ on log employed residents,
-$\approx 10\%$; and the share of residents commuting out rises
-4.1 percentage points) but its pre-trend diagnostic fails parallel
-trends, consistent with selection into rate hikes by declining
-post-industrial cities. The Inc-nobind placebo cell---rate hikes
-whose post-event home stack stays below the nonresident rate---is
-statistically null on the headline count outcomes at both levels.
-School district rate changes do not produce sorting in any cell,
-even when SD changes flip the binding state, consistent with workers
-responding to the bill rather than to the rate's identity. Industry
-decomposition using LODES WAC at the municipality level shows
-consumer-facing jobs (retail, food, arts, other services) fall in
-the binding cell while tradeable jobs (manufacturing, wholesale,
-finance, professional services) are insulated, consistent with a
-local-services demand spillover from residents leaving rather than
-direct nonresident-tax incidence.
-
-The municipality-level magnitude is concentrated in 8 post-industrial
-PA cities (Wilkes-Barre, Hazleton, Johnstown, Jeannette, Coatesville,
-Warren, Carbondale, Farrell); the 32 borough and township Inc-bind
-munis show direction-consistent but individually insignificant
-effects. The pre-trend failure at the municipality level is
-attributable to this composition: high-eventual-dose cities are on
-declining trajectories before their rate changes. The block-level
-specification absorbs the gentrification-correlated pre-trend at
-finer geography, which is why I report the block-level estimate as
-the headline causal quantity and the municipality-level estimate as
-the typical-jurisdiction magnitude calibration.
+The narrow, credible claim of the paper is that local income taxes
+cause residential sorting when the institutional rule makes them
+mechanically change the worker's bill---that is, in the Inc-bind
+cell. The pooled Inc/Dec specification that a conventional
+local-tax design would estimate is reported as a benchmark, but it
+mixes binding and non-binding events. The binding-state
+decomposition is the paper's contribution.
 
 %==========================================================
 \section{Institutional Background}
@@ -305,16 +293,26 @@ by consolidating collection into approximately 67 county-based Tax
 Collection Districts (TCDs), each with a single appointed collector.
 The law mandated standardized employer withholding at the higher of
 the employee's resident and work rate. This had two consequences.
-First, it made the EIT \textit{binding}: rate changes now mechanically
+First, it made the EIT \emph{mechanically binding}: rate changes now
 appear in every worker's paycheck through employer withholding,
-regardless of whether they reside in the taxing municipality.
-Second, it eliminated the possibility of de facto tax avoidance
-through residential relocation. Before Act 32, moving away from a
-rate-raising city could effectively reduce a worker's tax burden
-because the work municipality lacked the enforcement capacity to
-collect from nonresidents. After Act 32, the credit system is
-fully enforced, and moving away while keeping the same job provides
-no tax relief.
+regardless of whether the worker resides in the taxing municipality.
+Second, it eliminated the possibility of \emph{de facto} avoidance
+of the work-location nonresident claim through weak enforcement.
+After Act 32, a worker could no longer effectively duck the
+nonresident portion owed to the work municipality.
+
+Importantly, Act 32 did not eliminate all tax savings from
+residential relocation. The piecewise rule in
+Equation~(\ref{eq:piecewise}) continues to imply that a worker whose
+original home stack binds can reduce the bill by moving to a
+sufficiently lower-stack home jurisdiction: the new bill is
+$\max(\tau^{\text{home}}_{j'}, \tau^{\text{nr}}_i)$, which falls
+below the old home stack $\tau^{\text{home}}_j$ whenever
+$\tau^{\text{home}}_{j'} < \tau^{\text{home}}_j$ and the original
+home stack was the binding side. Act 32 thus changed enforcement
+and made the max-rule mechanically binding through withholding; it
+did not eliminate the residential-relocation margin that the
+mechanism in this paper exploits.
 
 \paragraph{School District EIT.}
 School districts in Pennsylvania also levy an EIT under Act 511,
@@ -374,12 +372,20 @@ comparison:
 A seventh category, NC (\emph{never-changed}), comprises munis whose
 $\tau$ never changes across the panel. NC serves as the control pool.
 
-The fundamental testable prediction of the institutional rule is that
-\textbf{Inc-bind effects $>$ Inc-becomes effects $>$ Inc-nobind effects
-$\approx 0$ in absolute value}, with Inc-nobind serving as the
-within-design placebo. If the Inc-nobind cell shows behavioral
-response, the design's mechanism interpretation fails---the response
-is something other than the binding rule.
+The fundamental testable prediction of the institutional rule is
+that \textbf{Inc-bind effects $>$ Inc-becomes effects $>$ Inc-nobind
+effects $\approx 0$ in absolute value}, with Inc-nobind serving as
+the within-design placebo. The central empirical comparison of the
+paper is between Inc-bind and Inc-nobind: if statutory rates matter
+mechanically through tax liability, the residential response should
+appear in Inc-bind and not in Inc-nobind. If Inc-nobind moves, the
+mechanism interpretation fails---the response is something other
+than the binding rule, because Inc-nobind events do not change the
+worker's bill. This makes the design self-falsifying in a way that
+a conventional pooled Inc/Dec specification is not: in the pooled
+specification, every increase is a treated event, while here the
+institutional rule predicts that only a subset of statutory
+increases should generate a response.
 
 \subsection{Three Treatment Margins}
 \label{subsec:treatments}
@@ -516,20 +522,23 @@ Census Bureau Building Permits Survey (BPS), place-level annual files,
     location refer to the same date.
 
     \item \textbf{Outcome variables.}
-    The primary outcome is $\textit{share\_live\_in}_{it} =
-    \text{live\_and\_work}_{it} / \text{total\_jobs}_{it}$, the
-    locally-resident fraction of a city's workforce. Unlike population
-    counts (which mix retirees, students, and non-workers) or IRS
-    migration data (which is county-level), share\_live\_in isolates
-    the residential choices of active workers at municipal resolution.
-
-    To decompose the share response into levels, we also estimate
-    effects on log(resident workers) and log(total jobs) separately.
-    Fiscal outcomes include log EIT revenue, log total tax revenue,
-    log total revenue, log police expenditure, log population, and
-    log market value of real estate from the PA DCED Annual Financial
-    Reports. Pre-treatment balance tests cover eleven observables
-    including crime and building permits.
+    The primary outcome for the headline causal analysis is the
+    block-level log count of workers living in the block. The count
+    directly measures the residential location of active workers and
+    avoids the denominator fragility of block-level shares, which are
+    mechanically sensitive at sparse geography because both the
+    numerator and denominator move. At the municipality and
+    school-district aggregations I also report resident-worker counts,
+    workplace counts, in-commuter flows, and share outcomes
+    (\textit{share\_live\_in}, \textit{share\_work\_outside}). Share
+    outcomes at coarser geographies retain the interpretation of
+    earlier literature; at the block level I treat them as supporting
+    evidence rather than as the primary estimand. Fiscal outcomes
+    include log EIT revenue, log total tax revenue, log total revenue,
+    log police expenditure, log population, and log market value of
+    real estate from the PA DCED Annual Financial Reports.
+    Pre-treatment balance tests cover eleven observables including
+    crime and building permits.
 
     \item \textbf{Treatment definitions.}
     We use both a continuous and a binary treatment definition.
@@ -609,13 +618,17 @@ Census Bureau Building Permits Survey (BPS), place-level annual files,
 The empirical framework is a continuous stacked
 difference-in-differences design with binding-state cell decomposition,
 estimated at three units of observation: municipality, school district,
-and census block. Each estimating unit aligns the regression with a
-different level of treatment aggregation, producing a triangulation across
-units rather than across estimators. The first-difference dose-response
-specification estimates the post-event effect of a one percentage-point
-change in the relevant tax rate; a separate realized-dose event-study
-diagnostic tests for differential pre-event trajectories across units of
-varying eventual treatment intensity.
+and census block. Each estimating unit plays a different role. The
+block-level estimate is the preferred causal specification because both
+rate-setting jurisdictions enter the regression at their native
+geography and the realized-dose pre-trend on the binding cell is clean.
+The municipality-level estimate is retained as policy-jurisdiction
+magnitude calibration, and the school-district aggregation is used as a
+diagnostic. The first-difference dose-response specification estimates
+the post-event effect of a one percentage-point change in the relevant
+tax rate; a separate realized-dose event-study diagnostic tests for
+differential pre-event trajectories across units of varying eventual
+treatment intensity.
 
 \subsection{Setup}
 \label{subsec:setup}
@@ -1008,21 +1021,23 @@ AFR shares and F-33 SD shares, since each block is exposed to both
 governments. Fixed effects: block-by-stack and year-by-stack.
 Standard errors two-way clustered at the muni and SD levels.
 
-The block level is the headline causal estimate in this paper, for
-two reasons. First, the block is the only level where both
-rate-setters enter at their native level (no within-jurisdiction
-aggregation step that the reader has to defend). Second, the
-realized-dose pre-trend diagnostic (Table~\ref{tab:es_pooled_block})
-is clean only at the block level; the municipality-level pre-trend
-on the log count of residents working in their own municipality fails parallel trends
+The block level is the preferred causal estimate for two reasons.
+First, the block is the only level where both rate-setting
+jurisdictions enter at their native geography, with no
+within-jurisdiction aggregation step the reader has to defend.
+Second, the realized-dose pre-trend diagnostic
+(Table~\ref{tab:es_pooled_block}) is clean only at the block level;
+the municipality-level pre-trend on the log count of residents
+working in their own municipality fails parallel trends
 ($\beta_{\text{pre}} = +0.149$, $|t| = 2.66$). The municipality
-level is retained in the main text as a coarser cross-check and as
-the magnitude-calibration target (the typical PA municipality has
-$\sim$40 live-and-work workers, a meaningful per-jurisdiction
-benchmark). The school-district aggregation produces direction-mixed
-coefficients that do not survive the pre-trend diagnostic and is
-reported in the Companion Appendix (\texttt{appendix.tex}) for
-completeness, not for causal identification.
+level is retained as policy-jurisdiction magnitude calibration: the
+typical PA municipality has $\sim$40 live-and-work workers, a
+meaningful per-jurisdiction benchmark, but the muni-level pre-trend
+failure means I do not read the muni-level Inc-bind coefficient as
+a second causal headline. The school-district aggregation produces
+direction-mixed coefficients that do not survive the pre-trend
+diagnostic and is reported as an aggregation diagnostic in the
+Companion Appendix.
 
 \subsection{Pre-Trend Diagnostics}
 \label{subsec:pretrend-diagnostics}
@@ -1101,6 +1116,31 @@ strong parallel-trends assumption. Block-level binary SA-IW is
 unstable (thin cohort $\times$ event-time cells under stacking) and
 is reported at the municipality and SD levels only.
 
+I do not impose a uniform pre-trend standard across every outcome
+in the paper, because not every outcome carries the causal claim.
+The primary residential-sorting outcome is the block-level log
+count of workers living in the block, and the realized-dose
+pre-trend on the binding cell must be clean here for the headline
+to go through; this is the outcome the paper asks the reader to
+believe. Municipality-level resident counts---log residents working
+in their own municipality, log employed residents---are retained as
+policy-jurisdiction magnitude calibration. I acknowledge and
+caveat imperfect pre-trends at the municipality scale, but these
+outcomes do not carry the causal claim. Secondary equilibrium
+outcomes such as log in-commuters, log total jobs, and the industry
+decomposition are reported as suggestive evidence of a
+local-services demand channel; imperfect pre-trends are acceptable
+there because these outcomes are downstream of the
+residential-sorting margin and are not the identification object.
+Block-level share outcomes---the share of block residents working
+in their own municipality, the share of in-block jobs filled by
+out-commuters---are sensitive to sparse denominators and to
+endogenous denominator dynamics at block geography, so I report
+them in the Appendix and do not lean on them. The headline
+block-level log home count in the Inc-bind cell passes the strong
+standard; other outcomes are retained with the caveats appropriate
+to their role.
+
 \subsection{Sample Variants}
 \label{subsec:sample-variants}
 
@@ -1121,15 +1161,26 @@ The headline tables use the drop-incomplete sample (largest $N$). Filled
 and strict sample variants are reported as robustness columns. Coefficients
 are stable across variants.
 
-\subsection{Specification Roadmap}
+\subsection{Three-Layer Empirical Roadmap}
 \label{subsec:spec-roadmap}
 
-The paper estimates a single empirical framework---continuous stacked
-DiD with binding-state cell decomposition---and reports it under
-several specifications that vary the estimating unit, the
-pre-trend diagnostic, or the control pool. Table~\ref{tab:spec-roadmap}
-collects every specification and points to the section in which its
-results appear.
+I report the empirical results in three layers. First, I estimate a
+pooled Inc/Dec specification corresponding to the conventional
+local-tax treatment design. This benchmark is useful for comparison
+with the existing literature, but it ignores whether the statutory
+rate change actually changes the worker's tax bill under the
+Pennsylvania max-rule. Second, I decompose rate events by
+binding-state transition. This is the main empirical test of the
+EIT mechanism: a municipal resident-rate increase that binds raises
+the worker's bill, while one that does not bind is a within-design
+placebo. Third, I report the binding-state decomposition across
+three levels of aggregation. The block-level estimates are the
+preferred causal estimates, because both rate-setters enter at
+their native geography and the realized-dose pre-trend diagnostic
+is clean. Municipality-level estimates are reported as coarser
+policy-jurisdiction magnitude calibration; school-district
+estimates are reported as an aggregation diagnostic. Each
+specification's role is summarized in Table~\ref{tab:spec-roadmap}.
 
 \begin{table}[H]
     \centering
@@ -1137,33 +1188,37 @@ results appear.
     \label{tab:spec-roadmap}
     \small
     \resizebox{\textwidth}{!}{
-    \begin{tabular}{lll}
+    \begin{tabular}{p{4.4cm}p{4.4cm}p{3.2cm}p{3.6cm}}
         \toprule
-        Specification & Purpose & Where reported \\
+        Specification & Role in paper & Causal status & Where reported \\
         \midrule
-        Block-level stacked DiD       & Headline causal estimate                & Section~\ref{subsec:results-block} \\
-        Municipality-level stacked DiD & Coarser cross-check; magnitude calibration & Section~\ref{subsec:results-headline} \\
-        School-district stacked DiD   & Aggregation check (within-SD averaging) & Companion Appendix \\
-        Realized-dose ES (3 levels)   & Strong parallel-trends diagnostic       & Section~\ref{subsec:results-pooled} \\
-        Binary Sun--Abraham IW ES     & Average parallel-trends diagnostic      & Companion Appendix (\\texttt{appendix.tex}, ``Binary Sun--Abraham IW Event Study'') \\
-        Pre/post Act 32 split (3 levels) & Enforcement break heterogeneity     & Section~\ref{subsec:rob-act32} \\
-        Dose-magnitude tercile (3 levels) & Linearity check                    & Section~\ref{subsec:rob-dose-tercile} \\
-        Clean-in-window control (3 levels) & Alternative control pool          & Section~\ref{subsec:rob-controls} \\
-        Industry decomposition (muni level) & Mechanism (consumer vs tradeable) & Section~\ref{subsec:het-industry} \\
-        Sample-variant comparison     & Strict / filled / drop-incomplete       & Section~\ref{subsec:rob-sample} \\
+        Block-level binding-state decomposition  & Main causal estimate (block log home count, Inc-bind) & Preferred & Main text, \S\ref{subsec:results-block} \\
+        Pooled Inc/Dec (aggregate)               & Conventional literature benchmark; motivates decomposition & Descriptive / benchmark & Main text, \S\ref{subsec:results-pooled} \\
+        Municipality-level binding-state decomposition & Policy-jurisdiction magnitude calibration & Secondary, caveated (muni pre-trend fails) & Main text, \S\ref{subsec:results-headline} \\
+        Industry decomposition (muni level)      & Mechanism: local-services demand spillover & Suggestive & Main text, \S\ref{subsec:het-industry} \\
+        School-district aggregation              & Aggregation diagnostic (non-result) & Not load-bearing & Brief \S\ref{subsec:results-sd}; full tables in Appendix \\
+        Pre/post Act 32 split                    & Enforcement-break heterogeneity & Robustness & Brief main text; full in Appendix \\
+        Block share outcomes                     & Sparse-denominator caveat & Supporting & Appendix only \\
+        Binary Sun--Abraham IW ES                & Average parallel-trends diagnostic & Diagnostic & Appendix \\
+        Dose-magnitude tercile                   & Linearity check & Robustness & Appendix \\
+        Clean-in-window control                  & Alternative control pool & Robustness & Appendix \\
+        Sample-variant comparison                & Strict / filled / drop-incomplete & Robustness & Appendix \\
         \bottomrule
     \end{tabular}
     }
     \vspace{0.3em}
     \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} The block-level model is the
-        headline causal estimate; the municipality model is the
-        coarser cross-check and the typical-jurisdiction magnitude
-        calibration. All remaining specifications are diagnostics or
-        robustness checks. The school-district aggregation produces
-        direction-mixed coefficients that do not survive the
-        realized-dose pre-trend diagnostic and is reported in the
-        Companion Appendix.
+        \footnotesize \textit{Notes:} The block-level binding-state
+        decomposition is the preferred causal estimate because the
+        block observes both rate-setting jurisdictions at their
+        native level and its realized-dose pre-trend is clean. The
+        pooled Inc/Dec model is a literature-comparable benchmark
+        but mixes binding and non-binding events. The
+        municipality-level estimate is retained as
+        policy-jurisdiction calibration; its Inc-bind realized-dose
+        pre-trend fails. The school-district aggregation does not
+        produce robust evidence of sorting and is treated as a
+        diagnostic non-result.
     \end{minipage}
 \end{table}
 
@@ -1172,40 +1227,45 @@ results appear.
 \label{sec:results}
 %==========================================================
 
-This section reports the continuous stacked-DiD dose-response
-estimates. The headline causal estimate is the block-level model
-(Section~\ref{subsec:results-block}), where both rate-setters enter
-at their native level and the realized-dose parallel-trends
-diagnostic is clean. The municipality-level model
-(Section~\ref{subsec:results-headline}) is reported as a coarser
-cross-check and as the calibration target for typical-jurisdiction
-magnitudes. The school-district-level aggregation is reported in the
-Companion Appendix (\texttt{appendix.tex}); SD aggregation produces
-direction-mixed coefficients that do not survive the realized-dose
-pre-trend diagnostic and is not load-bearing for the main causal
-claim. The within-design placebo cell (Inc-nobind) appears in
-Section~\ref{subsec:results-block}; the channel separation across
-the muni and SD resident rates in
-Section~\ref{subsec:results-block}; the industry mechanism, which
-is most naturally read at the municipality level, in the
-Section~\ref{subsec:het-industry}; and the
-pre-/post-Act-32 institutional break in
-Section~\ref{subsec:rob-act32}, where the block-level binding-cell
-effect strengthens after the EIT becomes binding via consolidated
-withholding.
+I report results in three layers. Section~\ref{subsec:results-pooled}
+presents the pooled Inc/Dec benchmark---what a conventional
+local-tax design would recover if it ignored the Pennsylvania
+max-rule. Sections~\ref{subsec:results-block}--\ref{subsec:results-sd}
+then report the binding-state decomposition at three levels of
+aggregation. The block-level decomposition
+(\S\ref{subsec:results-block}) is the preferred causal estimate:
+both rate-setting jurisdictions enter at their native geography and
+the realized-dose pre-trend is clean. The municipality-level
+decomposition (\S\ref{subsec:results-headline}) is reported as
+policy-jurisdiction magnitude calibration; the Inc-bind pre-trend
+fails there, so it is not the causal headline. The school-district
+aggregation (\S\ref{subsec:results-sd}) is a diagnostic non-result
+and is summarized briefly, with full tables in the Appendix. The
+industry mechanism, most naturally read at the municipality level,
+appears in \S\ref{subsec:het-industry}. The pre-/post-Act-32 split,
+where the block-level binding-cell effect strengthens after
+consolidated withholding made the EIT mechanically binding, appears
+in \S\ref{subsec:rob-act32}. The central empirical comparison
+throughout is between the Inc-bind cell (where the statutory rate
+change moves the worker's bill) and the Inc-nobind cell (where it
+does not); Inc-nobind is the within-design placebo.
 
-\subsection{Pooled Inc/Dec Aggregate Effects}
+\subsection{Pooled Inc/Dec Benchmark}
 \label{subsec:results-pooled}
 
-Before decomposing by binding state, I report the pooled aggregate
-specification from Equation~(\ref{eq:pooled}), which collapses each
-rate-setter side to two direction tags (Inc, Dec). The pooled spec is
-the literature-comparable baseline: it reports the average per-pp
-dose-response of a muni-rate change and an SD-rate change without
-distinguishing whether the rate change moves the bill. The binding-
-state decomposition in Sections~\ref{subsec:results-block}--
-\ref{subsec:results-headline} then explains \emph{which} sub-population
-of the pooled treated cohort drives each coefficient.
+I first report the pooled Inc/Dec specification from
+Equation~(\ref{eq:pooled}), which collapses each rate-setter side to
+two direction tags. The pooled coefficients are useful because they
+approximate the estimand in a conventional local-tax design: the
+average per-pp dose-response of a muni-rate change and an SD-rate
+change without distinguishing whether the rate change moves the
+worker's bill. In Pennsylvania, however, the pooled specification is
+not the structural object of interest. It averages together rate
+changes that raise tax liability (Inc-bind) and rate changes that do
+not (Inc-nobind), and the binding-state decomposition in
+Sections~\ref{subsec:results-block}--\ref{subsec:results-headline}
+shows which sub-population of the pooled treated cohort drives each
+coefficient.
 
 Tables~\ref{tab:pooled_per_pp_block} and \ref{tab:pooled_per_pp_cousub}
 report the per-pp pooled coefficients at the block and municipality
@@ -1435,19 +1495,32 @@ each cohort-specific stack.
 \subsection{Block-Level Headline Results (Binding-State Decomposition)}
 \label{subsec:results-block}
 
-The block-level decomposition is the headline causal estimate. Both
-rate-setters' policy variation enters the regression at its native
-level (no within-jurisdiction aggregation, since each block is exposed
-to a single muni and a single SD), and the parallel-trends diagnostic
-is clean only at this level (Table~\ref{tab:es_pooled_block};
-$\beta_{\text{pre}} = -0.027$, $|t| < 1$).
+The preferred causal estimate is the block-level municipal Inc-bind
+coefficient on the log count of workers living in the block. This is
+the cleanest test of the EIT mechanism for two reasons. First, both
+rate-setting jurisdictions enter the regression at their native
+geography---each block is exposed to a single municipality and a
+single school district, so no within-jurisdiction aggregation is
+required to assign policy variation. Second, the realized-dose
+pre-trend on the binding cell is near zero
+(Table~\ref{tab:es_pooled_block}; $\beta_{\text{pre}} = -0.027$,
+$|t| < 1$). Together these features make the block-level
+decomposition the level at which the paper asks the reader to
+believe a causal claim.
+
 Table~\ref{tab:headline_block_muni_results} reports the block-level
 dose-response on the muni-rate cells, and
 Table~\ref{tab:headline_block_sd_results} reports the SD-rate cells
-from the same unified regression. The block-level outcomes are
-block-defined analogues of the municipality-level outcomes (workers
-living in the block, workers working in the block, plus the share of
-block residents who work in the block's own muni).
+from the same unified regression. The main residential-sorting
+outcome is the log count of workers living in the block; the log
+count of workers working in the block is reported alongside as a
+secondary count outcome. Block-level share outcomes---the share of
+block residents working in their own municipality, the share of
+in-block jobs filled by out-commuters---are mechanically fragile at
+block geography because both the numerator and denominator can move
+and many blocks contain small worker counts. I report them in
+Appendix~\ref{sec:app-block-shares} as supporting estimates and do
+not use them to identify the headline causal effect.
 
 \input{tables/headline_block_muni_results.tex}
 
@@ -1535,12 +1608,13 @@ full event-time coefficient detail is in the Companion Appendix.
   \end{minipage}
 \end{figure}
 
-\subsection{Municipality-Level Cross-Check and Magnitude Calibration}
+\subsection{Municipality-Level Calibration}
 \label{subsec:results-headline}
 
-The municipality-level model is reported as a coarser-aggregation
-cross-check of the block-level headline. Both rate-setter cells enter
-the same regression as in the block-level model, but with one
+The municipality-level estimates are useful for interpreting
+magnitudes at the policy-jurisdiction level, but they are not the
+preferred causal estimates. Both rate-setter cells enter the same
+unified regression as in the block-level model, with one
 within-muni aggregation step: each muni-year is assigned
 $\max(\tau^{SD})$ across the school districts the muni reports to
 (exact for the 97.6\% of munis that report to a single SD,
@@ -1553,62 +1627,48 @@ cells from the same regression.
 
 \input{tables/headline_muni_sd_side_results.tex}
 
-\paragraph{Magnitude calibration.}
-The municipality-level Inc-bind coefficient on
-the log count of residents working in their own municipality is $-0.401^{***}$, larger in absolute
-value than the block-level coefficient on the log count of workers living in the block
-($-0.208^{***}$). The municipality-level magnitude is partly
-inflated by selection (the realized-dose pre-trend fails parallel
-trends at the municipality scale, $\beta_{\text{pre}} = +0.149$, $|t|=2.66$;
-the block-level pre-trend is clean). The municipality-level estimate
-remains useful for back-of-envelope welfare calibration: the
-dependent-variable mean of the log count of residents working in their own municipality is $3.68$,
-so the typical municipality has $e^{3.68} \approx 40$ live-and-work
-workers, and a 1 pp Inc-bind hike predicts
-$40\cdot (e^{-0.401} - 1) \approx -13$ workers; actual Inc-bind hikes
-average 0.27 pp, scaling to roughly $-3.6$ workers per typical event.
-The block-level estimate is the defensible per-pp causal quantity;
-the municipality-level estimate is the typical-jurisdiction
-calibration target. Both directionally agree.
+The municipality-level Inc-bind coefficient on the log count of
+residents working in their own municipality is $-0.401^{***}$,
+larger in absolute value than the block-level coefficient on the
+log count of workers living in the block ($-0.208^{***}$). The
+municipality-level estimate is not the causal headline: the
+realized-dose pre-trend fails parallel trends at the municipality
+scale ($\beta_{\text{pre}} = +0.149$, $|t| = 2.66$), consistent
+with high-eventual-dose municipalities, often post-industrial
+cities, already on declining trajectories before their rate
+increases. The block-level pre-trend, by contrast, is clean. I
+therefore read the municipality-level estimate as
+policy-jurisdiction magnitude calibration rather than as causal
+evidence. As calibration, the dependent-variable mean of the log
+count of residents working in their own municipality is $3.68$, so
+the typical municipality has $e^{3.68} \approx 40$ live-and-work
+workers. A 1 pp Inc-bind hike implies
+$40\cdot (e^{-0.401} - 1) \approx -13$ workers at the muni-level
+coefficient and $40\cdot (e^{-0.208} - 1) \approx -7.5$ workers at
+the cleaner block-level coefficient. Actual Inc-bind hikes average
+0.27 pp. The municipality-level estimate is a coarser calibration
+of the magnitude implied by the block-level estimate, and the two
+directionally agree.
 
 % Full municipality-level Inc/Dec coefficient tables, per-outcome
 % diagnostics, and the full main-spec control-coefficient table are
 % in the Companion Appendix (\texttt{appendix.tex}, Section
 % ``Municipality-Level Full Inc/Dec Detail'').
 
-\paragraph{School-district aggregation.}
-The third estimating unit considered---the school district---is
-reported in the Companion Appendix
-(\texttt{appendix.tex}, Section ``School-District-Level Headline
-Results''). The SD-rate Inc-bind coefficient on
-the log count of residents working in their own municipality is $+0.066^{*}$ when aggregated to the
-SD level (sign-reversed relative to the muni- and block-level
-findings), and the SD-level realized-dose ES has a marginally non-zero
-pre-event lead. The SD-level results should be read as confirming the
-direction of the muni-rate effect on residents under SD aggregation
-rather than as standalone causal identification of an SD-channel
-response.
-
-
-% Full municipality-level Inc/Dec coefficient tables, per-outcome
-% diagnostics, and the full main-spec control-coefficient table are
-% in the Companion Appendix (\texttt{appendix.tex},
-% Section~``Municipality-Level Full Inc/Dec Detail''). The interested
-% reader will find there: Table A.1 (muni-rate Inc cells with
-% diagnostics), Table A.2 (Dec cells), Table A.3 (per-outcome
-% diagnostics), and Table A.4 (full main spec on log\_live\_and\_work
-% with all control coefficients).
-
-
 \subsection{Mechanism: Industry Decomposition}
 \label{subsec:het-industry}
 
-The local-services demand spillover hypothesis predicts that consumer-
-facing jobs (retail, food, arts, other services---sectors whose demand
-depends on local population) fall when the muni resident rate hikes,
-while tradeable jobs (manufacturing, wholesale, information, finance,
-professional services---sectors selling to broader markets) are insulated.
-Using LODES Workplace Area Characteristics aggregated to the municipality
+The employment and industry results are mechanism evidence rather
+than the primary identification object. Headline residential sorting
+operates on the residence side; the question here is whether the
+downstream employment response is consistent with a local-services
+demand channel rather than direct nonresident-tax incidence on jobs.
+The prediction is that consumer-facing jobs (retail, food, arts,
+other services---sectors whose demand depends on local population)
+fall when the muni resident rate hikes, while tradeable jobs
+(manufacturing, wholesale, information, finance, professional
+services---sectors selling to broader markets) are insulated. Using
+LODES Workplace Area Characteristics aggregated to the municipality
 by NAICS supersector, Table~\ref{tab:industry_cousub} reports the
 muni-resident-rate cell coefficients by industry bucket.
 
@@ -1629,12 +1689,17 @@ muni-resident-rate cell coefficients by industry bucket.
   \end{minipage}
 \end{figure}
 
-Consumer-facing jobs fall by 30 percent in the Inc-bind cell; tradeable
-jobs do not (point estimate is $+0.236$, statistically indistinguishable
-from zero). The composition shift is captured by the share of tradeable jobs,
-which rises 11 percentage points. The total-jobs decline operates
-\emph{via} local-services demand spillover, not via direct nonresident-tax
-incidence.
+Consumer-facing jobs fall by 30 percent in the Inc-bind cell;
+tradeable jobs do not (point estimate $+0.236$, statistically
+indistinguishable from zero). The composition shift is captured by
+the share of tradeable jobs, which rises 11 percentage points. The
+pattern is consistent with a local-services demand channel: resident
+loss reduces local demand and shrinks the sectors most exposed to
+that demand, while tradeable sectors selling to broader markets are
+insulated. The pre-trend on Inc-bind employment outcomes is not as
+clean as on the headline residence-side count outcome, and I do not
+claim the employment estimates are causal in the same sense; they
+are reported as suggestive mechanism evidence.
 
 The same decomposition at the SD level
 (Table~\ref{tab:industry_sd}) is qualitatively different: aggregating
@@ -1662,26 +1727,53 @@ of the cell~$\times$~dose regression on pre-2012 and post-2012
 subsamples at each estimating unit, all Act-32 results are
 consolidated in Section~\ref{subsec:rob-act32}.
 
+\subsection{School-District Aggregation Diagnostic}
+\label{subsec:results-sd}
+
+Because school district EIT rates also enter the home-side tax
+stack, I estimate the same binding-state decomposition at the
+school-district level and report the full tables in the Appendix.
+The SD aggregation does not produce robust evidence of residential
+sorting: the SD-rate Inc-bind coefficient on the log count of
+residents working in their own municipality is $+0.066^{*}$
+(sign-reversed relative to both the municipality- and block-level
+findings), other Inc-bind outcomes are direction-mixed, and the
+realized-dose pre-trend diagnostic is weaker than in the block-level
+municipal specification. I therefore treat the SD-level estimates as
+an aggregation diagnostic rather than as a second causal treatment
+channel. The substantive conclusion is negative: the sorting
+response is concentrated in municipal resident-rate increases that
+bind, not in school-district rate changes. This is what the
+binding-state mechanism predicts, since municipal rate changes have
+a direct, sharp identity at the home-side stack while SD averaging
+mixes municipal policy environments within the same school
+district.
+
 %==========================================================
 \subsection{Summary}
 \label{subsec:results-summary}
 
-The results follow a pooled--decompose--mechanism narrative.
-Section~\ref{subsec:results-pooled} establishes the aggregate per-pp
-effects of muni and SD rate changes, pooled by direction; the
-block-level pooled-Inc coefficient on resident workers and the
-cleaner block-level pre-trend identify the causal sign.
-Sections~\ref{subsec:results-block}--\ref{subsec:results-headline}
-decompose the pooled-Inc coefficient by binding state and show that
-the response is concentrated in the Inc-bind cell at both block and
-municipality levels, with the within-design Inc-nobind placebo null
-on count outcomes.
-Section~\ref{subsec:het-industry} traces the binding-cell job loss
-to consumer-facing service industries, consistent with a
-local-services demand spillover from departing residents rather than
-direct nonresident-tax incidence. Robustness and pre-trend
-diagnostics are in Section~\ref{sec:robustness}; SD-level
-decomposition is in the Companion Appendix.
+The results follow a benchmark--decomposition--mechanism narrative.
+Section~\ref{subsec:results-pooled} reports the pooled Inc/Dec
+benchmark, which approximates a conventional local-tax design but
+mixes binding and non-binding events.
+Section~\ref{subsec:results-block} reports the preferred causal
+estimate: at the block level, a 1 pp municipal resident-rate
+increase that binds reduces the log count of workers living in the
+block by $-0.208^{***}$ ($\approx 19\%$), with a clean realized-dose
+pre-trend and a null Inc-nobind within-design placebo on the same
+count outcome. Section~\ref{subsec:results-headline} reports the
+municipality-level estimates as policy-jurisdiction calibration; the
+muni Inc-bind coefficient is larger but pre-trended, so it is not
+the causal headline. Section~\ref{subsec:het-industry} documents the
+binding-cell employment composition shift---consumer-facing services
+contract while tradeables are insulated---as suggestive evidence of
+a local-services demand channel.
+Section~\ref{subsec:results-sd} reports the school-district
+aggregation as a diagnostic non-result. Robustness and pre-trend
+diagnostics are in Section~\ref{sec:robustness}; full SD tables,
+block share outcomes, and the binary Sun--Abraham IW event study
+are in the Appendix.
 
 \section{Robustness}
 \label{sec:robustness}
@@ -1907,11 +1999,11 @@ control-group restriction.
 \label{sec:discussion}
 %==========================================================
 
-The continuous stacked DiD design produces four substantive findings.
-The block-level model is the headline causal estimate; the
-municipality-level model is the cross-check and the
-typical-jurisdiction magnitude calibration; the school-district-level
-aggregation is reported in the Companion Appendix for completeness.
+The continuous stacked DiD design produces four substantive
+findings. The block-level model is the preferred causal estimate;
+the municipality-level model is the policy-jurisdiction magnitude
+calibration; the school-district-level aggregation is an
+aggregation diagnostic and is reported in the Companion Appendix.
 
 \paragraph{Sorting is identified through the binding channel.}
 The Inc-bind cell---rate hikes that move the bill---reduces
@@ -1999,48 +2091,44 @@ would tighten the estimates of in-commuters for border munis.
 \label{sec:conclusion}
 %==========================================================
 
-This paper develops a continuous stacked difference-in-differences
-design for identifying the behavioral response to local income tax
-changes. The design exploits the piecewise structure of the
-Pennsylvania EIT
-($T_{ji} = \max(\tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j,\
-\tau^{\text{nr,muni}}_i)$) by classifying each rate-setter's events
-by direction and binding-state transition. The headline causal
-estimate is at the census block level, the only level at which
-both rate-setters' policy variation enters the regression at its
-native level; municipality-level results are reported as a coarser
-cross-check and as the typical-jurisdiction magnitude calibration;
-school-district-level aggregation results are in the Companion
-Appendix.
+When do local income taxes cause residential sorting? The
+institutional answer in Pennsylvania is that they cause sorting
+when the piecewise max-rule makes the statutory rate increase
+change the worker's actual bill. At the census block, the level at
+which both rate-setting jurisdictions enter the regression at their
+native geography, a 1 percentage-point municipal resident-rate
+increase in the Inc-bind cell reduces the log count of workers
+living in the block by roughly $-0.21$ log points, approximately
+$19\%$, with a clean realized-dose pre-trend
+($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The within-design
+Inc-nobind placebo, where the same statutory increase does not move
+the bill, is statistically null on the same count outcome. The
+response is therefore tied to tax liability rather than to the
+statutory rate change itself, and the binding-state decomposition
+is what distinguishes the two.
 
-The headline finding is that a 1 pp muni resident-rate increase in
-the binding cell reduces the block-level count of workers living in the block (in logs) by
-approximately 19 percent ($-0.21$ log points, $\text{SE} = 0.054$)
-with a clean realized-dose parallel-trends test
-($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The municipality-level
-analogue is larger ($-0.40$ log points on the log count of residents working in their own municipality,
-$\approx 33\%$ per pp) but its pre-trend fails parallel trends
-($\beta_{\text{pre}} = +0.149$, $|t| = 2.66$), consistent with
-selection of declining post-industrial cities into rate hikes; the
-block-level specification absorbs that pre-trend at finer geography.
-School district rate changes do not move residents through the
-binding channel at any estimating unit, even when SD changes flip
-the binding state. Industry decomposition at the municipality level
-shows the total-jobs decline is concentrated in consumer-facing
-sectors (retail, food, arts, other services), consistent with
-local-services demand spillover from departing residents rather than
-direct nonresident-tax incidence.
+Municipality-level estimates are larger ($-0.40$ log points on the
+log count of residents working in their own municipality) but
+pre-trended, and they enter the paper as policy-jurisdiction
+magnitude calibration rather than as a second causal headline.
+School-district aggregations do not robustly detect a sorting
+response and are reported as a diagnostic non-result. Industry
+decomposition shows that consumer-facing jobs fall in the binding
+cell while tradeable jobs are insulated, suggestive of a
+local-services demand spillover from departing residents rather
+than direct nonresident-tax incidence on jobs.
 
-The design framework---a continuous stacked DiD spec estimated at the
-worker-resolution unit of observation, with two rate-setters' cells
-decomposed jointly by institutional binding state, a realized-dose
-event study as a strong-parallel-trends diagnostic, and a
-within-design placebo cell (Inc-nobind)---is portable to other
-settings where a piecewise tax rule generates predictable
-cross-sectional variation in whether a rate change moves the bill.
-Local sales taxes with use-tax-credit rules, county-level income-tax
-credits across state borders, and special tax districts with
-overlapping jurisdictions are candidate extensions.
+The narrow, credible claim is that local income taxes cause
+residential sorting when they bind. The same design framework---a
+continuous stacked DiD with binding-state cell decomposition, a
+realized-dose event study as a strong-parallel-trends diagnostic,
+and a within-design placebo cell whose theoretical prediction is
+zero---is portable to other settings where a piecewise tax rule
+generates predictable cross-sectional variation in whether a
+statutory rate change moves the worker's bill. Local sales taxes
+with use-tax-credit rules, county-level income-tax credits across
+state borders, and special tax districts with overlapping
+jurisdictions are candidate extensions.
 
 \section*{Acknowledgments}
 % TODO

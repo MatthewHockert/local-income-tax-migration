@@ -21,9 +21,9 @@
     urlcolor=blue
 }
 
-\title{Companion Appendix \\
-\large Local Income Taxes and Residential Sorting:
-Municipality- and School-District-Level Aggregations}
+\title{Companion Appendix to ``When Do Local Income Taxes Cause
+Residential Sorting? Evidence from Pennsylvania's Piecewise EIT
+System''}
 \author{Matthew Hockert\thanks{University of Minnesota.
 Email: hocke043@umn.edu}}
 \date{\today}
@@ -31,33 +31,22 @@ Email: hocke043@umn.edu}}
 \begin{document}
 \maketitle
 
-\noindent This document is the companion appendix to ``Local Income
-Taxes and Residential Sorting: Evidence from Pennsylvania LEHD
-Origin-Destination Data.'' The main paper estimates the headline
-causal effect at the \textit{census-block} level, where both the
-municipal resident rate and the school-district resident rate enter
-the regression at their native level. This appendix collects two sets
-of supplementary results referenced in the main text:
-
-\begin{itemize}
-\item \textbf{Municipality-level aggregations.} The full
-municipality-level (municipality) Inc/Dec coefficient tables, channel
-separation, within-design placebo, event-study diagnostics,
-muni-type heterogeneity, and additional robustness checks. The
-municipality-level model serves two purposes in the main paper:
-calibrating the magnitude of the block-level effect against the
-typical-municipality scale, and recovering the industry
-decomposition. Both rely on the detailed tables collected here.
-\item \textbf{School-district-level aggregations.} The
-school-district (SD) is the second rate-setting body in the PA EIT
-formula. Aggregating the analysis to the SD level produces
-direction-mixed coefficients that do not survive the realized-dose
-pre-trend diagnostic. The SD-level results are reported here for
-completeness; they should be interpreted as confirming that the
-muni-rate effect on residents holds directionally under SD
-aggregation, not as standalone identification of an SD-channel
-response.
-\end{itemize}
+\noindent This appendix collects supplementary results for the main
+paper. The main paper's preferred causal estimate is the
+block-level binding-state decomposition: a 1 percentage-point
+municipal resident-rate increase in the Inc-bind cell reduces the
+log count of workers living in the block by roughly $-0.21$ log
+points, with a clean realized-dose pre-trend and a null Inc-nobind
+within-design placebo. Municipality-level results are used for
+policy-jurisdiction magnitude calibration and for the industry
+mechanism; the municipality-level Inc-bind coefficient is larger
+but the realized-dose pre-trend fails parallel trends, so the
+municipality-level estimate is not the causal headline.
+School-district-level results are reported as aggregation
+diagnostics and are not load-bearing for the main causal claim;
+they do not robustly detect a sorting response. Block-level share
+outcomes are reported as supporting estimates and are fragile at
+block geography.
 
 \noindent Section, table, and figure numbering in this appendix is
 self-contained.
@@ -342,6 +331,26 @@ insignificant effects.
 
 
 %==========================================================
+\section{Block-Level Share Outcomes (Supporting)}
+\label{sec:app-block-shares}
+%==========================================================
+
+The main paper reports block-level count outcomes
+(\texttt{log\_home\_count}, \texttt{log\_work\_count}) as the
+primary residential-sorting evidence. Block-level share outcomes
+are reported here for completeness. Block geography has small and
+sometimes sparse denominators, and both the numerator and
+denominator can move with the same residential decision, which
+makes share estimates mechanically fragile at this scale. I do not
+use the share-outcome coefficients to identify the headline causal
+effect; the count coefficients in the main text are the preferred
+estimands.
+
+\input{tables/headline_block_muni_shares.tex}
+
+\input{tables/headline_block_sd_shares.tex}
+
+%==========================================================
 \section{School-District-Level Results}
 \label{sec:app-sd-results}
 %==========================================================
@@ -371,15 +380,15 @@ labels reproduce essentially unchanged under the corrected definition).
   \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_live_and_work.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} per-pp realized-dose coefficient at
-    each event-time, SD-level stacked-continuous DiD. The
+    each event-time, SD-level stacked-continuous DiD. The SD-level
+    results are reported for completeness. They show that sorting is
+    not robustly detected at the school-district aggregation: the
     SD-resident-rate Inc-bind coefficient is positive in this
-    aggregation, qualitatively different from the muni-level and
-    block-level findings. The pre-event lead is marginally non-zero
-    on \texttt{log(live\_and\_work)} ($\beta_{\text{pre}} = +0.061$,
-    $|t| = 1.74$), and the SD-level results should be read as
-    confirming the directional sign of the muni-rate effect on
-    residents rather than as standalone causal identification of an
-    SD-channel response.
+    aggregation, sign-reversed relative to the muni- and block-level
+    findings, and the pre-event lead is marginally non-zero on
+    \texttt{log(live\_and\_work)} ($\beta_{\text{pre}} = +0.061$,
+    $|t| = 1.74$). These estimates should not be interpreted as
+    standalone evidence of an SD-channel residential response.
   \end{minipage}
 \end{figure}
 
