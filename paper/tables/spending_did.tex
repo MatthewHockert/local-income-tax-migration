@@ -1,0 +1,31 @@
+\begin{table}[H]
+  \centering
+  \caption{Does an Inc-bind rate hike shift the muni's spending mix? DiD on share$^X$.}
+  \label{tab:spending_did}
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    Outcome (LHS) & Inc-bind $\beta$ & SE & $N$ \\
+    \midrule
+    Police (exp.) & -0.0143 & (0.0127) & 242,730 \\
+    Streets & roads (exp.) & -0.0357 & (0.0298) & 242,730 \\
+    Debt service (exp.) & 0.0209 & (0.0251) & 242,730 \\
+    EIT (rev. share) & 0.1423$^{***}$ & (0.0275) & 242,730 \\
+    Real estate (rev. share) & -0.0709$^{**}$ & (0.0346) & 242,730 \\
+    Intergovernmental (rev. share) & -0.0610 & (0.0490) & 242,730 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Each row is a separate
+    continuous-stacked DiD with share$^X$ as the outcome.
+    Same FE structure as the headline regression
+    (\texttt{stack\_muni + stack\_year}), clustered at
+    the muni level, control set is the other five share
+    variables. $\beta$ is the Inc-bind dose-response: per
+    pp of resident-rate hike at an Inc-bind muni, how much
+    the outcome share shifts relative to the NC control
+    pool over the same calendar years.
+    $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
+\end{table}
