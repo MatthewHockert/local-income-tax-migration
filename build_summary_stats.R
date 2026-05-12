@@ -262,11 +262,15 @@ g_hist <- ggplot(long, aes(x = rate, fill = rate_type)) +
                      labels = c(expression("Resident rate "*tau^M),
                                 expression("Nonresident rate "*tau^{nr*","*M}),
                                 expression("Home stack "*tau^M+tau^{SD}))) +
-  labs(x = "Rate (percentage points)", y = "Muni-year observations") +
+  scale_y_sqrt(breaks = c(100, 1000, 5000, 15000, 30000, 50000),
+                labels = scales::label_comma()) +
+  scale_x_continuous(breaks = seq(0, 4.5, by = 0.5)) +
+  labs(x = "Rate (percentage points)",
+       y = "Muni-year observations (square-root scale)") +
   theme_paper() +
   theme(legend.position = "bottom")
 ggsave(file.path(fig_dir, "rate_double_histogram.png"), g_hist,
-       width = 8, height = 5, dpi = 200)
+       width = 9, height = 5, dpi = 200)
 cat("Saved rate_double_histogram.png\n")
 
 # ---------------------------------------------------------------------------
