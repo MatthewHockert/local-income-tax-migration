@@ -410,35 +410,31 @@ label_centroids$x <- lc_coords[, 1]
 label_centroids$y <- lc_coords[, 2]
 label_centroids$muni_lbl <- tools::toTitleCase(tolower(label_centroids$municipality))
 
+# Dissolve cousub geometries into a single state outline for the thicker border
+pa_outline <- st_union(map_dt)
+
 g_map <- ggplot() +
   geom_sf(data = map_dt[map_dt$change_type == "No change", ],
-          fill = "grey92", color = "grey80", linewidth = 0.03) +
+          fill = "grey96", color = "black", linewidth = 0.08) +
   geom_sf(data = map_dt[map_dt$change_type == "Increased", ],
-          fill = PAPER_RED, color = "grey50", linewidth = 0.06, alpha = 0.75) +
+          fill = PAPER_RED, color = "black", linewidth = 0.08, alpha = 0.85) +
   geom_sf(data = map_dt[map_dt$change_type == "Decreased", ],
-          fill = PAPER_BLUE, color = "grey50", linewidth = 0.06, alpha = 0.75) +
+          fill = PAPER_BLUE, color = "black", linewidth = 0.08, alpha = 0.85) +
   geom_sf(data = map_dt[map_dt$change_type == "Both", ],
-          fill = "#7B2CBF", color = "grey50", linewidth = 0.06, alpha = 0.75) +
-  geom_point(data = label_centroids,
-             aes(x = x, y = y), color = "black", size = 0.6) +
-  geom_text_repel(data = label_centroids,
-             aes(x = x, y = y, label = muni_lbl),
-             size = 2.8, color = "black",
-             box.padding = 0.35, point.padding = 0.15,
-             segment.size = 0.25, segment.color = "grey40",
-             min.segment.length = 0,
-             max.overlaps = 30, force = 3) +
+          fill = "#7B2CBF", color = "black", linewidth = 0.08, alpha = 0.85) +
+  geom_sf(data = pa_outline, fill = NA, color = "black", linewidth = 0.5) +
   coord_sf() +
   labs(title = NULL,
-       caption = "Red: muni raised resident rate. Blue: lowered. Purple: both directions. Grey: no change. 30 highest-jobs rate-changers labeled.") +
+       caption = "Red: muni raised resident rate. Blue: lowered. Purple: both directions. Grey: no change.") +
   theme_paper() +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         panel.grid = element_blank(),
+        panel.border = element_blank(),
         plot.caption = element_text(size = 8, hjust = 0))
 ggsave(file.path(fig_dir, "pa_map.png"), g_map,
-       width = 11, height = 7, dpi = 200)
+       width = 11, height = 7, dpi = 220)
 cat("Saved pa_map.png\n")
 
 cat("\nDone. Tables in paper/tables/, figures in figures/.\n")
