@@ -155,7 +155,7 @@
       \verb{doi}
       \verb 10.1257/pol.20120360
       \endverb
-      \keyw{border,gradient,sales tax,spatial competition,tier4,US}
+      \keyw{border,gradient,sales tax,spatial competition,tier4,to read,US}
     \endentry
     \entry{agrawalLessonsStateLocal}{article}{}
       \name{author}{1}{}{%
@@ -192,7 +192,7 @@
       \verb{file}
       \verb /Users/matthewhockert/Zotero/storage/QWQURVCS/Agrawal - 2026 - Lessons on State and Local Income Taxes from the Twenty-first Century and Challenges for the Future.pdf
       \endverb
-      \keyw{tier1}
+      \keyw{tier1,to read}
     \endentry
     \entry{agrawalRelocationRichMigration2019}{article}{}
       \name{author}{2}{}{%
@@ -298,7 +298,7 @@
       \verb{doi}
       \verb 10.1257/jel.20201490
       \endverb
-      \keyw{tier2}
+      \keyw{tier2,to read}
     \endentry
     \entry{bagchiEffectsIntroducingWithholding2022}{article}{}
       \name{author}{1}{}{%
@@ -483,7 +483,7 @@
       \verb{file}
       \verb /Users/matthewhockert/Zotero/storage/LPBT4FXQ/Coomes and Hoyt - 2008 - Income taxes and the destination of movers to multistate MSAs.pdf
       \endverb
-      \keyw{border MSA,IRS migration,Ohio-Kentucky,state income tax,tier1,US}
+      \keyw{border MSA,IRS migration,Ohio-Kentucky,state income tax,tier1,to read,US}
     \endentry
     \entry{dechaisemartin2024}{article}{}
       \name{author}{3}{}{%
@@ -791,7 +791,7 @@
       \verb{file}
       \verb /Users/matthewhockert/Zotero/storage/3C28S54Z/Kleven et al. - 2020 - Taxation and migration Evidence and policy implications.pdf
       \endverb
-      \keyw{survey,tax migration,tier2,within-country gap}
+      \keyw{survey,tax migration,tier2,to read,within-country gap}
     \endentry
     \entry{morettiEffectStateTaxes2017}{article}{}
       \name{author}{2}{}{%
@@ -840,7 +840,7 @@
       \verb{doi}
       \verb 10.1257/aer.20150508
       \endverb
-      \keyw{tier2}
+      \keyw{tier2,to read}
     \endentry
     \entry{padcedMunStats}{misc}{}
       \name{author}{1}{}{%
@@ -892,6 +892,45 @@
       \field{title}{Statewide {{Municipal Annual Financial Report}} ({{AFR}}) {{Database}}}
       \field{year}{2024}
     \endentry
+    \entry{rambachanMoreCredibleApproach2023}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=85edb53244c29c17ce57830271014b46}{%
+           family={Rambachan},
+           familyi={R\bibinitperiod},
+           given={Ashesh},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=73c1da3266b3c7728f6b1f38a73c7671}{%
+           family={Roth},
+           familyi={R\bibinitperiod},
+           given={Jonathan},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c7db070288680264f6dfa86410e8586f}
+      \strng{fullhash}{c7db070288680264f6dfa86410e8586f}
+      \strng{bibnamehash}{c7db070288680264f6dfa86410e8586f}
+      \strng{authorbibnamehash}{c7db070288680264f6dfa86410e8586f}
+      \strng{authornamehash}{c7db070288680264f6dfa86410e8586f}
+      \strng{authorfullhash}{c7db070288680264f6dfa86410e8586f}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Review of Economic Studies}
+      \field{number}{5}
+      \field{title}{A More Credible Approach to Parallel Trends}
+      \field{volume}{90}
+      \field{year}{2023}
+      \field{pages}{2555\bibrangedash 2591}
+      \range{pages}{37}
+      \verb{doi}
+      \verb 10.1093/restud/rdad018
+      \endverb
+    \endentry
     \entry{rohlinTaxAvoidanceBusiness2014}{article}{}
       \name{author}{3}{}{%
         {{un=0,uniquepart=base,hash=e7a569505d5bc0c8f1b9bff24370e4c1}{%
@@ -941,6 +980,40 @@
       \range{pages}{16}
       \verb{doi}
       \verb 10.1016/j.jue.2014.06.003
+      \endverb
+      \keyw{to read}
+    \endentry
+    \entry{rothPretestProblemsCausal2022}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=73c1da3266b3c7728f6b1f38a73c7671}{%
+           family={Roth},
+           familyi={R\bibinitperiod},
+           given={Jonathan},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{73c1da3266b3c7728f6b1f38a73c7671}
+      \strng{fullhash}{73c1da3266b3c7728f6b1f38a73c7671}
+      \strng{bibnamehash}{73c1da3266b3c7728f6b1f38a73c7671}
+      \strng{authorbibnamehash}{73c1da3266b3c7728f6b1f38a73c7671}
+      \strng{authornamehash}{73c1da3266b3c7728f6b1f38a73c7671}
+      \strng{authorfullhash}{73c1da3266b3c7728f6b1f38a73c7671}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{American Economic Review: Insights}
+      \field{number}{3}
+      \field{title}{Pretest with Caution: Event-Study Estimates after Testing for Parallel Trends}
+      \field{volume}{4}
+      \field{year}{2022}
+      \field{pages}{305\bibrangedash 322}
+      \range{pages}{18}
+      \verb{doi}
+      \verb 10.1257/aeri.20210236
       \endverb
     \endentry
     \entry{saezUsingElasticitiesDerive2001}{article}{}
@@ -1059,7 +1132,7 @@
       \verb{doi}
       \verb 10.1086/257839
       \endverb
-      \keyw{local public goods,theory,tier4,voting with feet}
+      \keyw{local public goods,theory,tier1,to read,voting with feet}
     \endentry
     \entry{tigerline2020}{misc}{}
       \name{author}{1}{}{%
@@ -1206,7 +1279,7 @@
       \verb{doi}
       \verb 10.17310/ntj.2017.2.05
       \endverb
-      \keyw{tier1}
+      \keyw{tier1,to read}
     \endentry
     \entry{young2016}{article}{}
       \name{author}{4}{}{%
@@ -1261,7 +1334,7 @@
       \verb{file}
       \verb /Users/matthewhockert/Zotero/storage/KG8YV8ER/Young et al. - 2016 - Millionaire migration and taxation of the elite Evidence from administrative data.pdf
       \endverb
-      \keyw{administrative data,millionaire,state tax,tier3,US}
+      \keyw{administrative data,millionaire,state tax,tier3,to read,US}
     \endentry
   \enddatalist
 \endrefsection

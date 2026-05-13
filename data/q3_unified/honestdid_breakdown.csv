@@ -1,0 +1,13 @@
+unit,outcome,beta_post,n_label,breakdown_Mbar,m0_lo,m0_hi
+block,home_in_muni_share,-0.043,"N = 21,321,437",-1,-0.107,0.022
+block,log_home_count,-0.305,"N = 21,321,437",0,-0.49,-0.118
+block,log_work_count,-0.079,"N = 7,941,631",-1,-0.288,0.132
+block,share_work_outside,0.043,"N = 21,321,437",-1,-0.022,0.107
+cousub,log_in_commuters,-0.229,"N = 216,180",-1,-0.507,0.049
+cousub,log_live_and_work,-0.414,"N = 198,002",0,-0.725,-0.106
+cousub,log_total_residents,-0.1,"N = 219,397",-1,-0.219,0.019
+cousub,share_live_in,-0.045,"N = 216,190",0,-0.08,-0.009
+sd,log_in_commuters,0.066,"N = 51,162",-1,-0.012,0.144
+sd,log_live_and_work,0.039,"N = 51,128",-1,-0.032,0.11
+sd,log_total_residents,0.099,"N = 51,162",0,0.029,0.169
+sd,share_live_in,-0.001,"N = 51,162",-1,-0.009,0.007
