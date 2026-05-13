@@ -9,7 +9,8 @@
 \usepackage{caption}
 \usepackage{float}
 \usepackage{hyperref}
-\usepackage{natbib}
+\usepackage[style=apa,backend=biber,natbib=true]{biblatex}
+\addbibresource{../references/local_income_taxes.bib}
 \usepackage{bm}
 
 \newcommand{\sym}[1]{\textsuperscript{#1}}
@@ -158,7 +159,7 @@ rate is incident on the worker.
 \paragraph{Dec cells: thin and noisy.}
 Dec-cell coefficients (Table~\ref{tab:headline-dec}) are reported for
 completeness but are not robust to specification. Dec-bind has 11 munis;
-Dec-becomes-non has 4; Dec-nobind has 15. We do not draw asymmetric-response
+Dec-becomes-non has 4; Dec-nobind has 15. I do not draw asymmetric-response
 conclusions from these cells.
 
 \begin{table}[H]
@@ -182,7 +183,7 @@ conclusions from these cells.
     \vspace{0.3em}
     \begin{minipage}{0.92\textwidth}
         \footnotesize \textit{Notes:} Same regression as Table~\ref{tab:headline}.
-        Dec cells are thin and noisy; we do not draw causal conclusions from
+        Dec cells are thin and noisy; I do not draw causal conclusions from
         these coefficients individually.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
@@ -554,7 +555,6 @@ level.
 
 % [content moved from main.tex \subsection{Sample Variant Robustness}]
 
-\bibliographystyle{apalike}
-\bibliography{../references/local_income_taxes}
+\printbibliography
 
 \end{document}
