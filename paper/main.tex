@@ -2598,4 +2598,111 @@ Reported here for completeness; the thin-cohort caveat applies.
   \includegraphics[width=0.95\textwidth]{../figures/sa_binary_block_share_work_outside.png}
 \end{figure}
 
+\subsection{HonestDiD Sensitivity Plots}
+\label{app:es-honestdid}
+
+Each plot reports the 95\% confidence interval for the average
+post-event Inc-bind effect from
+Section~\ref{subsec:rob-honestdid} under the
+\citet{rambachanMoreCredibleApproach2023} relative-magnitudes
+restriction $\Delta^{RM}(\bar{M})$. The leftmost ``Original'' bar is
+the unrestricted CI; subsequent bars impose $\bar{M} \in
+\{0, 0.5, 1, 1.5, 2\}$. The breakdown $\bar{M}^{*}$
+(Table~\ref{tab:honestdid_breakdown}) is the largest $\bar{M}$ at
+which the corresponding bar still excludes zero.
+
+\paragraph{Block level.}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, block-level log home count
+           (the paper headline).}
+  \label{fig:app_honestdid_block_home}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_block_log_home_count.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, block-level log work count.}
+  \label{fig:app_honestdid_block_work}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_block_log_work_count.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, block-level share of residents
+           working in their own muni.}
+  \label{fig:app_honestdid_block_sharein}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_block_home_in_muni_share.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, block-level share of residents
+           working outside the muni.}
+  \label{fig:app_honestdid_block_shareout}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_block_share_work_outside.png}
+\end{figure}
+
+\paragraph{Municipality level.}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, muni-level log live-and-work
+           (the calibration estimate).}
+  \label{fig:app_honestdid_cousub_lw}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_cousub_log_live_and_work.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, muni-level log in-commuters.}
+  \label{fig:app_honestdid_cousub_in}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_cousub_log_in_commuters.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, muni-level log total residents.}
+  \label{fig:app_honestdid_cousub_res}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_cousub_log_total_residents.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, muni-level share live-in.}
+  \label{fig:app_honestdid_cousub_share}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_cousub_share_live_in.png}
+\end{figure}
+
+\paragraph{School-district level.}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, SD-level log live-and-work.}
+  \label{fig:app_honestdid_sd_lw}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_sd_log_live_and_work.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, SD-level log in-commuters.}
+  \label{fig:app_honestdid_sd_in}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_sd_log_in_commuters.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, SD-level log total residents.}
+  \label{fig:app_honestdid_sd_res}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_sd_log_total_residents.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{HonestDiD sensitivity, SD-level share live-in.}
+  \label{fig:app_honestdid_sd_share}
+  \includegraphics[width=0.85\textwidth]{../figures/honestdid_sd_share_live_in.png}
+\end{figure}
+
 \end{document}
