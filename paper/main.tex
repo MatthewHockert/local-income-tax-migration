@@ -1818,262 +1818,67 @@ are in the Appendix.
 \label{sec:robustness}
 %==========================================================
 
-This section subjects the headline dose-response to four checks: the
-strict/filled/drop-incomplete sample variants for the binding-state
-classification, an enforcement-break heterogeneity test exploiting
-Act 32 of 2008, a dose-magnitude linearity test using terciles of
-post-event dose, and an alternative control pool that relaxes the
-never-changed restriction to a clean-in-window definition. The
-realized-dose event-study pre-trend diagnostic
+This section summarizes the battery of robustness checks behind the
+headline dose-response; full tables, figures, and detailed prose are
+collected in Appendix~\ref{app:robustness}. The realized-dose
+event-study pre-trend diagnostic
 (Table~\ref{tab:es_pooled_block}) was discussed alongside the
 headline in Section~\ref{subsec:results-block}.
 
 \subsection{Sample Variant Robustness}
 \label{subsec:rob-sample}
 
-The DCED nonresident-rate panel has reporting gaps that affect the
-binding-state classification. I run three sample variants: strict
-(drop NA \texttt{muni\_nonres\_eit}), filled (impute
-\texttt{nonres = resident\_eit} when missing, statute-anchored), and
-drop-incomplete (keep all years; drop NA at regression time per
-outcome). The headline Inc-bind coefficient on log residents working in own muni is
-$-0.401^{***}$ in all three samples; the cell is robust to NA-handling
-because Inc-bind classification requires both pre and post home\_stack
-to exceed work\_nonres, which excludes munis where the binding state
-cannot be determined.
+Three sample variants for the DCED nonresident-rate panel
+(strict/filled/drop-incomplete) leave the headline Inc-bind
+coefficient on log residents working in own muni essentially
+unchanged at $-0.401^{***}$
+(\hyperref[app:rob-sample]{see Appendix~\ref{app:rob-sample}}).
 
 \subsection{Pre/Post Act 32 Decomposition}
 \label{subsec:rob-act32}
 
-The unified design averages cell-level dose response across pre- and
-post-Act-32 years. Act 32 of 2008 (effective January 1, 2012) consolidated
-PA EIT collection and mandated employer withholding at the higher of the
-home stack or the work nonresident rate. Before Act 32, the bill rule
-existed in statute but withholding was fragmented and many munis did
-not even publish a nonresident rate. The binding-rule mechanism in my
-design only operates when the rate change actually moves a worker's bill,
-which requires the rule to be enforced.
-
-I test this by re-running the headline cell $\times$ dose specification
-on subsamples defined by the cohort's first event year: pre-Act-32
-cohorts ($c < 2012$) and post-Act-32 cohorts ($c \geq 2012$). The split
-is run at all three estimating units. Tables below report the muni-rate
-Inc-cell coefficients pre and post.
-
-\input{tables/act32_cousub.tex}
-
-\input{tables/act32_sd.tex}
-
-\input{tables/act32_block.tex}
-
-All three estimating units use the stacked-continuous DiD with
-binding-state cells, re-estimated separately on the pre-2012 and
-post-2012 cohort subsamples. The municipality and SD splits use
-muni-by-stack and SD-by-stack fixed effects respectively, matching
-their pooled headlines; the block split uses block-by-stack and
-year-by-stack fixed effects, matching the block headline.
-
-
-The binding-cell effect strengthens after enforcement consolidation.
-At the municipality level, the Inc-bind coefficient on
-the log count of residents working in their own municipality is $-0.339^{**}$ in the pre-2012
-sub-sample and $-0.534^{***}$ in the post-2012 sub-sample---roughly
-a 50\% larger response after Act 32 makes the EIT binding through
-consolidated employer withholding. The same pattern holds on
-the log count of in-commuters ($-0.156$ pre vs $-0.334^{***}$ post),
-\texttt{log(employed residents)} ($-0.098^{**}$ vs $-0.104^{***}$),
-and the share of workers living in their own muni ($-0.047^{***}$ vs $-0.040^{***}$). The
-pre-Act-32 Inc-bind effects are non-zero and statistically detectable
-on most outcomes, so the binding-rule mechanism was not entirely
-inert before 2012; the enforcement break amplifies the response
-rather than activating it from a null baseline. The pooled headline
-($-0.401^{***}$ on the log count of residents working in their own municipality; Section
-\ref{subsec:results-headline}) sits between the pre and post
-estimates, as expected.
-
-The within-design placebo (Inc-nobind) is null on the headline outcomes in both periods (the log count of residents working in their own municipality
-$-0.051$ pre, $-0.094$ post; the share of workers living in their own muni $-0.013$ pre,
-$-0.010$ post). The institutional rule's predicted-null cell is
-satisfied regardless of the enforcement regime, which is consistent
-with the binding-rule interpretation: cells where the bill never
-moves should not respond in either period.
-
-At the block level, by contrast, the muni-cohort Inc-bind coefficient on
-the log count of workers living in the block is roughly constant pre and post: the two-period magnitudes are comparable, so the
-block-level effect predates the post-2012 enforcement break,
-contradicting a story in which all of the binding-channel response
-is driven by withholding consolidation). One reading: at fine
-geography, even pre-2012 statutory rate changes were salient
-enough through other channels (taxpayer reporting, local awareness)
-to induce sorting. The Act-32 amplification at the municipality
-scale may reflect aggregation rather than a discontinuous mechanism
-change.
-
-This pre/post pattern at the municipality level connects directly to \citet{bagchiEffectsIntroducingWithholding2022}, which documents that Act 32
-increased PA EIT compliance via consolidated employer withholding.
-My pre/post decomposition shows that the binding-cell residential
-response also strengthens after 2012 at the municipality scale; the
-two findings are complementary---compliance enforcement and behavioral
-response both grow under Act 32.
+Splitting the headline cell-$\times$-dose specification at the Act-32
+enforcement break (cohort first event year $<2012$ vs $\geq 2012$)
+shows the municipality-level binding-cell effect strengthens after
+consolidated employer withholding takes effect ($-0.339^{**}$ pre vs
+$-0.534^{***}$ post on log residents working in own muni); the
+block-level effect is roughly constant pre and post, so the
+finer-geography sorting response predates the Act-32 enforcement
+break (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
 
 \subsection{Dose-Magnitude Linearity}
 \label{subsec:rob-dose-tercile}
 
-The stacked-continuous specification imposes linearity in dose:
-$\beta^s_k \cdot \Delta\tau^s_{it}$. Whether the per-pp coefficient is
-constant across small and large rate changes is an assumption rather
-than an output of the design. I test it by splitting Inc-bind units
-into terciles of total post-event dose at each estimating unit and
-re-estimating the headline regression for each tercile separately,
-with NC controls as in the headline.
-
-\input{tables/tercile_cousub.tex}
-
-\input{tables/tercile_sd.tex}
-
-\input{tables/tercile_block.tex}
-
-\begin{table}[H]
-    \centering
-    \caption{Dose-tercile robustness on Inc-bind, log(live\_and\_work)}
-    \label{tab:rob-tercile}
-    \small
-    \begin{tabular}{lccc}
-        \toprule
-        Dose tercile & $n$ munis & Coefficient & SE \\
-        \midrule
-        Small  & 23 & $-0.440^{*}$  & 0.259 \\
-        Medium &  4 & $-0.113$       & 0.748 \\
-        Large  & 13 & $-0.417^{***}$ & 0.091 \\
-        \midrule
-        Pooled (headline) & 40 & $-0.401^{***}$ & 0.096 \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Inc-bind munis split by total
-        cumulative $\Delta\tau^{\text{muni}}$ at year +5 post-event
-        (or maximum observed). Small / medium / large terciles have
-        dose ranges $[0.10, 0.20]$ / tied at $0.20$ / $[0.30, 1.00]$
-        respectively; the medium tercile is thin ($n=4$) due to mass
-        ties at the 33rd percentile. Cluster-robust SEs by muni.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
-
-The small and large dose terciles produce essentially identical per-pp
-coefficients ($-0.440$ vs $-0.417$). The medium tercile is too thin
-to identify but is direction-consistent. The linearity assumption is
-supported: the per-pp dose-response does not vary meaningfully across
-small and large rate hikes within the binding cell.
+Splitting Inc-bind units into terciles of total post-event dose and
+re-estimating the headline per tercile delivers essentially identical
+per-pp coefficients in the small and large terciles ($-0.440$ vs
+$-0.417$); the linearity assumption embedded in
+$\beta^s_k\,\Delta\tau^s_{it}$ is supported
+(\hyperref[app:rob-dose-tercile]{see Appendix~\ref{app:rob-dose-tercile}}).
 
 \subsection{Alternative Control Group: Clean-in-Window}
 \label{subsec:rob-controls}
 
-My headline uses NC munis (no rate change anywhere in 2002--2019) as
-controls. \citet{cengizEffectMinimumWages2019a} use a slightly relaxed definition:
-``clean controls'' are units with no events in the window
-$[c - K, c + K]$ around each focal event, allowing units with events
-\emph{outside} this window to serve as controls in cohorts whose
-window does not contain their event. The clean-in-window pool is a
-strict superset of NC.
-
-Table~\ref{tab:rob-controls} compares the headline coefficients on
-Inc-bind, Inc-becomes, and Inc-nobind cells across the two control
-definitions on six outcomes. The clean-in-window check is run at all
-three estimating units.
-
-\input{tables/altctrl_cousub.tex}
-
-\input{tables/altctrl_sd.tex}
-
-\input{tables/altctrl_block.tex}
-
-\begin{table}[H]
-    \centering
-    \caption{Alternative controls: NC vs clean-in-window}
-    \label{tab:rob-controls}
-    \small
-    \begin{tabular}{llcc}
-        \toprule
-        Outcome & Cell & NC-only (headline) & Clean-in-window \\
-        \midrule
-        log(live\_and\_work)    & Inc-bind     & $-0.401$ (0.096) & $-0.400$ (0.096) \\
-                                & Inc-becomes  & $-0.181$ (0.072) & $-0.181$ (0.071) \\
-                                & Inc-nobind   & $-0.062$ (0.169) & $-0.059$ (0.167) \\
-        log(in\_commuters)      & Inc-bind     & $-0.213$ (0.083) & $-0.206$ (0.082) \\
-        log(total\_residents)   & Inc-bind     & $-0.100$ (0.033) & $-0.100$ (0.033) \\
-        share\_live\_in         & Inc-bind     & $-0.045$ (0.010) & $-0.045$ (0.009) \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} NC-only restricts controls to
-        munis with no rate change anywhere in 2002--2019.
-        Clean-in-window extends the control pool to munis whose first
-        event falls outside the focal cohort's $[c - K, c + K]$ window.
-        Clean-in-window adds 692 munis to the control pool relative to
-        NC-only (1,945 vs 1,945 + 692 = 2,637 control-eligible munis).
-        Cluster-robust SEs by muni in parentheses.
-    \end{minipage}
-\end{table}
-
-Coefficients are essentially identical across the two control
-definitions. The result is robust to the strictness of the
-control-group restriction.
+Relaxing the NC-only control restriction to the
+\citet{cengizEffectMinimumWages2019a} clean-in-window definition (units
+with no events in the focal cohort's $[c-K, c+K]$ window) leaves all
+headline coefficients essentially unchanged on Inc-bind, Inc-becomes,
+and Inc-nobind cells across six outcomes
+(\hyperref[app:rob-controls]{see Appendix~\ref{app:rob-controls}}).
 
 \subsection{Rambachan--Roth Sensitivity to Pre-Trend Violations}
 \label{subsec:rob-honestdid}
 
-The realized-dose ES pre-trend tests above rely on null-hypothesis
-testing of pre-event coefficients. \citet{rambachanMoreCredibleApproach2023}
-argue that this is the wrong diagnostic for parallel-trends because
-the test has low power and conflates ``not statistically distinguishable
-from zero'' with ``small enough not to matter.''
-\citet{rothPretestProblemsCausal2022} shows the related point that
-pre-test conditioning can paradoxically worsen inference. The
-recommended alternative is sensitivity analysis: bound the bias from
-non-zero pre-trends and report the threshold at which the post-event
-estimate ceases to be significant.
-
-I implement the Rambachan--Roth relative-magnitudes restriction
-$\Delta^{RM}(\bar{M})$ using the \texttt{HonestDiD} package. The
-restriction caps the worst pre-to-post slope deviation at $\bar{M}$
-times the largest observed pre-period violation. $\bar{M} = 0$
-corresponds to strict parallel trends; $\bar{M} = 1$ permits a
-post-event violation as bad as the worst pre-event one; $\bar{M} = 2$
-permits twice that. The reported quantity is the ``breakdown''
-$\bar{M}^{*}$: the largest $\bar{M}$ at which the 95\% CI for the
-average post-event Inc-bind effect still excludes zero. A breakdown
-$\bar{M}^{*} \geq 1$ means the headline survives even if post-event
-parallel-trends violations are as severe as the worst observed
-pre-event one. The diagnostic is run on the same Inc-bind
-realized-dose ES specification estimated at each unit
-(\texttt{q3\_unified\_honestdid.R}).
-
-\input{tables/honestdid_breakdown.tex}
-
-Three findings emerge. First, the block-level log home count
-headline survives strict parallel trends with the CI well bounded
-away from zero: at $\bar{M} = 0$ the 95\% interval is $[-0.49, -0.12]$.
-The same is true for the cousub-level log live-and-work coefficient
-($[-0.73, -0.11]$ at $\bar{M}=0$) and the cousub-level share-live-in
-coefficient. Second, all three of these headline-style results lose
-significance between $\bar{M} = 0$ and $\bar{M} = 0.5$; the
-breakdown $\bar{M}^{*}$ for each is approximately $0$. The
-interpretation is that the headline is robust to strict parallel
-trends but sensitive to a post-event parallel-trends violation
-roughly half as large as the worst observed pre-event one. Third,
-none of the SD-level Inc-bind coefficients on residence-side
-outcomes is robust to even strict parallel trends---the
-$\bar{M} = 0$ CIs are wide and mostly include zero (with the
-exception of $\log(\text{total residents})$, which carries a
-positive sign that contradicts the muni-level pattern). The
-sensitivity analysis confirms the paper's reading: the block-level
-binding-cell residential response is the only specification that
-delivers a tight CI under strict parallel trends, but the reader
-should be aware that the headline is not robust to large pre-trend
-violations.
+I implement the \citet{rambachanMoreCredibleApproach2023}
+relative-magnitudes sensitivity $\Delta^{RM}(\bar{M})$ on the
+Inc-bind realized-dose ES at each estimating unit. The block-level
+log home count headline survives strict parallel trends with
+$[-0.49, -0.12]$ at $\bar{M}=0$, as do the cousub-level
+log live-and-work and share-live-in coefficients; all three lose
+significance between $\bar{M}=0$ and $\bar{M}=0.5$, while none of
+the SD-level Inc-bind residence-side coefficients survives even
+$\bar{M}=0$ (\hyperref[app:rob-honestdid]{see
+Appendix~\ref{app:rob-honestdid}}).
 
 %==========================================================
 \section{Discussion}
@@ -2258,158 +2063,81 @@ jurisdictions are candidate extensions.
 %==========================================================
 \appendix
 
-\section{Pre-Treatment Balance}
-\label{app:balance}
+%==========================================================
+\section{Pooled Inc/Dec Benchmark}
+\label{app:pooled}
+%==========================================================
 
-% --- Balance Table ---
-\begin{table}[H]
-    \centering
-    \caption{Pre-Treatment Balance: Treated vs.\ Never-Treated PA Municipalities}
-    \label{tab:balance}
-    \small
-    \begin{tabular}{lrrrr}
-        \toprule
-        Variable & Treated Mean & Control Mean & Norm.\ Diff.\ & N (T / C) \\
-        \midrule
-        Population              & 14{,}174   & 3{,}711    & 0.139 & 1{,}265 / 39{,}688 \\
-        Total Revenue (\$)     & 25.7M      & 2.9M       & 0.077 & 1{,}267 / 39{,}692 \\
-        EIT Revenue (\$)       & 4.4M       & 438K       & 0.062 &                     \\
-        RE Tax Revenue (\$)    & 2.9M       & 538K       & 0.129 &                     \\
-        Police Expenditure (\$)& 3.1M       & 424K       & 0.110 &                     \\
-        Streets Expenditure (\$)& 1.5M      & 496K       & 0.121 &                     \\
-        Total Debt (\$)        & 28.6M      & 3.6M       & 0.089 &                     \\
-        Market Value RE (\$)   & 8.2M       & 2.1M       & 0.211 & 523 / 8{,}774       \\
-        Total Index Crime       & 985        & 133        & 0.124 & 816 / 18{,}322      \\
-        Building Permits        & 19.3       & 7.7        & 0.232 & 644 / 25{,}066      \\
-        EIT Rate (\%)          & 0.50       & 0.50       & 0.055 &                     \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Treated = municipalities that raised EIT during the
-        sample period (pre-treatment years only). Control = municipalities that never raised
-        EIT. Normalized differences $<0.15$ for all fiscal variables except market
-        value of real estate (0.211, limited pre-2012 coverage) and building permits
-        (0.232, treated municipalities are larger and issue more permits in levels).
-        Sources: PA DCED Annual Financial Reports, FBI UCR Offenses Known
-        (93.5\% agency match rate), Census Building Permits Survey
-        (93.3\% MCD match rate).
-    \end{minipage}
-\end{table}
+This appendix collects the full pooled-aggregate (Inc/Dec) benchmark
+estimates and event-study diagnostics by estimating unit. The
+pooled specification is the symmetric Inc/Dec aggregate that
+precedes the binding-state decomposition reported in
+Appendix~\ref{app:decomp}.
 
-\section{Pre-Trend Tests on Fiscal Observables}
-\label{app:pretrends}
+\subsection{Block-level pooled benchmark}
+\label{app:pooled-block}
+(Reserved for future drafts; current pooled-block results appear in
+Section~\ref{subsec:results-pooled} of the main text.)
 
-I test the parallel trends assumption on eleven observables---six fiscal
-variables from the PA DCED Annual Financial Reports, real estate market
-values, total employment from LODES, Part~I index crime from the FBI
-Uniform Crime Reports, and housing units permitted from the Census
-Building Permits Survey---using the \citet{sunab2021} estimator.
-For each outcome, I estimate Equation~\ref{eq:sunab-binary} with municipality
-and year fixed effects, clustering standard errors at the municipality
-level. Table~\ref{tab:pretrends} reports the maximum absolute
-$t$-statistic among the pre-treatment coefficients at relative times
-$\ell \in \{-5, -4, -3, -2\}$.
+\subsection{Municipality-level pooled benchmark}
+\label{app:pooled-muni}
+(Reserved for future drafts; current pooled-muni results appear in
+Section~\ref{subsec:results-pooled} of the main text.)
 
-Pre-trends are flat for nine of eleven observables: total revenue
-(max $|t| = 1.57$), EIT revenue ($1.40$), RE tax revenue ($1.69$),
-streets expenditure ($0.70$), population ($1.09$), total debt ($1.36$),
-total jobs from LODES ($0.83$), index crime ($0.68$), and building
-permits ($1.36$). None of the pre-treatment coefficients for these
-outcomes are individually significant at the 5\% level.
-The jobs, crime, and permits results are particularly important: they
-confirm that treated and control municipalities were on parallel
-trajectories in employment, public safety, and housing development
-before the rate change, ruling out differential economic trends as
-confounds.
+\subsection{School-district-level pooled benchmark}
+\label{app:pooled-sd}
+(Reserved for future drafts; current pooled-SD results appear in
+Section~\ref{subsec:results-pooled} of the main text.)
 
-Police expenditure is an exception. The pre-treatment coefficients at
-$\ell = -5$ and $\ell = -4$ are negative and significant ($t = -2.85$ and
-$t = -2.42$, respectively), indicating that treated municipalities had
-relatively lower police spending 4--5 years before the rate increase.
-This pattern suggests that some EIT increases may have been associated with
-anticipated public-safety expansions financed by the new revenue. Importantly,
-the main results on the share of workers living in their own muni are robust to controlling for
-log police expenditure (the robustness section (Section~\ref{sec:robustness})), confirming that this
-pre-trend does not confound the estimated sorting response.
+\subsection{Realized-dose ES benchmark diagnostics}
+\label{app:pooled-es-realized}
 
-Market value of real estate also shows a pre-trend at $\ell = -3$
-($t = -2.59$), but this variable has limited coverage (pre-2012 only,
-$N = 9{,}338$) and the pre-trend may reflect composition effects in the
-truncated sample rather than a genuine violation of parallel trends.
+The realized-dose Sun--Abraham specification tests strong parallel
+trends across treatment-intensity magnitudes by interacting
+relative-event-time indicators with each unit's eventual cumulative
+dose. The pooled-cohort versions of these figures are collected here.
+(Per-cell decomposition versions appear in
+Appendix~\ref{app:decomp-es-realized}.)
 
-\begin{table}[H]
-    \centering
-    \caption{Pre-Trend Tests: Sun-Abraham on Observables (PA, 2002--2019)}
-    \label{tab:pretrends}
-    \small
-    \begin{tabular}{lccccccc}
-        \toprule
-        & \multicolumn{4}{c}{Pre-Treatment Coefficients} & & \\
-        \cmidrule(lr){2-5}
-        Outcome & $\ell = -5$ & $\ell = -4$ & $\ell = -3$ & $\ell = -2$ & Max $|t|$ & $N$ \\
-        \midrule
-        log(Total Revenue) & $-0.076$ & $-0.051$ & $-0.012$ & $-0.052$ & 1.57 & 43{,}170 \\
-                           & (0.049)  & (0.056)  & (0.038)  & (0.032)  &      &          \\[0.3em]
-        log(EIT Revenue)   & $-0.025$ & $-0.033$ & $0.027$  & $0.049$  & 1.40 & 42{,}278 \\
-                           & (0.051)  & (0.052)  & (0.032)  & (0.037)  &      &          \\[0.3em]
-        log(RE Tax Revenue)& $-0.025$ & $-0.060$ & $-0.011$ & $-0.015$ & 1.69 & 41{,}683 \\
-                           & (0.044)  & (0.036)  & (0.029)  & (0.017)  &      &          \\[0.3em]
-        log(Police Exp)    & $-0.085^{***}$ & $-0.068^{***}$ & $0.011$ & $0.037$ & 2.85 & 23{,}464 \\
-                           & (0.030)  & (0.028)  & (0.052)  & (0.039)  &      &          \\[0.3em]
-        log(Streets Exp)   & $-0.001$ & $0.003$  & $-0.043$ & $-0.029$ & 0.70 & 43{,}105 \\
-                           & (0.059)  & (0.075)  & (0.053)  & (0.059)  &      &          \\[0.3em]
-        log(Population)    & $0.011$  & $0.007$  & $0.002$  & $0.003$  & 1.09 & 43{,}150 \\
-                           & (0.012)  & (0.008)  & (0.006)  & (0.003)  &      &          \\[0.3em]
-        log(Total Debt)    & $-0.029$ & $-0.051$ & $-0.179$ & $-0.103$ & 1.36 & 24{,}863 \\
-                           & (0.176)  & (0.214)  & (0.132)  & (0.102)  &      &          \\[0.3em]
-        log(Market Val RE) &          &          & $-0.403^{***}$ & $-0.026$ & 2.59 & 9{,}338 \\
-                           &          &          & (0.156)  & (0.016)  &      &          \\[0.3em]
-        log(Total Jobs)    & $0.006$  & $0.018$  & $-0.001$ & $-0.005$ & 0.83 & 24{,}557 \\
-                           & (0.023)  & (0.022)  & (0.015)  & (0.013)  &      &          \\[0.3em]
-        log(Index Crime)   & $-0.125$ & $-0.094$ & $-0.084$ & $-0.031$ & 0.65 & 20{,}613 \\
-                           & (0.194)  & (0.151)  & (0.236)  & (0.155)  &      &          \\[0.3em]
-        log(Bldg Permits)  & $-0.030$ & $-0.057$ & $0.084$  & $0.171$  & 1.35 & 27{,}515 \\
-                           & (0.222)  & (0.157)  & (0.147)  & (0.126)  &      &          \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Each row reports \citet{sunab2021}
-        estimates of the pre-treatment coefficients $\hat{\mu}_\ell$ for
-        $\ell \in \{-5, -4, -3, -2\}$, with $\ell = -1$ as the reference
-        period. Standard errors (in parentheses) are clustered at the
-        municipality level. Max $|t|$ is the largest absolute $t$-statistic
-        among the pre-treatment coefficients. Pre-trends are flat for
-        all outcomes except police expenditure (lower spending at $\ell = -5$
-        and $\ell = -4$) and market value of real estate (limited to pre-2012
-        data, $N = 9{,}338$). Total jobs from LODES; index crime from FBI UCR
-        Offenses Known (93.5\% agency-to-municipality match); building permits
-        from Census BPS (93.3\% MCD match); all other outcomes from PA DCED
-        Annual Financial Reports.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
+\subsection{Binary ES benchmark diagnostics}
+\label{app:pooled-es-binary}
+(Pooled-cohort binary SA-IW figures are reserved for future drafts;
+cell-decomposition binary ES figures appear in
+Appendix~\ref{app:decomp-es-binary}.)
 
 %==========================================================
-\section{Event-Study Figures}
+\section{Binding-State Decomposition}
+\label{app:decomp}
 \label{app:es-figures}
 %==========================================================
 
-This appendix collects the full set of event-study figures referenced
-throughout the paper. The figures fall into two families that
-correspond to the two pre-trend diagnostics described in
-Section~\ref{subsec:pretrend-diagnostics}. The realized-dose
-Sun--Abraham specification tests strong parallel trends across
-treatment-intensity magnitudes by interacting relative-event-time
-indicators with each unit's eventual cumulative dose. The binary
-Sun--Abraham interaction-weighted specification tests average
-parallel trends by replacing the dose with a 0/1 cohort indicator
-and reweighting cohort $\times$ event-time coefficients to deliver a
-single cohort-robust path. Within each subsection figures are
-grouped by estimating unit (block, municipality, school district).
+This appendix collects the full set of binding-state decomposition
+results and event-study diagnostics by estimating unit. The
+decomposition splits each side of the rate change into the
+six cells (Inc-bind, Inc-becomes, Inc-nobind, Dec-bind,
+Dec-becomes-non, Dec-nobind) described in
+Section~\ref{sec:theory}.
 
-\subsection{Realized-Dose Sun--Abraham Event Study}
+\subsection{Block-level decomposition}
+\label{app:decomp-block}
+(Reserved for future drafts; current block-level decomposition
+results appear in Section~\ref{subsec:results-block} of the main
+text.)
+
+\subsection{Municipality-level decomposition}
+\label{app:decomp-muni}
+(Reserved for future drafts; current municipality-level
+decomposition results appear in Section~\ref{subsec:results-headline}
+of the main text.)
+
+\subsection{School-district-level decomposition}
+\label{app:decomp-sd}
+(Reserved for future drafts; current SD-level decomposition
+results appear in Section~\ref{subsec:results-sd} of the main
+text.)
+
+\subsection{Realized-dose ES decomposition diagnostics}
+\label{app:decomp-es-realized}
 \label{app:es-realized}
 
 \paragraph{Block level, by cell.}
@@ -2497,7 +2225,8 @@ aggregation diagnostic in Section~\ref{subsec:results-sd}.
   \includegraphics[width=0.95\textwidth]{../figures/sd_es_share_live_in.png}
 \end{figure}
 
-\subsection{Binary Sun--Abraham Interaction-Weighted Event Study}
+\subsection{Binary ES decomposition diagnostics}
+\label{app:decomp-es-binary}
 \label{app:es-sa-binary}
 
 The binary Sun--Abraham IW specification \citep{sunab2021} estimates
@@ -2599,12 +2328,386 @@ Reported here for completeness; the thin-cohort caveat applies.
   \includegraphics[width=0.95\textwidth]{../figures/sa_binary_block_home_in_muni_share.png}
 \end{figure}
 
-\subsection{HonestDiD Sensitivity Plots}
+%==========================================================
+\section{Industry Mechanism}
+\label{app:industry}
+%==========================================================
+
+\subsection{Consumer-facing vs tradeable jobs}
+\label{app:industry-consumer}
+(Reserved for future drafts; the consumer-facing vs tradeable
+decomposition is summarized in Section~\ref{subsec:results-decomp}
+of the main text and the companion \texttt{appendix.tex} contains
+the extended tables.)
+
+\subsection{Full industry decomposition}
+\label{app:industry-full}
+(Reserved for future drafts; see the companion \texttt{appendix.tex}
+for the full sector-by-sector decomposition.)
+
+\subsection{Alternative industry classifications}
+\label{app:industry-alt}
+(Reserved for future drafts.)
+
+%==========================================================
+\section{Robustness}
+\label{app:robustness}
+%==========================================================
+
+This appendix collects the full tables, figures, and detailed prose
+behind the robustness summaries in Section~\ref{sec:robustness}.
+
+\subsection{Pre/post Act 32 split}
+\label{app:rob-act32}
+
+The unified design averages cell-level dose response across pre- and
+post-Act-32 years. Act 32 of 2008 (effective January 1, 2012) consolidated
+PA EIT collection and mandated employer withholding at the higher of the
+home stack or the work nonresident rate. Before Act 32, the bill rule
+existed in statute but withholding was fragmented and many munis did
+not even publish a nonresident rate. The binding-rule mechanism in my
+design only operates when the rate change actually moves a worker's bill,
+which requires the rule to be enforced.
+
+I test this by re-running the headline cell $\times$ dose specification
+on subsamples defined by the cohort's first event year: pre-Act-32
+cohorts ($c < 2012$) and post-Act-32 cohorts ($c \geq 2012$). The split
+is run at all three estimating units. Tables below report the muni-rate
+Inc-cell coefficients pre and post.
+
+\input{tables/act32_cousub.tex}
+
+\input{tables/act32_sd.tex}
+
+\input{tables/act32_block.tex}
+
+All three estimating units use the stacked-continuous DiD with
+binding-state cells, re-estimated separately on the pre-2012 and
+post-2012 cohort subsamples. The municipality and SD splits use
+muni-by-stack and SD-by-stack fixed effects respectively, matching
+their pooled headlines; the block split uses block-by-stack and
+year-by-stack fixed effects, matching the block headline.
+
+
+The binding-cell effect strengthens after enforcement consolidation.
+At the municipality level, the Inc-bind coefficient on
+the log count of residents working in their own municipality is $-0.339^{**}$ in the pre-2012
+sub-sample and $-0.534^{***}$ in the post-2012 sub-sample---roughly
+a 50\% larger response after Act 32 makes the EIT binding through
+consolidated employer withholding. The same pattern holds on
+the log count of in-commuters ($-0.156$ pre vs $-0.334^{***}$ post),
+\texttt{log(employed residents)} ($-0.098^{**}$ vs $-0.104^{***}$),
+and the share of workers living in their own muni ($-0.047^{***}$ vs $-0.040^{***}$). The
+pre-Act-32 Inc-bind effects are non-zero and statistically detectable
+on most outcomes, so the binding-rule mechanism was not entirely
+inert before 2012; the enforcement break amplifies the response
+rather than activating it from a null baseline. The pooled headline
+($-0.401^{***}$ on the log count of residents working in their own municipality; Section
+\ref{subsec:results-headline}) sits between the pre and post
+estimates, as expected.
+
+The within-design placebo (Inc-nobind) is null on the headline outcomes in both periods (the log count of residents working in their own municipality
+$-0.051$ pre, $-0.094$ post; the share of workers living in their own muni $-0.013$ pre,
+$-0.010$ post). The institutional rule's predicted-null cell is
+satisfied regardless of the enforcement regime, which is consistent
+with the binding-rule interpretation: cells where the bill never
+moves should not respond in either period.
+
+At the block level, by contrast, the muni-cohort Inc-bind coefficient on
+the log count of workers living in the block is roughly constant pre and post: the two-period magnitudes are comparable, so the
+block-level effect predates the post-2012 enforcement break,
+contradicting a story in which all of the binding-channel response
+is driven by withholding consolidation). One reading: at fine
+geography, even pre-2012 statutory rate changes were salient
+enough through other channels (taxpayer reporting, local awareness)
+to induce sorting. The Act-32 amplification at the municipality
+scale may reflect aggregation rather than a discontinuous mechanism
+change.
+
+This pre/post pattern at the municipality level connects directly to \citet{bagchiEffectsIntroducingWithholding2022}, which documents that Act 32
+increased PA EIT compliance via consolidated employer withholding.
+My pre/post decomposition shows that the binding-cell residential
+response also strengthens after 2012 at the municipality scale; the
+two findings are complementary---compliance enforcement and behavioral
+response both grow under Act 32.
+
+\subsection{Dose terciles}
+\label{app:rob-dose-tercile}
+
+The stacked-continuous specification imposes linearity in dose:
+$\beta^s_k \cdot \Delta\tau^s_{it}$. Whether the per-pp coefficient is
+constant across small and large rate changes is an assumption rather
+than an output of the design. I test it by splitting Inc-bind units
+into terciles of total post-event dose at each estimating unit and
+re-estimating the headline regression for each tercile separately,
+with NC controls as in the headline.
+
+\input{tables/tercile_cousub.tex}
+
+\input{tables/tercile_sd.tex}
+
+\input{tables/tercile_block.tex}
+
+\begin{table}[H]
+    \centering
+    \caption{Dose-tercile robustness on Inc-bind, log(live\_and\_work)}
+    \label{tab:rob-tercile}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Dose tercile & $n$ munis & Coefficient & SE \\
+        \midrule
+        Small  & 23 & $-0.440^{*}$  & 0.259 \\
+        Medium &  4 & $-0.113$       & 0.748 \\
+        Large  & 13 & $-0.417^{***}$ & 0.091 \\
+        \midrule
+        Pooled (headline) & 40 & $-0.401^{***}$ & 0.096 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Inc-bind munis split by total
+        cumulative $\Delta\tau^{\text{muni}}$ at year +5 post-event
+        (or maximum observed). Small / medium / large terciles have
+        dose ranges $[0.10, 0.20]$ / tied at $0.20$ / $[0.30, 1.00]$
+        respectively; the medium tercile is thin ($n=4$) due to mass
+        ties at the 33rd percentile. Cluster-robust SEs by muni.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+The small and large dose terciles produce essentially identical per-pp
+coefficients ($-0.440$ vs $-0.417$). The medium tercile is too thin
+to identify but is direction-consistent. The linearity assumption is
+supported: the per-pp dose-response does not vary meaningfully across
+small and large rate hikes within the binding cell.
+
+\subsection{Sample variants}
+\label{app:rob-sample}
+
+The DCED nonresident-rate panel has reporting gaps that affect the
+binding-state classification. I run three sample variants: strict
+(drop NA \texttt{muni\_nonres\_eit}), filled (impute
+\texttt{nonres = resident\_eit} when missing, statute-anchored), and
+drop-incomplete (keep all years; drop NA at regression time per
+outcome). The headline Inc-bind coefficient on log residents working in own muni is
+$-0.401^{***}$ in all three samples; the cell is robust to NA-handling
+because Inc-bind classification requires both pre and post home\_stack
+to exceed work\_nonres, which excludes munis where the binding state
+cannot be determined.
+
+\subsection{Alternative control groups}
+\label{app:rob-controls}
+
+My headline uses NC munis (no rate change anywhere in 2002--2019) as
+controls. \citet{cengizEffectMinimumWages2019a} use a slightly relaxed definition:
+``clean controls'' are units with no events in the window
+$[c - K, c + K]$ around each focal event, allowing units with events
+\emph{outside} this window to serve as controls in cohorts whose
+window does not contain their event. The clean-in-window pool is a
+strict superset of NC.
+
+Table~\ref{tab:rob-controls} compares the headline coefficients on
+Inc-bind, Inc-becomes, and Inc-nobind cells across the two control
+definitions on six outcomes. The clean-in-window check is run at all
+three estimating units.
+
+\input{tables/altctrl_cousub.tex}
+
+\input{tables/altctrl_sd.tex}
+
+\input{tables/altctrl_block.tex}
+
+\begin{table}[H]
+    \centering
+    \caption{Alternative controls: NC vs clean-in-window}
+    \label{tab:rob-controls}
+    \small
+    \begin{tabular}{llcc}
+        \toprule
+        Outcome & Cell & NC-only (headline) & Clean-in-window \\
+        \midrule
+        log(live\_and\_work)    & Inc-bind     & $-0.401$ (0.096) & $-0.400$ (0.096) \\
+                                & Inc-becomes  & $-0.181$ (0.072) & $-0.181$ (0.071) \\
+                                & Inc-nobind   & $-0.062$ (0.169) & $-0.059$ (0.167) \\
+        log(in\_commuters)      & Inc-bind     & $-0.213$ (0.083) & $-0.206$ (0.082) \\
+        log(total\_residents)   & Inc-bind     & $-0.100$ (0.033) & $-0.100$ (0.033) \\
+        share\_live\_in         & Inc-bind     & $-0.045$ (0.010) & $-0.045$ (0.009) \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} NC-only restricts controls to
+        munis with no rate change anywhere in 2002--2019.
+        Clean-in-window extends the control pool to munis whose first
+        event falls outside the focal cohort's $[c - K, c + K]$ window.
+        Clean-in-window adds 692 munis to the control pool relative to
+        NC-only (1,945 vs 1,945 + 692 = 2,637 control-eligible munis).
+        Cluster-robust SEs by muni in parentheses.
+    \end{minipage}
+\end{table}
+
+Coefficients are essentially identical across the two control
+definitions. The result is robust to the strictness of the
+control-group restriction.
+
+\subsection{Alternative clustering}
+\label{app:rob-cluster}
+
+Robustness to alternative clustering schemes is left for future
+work; current estimates use the policy-jurisdiction-level clustering
+described in Section~\ref{subsec:three-units}.
+
+\subsection{HonestDiD sensitivity}
+\label{app:rob-honestdid}
 \label{app:es-honestdid}
 
+The realized-dose ES pre-trend tests above rely on null-hypothesis
+testing of pre-event coefficients. \citet{rambachanMoreCredibleApproach2023}
+argue that this is the wrong diagnostic for parallel-trends because
+the test has low power and conflates ``not statistically distinguishable
+from zero'' with ``small enough not to matter.''
+\citet{rothPretestProblemsCausal2022} shows the related point that
+pre-test conditioning can paradoxically worsen inference. The
+recommended alternative is sensitivity analysis: bound the bias from
+non-zero pre-trends and report the threshold at which the post-event
+estimate ceases to be significant.
+
+I implement the Rambachan--Roth relative-magnitudes restriction
+$\Delta^{RM}(\bar{M})$ using the \texttt{HonestDiD} package. The
+restriction caps the worst pre-to-post slope deviation at $\bar{M}$
+times the largest observed pre-period violation. $\bar{M} = 0$
+corresponds to strict parallel trends; $\bar{M} = 1$ permits a
+post-event violation as bad as the worst pre-event one; $\bar{M} = 2$
+permits twice that. The reported quantity is the ``breakdown''
+$\bar{M}^{*}$: the largest $\bar{M}$ at which the 95\% CI for the
+average post-event Inc-bind effect still excludes zero. A breakdown
+$\bar{M}^{*} \geq 1$ means the headline survives even if post-event
+parallel-trends violations are as severe as the worst observed
+pre-event one. The diagnostic is run on the same Inc-bind
+realized-dose ES specification estimated at each unit
+(\texttt{q3\_unified\_honestdid.R}).
+
+\input{tables/honestdid_breakdown.tex}
+
+Three findings emerge. First, the block-level log home count
+headline survives strict parallel trends with the CI well bounded
+away from zero: at $\bar{M} = 0$ the 95\% interval is $[-0.49, -0.12]$.
+The same is true for the cousub-level log live-and-work coefficient
+($[-0.73, -0.11]$ at $\bar{M}=0$) and the cousub-level share-live-in
+coefficient. Second, all three of these headline-style results lose
+significance between $\bar{M} = 0$ and $\bar{M} = 0.5$; the
+breakdown $\bar{M}^{*}$ for each is approximately $0$. The
+interpretation is that the headline is robust to strict parallel
+trends but sensitive to a post-event parallel-trends violation
+roughly half as large as the worst observed pre-event one. Third,
+none of the SD-level Inc-bind coefficients on residence-side
+outcomes is robust to even strict parallel trends---the
+$\bar{M} = 0$ CIs are wide and mostly include zero (with the
+exception of $\log(\text{total residents})$, which carries a
+positive sign that contradicts the muni-level pattern). The
+sensitivity analysis confirms the paper's reading: the block-level
+binding-cell residential response is the only specification that
+delivers a tight CI under strict parallel trends, but the reader
+should be aware that the headline is not robust to large pre-trend
+violations.
+
+\paragraph{Fiscal-side pre-trend placebo.}
+As a complementary diagnostic to the HonestDiD sensitivity, I test
+the parallel trends assumption on eleven observables---six fiscal
+variables from the PA DCED Annual Financial Reports, real estate market
+values, total employment from LODES, Part~I index crime from the FBI
+Uniform Crime Reports, and housing units permitted from the Census
+Building Permits Survey---using the \citet{sunab2021} estimator.
+For each outcome, I estimate Equation~\ref{eq:sunab-binary} with municipality
+and year fixed effects, clustering standard errors at the municipality
+level. Table~\ref{tab:pretrends} reports the maximum absolute
+$t$-statistic among the pre-treatment coefficients at relative times
+$\ell \in \{-5, -4, -3, -2\}$.
+
+Pre-trends are flat for nine of eleven observables: total revenue
+(max $|t| = 1.57$), EIT revenue ($1.40$), RE tax revenue ($1.69$),
+streets expenditure ($0.70$), population ($1.09$), total debt ($1.36$),
+total jobs from LODES ($0.83$), index crime ($0.68$), and building
+permits ($1.36$). None of the pre-treatment coefficients for these
+outcomes are individually significant at the 5\% level.
+The jobs, crime, and permits results are particularly important: they
+confirm that treated and control municipalities were on parallel
+trajectories in employment, public safety, and housing development
+before the rate change, ruling out differential economic trends as
+confounds.
+
+Police expenditure is an exception. The pre-treatment coefficients at
+$\ell = -5$ and $\ell = -4$ are negative and significant ($t = -2.85$ and
+$t = -2.42$, respectively), indicating that treated municipalities had
+relatively lower police spending 4--5 years before the rate increase.
+This pattern suggests that some EIT increases may have been associated with
+anticipated public-safety expansions financed by the new revenue. Importantly,
+the main results on the share of workers living in their own muni are robust to controlling for
+log police expenditure (the robustness section (Section~\ref{sec:robustness})), confirming that this
+pre-trend does not confound the estimated sorting response.
+
+Market value of real estate also shows a pre-trend at $\ell = -3$
+($t = -2.59$), but this variable has limited coverage (pre-2012 only,
+$N = 9{,}338$) and the pre-trend may reflect composition effects in the
+truncated sample rather than a genuine violation of parallel trends.
+
+\begin{table}[H]
+    \centering
+    \caption{Pre-Trend Tests: Sun-Abraham on Observables (PA, 2002--2019)}
+    \label{tab:pretrends}
+    \small
+    \begin{tabular}{lccccccc}
+        \toprule
+        & \multicolumn{4}{c}{Pre-Treatment Coefficients} & & \\
+        \cmidrule(lr){2-5}
+        Outcome & $\ell = -5$ & $\ell = -4$ & $\ell = -3$ & $\ell = -2$ & Max $|t|$ & $N$ \\
+        \midrule
+        log(Total Revenue) & $-0.076$ & $-0.051$ & $-0.012$ & $-0.052$ & 1.57 & 43{,}170 \\
+                           & (0.049)  & (0.056)  & (0.038)  & (0.032)  &      &          \\[0.3em]
+        log(EIT Revenue)   & $-0.025$ & $-0.033$ & $0.027$  & $0.049$  & 1.40 & 42{,}278 \\
+                           & (0.051)  & (0.052)  & (0.032)  & (0.037)  &      &          \\[0.3em]
+        log(RE Tax Revenue)& $-0.025$ & $-0.060$ & $-0.011$ & $-0.015$ & 1.69 & 41{,}683 \\
+                           & (0.044)  & (0.036)  & (0.029)  & (0.017)  &      &          \\[0.3em]
+        log(Police Exp)    & $-0.085^{***}$ & $-0.068^{***}$ & $0.011$ & $0.037$ & 2.85 & 23{,}464 \\
+                           & (0.030)  & (0.028)  & (0.052)  & (0.039)  &      &          \\[0.3em]
+        log(Streets Exp)   & $-0.001$ & $0.003$  & $-0.043$ & $-0.029$ & 0.70 & 43{,}105 \\
+                           & (0.059)  & (0.075)  & (0.053)  & (0.059)  &      &          \\[0.3em]
+        log(Population)    & $0.011$  & $0.007$  & $0.002$  & $0.003$  & 1.09 & 43{,}150 \\
+                           & (0.012)  & (0.008)  & (0.006)  & (0.003)  &      &          \\[0.3em]
+        log(Total Debt)    & $-0.029$ & $-0.051$ & $-0.179$ & $-0.103$ & 1.36 & 24{,}863 \\
+                           & (0.176)  & (0.214)  & (0.132)  & (0.102)  &      &          \\[0.3em]
+        log(Market Val RE) &          &          & $-0.403^{***}$ & $-0.026$ & 2.59 & 9{,}338 \\
+                           &          &          & (0.156)  & (0.016)  &      &          \\[0.3em]
+        log(Total Jobs)    & $0.006$  & $0.018$  & $-0.001$ & $-0.005$ & 0.83 & 24{,}557 \\
+                           & (0.023)  & (0.022)  & (0.015)  & (0.013)  &      &          \\[0.3em]
+        log(Index Crime)   & $-0.125$ & $-0.094$ & $-0.084$ & $-0.031$ & 0.65 & 20{,}613 \\
+                           & (0.194)  & (0.151)  & (0.236)  & (0.155)  &      &          \\[0.3em]
+        log(Bldg Permits)  & $-0.030$ & $-0.057$ & $0.084$  & $0.171$  & 1.35 & 27{,}515 \\
+                           & (0.222)  & (0.157)  & (0.147)  & (0.126)  &      &          \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.92\textwidth}
+        \footnotesize \textit{Notes:} Each row reports \citet{sunab2021}
+        estimates of the pre-treatment coefficients $\hat{\mu}_\ell$ for
+        $\ell \in \{-5, -4, -3, -2\}$, with $\ell = -1$ as the reference
+        period. Standard errors (in parentheses) are clustered at the
+        municipality level. Max $|t|$ is the largest absolute $t$-statistic
+        among the pre-treatment coefficients. Pre-trends are flat for
+        all outcomes except police expenditure (lower spending at $\ell = -5$
+        and $\ell = -4$) and market value of real estate (limited to pre-2012
+        data, $N = 9{,}338$). Total jobs from LODES; index crime from FBI UCR
+        Offenses Known (93.5\% agency-to-municipality match); building permits
+        from Census BPS (93.3\% MCD match); all other outcomes from PA DCED
+        Annual Financial Reports.
+        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \end{minipage}
+\end{table}
+
+\paragraph{HonestDiD sensitivity plots.}
 Each plot reports the 95\% confidence interval for the average
-post-event Inc-bind effect from
-Section~\ref{subsec:rob-honestdid} under the
+post-event Inc-bind effect under the
 \citet{rambachanMoreCredibleApproach2023} relative-magnitudes
 restriction $\Delta^{RM}(\bar{M})$. The leftmost ``Original'' bar is
 the unrestricted CI; subsequent bars impose $\bar{M} \in
@@ -2697,5 +2800,95 @@ which the corresponding bar still excludes zero.
   \label{fig:app_honestdid_sd_share}
   \includegraphics[width=0.85\textwidth]{../figures/honestdid_sd_share_live_in.png}
 \end{figure}
+
+%==========================================================
+\section{Data Construction}
+\label{app:data}
+%==========================================================
+
+\subsection{DCED rate scraping}
+\label{app:data-dced}
+(Reserved for future drafts; see the companion \texttt{appendix.tex}
+for the current DCED scraping documentation.)
+
+\subsection{LODES construction}
+\label{app:data-lodes}
+(Reserved for future drafts; see the companion \texttt{appendix.tex}.)
+
+\subsection{Block-to-municipality crosswalk}
+\label{app:data-xwalk}
+(Reserved for future drafts; see the companion \texttt{appendix.tex}.)
+
+\subsection{PSD mapping}
+\label{app:data-psd}
+(Reserved for future drafts; see the companion \texttt{appendix.tex}.)
+
+\subsection{Fiscal controls}
+\label{app:data-fiscal}
+(Reserved for future drafts; see the companion \texttt{appendix.tex}.)
+
+\subsection{Sample restrictions}
+\label{app:data-sample}
+(Reserved for future drafts.)
+
+\subsection{Pre-treatment balance}
+\label{app:data-balance}
+\label{app:balance}
+
+% --- Balance Table ---
+\begin{table}[H]
+    \centering
+    \caption{Pre-Treatment Balance: Treated vs.\ Never-Treated PA Municipalities}
+    \label{tab:balance}
+    \small
+    \begin{tabular}{lrrrr}
+        \toprule
+        Variable & Treated Mean & Control Mean & Norm.\ Diff.\ & N (T / C) \\
+        \midrule
+        Population              & 14{,}174   & 3{,}711    & 0.139 & 1{,}265 / 39{,}688 \\
+        Total Revenue (\$)     & 25.7M      & 2.9M       & 0.077 & 1{,}267 / 39{,}692 \\
+        EIT Revenue (\$)       & 4.4M       & 438K       & 0.062 &                     \\
+        RE Tax Revenue (\$)    & 2.9M       & 538K       & 0.129 &                     \\
+        Police Expenditure (\$)& 3.1M       & 424K       & 0.110 &                     \\
+        Streets Expenditure (\$)& 1.5M      & 496K       & 0.121 &                     \\
+        Total Debt (\$)        & 28.6M      & 3.6M       & 0.089 &                     \\
+        Market Value RE (\$)   & 8.2M       & 2.1M       & 0.211 & 523 / 8{,}774       \\
+        Total Index Crime       & 985        & 133        & 0.124 & 816 / 18{,}322      \\
+        Building Permits        & 19.3       & 7.7        & 0.232 & 644 / 25{,}066      \\
+        EIT Rate (\%)          & 0.50       & 0.50       & 0.055 &                     \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.3em}
+    \begin{minipage}{0.85\textwidth}
+        \footnotesize \textit{Notes:} Treated = municipalities that raised EIT during the
+        sample period (pre-treatment years only). Control = municipalities that never raised
+        EIT. Normalized differences $<0.15$ for all fiscal variables except market
+        value of real estate (0.211, limited pre-2012 coverage) and building permits
+        (0.232, treated municipalities are larger and issue more permits in levels).
+        Sources: PA DCED Annual Financial Reports, FBI UCR Offenses Known
+        (93.5\% agency match rate), Census Building Permits Survey
+        (93.3\% MCD match rate).
+    \end{minipage}
+\end{table}
+
+%==========================================================
+\section{Additional Institutional Details}
+\label{app:theory}
+%==========================================================
+
+\subsection{Piecewise tax examples}
+\label{app:theory-piecewise}
+(Reserved for future drafts; see Section~\ref{sec:theory} of the
+main text for the piecewise EIT formula.)
+
+\subsection{Additional institutional details}
+\label{app:theory-institutional}
+(Reserved for future drafts.)
+
+\subsection{Philadelphia treatment}
+\label{app:theory-philly}
+(Reserved for future drafts; Philadelphia is excluded from the PA
+sample by the cousub crosswalk and is discussed informally in
+Section~\ref{sec:data}.)
 
 \end{document}

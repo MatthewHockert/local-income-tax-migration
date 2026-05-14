@@ -892,45 +892,6 @@
       \field{title}{Statewide {{Municipal Annual Financial Report}} ({{AFR}}) {{Database}}}
       \field{year}{2024}
     \endentry
-    \entry{rambachanMoreCredibleApproach2023}{article}{}
-      \name{author}{2}{}{%
-        {{un=0,uniquepart=base,hash=85edb53244c29c17ce57830271014b46}{%
-           family={Rambachan},
-           familyi={R\bibinitperiod},
-           given={Ashesh},
-           giveni={A\bibinitperiod},
-           givenun=0}}%
-        {{un=0,uniquepart=base,hash=73c1da3266b3c7728f6b1f38a73c7671}{%
-           family={Roth},
-           familyi={R\bibinitperiod},
-           given={Jonathan},
-           giveni={J\bibinitperiod},
-           givenun=0}}%
-      }
-      \strng{namehash}{c7db070288680264f6dfa86410e8586f}
-      \strng{fullhash}{c7db070288680264f6dfa86410e8586f}
-      \strng{bibnamehash}{c7db070288680264f6dfa86410e8586f}
-      \strng{authorbibnamehash}{c7db070288680264f6dfa86410e8586f}
-      \strng{authornamehash}{c7db070288680264f6dfa86410e8586f}
-      \strng{authorfullhash}{c7db070288680264f6dfa86410e8586f}
-      \field{sortinit}{R}
-      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
-      \field{extradatescope}{labelyear}
-      \field{labeldatesource}{year}
-      \true{uniqueprimaryauthor}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{The Review of Economic Studies}
-      \field{number}{5}
-      \field{title}{A More Credible Approach to Parallel Trends}
-      \field{volume}{90}
-      \field{year}{2023}
-      \field{pages}{2555\bibrangedash 2591}
-      \range{pages}{37}
-      \verb{doi}
-      \verb 10.1093/restud/rdad018
-      \endverb
-    \endentry
     \entry{rohlinTaxAvoidanceBusiness2014}{article}{}
       \name{author}{3}{}{%
         {{un=0,uniquepart=base,hash=e7a569505d5bc0c8f1b9bff24370e4c1}{%
@@ -982,39 +943,6 @@
       \verb 10.1016/j.jue.2014.06.003
       \endverb
       \keyw{to read}
-    \endentry
-    \entry{rothPretestProblemsCausal2022}{article}{}
-      \name{author}{1}{}{%
-        {{un=0,uniquepart=base,hash=73c1da3266b3c7728f6b1f38a73c7671}{%
-           family={Roth},
-           familyi={R\bibinitperiod},
-           given={Jonathan},
-           giveni={J\bibinitperiod},
-           givenun=0}}%
-      }
-      \strng{namehash}{73c1da3266b3c7728f6b1f38a73c7671}
-      \strng{fullhash}{73c1da3266b3c7728f6b1f38a73c7671}
-      \strng{bibnamehash}{73c1da3266b3c7728f6b1f38a73c7671}
-      \strng{authorbibnamehash}{73c1da3266b3c7728f6b1f38a73c7671}
-      \strng{authornamehash}{73c1da3266b3c7728f6b1f38a73c7671}
-      \strng{authorfullhash}{73c1da3266b3c7728f6b1f38a73c7671}
-      \field{sortinit}{R}
-      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
-      \field{extradatescope}{labelyear}
-      \field{labeldatesource}{year}
-      \true{uniqueprimaryauthor}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{American Economic Review: Insights}
-      \field{number}{3}
-      \field{title}{Pretest with Caution: Event-Study Estimates after Testing for Parallel Trends}
-      \field{volume}{4}
-      \field{year}{2022}
-      \field{pages}{305\bibrangedash 322}
-      \range{pages}{18}
-      \verb{doi}
-      \verb 10.1257/aeri.20210236
-      \endverb
     \endentry
     \entry{saezUsingElasticitiesDerive2001}{article}{}
       \name{author}{1}{}{%
@@ -1337,6 +1265,8 @@
       \keyw{administrative data,millionaire,state tax,tier3,to read,US}
     \endentry
   \enddatalist
+  \missing{rambachanMoreCredibleApproach2023}
+  \missing{rothPretestProblemsCausal2022}
 \endrefsection
 \endinput
 
