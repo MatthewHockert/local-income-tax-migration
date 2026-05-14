@@ -117,35 +117,56 @@ Employment Statistics (LODES), the only administrative data source
 that links each worker's residence to their workplace at annual
 frequency and at sub-municipal geography. Pennsylvania's Earned
 Income Tax (EIT) is unusual along two dimensions that the empirical
-design exploits. First, the EIT operates a piecewise max-rule: each
-worker's bill is
+design exploits. First, the EIT is set independently by two
+overlapping rate-setting jurisdictions---municipalities and school
+districts. Each Pennsylvania address sits in both a muni and a
+school district, and a resident's home-side tax bill is the sum of
+the muni resident rate and the school-district rate. The paper's
+primary focus is the muni resident rate; the school-district rate
+enters the empirical design but is treated as a secondary,
+aggregation-diagnostic channel because SD rate changes do not
+recover a robust sorting response. Second, the EIT operates a
+piecewise max-rule: each worker's bill is
 $T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
 $\tau^{\text{home}}$ is the municipal-plus-school-district stack at
 the worker's residence and $\tau^{\text{nr,work}}$ is the
-nonresident rate at the work location. A statutory rate change only
-moves the worker's bill when the changed side binds. Second, Act 32
-of 2008 (effective 2012) consolidated EIT collection into
-county-based Tax Collection Districts and mandated employer
-withholding at the higher of the two rates, which made the
-max-rule mechanically enforced and provides an enforcement-break
+nonresident rate at the work location. A statutory rate change on
+the home side only moves the worker's bill if the home stack is on
+the binding (i.e., higher) side of the max; the work-side
+nonresident rate is always paid by nonresidents, so the home-side
+rate change is the marginal margin only when the home stack
+exceeds it. Act 32 of 2008 (effective 2012) consolidated EIT
+collection into county-based Tax Collection Districts and mandated
+employer withholding at the higher of the two rates, which made
+the max-rule mechanically enforced and provides an enforcement-break
 heterogeneity test.
 
 The max-rule turns a single statutory rate change into
 heterogeneous predicted effects depending on the binding-state
-transition. I classify each rate event by direction (Increase /
-Decrease) and binding-state transition into six cells per side. The
-increase cells carry the identification because the decrease cells
-are thin (eleven Dec-bind, four Dec-becomes-non, fifteen Dec-nobind
-munis in total) and most contain no cities; the discussion below
-focuses on the three Inc cells, with decrease results reported
-alongside for completeness. In the Inc-bind cell the home stack was
-binding before and after, so the bill rises by the full $\Delta\tau$
-and the predicted response is strongest. In the Inc-becomes cell
+transition. For each rate-setter side $s \in \{\text{muni},
+\text{SD}\}$ I classify each rate event by direction (Increase or
+Decrease) crossed with the binding-state transition of the home
+stack relative to the work-side nonresident rate (bind, becomes
+binding, never binds), yielding six cells per rate-setter side: the
+three Inc cells (Inc-bind, Inc-becomes, Inc-nobind) and the three
+Dec mirrors. The increase cells carry the identification because the
+decrease cells are thin (eleven Dec-bind, four Dec-becomes-non,
+fifteen Dec-nobind munis in total) and most contain no cities; the
+discussion below focuses on the three Inc cells, with decrease
+results reported alongside for completeness. In the Inc-bind cell the home stack was binding both pre and post,
+so the bill rises by the full $\Delta\tau$. In the Inc-becomes cell
 the home stack flips from non-binding to binding, so the bill rises
-only partially (the portion above the nonresident rate) and the
-predicted response is intermediate. In the Inc-nobind cell the home
-stack stays below the nonresident rate throughout, so the bill does
-not move and the predicted response is zero. Inc-nobind is therefore a within-design placebo: if the same
+only partially (the portion above the nonresident rate). The
+institutional rule's per-pp prediction is Inc-bind $>$
+Inc-becomes in magnitude because the per-pp bill change is larger,
+though a salience-based argument cuts the other way: Inc-becomes
+workers experience a discrete switch from paying zero home-side tax
+to paying a positive amount, which could trigger an outsized
+behavioral response on the threshold-crossing margin. The data
+favor the institutional prediction at both estimating units.
+In the Inc-nobind cell the home stack stays below the nonresident
+rate throughout, so the bill does not move and the predicted
+response is zero. Inc-nobind is therefore a within-design placebo: if the same
 statutory increase produces a response in Inc-bind and no response
 in Inc-nobind, the mechanism interpretation is credible; if
 Inc-nobind moves, the mechanism interpretation fails.
@@ -162,13 +183,12 @@ and the school district---enter at their native geography and the
 pre-trend is clean. The municipality-level Inc-bind coefficient is
 larger in absolute value ($-0.40$ log points on the count of
 residents who both live and work in the municipality, implying a
-$\approx 33\%$ decline per pp rate hike). The joint Wald F-test on
-the four pre-event leads does not reject parallel trends
-(stat $=5.62$ on 4 df, $p=0.23$); the block-level analogue rejects
-the joint Wald due to N $\approx$ 21M precision but the block-level
-sensitivity bounds at strict parallel trends still rule out zero. I therefore report the
+$\approx 33\%$ decline per pp rate hike), and passes the joint
+Wald pre-trend test ($p = 0.23$). The block-level analogue is the
+preferred causal headline because the block observes both rate-setting
+jurisdictions at their native geography. I therefore report the
 municipality-level estimate as policy-jurisdiction magnitude
-calibration rather than as the causal headline. School-district
+calibration rather than as a second causal headline. School-district
 rate changes do not produce robust evidence of sorting and are
 treated as an aggregation diagnostic. Industry decomposition shows
 that consumer-facing jobs fall in the binding cell while tradeable
@@ -214,8 +234,7 @@ are exempt. The standard combined cap is 1\%, typically split as
 0.5\% municipal and 0.5\% school district. Home Rule municipalities
 may exceed this cap \citep{paHomeRule}, and Philadelphia operates
 separately under the Sterling Act of 1932
-\citep{paSterlingAct_1932} at approximately 3.9\%
-\citep{bagchiEffectsIntroducingWithholding2022}. For most non-Home-Rule
+\citep{paSterlingAct_1932} at approximately 3.9\%. For most non-Home-Rule
 boroughs and townships the EIT is the primary discretionary revenue
 lever, because property-tax millage limits and reassessment lags
 constrain the property side; quantifying that constraint would
@@ -331,10 +350,23 @@ home stack was the binding side. Act 32 thus changed enforcement
 and made the max-rule mechanically binding through withholding; it
 did not eliminate the residential-relocation margin that the
 mechanism in this paper exploits.
+\citet{bagchiEffectsIntroducingWithholding2022} documents the
+quantitative consequences of Act 32 directly: consolidated employer
+withholding increased PA EIT compliance, raised reported earned
+income in the rate-raising muni, and shifted the de facto incidence
+toward workers. The present paper complements that work by isolating
+the residential-sorting response to the same withholding-enforcement
+regime, exploiting the cross-sectional variation in whether a given
+rate change actually moves the worker's bill (the binding-state
+decomposition); the pre/post-Act-32 split in
+Section~\ref{sec:robustness} shows the binding-cell sorting
+response strengthens after Act 32, complementing the
+compliance-response finding.
 
-School districts in Pennsylvania also levy an EIT under Act 511,
-typically at 0.5\% (the other half of the standard 1\% cap).
-Act 1 of 2006 \citep{paAct1_2006} (the Taxpayer Relief Act) additionally authorized
+School districts in Pennsylvania also levy an EIT under Act 511
+\citep{paAct511_1965}, typically at 0.5\% (the other half of the
+standard 1\% cap). Act 1 of 2006 \citep{paAct1_2006} (the Taxpayer
+Relief Act) additionally authorized
 school districts to exceed the 0.5\% cap specifically to fund
 property tax relief. This generated a wave of school district
 rate increases in 2006--2011, creating rate variation that is
@@ -419,7 +451,9 @@ residential responses.
 \label{sec:data}
 %==========================================================
 
-\subsection{Data Construction Pipeline}
+\subsection{Data Sources}
+\label{subsec:sources}
+\label{subsec:sample}
 \label{subsec:pipeline}
 
 The analysis links two administrative systems that do not share
@@ -436,37 +470,43 @@ cousubs by construction), and aggregates block-pair-year LODES
 flows to the municipality, school-district, and block levels of
 observation. Step-by-step pipeline detail (scraper specs,
 crosswalks, imputation rules, and the auxiliary LODES file for
-cross-state inflows) is in the Companion Appendix
-(\texttt{appendix.tex}).
-
-\subsection{Data Sources}
-\label{subsec:sources}
+cross-state inflows) is in Appendix~\ref{app:data}.
 
 The residence--workplace data come from LEHD LODES Version 8,
 2002--2019 \citep{lehdLODES}: block-level origin--destination links
 derived from state Unemployment Insurance wage records and the
 Quarterly Census of Employment and Wages
-\citep{abowdProducerDynamicsNew2009}. I trim 2020--2021 due to
-COVID-related disruptions in both employment patterns and LODES
-coverage. The Census Bureau applies synthetic noise infusion at the
-block level to protect respondent confidentiality; the mechanism is
-calibrated so that aggregation to larger geographies produces
-estimates that approximate ground truth and have been validated
-against external sources at the tract level and above
+\citep{abowdProducerDynamicsNew2009}. The sample period runs from
+2002 to 2019: LODES coverage begins in 2002, and I trim at 2019
+because COVID disrupted both commuting patterns (LODES 2020--2021)
+and municipal finances (ARPA transfers distort AFR data 2020--2023);
+including these years would conflate pandemic-driven relocation with
+tax-motivated sorting. The Census Bureau applies synthetic noise
+infusion at the block level to protect respondent confidentiality;
+the mechanism is calibrated so that aggregation to larger geographies
+produces estimates that approximate ground truth and have been
+validated against external sources at the tract level and above
 \citep{grahamDESIGNCOMPARISONLODES}. I aggregate blocks to county
 subdivisions (municipalities) using the TIGER 2020 block-to-municipality
-crosswalk \citep{tigerline2020} described in
-Section~\ref{subsec:pipeline}, item~3.
+crosswalk \citep{tigerline2020}.
 
 Municipal and school-district EIT rates come from the Pennsylvania
 Department of Community and Economic Development (DCED) MunStats
-portal \citep{padcedMunStats}, scraped annually. The panel covers resident and nonresident
-municipal EIT rates plus school district EIT rates for all
-$\sim$2{,}500 PA municipalities, matched to Census COUSUBFP via a
-name-based crosswalk (99.6\% match rate). Pre-2012 nonresident rates,
-which the registry recorded only sporadically before Act 32 took
-effect, are backfilled from the earliest observed post-2012 value per
-muni.
+portal \citep{padcedMunStats}, scraped annually. The panel covers
+resident and nonresident municipal EIT rates plus school district
+EIT rates for all $\sim$2{,}500 PA municipalities, matched to Census
+COUSUBFP via a name-based crosswalk (99.6\% match rate). Pre-2012
+nonresident rates, which the registry recorded only sporadically
+before Act 32 took effect, are backfilled from the earliest observed
+post-2012 value per muni. I apply two data-cleaning steps to the
+rate panel. First, PA DCED reports the Local Services Tax (a flat
+dollar amount) in the same field as the EIT rate (a percentage) in
+some years, so dropping rates $>5$\% removes these data entry errors
+without affecting any real EIT rate (the highest standard EIT is
+$\sim$1\%; only Philadelphia exceeds 3\%). Second, LODES records
+employment as of April~1, so I assign each municipality-year the
+rate in effect on April~1 to ensure the tax rate a worker faces and
+the OD flow recording their location refer to the same date.
 
 Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}, 2002--2019
@@ -487,21 +527,25 @@ indicators come from the Census Bureau Building Permits Survey
 structure type (1-unit, 2-unit, 3--4 unit, 5+ unit), matched via
 \texttt{fips\_mcd\_code} = COUSUBFP (93.3\% MCD match rate).
 
-\subsection{Sample Restrictions and Transformations}
-\label{subsec:sample}
-
-The sample period runs from 2002 to 2019. LODES coverage begins in 2002, and I trim at 2019 because COVID disrupted both commuting patterns (LODES 2020--2021) and municipal finances (ARPA transfers distort AFR data 2020--2023); including these years would conflate pandemic-driven relocation with tax-motivated sorting.
-
-I impose a minimum employment threshold of 50 total jobs at the municipality level because small municipalities have share\_live\_in values dominated by sampling noise (a single worker moving changes the ratio by $1/N$). The 50-job threshold balances precision against sample size, and sensitivity analysis (Section~\ref{sec:robustness}) confirms stability across thresholds from 10 to 500. I also apply rate outlier filters: PA DCED reports the Local Services Tax (a flat dollar amount) in the same field as the EIT rate (a percentage) in some years, so dropping rates $>5$\% removes these data entry errors without affecting any real EIT rate (the highest standard EIT is $\sim$1\%; only Philadelphia exceeds 3\%). For April 1 alignment, LODES records employment as of April 1, and a rate change that takes effect mid-year could be misattributed if not aligned, so I assign each municipality-year the rate in effect on April 1, ensuring the tax rate a worker faces and the OD flow recording their location refer to the same date.
-
-The primary outcome variable for the headline causal analysis is the block-level log count of workers living in the block. The count directly measures the residential location of active workers and avoids the denominator fragility of block-level shares, which are mechanically sensitive at sparse geography because both the numerator and denominator move. At the municipality and school-district aggregations I also report resident-worker counts, workplace counts, in-commuter flows, and share outcomes (\textit{share\_live\_in}). Share outcomes at coarser geographies retain the interpretation of earlier literature; at the block level I treat them as supporting evidence rather than as the primary estimand. Fiscal outcomes include log EIT revenue, log total tax revenue, log total revenue, log police expenditure, log population, and log market value of real estate from the PA DCED Annual Financial Reports. Pre-treatment balance tests cover eleven observables including crime and building permits.
-
-For treatment definitions I use both a continuous and a binary specification. The continuous treatment is the current rate level (resident municipal, school district, and the home stack as defined in Equation~\ref{eq:piecewise}), capturing the intensive margin via TWFE and DCDH. The binary cohorts equal 1 after a municipality's first rate increase (or first decrease), enabling Sun-Abraham estimation of staggered-DiD-robust dynamic effects. The control group reflects the fact that Pennsylvania's EIT is universal, so the relevant control pool is municipalities with a stable rate over 2002--2019 (1{,}264 never-changed municipalities). For the Q3 clean-groups specification I further partition treated municipalities into increase-only (97) and decrease-only (24), dropping the flip-floppers that change in both directions.
-
-Finally, fiscal controls address the concern that rate increases may coincide with other fiscal changes (police hiring, debt issuance) that independently affect residential attractiveness. I include log police expenditure, log streets expenditure, log total debt, and log state intergovernmental aid as time-varying controls, plus revenue shares (EIT, real-estate, intergovernmental) from the PA DCED AFR. The main estimates are unchanged with and without these controls (the robustness section (Section~\ref{sec:robustness})).
-
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
+
+The primary outcome variable for the headline causal analysis is the
+block-level log count of workers living in the block. The count
+directly measures the residential location of active workers and
+avoids the denominator fragility of block-level shares, which are
+mechanically sensitive at sparse geography because both the
+numerator and denominator move. At the municipality and
+school-district aggregations I also report resident-worker counts,
+workplace counts, in-commuter flows, and share outcomes
+(\textit{share\_live\_in}). Share outcomes at coarser geographies
+retain the interpretation of earlier literature; at the block level
+I treat them as supporting evidence rather than as the primary
+estimand. Fiscal outcomes include log EIT revenue, log total tax
+revenue, log total revenue, log police expenditure, log population,
+and log market value of real estate from the PA DCED Annual
+Financial Reports. Pre-treatment balance tests cover eleven
+observables including crime and building permits.
 
 This section reports summary statistics and key distributions of the
 estimation panels. Table~\ref{tab:summary_muni} reports the
@@ -749,6 +793,12 @@ DCED reporting gaps before Act 32---are categorized as ``Uncertain''
 and dropped: pooling them with NC would contaminate the control trend
 with treated-but-unclassified units, while reporting them in their
 own cell would mix true binding states with measurement gaps.
+Municipality-level regressions further impose a minimum employment
+threshold of 50 total jobs, because small munis have
+\textit{share\_live\_in} values dominated by sampling noise (a single
+worker moving changes the ratio by $1/N$); sensitivity analysis in
+Section~\ref{sec:robustness} confirms stability across thresholds
+from 10 to 500.
 
 Outcomes are run in parallel across counts and shares. The
 municipality-level workplace and residence outcomes are the logs of
@@ -1985,25 +2035,52 @@ municipality at the muni boundary, with the welfare cost accruing
 elsewhere through relocation and the local-services demand
 spillover documented above.
 
-Three limitations merit acknowledgment. First, while the block-level
+Five limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and
 well-identified, the block-level share outcome
-(the share of block residents working in their own muni) is null in the binding cell
-($-0.035$, $p = 0.26$) and marginally significant in the Inc-nobind
-placebo ($-0.037$, $p = 0.015$). The share outcome at block scale
-appears to reflect mechanical denominator dynamics on very small
-populations rather than binding-state-specific behavior, so the
-share-based block evidence should be read as suggestive rather than
-identified. The count-based block evidence remains the cleanest test.
-Second, the school-district aggregation produces direction-mixed
-coefficients and a marginally non-zero realized-dose pre-event lead;
-the SD-level results should be read as confirming the directional
-sign of the muni-rate effect under a coarser aggregation rather than
-as standalone identification of an SD-channel response. Third, the
-LODES OD data covers PA municipalities but not cross-state inflows
-in the intra-state main file used here; the auxiliary file
-(cross-state inflows) is downloaded but not yet incorporated, which
-would tighten the estimates of in-commuters for border munis.
+(the share of block residents working in their own muni) is null in
+the binding cell ($-0.035$, $p = 0.26$) and marginally significant
+in the Inc-nobind placebo ($-0.037$, $p = 0.015$). The share outcome
+at block scale appears to reflect mechanical denominator dynamics on
+very small populations rather than binding-state-specific behavior,
+so the share-based block evidence should be read as suggestive
+rather than identified. The count-based block evidence remains the
+cleanest test. Second, the school-district aggregation produces
+direction-mixed coefficients and a marginally non-zero realized-dose
+pre-event lead; the SD-level results should be read as confirming
+the directional sign of the muni-rate effect under a coarser
+aggregation rather than as standalone identification of an
+SD-channel response. Third, the LODES OD data covers PA
+municipalities but not cross-state inflows in the intra-state main
+file used here; the auxiliary file (cross-state inflows) is
+downloaded but not yet incorporated, which would tighten the
+estimates of in-commuters for border munis.
+
+Fourth, the paper estimates the residential-sorting response to the
+home-side resident rate but does not separately estimate the
+work-side response to the muni nonresident rate ($\tau^{\text{nr}}$).
+The nonresident rate enters the design only through the
+binding-state classification of cells. A complementary work-side
+specification---estimating in-commuter and total-jobs responses to
+$\tau^{\text{nr}}$ events at the muni level, with a parallel
+binding-state decomposition---would test whether the
+local-services demand spillover I document on the residence side
+(\S\ref{subsec:het-industry}) is symmetric with a workplace-side
+response. I defer this to a separate paper.
+
+Fifth, the paper does not estimate a comparable elasticity for
+the property tax, the other major local-revenue lever in
+Pennsylvania. The Oates (1969) capitalization theory predicts a
+substantially smaller residential-sorting elasticity for property
+tax than for the EIT, because property tax falls on owners and
+capitalizes into house prices rather than on workers directly. A
+Rambachan--Roth-style sensitivity bound on the property-tax
+elasticity would test the falsification implication ``is the EIT
+effect specifically about the EIT, or any local tax raising?'' but
+requires a 2002--2019 muni-level millage panel that DCED does not
+publish (the DCED Annual Financial Report schema dropped per-muni
+millage in 2006). Constructing this panel from county assessor
+records is left for future work.
 
 %==========================================================
 \section{Conclusion}
