@@ -2052,7 +2052,7 @@ municipality at the muni boundary, with the welfare cost accruing
 elsewhere through relocation and the local-services demand
 spillover documented above.
 
-Seven limitations merit acknowledgment. First, while the block-level
+Eight limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and
 well-identified, the block-level share outcome
 (the share of block residents working in their own muni) is null in
@@ -2121,7 +2121,31 @@ cohorts, currently too thin under conventional cluster-robust
 inference, as identification rather than just as a directional
 mirror.
 
-Seventh, the paper does not estimate a comparable elasticity for
+Seventh, LODES is a stock dataset rather than a person-linked
+flow dataset. For each (residence block, workplace block, year), I
+observe a count of workers; I do not observe individual migration
+histories. The headline coefficient on the log count of workers
+living in the block is therefore a \emph{net} elasticity---the
+combined effect of move-outs and move-ins---rather than separate
+estimates of the gross outflow and gross inflow margins. The
+paper's evidence that municipal rate hikes reduce the residential
+count is consistent both with workers leaving and with workers not
+arriving to replace those who left; LODES alone cannot decompose
+the two. Decomposing into gross outflow and gross inflow would
+require person-linked administrative data: the IRS Statistics of
+Income individual master file, the American Community Survey
+microdata with full residence-history linkage, or---most
+directly---the LEHD Job-to-Job Flows file, which tracks the same
+workers across employer transitions at quarterly frequency. All
+three are restricted-access products requiring approved-project
+status under the Census Bureau's Federal Statistical Research Data
+Centers (FSRDCs) or IRS Statistics of Income agreements; the
+microdata cannot be exported and must be analyzed at a physical
+FSRDC location. Replicating the present analysis on
+person-linked data is a clear extension but a substantially larger
+undertaking with its own access timeline.
+
+Eighth, the paper does not estimate a comparable elasticity for
 the property tax, the other major local-revenue lever in
 Pennsylvania. The Oates (1969) capitalization theory predicts a
 substantially smaller residential-sorting elasticity for property
