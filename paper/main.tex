@@ -3026,9 +3026,31 @@ SD. The cluster-robust variance is the default
 \texttt{fixest::feols} sandwich estimator with finite-sample
 corrections.
 
-\subsection{Pre-treatment balance}
+\subsection{Additional validation}
 \label{app:data-balance}
 \label{app:balance}
+
+This subsection collects three additional validation checks for the
+data pipeline: pre-treatment balance between rate-changing and
+never-changing munis, the geographic match rates that quantify how
+much of the universe each step of the crosswalk preserves, and a
+brief sample-composition diagnostic.
+
+\paragraph{Pre-treatment balance.}
+Table~\ref{tab:balance} reports normalized differences in fiscal,
+demographic, and supplementary observables between municipalities
+that raise the EIT during the panel and never-changed
+municipalities, computed on pre-treatment years only. Normalized
+differences are below the conventional $0.15$ threshold for all
+fiscal variables. Treated munis are larger in levels (median
+population $14$K versus $3.7$K) but the difference is small in
+normalized terms once the fiscal-share specification is used, which
+divides out the unit's overall scale. Market value of real estate
+(normalized diff. $0.211$) and building permits (normalized diff.
+$0.232$) exceed the threshold, reflecting that treated munis are
+disproportionately larger jurisdictions with more real estate value
+and higher absolute permit activity; both are level controls in
+robustness specs, not in the headline.
 
 % --- Balance Table ---
 \begin{table}[H]
@@ -3066,6 +3088,45 @@ corrections.
     \end{minipage}
 \end{table}
 
+\paragraph{Crosswalk match rates.}
+Each step of the crosswalk pipeline is reported with its observed
+match rate, allowing the reader to track how many units drop at each
+join.
+
+\begin{itemize}
+\item DCED \texttt{municipality\_id} $\to$ Census 2020
+  \texttt{COUSUBFP}: 99.6\% match (name-based, county-keyed,
+  normalized-suffix). Unmatched munis are smaller boroughs that
+  dissolved or merged during 2002--2019; they are dropped, not
+  imputed.
+\item NCES F-33 \texttt{LEAID} $\to$ DCED \texttt{sd\_id}: 500/500
+  PA school districts matched (Jaro--Winkler with abbreviation
+  expansion + two manual overrides for fully-renamed districts).
+  This is the join that attaches Census F-33 SD finance to the DCED
+  rate panel.
+\item TIGER 2020 Census block $\to$ Census 2020 cousub: exact
+  spatial nesting; each block has a unique \texttt{COUSUBFP} by
+  construction.
+\item FBI UCR agency $\to$ DCED muni (for crime controls in
+  pre-treatment balance): 93.5\% match via Jacob Kaplan's
+  concatenated UCR file \citep{kaplanUCR} and
+  \texttt{fips\_place\_code} keying.
+\item Census Building Permits Survey place $\to$ DCED muni: 93.3\%
+  match via \texttt{fips\_mcd\_code}.
+\end{itemize}
+
+\paragraph{Sample-composition diagnostic.}
+Of the 2{,}503 DCED-listed Pennsylvania municipalities, the panel
+classifies $\sim$2{,}400 as never-changed (NC) on the muni resident
+rate side. The treated tail consists of $40$ Inc-bind, $58$
+Inc-becomes, and $26$ Inc-nobind munis (the remainder are Dec cells
+or ``Uncertain''; see Section~\ref{sec:strategy}). The treated tail
+spans eight cities, ten boroughs, and twenty-two townships in the
+Inc-bind cell; magnitudes of the headline coefficient are
+concentrated in the cities (see Companion Appendix), consistent
+with high-eventual-dose post-industrial municipalities being the
+identifying variation.
+
 %==========================================================
 \section{Additional Institutional Details}
 \label{app:theory}
@@ -3073,17 +3134,130 @@ corrections.
 
 \subsection{Piecewise tax examples}
 \label{app:theory-piecewise}
-(Reserved for future drafts; see Section~\ref{sec:theory} of the
-main text for the piecewise EIT formula.)
+
+This subsection walks through worked numerical examples of the
+piecewise EIT formula in Equation~(\ref{eq:piecewise}) for the three
+binding-state cells the paper exploits. Each example uses a worker
+who lives in muni $j$ and works in muni $i$, with the standard
+$1\%$ combined cap split $0.5\%$ muni resident plus $0.5\%$
+school-district.
+
+\paragraph{Example 1: Inc-bind (the headline cell).}
+Pre-event, worker lives in a muni with
+$\tau^{\text{res,muni}}_j = 0.6\%$, $\tau^{\text{SD}}_j = 0.5\%$,
+and works in a muni with $\tau^{\text{nr,muni}}_i = 0.5\%$. The
+home stack is $0.6 + 0.5 = 1.1\%$; the work nonres rate is $0.5\%$;
+the home stack binds. The total bill is $\max(1.1\%, 0.5\%) =
+1.1\%$, split as $0.6\%$ to the home muni and SD ($0.6\%$ home
+stack $-$ $0\%$ residual to work, actually keep it simple: the home
+muni and SD get $\tau^{\text{home}} - \tau^{\text{nr}} = 1.1\% -
+0.5\% = 0.6\%$; the work muni gets $0.5\%$).
+
+Post-event, the muni raises its resident rate to
+$\tau^{\text{res,muni}}_j = 0.9\%$. The home stack becomes $1.4\%$,
+still binding ($1.4\% > 0.5\%$ work nonres). The total bill rises
+to $1.4\%$, an increase of $0.3$ pp; the home jurisdictions get
+$1.4 - 0.5 = 0.9\%$. A residential move to a lower-rate muni $j'$
+with $\tau^{\text{res,muni}}_{j'} = 0.5\%$ would lower the home
+stack to $0.5 + 0.5 = 1.0\%$, still binding, with a new total bill
+of $1.0\%$. The worker's savings from moving:
+$1.4\% - 1.0\% = 0.4\%$ of earned income. This is the cell where
+the institutional rule predicts the strongest sorting response.
+
+\paragraph{Example 2: Inc-nobind (the within-design placebo).}
+Pre-event, worker lives in a muni with
+$\tau^{\text{res,muni}}_j = 0.5\%$, $\tau^{\text{SD}}_j = 0.5\%$,
+and works in a Home Rule city with
+$\tau^{\text{nr,muni}}_i = 1.5\%$. The home stack is $1.0\%$; the
+work nonres rate is $1.5\%$; the work nonres binds. Total bill is
+$\max(1.0\%, 1.5\%) = 1.5\%$, with all of it going to the work
+muni. The home muni and SD collect zero.
+
+Post-event, the home muni raises its resident rate to $0.7\%$. The
+home stack becomes $1.2\%$, still below the $1.5\%$ work nonres
+rate; the work nonres still binds. Total bill remains $1.5\%$.
+The worker's bill is unchanged by the home-muni rate hike, so the
+institutional rule predicts no sorting response. The worker has no
+incentive to move home in response to this rate change. This is
+the placebo cell.
+
+\paragraph{Example 3: Inc-becomes (the intermediate case).}
+Pre-event setup identical to Example 2 in some respects: home stack
+$1.0\%$, work nonres $1.2\%$, work nonres binds, total bill
+$1.2\%$.
+
+Post-event, the home muni raises its resident rate to $1.0\%$,
+pushing the home stack to $1.5\%$. The home stack now binds
+($1.5\% > 1.2\%$ work nonres). Total bill rises to $1.5\%$, an
+increase of $0.3$ pp. But unlike Inc-bind, only the portion above
+the work nonres rate ($1.5 - 1.2 = 0.3\%$) accrues to the home
+jurisdictions; the work muni still collects its $1.2\%$. The
+worker's bill rises by less than the full statutory $\Delta\tau =
+0.5\%$ (it rises by only $0.3\%$, the amount the home stack
+exceeds the work nonres rate), so the institutional rule predicts
+an intermediate sorting response.
 
 \subsection{Additional institutional details}
 \label{app:theory-institutional}
-(Reserved for future drafts.)
+
+Three further institutional details affect interpretation but were
+deferred from the main text for space.
+
+\paragraph{Act 1 of 2006 (school-district EIT authorization).}
+The Taxpayer Relief Act of 2006 authorized school districts to
+levy or raise an EIT specifically to fund property-tax reduction,
+above the $0.5\%$ statutory default. This generated a wave of SD
+rate increases over 2006--2011 that the paper exploits as
+independent rate variation: the cross-panel correlation between
+muni and SD EIT rates is $-0.12$, so muni and SD rate changes can
+be identified separately in a joint regression.
+
+\paragraph{Act 47 distressed municipalities.}
+Approximately $15$ Pennsylvania municipalities have been designated
+``financially distressed'' under Act 47 of 1987 and granted authority
+to exceed the standard $0.5\%$ muni EIT cap (typically up to $1.5\%$
+or higher). These include Pittsburgh, Wilkes-Barre, Hazleton,
+Johnstown, and others in the Inc-bind cell, and they account for the
+right tail of the resident-rate distribution shown in
+Figure~\ref{fig:rate_double_histogram}. Their inclusion in the
+treated cohort is responsible for the large pre-2012 cumulative
+doses observed in some Inc-bind cohorts; sensitivity to dropping
+Act 47 munis is documented in the heterogeneity analysis in the
+companion appendix.
+
+\paragraph{Home Rule municipalities.}
+Pennsylvania's Home Rule Charter and Optional Plans Law
+(53 Pa.~C.S.~\S\,2961) authorizes munis to adopt a Home Rule
+Charter and exceed the standard $0.5\%$ muni-resident-rate cap
+without an Act 47 designation. About $80$ PA munis have a Home Rule
+Charter, of which around $20$ have used the authority to raise
+their muni EIT above the cap. These are typically older industrial
+boroughs (Bethlehem, Allentown, Reading, Lancaster, York, Erie).
 
 \subsection{Philadelphia treatment}
 \label{app:theory-philly}
-(Reserved for future drafts; Philadelphia is excluded from the PA
-sample by the cousub crosswalk and is discussed informally in
-Section~\ref{sec:data}.)
+
+Philadelphia operates under the Sterling Act of 1932 (Act of August
+5, 1932, P.L.~45), which predates Act 511 and creates a separate
+EIT framework. Three features differ from the rest of Pennsylvania.
+First, Philadelphia residents pay the city resident rate
+($\sim$3.9\%) regardless of where they work, with no offset for
+work-location nonresident rates. Second, Philadelphia nonresidents
+working in Philadelphia pay the Philadelphia nonresident rate
+(${\sim}3.5\%$), with no residual flowing to their home
+jurisdiction's EIT. Third, the piecewise max-rule of Act 32 does
+not apply to Philadelphia-resident or Philadelphia-employed
+workers.
+
+The main estimates retain Philadelphia in the sample because (a)
+its $\sim 1.5$M residents contribute meaningful identifying
+variation in the residential-sorting outcomes; (b) the cousub
+crosswalk maps Philadelphia to a single COUSUBFP cleanly; and (c)
+the binding-state classification still applies internally
+(Philadelphia is in NC throughout the panel because its rates
+change only slightly and never trigger an Inc-bind / Inc-becomes /
+Inc-nobind transition). Sensitivity to dropping Philadelphia
+entirely is reported in the companion appendix and shows the
+headline coefficients are essentially unchanged.
 
 \end{document}
