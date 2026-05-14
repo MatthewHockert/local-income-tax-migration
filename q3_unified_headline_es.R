@@ -155,6 +155,10 @@ fwrite(es_dt,  file.path(out_dir, "headline_es_coefs.csv"))
 fwrite(att_dt, file.path(out_dir, "headline_es_att.csv"))
 
 # Figures
+# NOTE: figure output is superseded by build_appendix_es_figures.R, which
+# reads headline_es_coefs.csv and emits the ggplot ribbon-style figures.
+# Gated off by default to prevent clobbering on model re-runs.
+if (FALSE) {
 es_plot <- copy(es_dt)
 es_plot <- rbind(es_plot,
                   unique(es_plot[, .(outcome, cell)])[, .(outcome, cell, rel = -1L,
@@ -178,5 +182,6 @@ for (o in outcomes) {
   ggsave(file.path(fig_dir, paste0("headline_es_", o, ".png")),
          p, width = 8.5, height = 5, dpi = 300)
 }
+}  # end if(FALSE) figure gate
 cat("\n--- Headline-spec ES summary (muni side) ---\n")
 print(att_dt)

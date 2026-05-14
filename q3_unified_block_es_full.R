@@ -202,6 +202,11 @@ fwrite(es_dt,  file.path(out_dir, "block_es_full_coefs.csv"))
 fwrite(att_dt, file.path(out_dir, "block_es_full_att.csv"))
 
 # Figures
+# NOTE: figure output is gated off; the paper's appendix-bound figures are
+# produced by build_appendix_es_figures.R (reading block_es_full_coefs.csv)
+# in a unified ggplot ribbon style. Leaving the legacy plain-B/W output
+# behind this if(FALSE) gate to prevent clobbering on model re-runs.
+if (FALSE) {
 es_plot <- copy(es_dt)
 es_plot <- rbind(es_plot,
                   unique(es_plot[, .(outcome, cell)])[, .(outcome, cell, rel = -1L,
@@ -225,5 +230,6 @@ for (o in outcomes) {
   ggsave(file.path(fig_dir, paste0("block_es_full_", o, ".png")),
          p, width = 8.5, height = 5, dpi = 300)
 }
+}  # end if(FALSE) figure gate
 cat("\n--- Block-level fully-parameterized ES summary (muni side) ---\n")
 print(att_dt)

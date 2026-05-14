@@ -119,7 +119,12 @@ run_sa_binary <- function(panel, id_col, cell_col, c_col,
   fwrite(att_dt, file.path(out_dir, paste0("sa_binary_", level_tag, "_att.csv")))
 
   # Figures
-  if (nrow(es_dt) > 0) {
+  # NOTE: figure output is superseded by build_appendix_es_figures.R, which
+  # reads sa_binary_*_coefs.csv and emits the ggplot ribbon-style figures
+  # used in the paper. The legacy plain-B/W output below is left in place
+  # only for ad-hoc debugging and is gated off by default to prevent
+  # accidental clobbering of the paper figures on a model re-run.
+  if (FALSE && nrow(es_dt) > 0) {
     es_plot <- copy(es_dt)
     es_plot <- rbind(es_plot,
                       unique(es_plot[, .(outcome, cell)])[, .(outcome, cell, rel = -1L,
