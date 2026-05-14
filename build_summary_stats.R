@@ -254,24 +254,32 @@ long[, rate_type := factor(rate_type,
                 "Nonresident rate $\\tau^{nr,M}$",
                 "Home stack $\\tau^{M}+\\tau^{SD}$"))]
 
-g_hist <- ggplot(long, aes(x = rate, fill = rate_type)) +
-  geom_histogram(position = "identity", alpha = 0.55, binwidth = 0.05,
-                  color = "white", linewidth = 0.05) +
-  scale_fill_manual(values = c(PAPER_RED, PAPER_BLUE, "#7B2CBF"),
-                     name = NULL,
-                     labels = c(expression("Resident rate "*tau^M),
-                                expression("Nonresident rate "*tau^{nr*","*M}),
-                                expression("Home stack "*tau^M+tau^{SD}))) +
-  scale_y_sqrt(breaks = c(100, 1000, 5000, 15000, 30000, 50000),
-                labels = scales::label_comma()) +
-  scale_x_continuous(breaks = seq(0, 4.5, by = 0.5)) +
+g_hist <- ggplot(long, aes(x = rate, color = rate_type)) +
+  stat_ecdf(geom = "step", linewidth = 1.0) +
+  scale_color_manual(values = c(PAPER_RED, PAPER_BLUE, "#7B2CBF"),
+                      name = NULL,
+                      labels = c(expression("Resident rate "*tau^M),
+                                 expression("Nonresident rate "*tau^{nr*","*M}),
+                                 expression("Home stack "*tau^M+tau^{SD}))) +
+  scale_x_continuous(breaks = seq(0, 4.5, by = 0.5),
+                      limits = c(0, 4.5)) +
+  scale_y_continuous(breaks = seq(0, 1, by = 0.2),
+                      labels = scales::label_percent()) +
+  geom_vline(xintercept = 0.5, linetype = "dotted", color = "grey60",
+              linewidth = 0.3) +
+  geom_vline(xintercept = 1.0, linetype = "dotted", color = "grey60",
+              linewidth = 0.3) +
+  annotate("text", x = 0.55, y = 0.05, label = "0.5% cap",
+           hjust = 0, size = 3, color = "grey40") +
+  annotate("text", x = 1.05, y = 0.05, label = "1% combined cap",
+           hjust = 0, size = 3, color = "grey40") +
   labs(x = "Rate (percentage points)",
-       y = "Muni-year observations (square-root scale)") +
+       y = "Share of municipality-years at or below rate") +
   theme_paper() +
   theme(legend.position = "bottom")
 ggsave(file.path(fig_dir, "rate_double_histogram.png"), g_hist,
        width = 9, height = 5, dpi = 200)
-cat("Saved rate_double_histogram.png\n")
+cat("Saved rate_double_histogram.png (ECDF)\n")
 
 # ---------------------------------------------------------------------------
 # 6. Figure: Act 32 CDF (share of munis reporting a nonresident rate, by year)

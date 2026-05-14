@@ -340,6 +340,42 @@
       \endverb
       \keyw{tier1}
     \endentry
+    \entry{butts2023DiDSpatialSpillovers}{misc}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=186f99b33d835f3175ded1f498188a92}{%
+           family={Butts},
+           familyi={B\bibinitperiod},
+           given={Kyle},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{186f99b33d835f3175ded1f498188a92}
+      \strng{fullhash}{186f99b33d835f3175ded1f498188a92}
+      \strng{bibnamehash}{186f99b33d835f3175ded1f498188a92}
+      \strng{authorbibnamehash}{186f99b33d835f3175ded1f498188a92}
+      \strng{authornamehash}{186f99b33d835f3175ded1f498188a92}
+      \strng{authorfullhash}{186f99b33d835f3175ded1f498188a92}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{arXiv preprint}
+      \field{note}{Develops DiD estimators that account for SUTVA violations from spatial spillovers; relevant when treated units have geographic neighbors who themselves vary in treatment status.}
+      \field{title}{Difference-in-{Differences} {Estimation} with {Spatial} {Spillovers}}
+      \field{year}{2023}
+      \verb{doi}
+      \verb 10.48550/arXiv.2105.03737
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2105.03737
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2105.03737
+      \endverb
+    \endentry
     \entry{callaway2021}{article}{}
       \name{author}{2}{}{%
         {{un=0,uniquepart=base,hash=4a5a67b3788b4a3653a14d9ab03fba0e}{%
