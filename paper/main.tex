@@ -811,11 +811,24 @@ and dropped: pooling them with NC would contaminate the control trend
 with treated-but-unclassified units, while reporting them in their
 own cell would mix true binding states with measurement gaps.
 Municipality-level regressions further impose a minimum employment
-threshold of 50 total jobs, because small municipalities have
-\textit{share\_live\_in} values dominated by sampling noise (a single
-worker moving changes the ratio by $1/N$); sensitivity analysis in
-Section~\ref{sec:robustness} confirms stability across thresholds
-from 10 to 500.
+threshold of $50$ total jobs. The threshold protects the share-based
+outcomes (\textit{share\_live\_in}, \textit{share\_work\_outside})
+from mechanical measurement noise: at $N$ workers, a single worker
+moving changes the share by $1/N$, so at $N=10$ a one-worker move
+changes the outcome by 10 percentage points, dominating the per-pp
+treatment magnitude. At $N=50$ the one-worker noise floor is $2\%$,
+roughly an order of magnitude below the headline coefficient. The
+threshold also matches the LODES synthetic-noise-infusion design:
+the Census Bureau's noise calibration is validated at the tract
+level and above \citep{grahamDESIGNCOMPARISONLODES}, which in
+Pennsylvania typically contains at least $50$ workers. Choosing
+exactly $50$ rather than $20$ or $100$ is a judgment call;
+sensitivity analysis in Section~\ref{sec:robustness} confirms the
+headline Inc-bind coefficient is stable across thresholds from $10$
+to $500$. Imposing the threshold drops $185$ of $2{,}559$ PA municipalities
+($7.2\%$), almost all of which are sparsely populated rural
+townships in the NC pool; the treated cohort is essentially
+unaffected.
 
 Outcomes are run in parallel across counts and shares. The
 municipality-level workplace and residence outcomes are the logs of
@@ -824,8 +837,13 @@ municipality-level workplace and residence outcomes are the logs of
 \texttt{out\_commuters}, \texttt{total\_jobs}, and
 \texttt{total\_residents}, plus the shares of workers living in their
 own muni, of workers who are nonresidents, and of residents working
-outside the muni. The school-district aggregation uses the same
-outcomes aggregated to the SD via the muni--SD assignment. At the
+outside the muni. The school-district aggregation uses the same outcomes computed by
+summing block-level LODES counts up to the SD: each block has a
+unique cousub assignment (via the TIGER 2020 block-to-cousub
+crosswalk), each cousub has a primary SD assignment (the modal
+\texttt{sd\_id} in the DCED rate panel; $97.6\%$ of munis are
+single-SD), and the SD-level outcomes are block sums via this
+two-step block~$\to$~cousub~$\to$~SD path. At the
 block level, outcomes are the log count of workers living in the
 block, the log count of workers working in the block, the share of
 block residents working in their own muni, and the share working
@@ -833,14 +851,65 @@ outside; geometry and aggregation details are in
 Section~\ref{subsec:three-units}.
 
 Fiscal controls are share-based and time-varying, with the exact set
-keyed to the estimating unit. Municipality-level regressions use muni
-AFR shares (police, streets, and debt service over total
-expenditures; EIT, real estate, and intergovernmental over total
-revenues). SD-level regressions use Census F-33 SD shares
-\citep{censusF33} (state, local, federal, and property-tax shares of
-revenue; instructional, support, capital, and debt-interest shares of
-expenditure). Block-level regressions use both, since each block is
-exposed to both rate-setters' fiscal posture.
+keyed to the estimating unit. The shares are constructed as
+numerator-over-total ratios so that they absorb compositional changes
+in the muni's or district's fiscal posture without conflating with
+the level of total spending.
+
+Municipality-level regressions use six share controls from the DCED
+Annual Financial Report. Three are expenditure shares:
+\texttt{share\_police} (police-services line / total expenditure),
+\texttt{share\_streets} (streets and highways), and
+\texttt{share\_debt\_svc} (debt service: principal and interest
+payments on outstanding general-obligation and revenue debt). Three
+are revenue shares: \texttt{share\_eit} (Earned Income Tax revenue
+collected / total revenue), \texttt{share\_re} (real-estate property
+tax revenue / total revenue), and \texttt{share\_intergov}
+(intergovernmental revenue, which is grant and pass-through revenue
+from state and federal governments---e.g., Liquid Fuels Tax
+distributions, Community Development Block Grants, ARPA transfers---divided
+by total revenue).
+
+School-district regressions use eight share controls from the
+Census Annual Survey of School System Finances (F-33)
+\citep{censusF33}. Four are revenue shares:
+\texttt{share\_state\_rev\_sd} (state aid: basic education subsidy,
+special-education subsidy, transportation reimbursement, etc.),
+\texttt{share\_local\_rev\_sd} (locally raised revenue: property tax,
+EIT, occupation tax, public-utility taxes), \texttt{share\_federal\_rev\_sd}
+(federal Title~I, IDEA, school-lunch, and other direct or
+pass-through federal aid), and \texttt{share\_property\_tax\_sd}
+(real-estate property-tax revenue as a share of total revenue,
+which is a subset of \texttt{share\_local\_rev\_sd} and isolates the
+SD's primary local-tax lever). Four are expenditure shares:
+\texttt{share\_instructional\_sd} (teacher salaries, classroom
+supplies, instructional staff), \texttt{share\_support\_sd}
+(non-instructional operating costs: administration, transportation,
+maintenance, food service, student services),
+\texttt{share\_capital\_sd} (capital outlay---construction,
+renovation, equipment), and \texttt{share\_debt\_int\_sd}
+(interest payments on the district's outstanding debt; principal
+appears as a capital outlay rather than as a current expense).
+
+Block-level regressions use both sets of controls simultaneously,
+since each block is exposed to both rate-setters' fiscal posture.
+Figure~\ref{fig:fiscal_controls_distributions} plots the empirical
+distribution of each share variable pooled across municipality-years
+(muni shares) or SD-years (SD shares); cross-unit variation is
+broad on every dimension, so the share controls absorb meaningful
+fiscal heterogeneity without collinearity with the rate-treatment
+variable.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{../figures/fiscal_controls_distributions.png}
+  \caption{Distribution of share-based fiscal controls across the
+  Pennsylvania panel, 2002--2019. Top six panels: municipality AFR
+  shares (DCED). Lower eight panels: school-district F-33 shares
+  (Census). Each panel pools all municipality-years (top) or
+  SD-years (bottom) over 2002--2019.}
+  \label{fig:fiscal_controls_distributions}
+\end{figure}
 
 
 \subsection{Pooled Aggregate Specification}
@@ -851,11 +920,17 @@ specification that pools all six binding-state cells per side into
 two direction tags ($\text{Inc}$ for any rate increase, $\text{Dec}$
 for any rate decrease). The pooled regression is the
 literature-comparable baseline: it answers ``what is the average per-pp
-effect of a muni-rate hike on residents, ignoring binding state?'',
-which is the elasticity reported in prior local-tax-incidence work
-\citep{yangRESPONSIVENESSINCOMELOCAL2017,bagchiEffectsIntroducingWithholding2022}. The
+effect of a muni-rate hike on residents, ignoring binding state?''
+This is closest in form to the population-elasticity work of
+\citet{yangRESPONSIVENESSINCOMELOCAL2017} on Indiana local income
+taxes. \citet{bagchiEffectsIntroducingWithholding2022} studies a
+related but distinct outcome---tax-compliance and revenue
+responses to Act~32, not residential sorting per se---and the
+pre/post-Act-32 split in Section~\ref{subsec:rob-act32} is the
+counterpart on the residential margin to Bagchi's revenue-side
+result. The
 binding-state decomposition that follows in
-Equation~(\ref{eq:headline}) then explains \emph{which} sub-population
+Equation~(\ref{eq:headline}) then explains which sub-population
 of the treated muni cohort drives the pooled coefficient.
 
 For each unit-time observation $(i, t)$ on the stacked panel, define
