@@ -1034,6 +1034,33 @@ control), which is the property that fixes the negative-weighting
 problem in vanilla TWFE under staggered treatment
 \citep{goodman-baconDifferenceindifferencesVariationTreatment2021}.
 
+Figure~\ref{fig:design_timeline} sketches the construction. Each
+row is one example municipality. The colored bar is its
+$[c-K, c+K]$ window; the open circle marks its first-event year $c$;
+the cell label on the right is the binding-state classification. The
+six treated examples are one per binding-state cell. The bottom row
+is the never-changed (NC) control band: every NC municipality
+contributes observations to \emph{every} treated cohort's
+sub-experiment, in calendar years matching that cohort's window.
+Early cohorts (e.g., the 2006 Inc-becomes example) have a slightly
+truncated pre-period because their $c-K$ year falls just before the
+panel's 2002 start; the stacked panel handles this by simply omitting
+the unobserved pre-event years.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.97\textwidth]{../figures/design_timeline.png}
+  \caption{Stacked continuous DiD: timeline of example sub-experiments.
+  Each row is a municipality; the colored bar is the
+  $[c-K,\, c+K]$ window with $K=5$; the open circle marks the
+  first-event year $c$; the cell label gives the binding-state
+  classification. The bottom (grey) row is the never-changed (NC)
+  control pool; in the stacked panel, every NC municipality
+  contributes observations to every cohort's window. Municipality
+  names are illustrative.}
+  \label{fig:design_timeline}
+\end{figure}
+
 The stacked-DiD construction is in the lineage of
 \citet{cengizEffectMinimumWages2019a} (138 minimum-wage events, stacked event-by-event
 with continuous treatment), \citet{fadlonFamilyLaborSupply2021b} (severe health shocks,
