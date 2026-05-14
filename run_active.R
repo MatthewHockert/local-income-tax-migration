@@ -22,6 +22,7 @@ setwd(project_dir)
 # Run-stage flags. Set to FALSE to skip.
 # ---------------------------------------------------------------------------
 RUN_DATA_BUILD     <- TRUE
+RUN_DESCRIPTIVES   <- TRUE
 RUN_MAIN_MUNI      <- TRUE
 RUN_MAIN_SD        <- TRUE
 RUN_MAIN_BLOCK     <- TRUE
@@ -32,6 +33,7 @@ RUN_ROB_PRETREND   <- TRUE
 RUN_ROB_SA_BINARY  <- TRUE
 RUN_ROB_TERCILE    <- TRUE
 RUN_ROB_ALTCTRL    <- TRUE
+RUN_ROB_HONESTDID  <- TRUE
 RUN_PAPER_BUILD    <- TRUE
 
 cat("================================================================\n")
@@ -46,6 +48,14 @@ if (RUN_DATA_BUILD) {
   source("build_sd_controls.R")     # F-33 -> SD share controls + ID xwalk
   source("build_data.R")            # cousub panel + rate panel + neighbors
   source("build_block_panel.R")     # block panel inheriting cousub rates
+}
+
+# ---------------------------------------------------------------------------
+# 1b. Descriptive statistics (summary tables + key figures)
+# ---------------------------------------------------------------------------
+if (RUN_DESCRIPTIVES) {
+  cat("\n[1b] Descriptive statistics: summary tables + rate ECDF + Act-32 CDF\n")
+  source("build_summary_stats.R")
 }
 
 # ---------------------------------------------------------------------------
@@ -110,14 +120,25 @@ if (RUN_ROB_ALTCTRL) {
   source("q3_unified_altctrl_3level.R")
 }
 
+if (RUN_ROB_HONESTDID) {
+  cat("\n[4e] Rambachan-Roth honest-DiD sensitivity (all 3 levels)\n")
+  source("q3_unified_honestdid.R")
+}
+
 # ---------------------------------------------------------------------------
-# 5. Paper artifacts
+# 5. Paper artifacts: LaTeX tables + ggplot figures
 # ---------------------------------------------------------------------------
 if (RUN_PAPER_BUILD) {
-  cat("\n[5] Building paper tables and figures\n")
+  cat("\n[5a] Building paper tables\n")
   source("build_industry_table.R")
   source("build_paper_tables.R")
+
+  cat("\n[5b] Building paper figures (industry + unified ES + overlays)\n")
   source("build_industry_figure.R")
+  source("build_appendix_es_figures.R")   # unified ribbon-style ES figs
+  source("build_block_es_overlay_figures.R")
+  source("build_pooled_es_figures.R")
+  source("build_sa_binary_overlay_figures.R")
 }
 
 cat("\n================================================================\n")

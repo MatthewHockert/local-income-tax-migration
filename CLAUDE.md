@@ -146,10 +146,22 @@ Rscript q3_unified_block_es_full.R    # block realized-dose ES
 Rscript q3_unified_sa_binary_es.R     # binary SA-IW ES (cousub + SD)
 Rscript q3_unified_tercile_3level.R   # dose-magnitude tercile
 Rscript q3_unified_altctrl_3level.R   # alt-control (Cengiz clean-in-window)
+Rscript q3_unified_honestdid.R        # Rambachan-Roth sensitivity bounds
 
-# 7. Build paper tables and figures
+# 7. Descriptive statistics (summary tables + ECDF + Act 32 CDF)
+Rscript build_summary_stats.R
+
+# 8. Build paper tables and figures
+Rscript build_industry_table.R        # industry LaTeX table fragment
 Rscript build_paper_tables.R          # all LaTeX tables -> paper/tables/
 Rscript build_industry_figure.R       # industry bar chart
+Rscript build_appendix_es_figures.R   # unified ribbon-style ES figs
+Rscript build_block_es_overlay_figures.R
+Rscript build_pooled_es_figures.R
+Rscript build_sa_binary_overlay_figures.R
+
+# 9. Compile the paper
+cd paper && pdflatex main.tex && biber main && pdflatex main.tex && pdflatex main.tex
 ```
 
 ## Active scripts
@@ -177,9 +189,15 @@ Rscript build_industry_figure.R       # industry bar chart
 | `q3_unified_heterogeneity.R` | City / borough / township |
 | `q3_unified_tercile_3level.R` | Dose-magnitude tercile, all 3 levels |
 | `q3_unified_altctrl_3level.R` | Alt-control (Cengiz clean-in-window), all 3 levels |
+| `q3_unified_honestdid.R` | Rambachan-Roth (2023) sensitivity bounds on Inc-bind ES, all 3 levels x 4 outcomes |
+| `build_summary_stats.R` | Summary tables (muni/block/SD) + rate ECDF + Act 32 CDF + rate-changes-by-year |
 | `build_paper_tables.R` | LaTeX tables for paper |
 | `build_industry_figure.R` | Industry bar chart |
 | `build_industry_table.R` | Industry-decomposition LaTeX table fragment |
+| `build_appendix_es_figures.R` | Unified ggplot ribbon-style ES figures (cousub/SD/block realized-dose + SA-binary). Source-of-truth for appendix ES figures; idempotent. |
+| `build_block_es_overlay_figures.R` | Block-level two-cohort overlay ES figures (red muni / blue SD) |
+| `build_pooled_es_figures.R` | Pooled Inc/Dec ES overlay figures |
+| `build_sa_binary_overlay_figures.R` | SA-IW binary ES overlay figures (muni + SD cohorts) |
 | `run_active.R` | Master pipeline (calls above scripts; gated flags) |
 | `paper/main.tex` | LaTeX manuscript |
 | `paper/guiding_principles.md` | Design principles document |
