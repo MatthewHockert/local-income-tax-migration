@@ -3,44 +3,42 @@
   \caption{Realized-dose event study by binding-state cell --- block level (muni cohort).}
   \label{tab:es_block_by_cell}
   \small
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccc}
     \toprule
-    Cell & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
+    Cell & Log(workers live) & Log(workers work) & Share live+work in muni \\
     \midrule
-    \textbf{Inc-bind} (post) & -0.305 & -0.079 & -0.043 & 0.043 \\
-                      & (0.041) & (0.048) & (0.014) & (0.014) \\
-    \textbf{Inc-bind} (pre) & -0.027 & 0.017 & 0.020 & -0.020 \\
-                      & (0.053) & (0.033) & (0.008) & (0.008) \\
-    \textbf{Inc-bind} Wald $p$ & --- & --- & --- & --- \\
-    \textbf{Inc-becomes} (post) & 0.009 & -0.046 & -0.030 & 0.030 \\
-                      & (0.020) & (0.015) & (0.006) & (0.006) \\
-    \textbf{Inc-becomes} (pre) & 0.080 & 0.032 & 0.003 & -0.003 \\
-                      & (0.026) & (0.014) & (0.007) & (0.007) \\
-    \textbf{Inc-becomes} Wald $p$ & --- & --- & --- & --- \\
-    \textbf{Inc-nobind} (post) & 0.045 & -0.050 & -0.042 & --- \\
-                      & (0.018) & (0.019) & (0.008) & --- \\
-    \textbf{Inc-nobind} (pre) & 0.123 & 0.025 & 0.008 & --- \\
-                      & (0.019) & (0.016) & (0.003) & --- \\
-    \textbf{Inc-nobind} Wald $p$ & --- & --- & --- & --- \\
-    \textbf{Dec-bind} (post) & 0.278 & 0.294 & -0.052 & --- \\
-                      & (0.055) & (0.110) & (0.010) & --- \\
-    \textbf{Dec-bind} (pre) & 0.173 & 0.457 & 0.028 & --- \\
-                      & (0.057) & (0.099) & (0.011) & --- \\
-    \textbf{Dec-bind} Wald $p$ & --- & --- & --- & --- \\
-    \textbf{Dec-becomes-non} (post) & 0.823 & -0.815 & -0.119 & 0.119 \\
-                      & (0.037) & (0.085) & (0.011) & (0.011) \\
-    \textbf{Dec-becomes-non} (pre) & 0.403 & -1.387 & -0.044 & 0.044 \\
-                      & (0.036) & (0.036) & (0.011) & (0.011) \\
-    \textbf{Dec-becomes-non} Wald $p$ & --- & --- & --- & --- \\
-    \textbf{Dec-nobind} (post) & -0.095 & 0.060 & 0.015 & -0.013 \\
-                      & (36.376) & (0.042) & (11.217) & (11.217) \\
-    \textbf{Dec-nobind} (pre) & --- & --- & --- & --- \\
-                      &  &  &  &  \\
-    \textbf{Dec-nobind} Wald $p$ & --- & --- & --- & --- \\
+    \textbf{Inc-bind} (post) & -0.305 & -0.079 & -0.043 \\
+                      & (0.041) & (0.048) & (0.014) \\
+    \textbf{Inc-bind} (pre) & -0.027 & 0.017 & 0.020 \\
+                      & (0.053) & (0.033) & (0.008) \\
+    \textbf{Inc-bind} Wald $p$ & $<\!0.0001$ & 0.0031 & 0.0086 \\
+    \textbf{Inc-becomes} (post) & 0.009 & -0.046 & -0.030 \\
+                      & (0.020) & (0.015) & (0.006) \\
+    \textbf{Inc-becomes} (pre) & 0.080 & 0.032 & 0.003 \\
+                      & (0.026) & (0.014) & (0.007) \\
+    \textbf{Inc-becomes} Wald $p$ & 0.0002 & 0.2120 & $<\!0.0001$ \\
+    \textbf{Inc-nobind} (post) & 0.045 & -0.050 & -0.042 \\
+                      & (0.018) & (0.019) & (0.008) \\
+    \textbf{Inc-nobind} (pre) & 0.123 & 0.025 & 0.008 \\
+                      & (0.019) & (0.016) & (0.003) \\
+    \textbf{Inc-nobind} Wald $p$ & $<\!0.0001$ & $<\!0.0001$ & $<\!0.0001$ \\
+    \textbf{Dec-bind} (post) & 0.278 & 0.294 & -0.052 \\
+                      & (0.055) & (0.110) & (0.010) \\
+    \textbf{Dec-bind} (pre) & 0.173 & 0.457 & 0.028 \\
+                      & (0.057) & (0.099) & (0.011) \\
+    \textbf{Dec-bind} Wald $p$ & $<\!0.0001$ & $<\!0.0001$ & $<\!0.0001$ \\
+    \textbf{Dec-becomes-non} (post) & 0.823 & -0.815 & -0.119 \\
+                      & (0.037) & (0.085) & (0.011) \\
+    \textbf{Dec-becomes-non} (pre) & 0.403 & -1.387 & -0.044 \\
+                      & (0.036) & (0.036) & (0.011) \\
+    \textbf{Dec-becomes-non} Wald $p$ & $<\!0.0001$ & $<\!0.0001$ & $<\!0.0001$ \\
+    \textbf{Dec-nobind} (post) & -0.095 & 0.060 & 0.015 \\
+                      & (36.376) & (0.042) & (11.217) \\
+    \textbf{Dec-nobind} (pre) & --- & --- & --- \\
+                      &  &  &  \\
+    \textbf{Dec-nobind} Wald $p$ & --- & --- & --- \\
     \bottomrule
   \end{tabular}
-  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Post = mean of $\beta_k$ for $k = 0, \ldots, 5$; pre = mean for $k \leq -2$. Wald $p$ is the cluster-robust joint test of $H_0\colon \beta_k = 0$ across pre-event $k$. Per-cell decomposition of the pooled block-level ES; each cell is run as a separate regression on \{NC, cell\}. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

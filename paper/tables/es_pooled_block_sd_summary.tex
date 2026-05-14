@@ -3,24 +3,22 @@
   \caption{Pooled realized-dose event study --- block level (SD-cohort).}
   \label{tab:es_pooled_block_sd}
   \small
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccc}
     \toprule
-    Direction & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
+    Direction & Log(workers live) & Log(workers work) & Share live+work in muni \\
     \midrule
-    \textbf{Inc} (post) & 0.022 & -0.012 & --- & -0.012 \\
-                      & (0.017) & (0.014) & --- & (0.004) \\
-    \textbf{Inc} (pre) & -0.126 & -0.003 & --- & -0.024 \\
-                      & (0.040) & (0.047) & --- & (0.015) \\
-    \textbf{Inc} Wald $p$ & 0.0573 & 0.0151 & --- & 0.2450 \\
-    \textbf{Dec} (post) & --- & 0.322 & -0.117 & --- \\
-                      & --- & (0.063) & (0.011) & --- \\
-    \textbf{Dec} (pre) & --- & 0.540 & -0.012 & --- \\
-                      & --- & (0.131) & (0.008) & --- \\
-    \textbf{Dec} Wald $p$ & --- & $<\!0.0001$ & 0.0067 & --- \\
+    \textbf{Inc} (post) & 0.022 & -0.012 & --- \\
+                      & (0.017) & (0.014) & --- \\
+    \textbf{Inc} (pre) & -0.126 & -0.003 & --- \\
+                      & (0.040) & (0.047) & --- \\
+    \textbf{Inc} Wald $p$ & 0.0573 & 0.0151 & --- \\
+    \textbf{Dec} (post) & --- & 0.322 & -0.117 \\
+                      & --- & (0.063) & (0.011) \\
+    \textbf{Dec} (pre) & --- & 0.540 & -0.012 \\
+                      & --- & (0.131) & (0.008) \\
+    \textbf{Dec} Wald $p$ & --- & $<\!0.0001$ & 0.0067 \\
     \bottomrule
   \end{tabular}
-  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Post = mean of $\beta_k$ for $k = 0, \ldots, 5$; pre = mean for $k \leq -2$. Wald $p$ is the cluster-robust joint test of $H_0\colon \beta_k = 0$ across pre-event $k$. Stack built on SD-cohort years; event time defined against each block's SD-rate event. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

@@ -85,12 +85,26 @@ run_sa_binary <- function(panel, id_col, cell_col, c_col,
 
       post <- iw_dt[rel >= 0 & rel <= 5]
       pre  <- iw_dt[rel <= -2]
+      # Joint Wald on pre-period IW coefs. The IW estimator aggregates
+      # cohort x event-time coefficients with weights that decorrelate
+      # across event-times, so the diagonal-vcov Wald is a reasonable
+      # approximation to the full joint test; the proper IW vcov is
+      # not exposed by aggregate.fixest. Report the diagonal Wald as
+      # the test statistic with the same chi-square reference distribution
+      # used by wald_pretrend().
+      pre_ok <- pre[!is.na(est) & !is.na(se) & se > 0]
+      pre_wald_stat <- if (nrow(pre_ok) > 0) sum((pre_ok$est / pre_ok$se)^2) else NA_real_
+      pre_wald_df   <- nrow(pre_ok)
+      pre_wald_p    <- if (pre_wald_df > 0) pchisq(pre_wald_stat, pre_wald_df, lower.tail = FALSE) else NA_real_
       att_results[[length(att_results)+1L]] <- data.table(
         outcome = o, cell = cl,
         att_post = round(mean(post$est, na.rm = TRUE), 3),
         att_post_se = round(sqrt(mean(post$se^2, na.rm = TRUE) / max(nrow(post),1)), 3),
         att_pre = round(mean(pre$est, na.rm = TRUE), 3),
         att_pre_se = round(sqrt(mean(pre$se^2, na.rm = TRUE) / max(nrow(pre),1)), 3),
+        wald_pre_stat = round(pre_wald_stat, 3),
+        wald_pre_df = pre_wald_df,
+        wald_pre_p = round(pre_wald_p, 4),
         n = nobs(m))
       cat(sprintf("  %-16s post=%6.3f (SE %.3f)  pre=%6.3f (SE %.3f)\n",
                   cl, mean(post$est, na.rm=TRUE),

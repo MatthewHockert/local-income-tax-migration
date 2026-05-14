@@ -3,57 +3,55 @@
   \caption{Pre-/post-Act-32 split --- block level}
   \label{tab:act32_block}
   \small
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccc}
     \toprule
-    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
+    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni \\
     \midrule
-    \textbf{Inc-bind} & & & & \\
-    \quad Pre-Act 32 & -0.218\sym{***} & -0.118\sym{**} & -0.037 & 0.037 \\
-                    & (0.059) & (0.058) & (0.037) & (0.037) \\
-    \quad Post-Act 32 & -0.116\sym{**} & -0.022 & -0.035\sym{***} & 0.035\sym{***} \\
-                    & (0.051) & (0.126) & (0.012) & (0.012) \\
-    \textbf{Inc-becomes} & & & & \\
-    \quad Pre-Act 32 & -0.001 & -0.041 & -0.034\sym{***} & 0.034\sym{***} \\
-                    & (0.058) & (0.033) & (0.013) & (0.013) \\
-    \quad Post-Act 32 & -0.015 & -0.062\sym{**} & -0.053\sym{***} & 0.053\sym{***} \\
-                    & (0.026) & (0.028) & (0.014) & (0.014) \\
-    \textbf{Inc-nobind} & & & & \\
-    \quad Pre-Act 32 & -0.114\sym{***} & -0.132\sym{**} & -0.033\sym{***} & 0.033\sym{***} \\
-                    & (0.033) & (0.066) & (0.008) & (0.008) \\
-    \quad Post-Act 32 & 0.672\sym{***} & 0.106\sym{**} & -0.147\sym{***} & 0.147\sym{***} \\
-                    & (0.086) & (0.052) & (0.036) & (0.036) \\
-    \textbf{Dec-bind} & & & & \\
-    \quad Pre-Act 32 & 0.368\sym{**} & 0.662\sym{***} & -0.024 & 0.024 \\
-                    & (0.171) & (0.095) & (0.039) & (0.039) \\
-    \quad Post-Act 32 & 0.045 & -0.441\sym{***} & -0.077\sym{***} & 0.077\sym{***} \\
-                    & (0.093) & (0.130) & (0.018) & (0.018) \\
-    \textbf{Dec-becomes-non} & & & & \\
-    \quad Pre-Act 32 & -1.004\sym{***} & 0.804\sym{***} & -0.151\sym{***} & 0.151\sym{***} \\
-                    & (0.155) & (0.185) & (0.042) & (0.042) \\
-    \quad Post-Act 32 & 0.494\sym{***} & 0.364\sym{***} & -0.073\sym{***} & 0.073\sym{***} \\
-                    & (0.067) & (0.065) & (0.028) & (0.028) \\
-    \textbf{Dec-nobind} & & & & \\
-    \quad Pre-Act 32 & 0.341\sym{***} & -0.585\sym{**} & 0.006 & -0.006 \\
-                    & (0.030) & (0.260) & (0.008) & (0.008) \\
-    \quad Post-Act 32 & -0.025 & 0.235\sym{***} & 0.006 & -0.006 \\
-                    & (0.054) & (0.011) & (0.006) & (0.006) \\
+    \textbf{Inc-bind} & & & \\
+    \quad Pre-Act 32 & -0.218\sym{***} & -0.118\sym{**} & -0.037 \\
+                    & (0.059) & (0.058) & (0.037) \\
+    \quad Post-Act 32 & -0.116\sym{**} & -0.022 & -0.035\sym{***} \\
+                    & (0.051) & (0.126) & (0.012) \\
+    \textbf{Inc-becomes} & & & \\
+    \quad Pre-Act 32 & -0.001 & -0.041 & -0.034\sym{***} \\
+                    & (0.058) & (0.033) & (0.013) \\
+    \quad Post-Act 32 & -0.015 & -0.062\sym{**} & -0.053\sym{***} \\
+                    & (0.026) & (0.028) & (0.014) \\
+    \textbf{Inc-nobind} & & & \\
+    \quad Pre-Act 32 & -0.114\sym{***} & -0.132\sym{**} & -0.033\sym{***} \\
+                    & (0.033) & (0.066) & (0.008) \\
+    \quad Post-Act 32 & 0.672\sym{***} & 0.106\sym{**} & -0.147\sym{***} \\
+                    & (0.086) & (0.052) & (0.036) \\
+    \textbf{Dec-bind} & & & \\
+    \quad Pre-Act 32 & 0.368\sym{**} & 0.662\sym{***} & -0.024 \\
+                    & (0.171) & (0.095) & (0.039) \\
+    \quad Post-Act 32 & 0.045 & -0.441\sym{***} & -0.077\sym{***} \\
+                    & (0.093) & (0.130) & (0.018) \\
+    \textbf{Dec-becomes-non} & & & \\
+    \quad Pre-Act 32 & -1.004\sym{***} & 0.804\sym{***} & -0.151\sym{***} \\
+                    & (0.155) & (0.185) & (0.042) \\
+    \quad Post-Act 32 & 0.494\sym{***} & 0.364\sym{***} & -0.073\sym{***} \\
+                    & (0.067) & (0.065) & (0.028) \\
+    \textbf{Dec-nobind} & & & \\
+    \quad Pre-Act 32 & 0.341\sym{***} & -0.585\sym{**} & 0.006 \\
+                    & (0.030) & (0.260) & (0.008) \\
+    \quad Post-Act 32 & -0.025 & 0.235\sym{***} & 0.006 \\
+                    & (0.054) & (0.011) & (0.006) \\
     \midrule
-    \textit{Pre-Act 32} & & & & \\
-    \quad $N$ & 10,977,594 & 4,091,601 & 10,977,594 & 10,977,594 \\
-    \quad $R^2$ & 0.852 & 0.864 & 0.589 & 0.589 \\
-    \quad Within $R^2$ & 0.000 & 0.000 & 0.000 & 0.000 \\
-    \quad Dep.\ mean & 2.225 & 2.286 & 0.125 & 0.875 \\
-    \quad Dep.\ SD & 1.191 & 1.661 & 0.190 & 0.190 \\
-    \textit{Post-Act 32} & & & & \\
-    \quad $N$ & 12,590,300 & 4,660,072 & 12,590,300 & 12,590,300 \\
-    \quad $R^2$ & 0.863 & 0.866 & 0.537 & 0.537 \\
-    \quad Within $R^2$ & 0.000 & 0.000 & 0.000 & 0.000 \\
-    \quad Dep.\ mean & 2.250 & 2.346 & 0.118 & 0.882 \\
-    \quad Dep.\ SD & 1.181 & 1.649 & 0.180 & 0.180 \\
+    \textit{Pre-Act 32} & & & \\
+    \quad $N$ & 10,977,594 & 4,091,601 & 10,977,594 \\
+    \quad $R^2$ & 0.852 & 0.864 & 0.589 \\
+    \quad Within $R^2$ & 0.000 & 0.000 & 0.000 \\
+    \quad Dep.\ mean & 2.225 & 2.286 & 0.125 \\
+    \quad Dep.\ SD & 1.191 & 1.661 & 0.190 \\
+    \textit{Post-Act 32} & & & \\
+    \quad $N$ & 12,590,300 & 4,660,072 & 12,590,300 \\
+    \quad $R^2$ & 0.863 & 0.866 & 0.537 \\
+    \quad Within $R^2$ & 0.000 & 0.000 & 0.000 \\
+    \quad Dep.\ mean & 2.250 & 2.346 & 0.118 \\
+    \quad Dep.\ SD & 1.181 & 1.649 & 0.180 \\
     \bottomrule
   \end{tabular}
-  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Treated cohorts split at first event year $c < 2012$ (Pre-Act~32) vs $c \geq 2012$ (Post-Act~32). $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

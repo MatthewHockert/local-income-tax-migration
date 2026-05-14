@@ -495,7 +495,7 @@ The sample period runs from 2002 to 2019. LODES coverage begins in 2002, and I t
 
 I impose a minimum employment threshold of 50 total jobs at the municipality level because small municipalities have share\_live\_in values dominated by sampling noise (a single worker moving changes the ratio by $1/N$). The 50-job threshold balances precision against sample size, and sensitivity analysis (Section~\ref{sec:robustness}) confirms stability across thresholds from 10 to 500. I also apply rate outlier filters: PA DCED reports the Local Services Tax (a flat dollar amount) in the same field as the EIT rate (a percentage) in some years, so dropping rates $>5$\% removes these data entry errors without affecting any real EIT rate (the highest standard EIT is $\sim$1\%; only Philadelphia exceeds 3\%). For April 1 alignment, LODES records employment as of April 1, and a rate change that takes effect mid-year could be misattributed if not aligned, so I assign each municipality-year the rate in effect on April 1, ensuring the tax rate a worker faces and the OD flow recording their location refer to the same date.
 
-The primary outcome variable for the headline causal analysis is the block-level log count of workers living in the block. The count directly measures the residential location of active workers and avoids the denominator fragility of block-level shares, which are mechanically sensitive at sparse geography because both the numerator and denominator move. At the municipality and school-district aggregations I also report resident-worker counts, workplace counts, in-commuter flows, and share outcomes (\textit{share\_live\_in}, \textit{share\_work\_outside}). Share outcomes at coarser geographies retain the interpretation of earlier literature; at the block level I treat them as supporting evidence rather than as the primary estimand. Fiscal outcomes include log EIT revenue, log total tax revenue, log total revenue, log police expenditure, log population, and log market value of real estate from the PA DCED Annual Financial Reports. Pre-treatment balance tests cover eleven observables including crime and building permits.
+The primary outcome variable for the headline causal analysis is the block-level log count of workers living in the block. The count directly measures the residential location of active workers and avoids the denominator fragility of block-level shares, which are mechanically sensitive at sparse geography because both the numerator and denominator move. At the municipality and school-district aggregations I also report resident-worker counts, workplace counts, in-commuter flows, and share outcomes (\textit{share\_live\_in}). Share outcomes at coarser geographies retain the interpretation of earlier literature; at the block level I treat them as supporting evidence rather than as the primary estimand. Fiscal outcomes include log EIT revenue, log total tax revenue, log total revenue, log police expenditure, log population, and log market value of real estate from the PA DCED Annual Financial Reports. Pre-treatment balance tests cover eleven observables including crime and building permits.
 
 For treatment definitions I use both a continuous and a binary specification. The continuous treatment is the current rate level (resident municipal, school district, and the home stack as defined in Equation~\ref{eq:piecewise}), capturing the intensive margin via TWFE and DCDH. The binary cohorts equal 1 after a municipality's first rate increase (or first decrease), enabling Sun-Abraham estimation of staggered-DiD-robust dynamic effects. The control group reflects the fact that Pennsylvania's EIT is universal, so the relevant control pool is municipalities with a stable rate over 2002--2019 (1{,}264 never-changed municipalities). For the Q3 clean-groups specification I further partition treated municipalities into increase-only (97) and decrease-only (24), dropping the flip-floppers that change in both directions.
 
@@ -1950,7 +1950,6 @@ three estimating units.
         log(in\_commuters)      & Inc-bind     & $-0.213$ (0.083) & $-0.206$ (0.082) \\
         log(total\_residents)   & Inc-bind     & $-0.100$ (0.033) & $-0.100$ (0.033) \\
         share\_live\_in         & Inc-bind     & $-0.045$ (0.010) & $-0.045$ (0.009) \\
-        share\_work\_outside    & Inc-bind     & $+0.041$ (0.016) & $+0.040$ (0.016) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
@@ -2385,15 +2384,6 @@ remaining block-level outcomes are reported here.
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \caption{Block-level realized-dose ES on the share of block
-           residents working outside their muni, faceted by
-           binding-state cell.}
-  \label{fig:app_block_es_shareout}
-  \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_share_work_outside.png}
-\end{figure}
-
 \paragraph{Municipality level, by cell.}
 The muni-level live-and-work figure (Figure~\ref{fig:es_realized_muni_live_work})
 appears in the main text where the joint Wald pre-trend is
@@ -2420,14 +2410,6 @@ reported here.
            living in their own muni, by cell.}
   \label{fig:app_es_realized_muni_share_in}
   \includegraphics[width=0.95\textwidth]{../figures/es_realized_share_live_in.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on the share of residents
-           working outside the muni, by cell.}
-  \label{fig:app_es_realized_muni_share_out}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_share_work_outside.png}
 \end{figure}
 
 \paragraph{School-district level, by cell.}
@@ -2462,14 +2444,6 @@ aggregation diagnostic in Section~\ref{subsec:results-sd}.
            living in their own muni, by cell.}
   \label{fig:app_sd_es_share_in}
   \includegraphics[width=0.95\textwidth]{../figures/sd_es_share_live_in.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{SD-level realized-dose ES on the share of residents
-           working outside the muni, by cell.}
-  \label{fig:app_sd_es_share_out}
-  \includegraphics[width=0.95\textwidth]{../figures/sd_es_share_work_outside.png}
 \end{figure}
 
 \subsection{Binary Sun--Abraham Interaction-Weighted Event Study}
@@ -2516,14 +2490,6 @@ Each figure shows the muni-cohort path on a residence-side outcome.
   \includegraphics[width=0.95\textwidth]{../figures/sa_binary_cousub_share_live_in.png}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level binary SA-IW ES on the share of residents
-           working outside the muni.}
-  \label{fig:app_sabin_cousub_share_out}
-  \includegraphics[width=0.95\textwidth]{../figures/sa_binary_cousub_share_work_outside.png}
-\end{figure}
-
 \paragraph{School-district level.}
 
 \begin{figure}[H]
@@ -2555,14 +2521,6 @@ Each figure shows the muni-cohort path on a residence-side outcome.
   \includegraphics[width=0.95\textwidth]{../figures/sa_binary_sd_share_live_in.png}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \caption{SD-level binary SA-IW ES on the share of residents
-           working outside the muni.}
-  \label{fig:app_sabin_sd_share_out}
-  \includegraphics[width=0.95\textwidth]{../figures/sa_binary_sd_share_work_outside.png}
-\end{figure}
-
 \paragraph{Block level.}
 Reported here for completeness; the thin-cohort caveat applies.
 
@@ -2588,14 +2546,6 @@ Reported here for completeness; the thin-cohort caveat applies.
            residents working in their own muni.}
   \label{fig:app_sabin_block_share_in}
   \includegraphics[width=0.95\textwidth]{../figures/sa_binary_block_home_in_muni_share.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Block-level binary SA-IW ES on the share of block
-           residents working outside the muni.}
-  \label{fig:app_sabin_block_share_out}
-  \includegraphics[width=0.95\textwidth]{../figures/sa_binary_block_share_work_outside.png}
 \end{figure}
 
 \subsection{HonestDiD Sensitivity Plots}
@@ -2634,14 +2584,6 @@ which the corresponding bar still excludes zero.
            working in their own muni.}
   \label{fig:app_honestdid_block_sharein}
   \includegraphics[width=0.85\textwidth]{../figures/honestdid_block_home_in_muni_share.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{HonestDiD sensitivity, block-level share of residents
-           working outside the muni.}
-  \label{fig:app_honestdid_block_shareout}
-  \includegraphics[width=0.85\textwidth]{../figures/honestdid_block_share_work_outside.png}
 \end{figure}
 
 \paragraph{Municipality level.}

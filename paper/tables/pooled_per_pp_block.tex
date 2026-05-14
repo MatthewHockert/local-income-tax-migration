@@ -3,30 +3,28 @@
   \caption{Pooled Inc/Dec headline --- block level (per pp)}
   \label{tab:pooled_per_pp_block}
   \small
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{lcccc}
+  \begin{tabular}{lccc}
     \toprule
-    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni & Share work outside \\
+    Outcome & Log(workers live) & Log(workers work) & Share live+work in muni \\
     \midrule
-    \textbf{Municipality rate ($\tau^{M}$)} & & & & \\
-    \quad $\Delta\tau > 0$ (Inc) & -0.045 & -0.066\sym{***} & -0.041\sym{***} & 0.041\sym{***} \\
-                           & (0.034) & (0.024) & (0.009) & (0.009) \\
-    \quad $\Delta\tau < 0$ (Dec) & 0.255\sym{***} & 0.097 & -0.025 & 0.025 \\
-                           & (0.089) & (0.229) & (0.022) & (0.022) \\
-    \textbf{School district rate ($\tau^{SD}$)} & & & & \\
-    \quad $\Delta\tau > 0$ (Inc) & 0.035 & 0.028 & -0.000 & 0.000 \\
-                           & (0.031) & (0.025) & (0.005) & (0.005) \\
-    \quad $\Delta\tau < 0$ (Dec) & 0.001 & -0.002 & -0.008\sym{***} & 0.008\sym{***} \\
-                           & (0.008) & (0.011) & (0.003) & (0.003) \\
+    \textbf{Municipality rate ($\tau^{M}$)} & & & \\
+    \quad $\Delta\tau > 0$ (Inc) & -0.045 & -0.066\sym{***} & -0.041\sym{***} \\
+                           & (0.034) & (0.024) & (0.009) \\
+    \quad $\Delta\tau < 0$ (Dec) & 0.255\sym{***} & 0.097 & -0.025 \\
+                           & (0.089) & (0.229) & (0.022) \\
+    \textbf{School district rate ($\tau^{SD}$)} & & & \\
+    \quad $\Delta\tau > 0$ (Inc) & 0.035 & 0.028 & -0.000 \\
+                           & (0.031) & (0.025) & (0.005) \\
+    \quad $\Delta\tau < 0$ (Dec) & 0.001 & -0.002 & -0.008\sym{***} \\
+                           & (0.008) & (0.011) & (0.003) \\
     \midrule
-    $N$ & 23,567,655 & 8,751,581 & 23,567,655 & 23,567,655 \\
-    $R^2$ & 0.858 & 0.865 & 0.563 & 0.563 \\
-    Within $R^2$ & 0.000 & 0.000 & 0.000 & 0.000 \\
-    Dep.\ mean & 2.238 & 2.318 & 0.121 & 0.879 \\
-    Dep.\ SD & 1.186 & 1.655 & 0.184 & 0.184 \\
+    $N$ & 23,567,655 & 8,751,581 & 23,567,655 \\
+    $R^2$ & 0.858 & 0.865 & 0.563 \\
+    Within $R^2$ & 0.000 & 0.000 & 0.000 \\
+    Dep.\ mean & 2.238 & 2.318 & 0.121 \\
+    Dep.\ SD & 1.186 & 1.655 & 0.184 \\
     \bottomrule
   \end{tabular}
-  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Each regression includes both rate-setters' direction-pooled treatments jointly; the four reported coefficients are $\beta^M_{\text{Inc}}$, $\beta^M_{\text{Dec}}$, $\beta^{SD}_{\text{Inc}}$, $\beta^{SD}_{\text{Dec}}$. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

@@ -22,12 +22,11 @@ dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 # Outcome and cell sets per level
 # ---------------------------------------------------------------------------
 muni_outcomes  <- c("log_live_and_work","log_in_commuters",
-                    "log_total_residents","share_live_in",
-                    "share_work_outside")
+                    "log_total_residents","share_live_in")
 block_outcomes        <- c("log_home_count","log_work_count",
-                           "home_in_muni_share","share_work_outside")
+                           "home_in_muni_share")
 block_outcomes_main   <- c("log_home_count","log_work_count")
-block_outcomes_shares <- c("home_in_muni_share","share_work_outside")
+block_outcomes_shares <- c("home_in_muni_share")
 cells_main     <- c("Inc-bind","Inc-becomes","Inc-nobind",
                     "Dec-bind","Dec-becomes-non","Dec-nobind")
 

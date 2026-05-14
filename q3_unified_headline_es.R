@@ -130,7 +130,7 @@ for (o in outcomes) {
 
     post <- ic[rel >= 0 & rel <= 5]
     pre  <- ic[rel <= -2]
-    wp <- wald_pretrend(m, \"^rel::-[2-9]\")
+    wp <- wald_pretrend(m, "^rel::-[2-9]")
     att_results[[length(att_results)+1L]] <- data.table(
       outcome = o, cell = cl,
       att_post_per_pp = round(mean(post$est, na.rm = TRUE), 3),
