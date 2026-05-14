@@ -43,8 +43,48 @@ cousub_dt <- prep(cousub_csv, "Municipality")
 sd_dt     <- prep(sd_csv,     "School district")
 
 # ---------------------------------------------------------------------------
-# Figure 1: Block-level pooled ES, 4 outcomes × Inc/Dec × muni/SD cohort
+# Figure 1a: Block-level pooled ES, MUNI-cohort stack only
+# Figure 1b: Block-level pooled ES, SD-cohort stack only
 # ---------------------------------------------------------------------------
+plot_block_pooled <- function(dt, side_label, color_main, out_path) {
+  if (is.null(dt) || nrow(dt) == 0) return(invisible())
+  dt <- copy(dt)
+  dt[, lo := est - 1.96 * se]
+  dt[, hi := est + 1.96 * se]
+  dt[, direction := factor(direction, levels = c("Inc","Dec"))]
+  block_outcomes <- c("log_home_count","log_work_count",
+                       "home_in_muni_share","share_work_outside")
+  dt[, outcome := factor(outcome, levels = block_outcomes,
+                          labels = outcome_label(block_outcomes))]
+  p <- ggplot(dt[!is.na(outcome)],
+              aes(x = rel, y = est, color = direction, fill = direction,
+                   group = direction)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = PAPER_GREY) +
+    geom_vline(xintercept = -0.5, linetype = "dotted", color = PAPER_GREY) +
+    geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.18, color = NA) +
+    geom_line(linewidth = 0.7) +
+    geom_point(size = 1.1) +
+    facet_wrap(~ outcome, ncol = 2, scales = "free_y") +
+    scale_color_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
+                        labels = c(Inc = "Pooled Inc",
+                                   Dec = "Pooled Dec")) +
+    scale_fill_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
+                       guide = "none") +
+    labs(title = paste0("Block-level pooled realized-dose ES (", side_label, " cohort)"),
+         subtitle = "Per-pp coefficient by event-time. Color = direction. 95% confidence ribbons.",
+         x = expression(paste("Event time ", italic(k))),
+         y = expression(beta[k])) +
+    theme_paper(base_size = 10)
+  ggsave(out_path, p, width = 11, height = 6.5, dpi = 300)
+  cat(sprintf("Wrote %s\n", basename(out_path)))
+}
+
+plot_block_pooled(block_muni_dt, side_label = "muni-rate",
+                   out_path = file.path(fig_dir, "pooled_es_block_muni_cohort.png"))
+plot_block_pooled(block_sd_dt,   side_label = "school-district",
+                   out_path = file.path(fig_dir, "pooled_es_block_sd_cohort.png"))
+
+# Also keep the combined overlay as a supplementary figure for the appendix
 block_dt <- rbind(block_muni_dt, block_sd_dt, fill = TRUE)
 if (!is.null(block_dt) && nrow(block_dt) > 0) {
   block_dt[, lo := est - 1.96 * se]
@@ -71,17 +111,16 @@ if (!is.null(block_dt) && nrow(block_dt) > 0) {
                        guide = "none") +
     scale_linetype_manual(values = c(Municipality = "solid",
                                       "School district" = "dotted")) +
-    labs(title = "Block-level pooled realized-dose event study",
+    labs(title = "Block-level pooled realized-dose event study (overlay)",
          subtitle = paste("Per-pp coefficient by event-time. Color: direction;",
-                          "line type: rate-setter (solid = muni cohort,",
-                          "dotted = SD cohort). 95% confidence ribbons."),
+                          "line type: rate-setter cohort. 95% confidence ribbons."),
          x = expression(paste("Event time ", italic(k))),
          y = expression(beta[k])) +
     theme_paper(base_size = 9) +
     theme(legend.box = "vertical")
   ggsave(file.path(fig_dir, "pooled_es_overlay_block.png"),
          p1, width = 12, height = 7.5, dpi = 300)
-  cat("Wrote figures/pooled_es_overlay_block.png\n")
+  cat("Wrote figures/pooled_es_overlay_block.png (supplementary overlay)\n")
 }
 
 # ---------------------------------------------------------------------------

@@ -923,12 +923,7 @@ literature-comparable baseline: it answers ``what is the average per-pp
 effect of a muni-rate hike on residents, ignoring binding state?''
 This is closest in form to the population-elasticity work of
 \citet{yangRESPONSIVENESSINCOMELOCAL2017} on Indiana local income
-taxes. \citet{bagchiEffectsIntroducingWithholding2022} studies a
-related but distinct outcome---tax-compliance and revenue
-responses to Act~32, not residential sorting per se---and the
-pre/post-Act-32 split in Section~\ref{subsec:rob-act32} is the
-counterpart on the residential margin to Bagchi's revenue-side
-result. The
+taxes. The
 binding-state decomposition that follows in
 Equation~(\ref{eq:headline}) then explains which sub-population
 of the treated muni cohort drives the pooled coefficient.
@@ -981,30 +976,67 @@ appear together in Section~\ref{subsec:results-block}.
 \label{subsec:stacked-continuous}
 
 The binding-state decomposition extends the pooled spec by splitting
-each direction tag into its three binding-state cells, and is the main
-estimator of the paper. The construction is stacked continuous
-difference-in-differences.
-For each side $s$ and each cohort year $c$ at which any muni's first
-event on side $s$ occurs, build a sub-experiment $\mathcal{S}^s_c$:
+each direction tag into its three binding-state cells, and is the
+main estimator of the paper. The construction is stacked continuous
+difference-in-differences. For each rate-setter side
+$s \in \{\text{muni},\, \text{SD}\}$ and each cohort year $c$ at
+which any municipality's first event on side $s$ occurs, I build a
+sub-experiment $\mathcal{S}^s_c$ consisting of two types of units.
+The treated set is the municipalities with first-event year
+$c^s_i = c$ and a non-NC cell on side $s$; the control set is all
+NC$^s$ municipalities (whose rate $\tau^s$ never changes over
+2002--2019). The window covers calendar years $t \in [c-K,\, c+K]$
+with $K=5$. The choice $K=5$ is conventional in the staggered-DiD
+literature \citep[e.g.,][]{cengizEffectMinimumWages2019a} and is
+calibrated against the panel:
+$K=5$ yields a $5$-pre, $5$-post window that fits inside
+2002--2019 with full coverage for cohorts $c \in [2007, 2014]$
+(i.e., the bulk of the treated mass) and gives the
+realized-dose ES four pre-event leads to test pre-trends. A
+shorter $K$ would lose post-event coefficients before the cumulative
+dose has fully realized; a longer $K$ would truncate the pre-period
+on early cohorts and the post-period on late cohorts. Sensitivity to
+$K \in \{3, 4, 6, 7\}$ leaves the headline coefficient stable to
+two decimal places (not reported separately).
 
-The treated set in sub-experiment $\mathcal{S}^s_c$ consists of municipalities
-$i$ with $c^s_i = c$ and cell$^s_i \neq \text{NC}$; the control set
-consists of all NC$^s$ municipalities (never-changed on side $s$). The window
-covers years $t \in [c-K, c+K]$ with $K = 5$. Each muni-year observation
-in the stack carries a stack indicator $s_i = c$, relative event time
-$\ell_{it} = t - c$, and stack-muni and stack-year identifiers
-$\tilde{i} = (s_i, i)$ and $\tilde{t} = (s_i, t)$.
+A concrete example helps fix ideas. Wilkes-Barre is an Act~47
+distressed city with a muni resident-rate increase from $1.5\%$ to
+$2.0\%$ in 2009. Its work-side nonresident rate is $1.0\%$, so the
+home stack of $(1.5 + 0.5) = 2.0\%$ pre-event already exceeds the
+nonresident rate; the home stack continues to bind post-event at
+$(2.0 + 0.5) = 2.5\% > 1.0\%$. Wilkes-Barre is therefore an
+Inc-bind muni with $c^M_{\text{WB}} = 2009$. The sub-experiment
+$\mathcal{S}^M_{2009}$ runs on the window $[2004, 2014]$. Its
+treated set includes Wilkes-Barre and any other Inc-bind /
+Inc-becomes / Inc-nobind / Dec-cell municipality whose first muni
+event was 2009 ($\approx 10$ munis); its control set is the
+$\sim$2{,}400 NC munis whose resident rate stayed flat across
+2002--2019. Each NC muni contributes $11$ muni-year observations
+($[2004, 2014]$) to this sub-experiment. The dose variable
+$\Delta\tau^{\text{muni}}_{it} = \tau^{\text{muni}}_{it} - \tau^{\text{muni}}_{i, 2008}$
+is zero for $t \leq 2008$ and equals $0.005$ for $t \geq 2009$ for
+Wilkes-Barre (and analogously for other 2009 cohort munis based on
+their own pre-event baseline). Relative event time is
+$\ell_{it} = t - 2009$, so $\ell = -5,-4,\dots,0,1,\dots,5$.
 
-Stacking all sub-experiments yields a single panel where each NC muni
-appears once per cohort and each treated muni appears in exactly one
-sub-experiment. Within each sub-experiment, controls are clean (no
-treated muni from another cohort serves as control), avoiding the
-negative-weighting problem in vanilla TWFE under staggered treatment
+Each muni-year observation in $\mathcal{S}^s_c$ carries a stack
+indicator $s_i = c$, relative event time $\ell_{it} = t - c$, and
+stack-by-muni and stack-by-year identifiers
+$\tilde{i} = (s_i, i)$ and $\tilde{t} = (s_i, t)$ that allow each
+unit to appear in the stacked panel multiple times under different
+stack identifiers (this is how NC controls re-appear across cohorts
+without contaminating cohort-specific identification). Stacking
+across all cohort years yields a single panel in which each NC muni
+appears once per cohort and each treated muni appears in exactly
+one sub-experiment---its first-event cohort. Within each sub-experiment,
+controls are clean (no treated muni from another cohort serves as
+control), which is the property that fixes the negative-weighting
+problem in vanilla TWFE under staggered treatment
 \citep{goodman-baconDifferenceindifferencesVariationTreatment2021}.
 
 The stacked-DiD construction is in the lineage of
 \citet{cengizEffectMinimumWages2019a} (138 minimum-wage events, stacked event-by-event
-with continuous treatment), \citet{fadlonFamilyLaborSupply2021a} (severe health shocks,
+with continuous treatment), \citet{fadlonFamilyLaborSupply2021b} (severe health shocks,
 stacked with future-treated households as controls), and
 \citet{deshpandeWhoScreenedOut2019a} (SSA field-office closings, stacked with
 future-closing ZIP codes as controls). Three differences are worth
@@ -1038,7 +1070,7 @@ event-by-event spec does not produce.
 The third difference is the binding-state cell partitioning, which is
 new relative to all three antecedents. \citet{cengizEffectMinimumWages2019a} pools all minimum-wage
 events without a within-design taxonomy of treated units;
-\citet{fadlonFamilyLaborSupply2021a} and \citet{deshpandeWhoScreenedOut2019a} have homogeneous
+\citet{fadlonFamilyLaborSupply2021b} and \citet{deshpandeWhoScreenedOut2019a} have homogeneous
 treatments (death, closure). My decomposition exploits the piecewise
 PA EIT rule to partition treated municipalities into cells whose ex ante
 predicted response differs by binding state, generating a
@@ -1048,7 +1080,7 @@ cannot produce.
 Some treated municipalities change rates more than once in 2002--2019, raising a coding question about which event defines the cohort.
 A treated muni $i$ may have more than one rate-change event over
 the panel. I classify each such muni by the binding-state transition
-of its \emph{first} event and assign $i$ to the corresponding cell on
+of its first event and assign $i$ to the corresponding cell on
 side $s$. The muni then appears in exactly one sub-experiment
 (its first-event cohort $c^s_i$), not in subsequent cohorts triggered
 by later events.
@@ -1095,7 +1127,7 @@ Y_{\tilde{i}\tilde{t}} \;=\; \alpha_{\tilde{i}} \;+\; \gamma_{\tilde{t}}
 \end{equation}
 
 where
-$\mathcal{C}_{\backslash \text{NC}} = \{\text{Inc-bind, Inc-becomes, Inc-nobind, Dec-bind, Dec-becomes-non, Dec-nobind}\}$ is the set of non-NC cells; NC is the omitted reference category on each side, so for each of the two rate-setter sides (muni and SD) the regression estimates six $\beta_k$ coefficients, each interpreted as the dose-response coefficient \emph{relative to the NC trend on that side}, holding the other side's cell $\times$ dose interaction fixed; each unit $i$ appears in exactly one sub-experiment for each side where it is in a non-NC cell, while NC units appear in every sub-experiment on the side(s) where they are stable; $\alpha_{\tilde{i}}$ absorbs all time-invariant features of the muni-stack pair (so each muni has a separate FE for each cohort it appears in) and $\gamma_{\tilde{t}}$ absorbs cohort-specific time effects; $\mathbf{X}_{it}$ is the share-based control vector specified above; and standard errors are clustered at the muni level (not the muni-stack level), accommodating within-muni serial correlation across sub-experiments.
+$\mathcal{C}_{\backslash \text{NC}} = \{\text{Inc-bind, Inc-becomes, Inc-nobind, Dec-bind, Dec-becomes-non, Dec-nobind}\}$ is the set of non-NC cells. NC is the omitted reference category on each side, so for each of the two rate-setter sides (muni and SD) the regression estimates six $\beta_k$ coefficients, each interpreted as the dose-response coefficient relative to the NC trend on that side, holding the other side's cell $\times$ dose interaction fixed. The unit of observation $\tilde{i}$ in the regression is a (municipality, stack) pair: each treated municipality contributes observations in exactly one stack (its first-event cohort), while each NC municipality contributes observations in every stack. The fixed effect $\alpha_{\tilde{i}}$ is therefore a separate intercept for each (municipality, stack) combination---so a single NC municipality has a different FE in each cohort it appears in---and $\gamma_{\tilde{t}} = \gamma_{(c, t)}$ is a separate calendar-year shock per cohort. The control vector $\mathbf{X}_{it}$ holds the share-based fiscal controls described above. Standard errors are clustered at the underlying \emph{municipality}, not at the (municipality, stack) level. Cluster-at-muni is the right choice because the same municipality's outcomes are correlated across the multiple stacks in which it appears as an NC control; the muni-by-stack FE absorbs the level but not the residual covariance.
 
 The cell coefficient $\beta^s_k$ is the per-pp dose-response of outcome
 $Y$ to a 1 percentage-point change in rate $s$, restricted to municipalities
@@ -1272,7 +1304,7 @@ dose-response at each event time and average to the corresponding
 cell coefficient in the headline specification when the unit's rate
 path is a single step at the event year.
 
-\subsubsection{Binary Sun--Abraham IW Event Study}
+\subsubsection{Binary Sun--Abraham Interaction Weighted Event Study}
 \label{subsec:binary-sa-es}
 
 The realized-dose diagnostic above tests whether \textit{larger}
@@ -1280,7 +1312,7 @@ eventual rate changes are associated with differential pre-trends. A
 complementary diagnostic asks the simpler question of whether
 ever-treated units differ in mean trajectory from never-treated units,
 ignoring dose magnitude. For this I use the
-Sun--Abraham interaction-weighted event study \citep{sunab2021}
+Sun--Abraham interaction-weighted (SA-IW) event study \citep{sunab2021}
 implemented in \texttt{fixest::sunab()}:
 \begin{equation}
 Y_{it} = \alpha_i + \gamma_t
@@ -1354,46 +1386,6 @@ auxiliary diagnostics (industry decomposition, pre/post Act 32 split,
 dose-magnitude terciles, alternative control pools, and sample
 variants) reported either later in the main text or in the Appendix.
 
-\begin{table}[H]
-    \centering
-    \caption{Specification roadmap}
-    \label{tab:spec-roadmap}
-    \small
-    \resizebox{\textwidth}{!}{
-    \begin{tabular}{p{4.4cm}p{4.4cm}p{3.2cm}p{3.6cm}}
-        \toprule
-        Specification & Role in paper & Causal status & Where reported \\
-        \midrule
-        Block-level binding-state decomposition  & Main causal estimate (block log home count, Inc-bind) & Preferred & Main text, \S\ref{subsec:results-block} \\
-        Pooled Inc/Dec (aggregate)               & Conventional literature benchmark; motivates decomposition & Descriptive / benchmark & Main text, \S\ref{subsec:results-pooled} \\
-        Municipality-level binding-state decomposition & Policy-jurisdiction magnitude calibration & Secondary, caveated (joint pre-trend marginal) & Main text, \S\ref{subsec:results-headline} \\
-        Industry decomposition (muni level)      & Mechanism: local-services demand spillover & Suggestive & Main text, \S\ref{subsec:het-industry} \\
-        School-district aggregation              & Aggregation diagnostic (non-result) & Not load-bearing & Brief \S\ref{subsec:results-sd}; full tables in Appendix \\
-        Pre/post Act 32 split                    & Enforcement-break heterogeneity & Robustness & Brief main text; full in Appendix \\
-        Block share outcomes                     & Sparse-denominator caveat & Supporting & Appendix only \\
-        Binary Sun--Abraham IW ES                & Average parallel-trends diagnostic & Diagnostic & Appendix \\
-        Dose-magnitude tercile                   & Linearity check & Robustness & Appendix \\
-        Clean-in-window control                  & Alternative control pool & Robustness & Appendix \\
-        Sample-variant comparison                & Strict / filled / drop-incomplete & Robustness & Appendix \\
-        \bottomrule
-    \end{tabular}
-    }
-    \vspace{0.3em}
-    \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} The block-level binding-state
-        decomposition is the preferred causal estimate because the
-        block observes both rate-setting jurisdictions at their
-        native level and its realized-dose pre-trend is clean. The
-        pooled Inc/Dec model is a literature-comparable benchmark
-        but mixes binding and non-binding events. The
-        municipality-level estimate is retained as
-        policy-jurisdiction calibration; its Inc-bind realized-dose
-        joint Wald F-test passes parallel trends at conventional
-        levels ($p=0.23$, stat $5.62$ on 4 df). The school-district aggregation does not
-        produce robust evidence of sorting and is treated as a
-        diagnostic non-result.
-    \end{minipage}
-\end{table}
 
 %==========================================================
 \section{Results}
@@ -1472,17 +1464,17 @@ completeness.
 
 Tables~\ref{tab:es_pooled_block} and~\ref{tab:es_pooled_block_sd}
 report the ATT-summary statistics for the block-level pooled event
-study (muni- and SD-cohort stacks respectively), with cluster-robust
-Wald pre-trend $p$-values. Figure~\ref{fig:pooled_es_block} then
-plots all four event-time paths side by side. Tables
-\ref{tab:es_pooled_cousub} and~\ref{tab:es_pooled_sd} report the
-analogous ATT summaries for the municipality- and SD-level pooled
-specifications; Figure~\ref{fig:pooled_es_muni_sd} overlays those
-event studies on the same axes, with color encoding direction and
-line type encoding aggregation level (solid = municipality, dotted =
-school district). The Wald $p$-values are the joint pre-trend test
-$H_0\colon \beta_k = 0$ for all $k \leq -2$ using the model's
-cluster-robust variance matrix.
+study, separately on the muni-cohort and SD-cohort stacks, with
+cluster-robust Wald pre-trend $p$-values. Figures~\ref{fig:pooled_es_block_muni}
+and \ref{fig:pooled_es_block_sd} plot the event-time paths for each
+stack, side by side, with color encoding direction (red Inc, blue
+Dec). Tables~\ref{tab:es_pooled_cousub} and~\ref{tab:es_pooled_sd}
+report the analogous ATT summaries for the municipality- and
+SD-level pooled specifications;
+Figure~\ref{fig:pooled_es_muni_sd} overlays those event studies on
+the same axes for visual comparison. The Wald $p$-values are the
+joint pre-trend test $H_0\colon \beta_k = 0$ for all $k \leq -2$
+using the model's cluster-robust variance matrix.
 
 \input{tables/es_pooled_block_summary.tex}
 
@@ -1490,27 +1482,37 @@ cluster-robust variance matrix.
 
 \begin{figure}[H]
   \centering
-  \caption{Block-level pooled realized-dose event study: four pre-
-           and post-event paths corresponding to the four pooled
-           coefficients in Table~\ref{tab:pooled_per_pp_block}.}
-  \label{fig:pooled_es_block}
-  \includegraphics[width=0.95\textwidth]{../figures/pooled_es_overlay_block.png}
+  \caption{Block-level pooled realized-dose event study, muni-cohort
+           stack. Inc (red) and Dec (blue) coefficients on the four
+           block outcomes corresponding to the four pooled coefficients
+           in Table~\ref{tab:pooled_per_pp_block}.}
+  \label{fig:pooled_es_block_muni}
+  \includegraphics[width=0.95\textwidth]{../figures/pooled_es_block_muni_cohort.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Per-pp realized-dose coefficient at
-    each event-time, block-level stacked-continuous DiD with
+    each event-time. Block-level stacked-continuous DiD with
     block-by-stack and year-by-stack fixed effects and two-way
-    clustering at the municipality and school-district levels. Each
-    line corresponds to one of the four coefficients in
-    Table~\ref{tab:pooled_per_pp_block}: color encodes direction
-    (red = pooled Inc; blue = pooled Dec); line type encodes
-    rate-setter (solid = muni-cohort stack with
-    \texttt{realized\_dose\_muni} as the event-time interaction;
-    dotted = SD-cohort stack with \texttt{realized\_dose\_sd}). The
-    two stacks are parallel: each block enters the muni stack at its
-    first muni-rate event year $c^M_b$ and the SD stack at its first
-    SD-rate event year $c^{SD}_b$; relative-event-time $k$ is defined
-    against the relevant rate-setter's event year. Ribbons are 95\%
-    confidence bands; reference period $k = -1$ omitted.
+    clustering at the municipality and school-district levels.
+    Relative event-time $k$ is defined against each block's first
+    muni-rate event year $c^M_b$. Ribbons are 95\% confidence
+    bands; reference period $k = -1$ omitted.
+  \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{Block-level pooled realized-dose event study, SD-cohort
+           stack. Inc (red) and Dec (blue) coefficients on the four
+           block outcomes corresponding to the four pooled coefficients
+           in Table~\ref{tab:pooled_per_pp_block}.}
+  \label{fig:pooled_es_block_sd}
+  \includegraphics[width=0.95\textwidth]{../figures/pooled_es_block_sd_cohort.png}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} As in Figure~\ref{fig:pooled_es_block_muni},
+    but with relative event-time $k$ defined against each block's
+    first school-district-rate event year $c^{SD}_b$. The combined
+    muni-cohort and SD-cohort overlay is reported in
+    Appendix~\ref{app:es-realized} for visual comparison.
   \end{minipage}
 \end{figure}
 
