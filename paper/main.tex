@@ -2052,7 +2052,7 @@ municipality at the muni boundary, with the welfare cost accruing
 elsewhere through relocation and the local-services demand
 spillover documented above.
 
-Six limitations merit acknowledgment. First, while the block-level
+Seven limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and
 well-identified, the block-level share outcome
 (the share of block residents working in their own muni) is null in
@@ -2101,7 +2101,27 @@ treated units, using an explicit spatial weighting matrix on the
 adjacency graph. Applying it to the PA cousub adjacency graph is
 left for future work.
 
-Sixth, the paper does not estimate a comparable elasticity for
+Sixth, I do not currently estimate the headline using the
+heterogeneity-robust continuous-treatment difference-in-differences
+estimator of \citet{deChaisemartin2022Continuous}, which generalizes
+the de~Chaisemartin--D'Haultf{\oe}uille framework
+\citep{deChaisemartin2020TWFE, deChaisemartin2023ImperfectPT} to
+continuously distributed treatments at every period and leverages
+switchers (units that move both up and down in dose) for
+identification. An earlier iteration of this paper used a
+prototype CDH-continuous specification at the cousub level; the
+block-level analog is computationally prohibitive on the current
+stacked panel ($\sim 21$M block-years $\times$ multiple cohorts) and
+is left for future work. Re-estimating the headline with
+\texttt{did\_multiplegt\_dyn}
+\citep{deChaisemartin2025MultipleGtDyn}---once the package
+documentation and switcher-based identification at this scale are
+stable---would also let me exploit the rate-decrease (Dec)
+cohorts, currently too thin under conventional cluster-robust
+inference, as identification rather than just as a directional
+mirror.
+
+Seventh, the paper does not estimate a comparable elasticity for
 the property tax, the other major local-revenue lever in
 Pennsylvania. The Oates (1969) capitalization theory predicts a
 substantially smaller residential-sorting elasticity for property
