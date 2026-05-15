@@ -228,7 +228,7 @@ diagnostics, and Section~\ref{sec:discussion} concludes.
 \label{sec:background}
 %==========================================================
 
-Among U.S. states that authorize sub-state income taxation,
+Among U.S.\ states that authorize sub-state income taxation,
 Pennsylvania has the deepest cross-section of jurisdictions setting
 their own rate: approximately 2{,}500 municipalities and 500 school
 districts each levy a separate Earned Income Tax (EIT) on essentially
@@ -411,9 +411,9 @@ response at all depending on the binding state pre- and post-event.
 \label{subsec:cells}
 
 For each muni $i$ and each rate variable $\tau \in \{\tau^{\text{res,muni}},
-\tau^{\text{SD}}, \tau^{\text{nr,muni}}\}$, classify the muni's first
+\tau^{\text{SD}}, \tau^{\text{nr,muni}}\}$, classify the municipality's first
 observed rate event by direction (Increase / Decrease) and binding-state
-transition relative to the muni's own home-stack vs nonresident rate
+transition relative to the municipality's own home-stack vs nonresident rate
 comparison:
 %
 An \emph{Inc-bind} event is a rate increase in which the home stack was binding both pre and post, so the bill rises by the full $\Delta\tau$ for in-muni residents; this is the cell with the predicted strongest behavioral response. An \emph{Inc-becomes} event is a rate increase that flips the home stack from non-binding to binding, so the bill rises by less than the full $\Delta\tau$ (only the portion above the work nonres rate), generating an intermediate predicted response. An \emph{Inc-nobind} event is a rate increase in which the home stack stays below the nonres rate throughout, so the bill never moves; the predicted response is zero, and this cell serves as the within-design placebo.
@@ -450,7 +450,7 @@ district rate $\tau^{\text{SD}}$ also affects the home stack, but is
 set by school districts rather than municipalities, so the predicted
 mechanism is the same binding-rule channel as the muni rate even
 though the SD's institutional decision-making differs from the
-muni's. The muni nonresident rate $\tau^{\text{nr,muni}}$ affects
+municipality's. The muni nonresident rate $\tau^{\text{nr,muni}}$ affects
 nonresident workers commuting in, since the piecewise rule means it
 moves the bill of workers from low-home-stack origins.
 
@@ -680,12 +680,12 @@ NC-purity filter described in Section~\ref{sec:strategy}.
     }
     \vspace{0.3em}
     \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} Cells classified at each muni's first
+        \footnotesize \textit{Notes:} Cells classified at each municipality's first
         observed rate event on the relevant side. Munis with rate changes
         whose first-event binding state cannot be determined (NA pre-event
         nonresident rate) are dropped (not pooled with NC). On the
         nonresident side, Inc-bind and Inc-becomes cells are empty in PA
-        because the muni's nonresident rate almost never exceeds the muni's
+        because the municipality's nonresident rate almost never exceeds the municipality's
         own home stack at the muni-self-pair level.
     \end{minipage}
 \end{table}
@@ -793,7 +793,7 @@ $\tau^{\text{nr,muni}}$ in the pre- and post-event years. The NC
 reference category is restricted strictly to units whose rate
 $\tau^s$ never changes over 2002--2019. Units with rate changes
 whose first event has an undefined binding state---typically because
-the muni's nonresident rate is missing in the pre-event year due to
+the municipality's nonresident rate is missing in the pre-event year due to
 DCED reporting gaps before Act 32---are categorized as ``Uncertain''
 and dropped: pooling them with NC would contaminate the control trend
 with treated-but-unclassified units, while reporting them in their
@@ -841,7 +841,7 @@ Section~\ref{subsec:three-units}.
 Fiscal controls are share-based and time-varying, with the exact set
 keyed to the estimating unit. The shares are constructed as
 numerator-over-total ratios so that they absorb compositional changes
-in the muni's or district's fiscal posture without conflating with
+in the municipality's or district's fiscal posture without conflating with
 the level of total spending.
 
 Municipality-level regressions use six share controls from the DCED
@@ -854,7 +854,7 @@ are revenue shares: \texttt{share\_eit} (Earned Income Tax revenue
 collected / total revenue), \texttt{share\_re} (real-estate property
 tax revenue / total revenue), and \texttt{share\_intergov}
 (intergovernmental revenue, which is grant and pass-through revenue
-from state and federal governments---e.g., Liquid Fuels Tax
+from state and federal governments---e.g.\ Liquid Fuels Tax
 distributions, Community Development Block Grants, ARPA transfers---divided
 by total revenue).
 
@@ -978,7 +978,7 @@ with $K=5$. The choice $K=5$ is conventional in the staggered-DiD
 literature and is calibrated against the panel:
 $K=5$ yields a $5$-pre, $5$-post window that fits inside
 2002--2019 with full coverage for cohorts $c \in [2007, 2014]$
-(i.e., the bulk of the treated mass) and gives the
+(i.e.\ the bulk of the treated mass) and gives the
 realized-dose ES four pre-event leads to test pre-trends. A
 shorter $K$ would lose post-event coefficients before the cumulative
 dose has fully realized; a longer $K$ would truncate the pre-period
@@ -1029,7 +1029,7 @@ six treated examples are one per binding-state cell. The bottom row
 is the never-changed (NC) control band: every NC municipality
 contributes observations to \emph{every} treated cohort's
 sub-experiment, in calendar years matching that cohort's window.
-Early cohorts (e.g., the 2006 Inc-becomes example) have a slightly
+Early cohorts (e.g.\ the 2006 Inc-becomes example) have a slightly
 truncated pre-period because their $c-K$ year falls just before the
 panel's 2002 start; the stacked panel handles this by simply omitting
 the unobserved pre-event years.
@@ -1063,7 +1063,7 @@ side $s$. The muni then appears in exactly one sub-experiment
 by later events.
 
 Subsequent rate changes within the same muni accumulate into
-$\Delta\tau^s_{it}$, the \emph{cumulative} dose from the muni's
+$\Delta\tau^s_{it}$, the \emph{cumulative} dose from the municipality's
 pre-event baseline. Concretely: suppose muni $i$ has $\tau^s_i = 0.50$
 in years 2005--2009, $\tau^s_i = 0.70$ in 2010 (first event,
 $c^s_i = 2010$, baseline $= 0.50$), and $\tau^s_i = 1.00$ from 2014
@@ -1123,7 +1123,7 @@ The cell decomposition partitions the treated set by whether the rate
 change moved the bill. The reference for each cell coefficient is the
 NC trend on the same side. The triple decomposition (muni $\times$ SD
 $\times$ nr) lets us read off, in a single regression: which rate moves
-which outcome, conditional on the muni's binding state on that side.
+which outcome, conditional on the municipality's binding state on that side.
 
 The identifying variation in this design comes from the cross-unit distribution of cumulative rate changes after each unit's first event.
 Figure~\ref{fig:dose_trajectory} traces the mean cumulative
@@ -1552,7 +1552,7 @@ The muni-rate cells deliver the headline block-level finding; the SD-rate cells 
 \input{tables/headline_block_sd_results.tex}
 
 The Inc-nobind cell serves as the within-design placebo: it contains municipalities whose home
-stack remained below the muni's nonresident rate after the rate hike,
+stack remained below the municipality's nonresident rate after the rate hike,
 so the bill never moved for in-muni residents. The institutional rule
 predicts no behavioral response, and the Inc-nobind coefficient on
 the log count of residents working in their own municipality is statistically null ($-0.062$, SE
@@ -1581,7 +1581,7 @@ the unified two-rate-setter design that artifact disappears. The
 work-side nonresident rate $\tau^{\text{nr}}$ enters the
 binding-state classification but is not itself a treatment in the
 headline regression; its cell coefficients are imprecise because the
-muni nonresident rate almost never exceeds the muni's own home stack
+muni nonresident rate almost never exceeds the municipality's own home stack
 at the muni-self-pair level in PA.
 
 \subsubsection{Municipality level (calibration)}

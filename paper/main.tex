@@ -395,9 +395,9 @@ response at all depending on the binding state pre- and post-event.
 \label{subsec:cells}
 
 For each muni $i$ and each rate variable $\tau \in \{\tau^{\text{res,muni}},
-\tau^{\text{SD}}, \tau^{\text{nr,muni}}\}$, classify the muni's first
+\tau^{\text{SD}}, \tau^{\text{nr,muni}}\}$, classify the municipality's first
 observed rate event by direction (Increase / Decrease) and binding-state
-transition relative to the muni's own home-stack vs nonresident rate
+transition relative to the municipality's own home-stack vs nonresident rate
 comparison:
 %
 An \emph{Inc-bind} event is a rate increase in which the home stack was binding both pre and post, so the bill rises by the full $\Delta\tau$ for in-muni residents; this is the cell with the predicted strongest behavioral response. An \emph{Inc-becomes} event is a rate increase that flips the home stack from non-binding to binding, so the bill rises by less than the full $\Delta\tau$ (only the portion above the work nonres rate), generating an intermediate predicted response. An \emph{Inc-nobind} event is a rate increase in which the home stack stays below the nonres rate throughout, so the bill never moves; the predicted response is zero, and this cell serves as the within-design placebo.
@@ -434,7 +434,7 @@ district rate $\tau^{\text{SD}}$ also affects the home stack, but is
 set by school districts rather than municipalities, so the predicted
 mechanism is the same binding-rule channel as the muni rate even
 though the SD's institutional decision-making differs from the
-muni's. The muni nonresident rate $\tau^{\text{nr,muni}}$ affects
+municipality's. The muni nonresident rate $\tau^{\text{nr,muni}}$ affects
 nonresident workers commuting in, since the piecewise rule means it
 moves the bill of workers from low-home-stack origins.
 
@@ -665,12 +665,12 @@ NC-purity filter described in Section~\ref{sec:strategy}.
     }
     \vspace{0.3em}
     \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} Cells classified at each muni's first
+        \footnotesize \textit{Notes:} Cells classified at each municipality's first
         observed rate event on the relevant side. Munis with rate changes
         whose first-event binding state cannot be determined (NA pre-event
         nonresident rate) are dropped (not pooled with NC). On the
         nonresident side, Inc-bind and Inc-becomes cells are empty in PA
-        because the muni's nonresident rate almost never exceeds the muni's
+        because the municipality's nonresident rate almost never exceeds the municipality's
         own home stack at the muni-self-pair level.
     \end{minipage}
 \end{table}
@@ -805,7 +805,7 @@ $\tau^{\text{nr,muni}}$ in the pre- and post-event years. The NC
 reference category is restricted strictly to units whose rate
 $\tau^s$ never changes over 2002--2019. Units with rate changes
 whose first event has an undefined binding state---typically because
-the muni's nonresident rate is missing in the pre-event year due to
+the municipality's nonresident rate is missing in the pre-event year due to
 DCED reporting gaps before Act 32---are categorized as ``Uncertain''
 and dropped: pooling them with NC would contaminate the control trend
 with treated-but-unclassified units, while reporting them in their
@@ -853,7 +853,7 @@ Section~\ref{subsec:three-units}.
 Fiscal controls are share-based and time-varying, with the exact set
 keyed to the estimating unit. The shares are constructed as
 numerator-over-total ratios so that they absorb compositional changes
-in the muni's or district's fiscal posture without conflating with
+in the municipality's or district's fiscal posture without conflating with
 the level of total spending.
 
 Municipality-level regressions use six share controls from the DCED
@@ -1113,7 +1113,7 @@ side $s$. The muni then appears in exactly one sub-experiment
 by later events.
 
 Subsequent rate changes within the same muni accumulate into
-$\Delta\tau^s_{it}$, the \emph{cumulative} dose from the muni's
+$\Delta\tau^s_{it}$, the \emph{cumulative} dose from the municipality's
 pre-event baseline. Concretely: suppose muni $i$ has $\tau^s_i = 0.50$
 in years 2005--2009, $\tau^s_i = 0.70$ in 2010 (first event,
 $c^s_i = 2010$, baseline $= 0.50$), and $\tau^s_i = 1.00$ from 2014
@@ -1173,7 +1173,7 @@ The cell decomposition partitions the treated set by whether the rate
 change moved the bill. The reference for each cell coefficient is the
 NC trend on the same side. The triple decomposition (muni $\times$ SD
 $\times$ nr) lets us read off, in a single regression: which rate moves
-which outcome, conditional on the muni's binding state on that side.
+which outcome, conditional on the municipality's binding state on that side.
 
 The identifying variation in this design comes from the cross-unit distribution of cumulative rate changes after each unit's first event.
 Figure~\ref{fig:dose_trajectory} traces the mean cumulative
@@ -1643,7 +1643,7 @@ not use them to identify the headline causal effect.
 \input{tables/headline_block_sd_results.tex}
 
 The Inc-nobind cell serves as the within-design placebo: it contains municipalities whose home
-stack remained below the muni's nonresident rate after the rate hike,
+stack remained below the municipality's nonresident rate after the rate hike,
 so the bill never moved for in-muni residents. The institutional rule
 predicts no behavioral response, and the Inc-nobind coefficient on
 the log count of residents working in their own municipality is statistically null ($-0.062$, SE
@@ -1672,7 +1672,7 @@ the unified two-rate-setter design that artifact disappears. The
 work-side nonresident rate $\tau^{\text{nr}}$ enters the
 binding-state classification but is not itself a treatment in the
 headline regression; its cell coefficients are imprecise because the
-muni nonresident rate almost never exceeds the muni's own home stack
+muni nonresident rate almost never exceeds the municipality's own home stack
 at the muni-self-pair level in PA.
 
 \subsubsection{Municipality level (calibration)}
@@ -3580,7 +3580,7 @@ DCED's nonresident-rate coverage is incomplete pre-2012: only
 $55$--$60\%$ of municipalities report a nonresident rate before Act 32 made
 the field a legal requirement; $72$--$80\%$ report it post-2012. I
 backfill missing pre-2012 nonresident rates with the earliest
-observed post-2012 value per muni, on the assumption that a muni's
+observed post-2012 value per muni, on the assumption that a municipality's
 nonresident rate is sticky over time. Sample-variant robustness
 checks (\S\ref{subsec:rob-sample}) compare the headline coefficients
 under strict drop-NA versus this filled-in nonresident-rate panel
@@ -3678,9 +3678,9 @@ primary SD per muni is the modal \texttt{sd\_id} across years from
 the raw DCED rate panel (most municipalities report rates to a single SD
 across the full panel; $97.6\%$ of muni-years are single-SD). For
 the $2.4\%$ of municipalities that span multiple SDs in DCED records, the
-cousub-level model uses $\max(\tau^{SD})$ across the muni's SDs
+cousub-level model uses $\max(\tau^{SD})$ across the municipality's SDs
 (conservative, slightly biases the SD-rate coefficient toward zero);
-the block-level model assigns each block its muni's primary SD.
+the block-level model assigns each block its municipality's primary SD.
 
 \subsection{Fiscal controls}
 \label{app:data-fiscal}
@@ -3719,7 +3719,7 @@ $500$ SDs and 2002--2019. The cross-reference between NCES F-33
 \S\ref{app:data-dced}.
 
 \textbf{Block-level regressions} use both sets of controls
-simultaneously, since each block is exposed to both its muni's
+simultaneously, since each block is exposed to both its municipality's
 fiscal posture (via the resident-rate channel) and its school
 district's fiscal posture (via the SD-rate channel).
 
