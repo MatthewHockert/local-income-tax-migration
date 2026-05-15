@@ -1414,6 +1414,8 @@ cluster-robust variance matrix.
 
 \input{tables/es_pooled_block_summary.tex}
 
+The SD-cohort analogue at the block level uses the same ATT summary statistics with relative time measured against the first SD-rate event.
+
 \input{tables/es_pooled_block_sd_summary.tex}
 
 \begin{figure}[H]
@@ -1451,6 +1453,8 @@ cluster-robust variance matrix.
 \end{figure}
 
 \input{tables/es_pooled_cousub_summary.tex}
+
+The school-district aggregation of the same pooled ES is reported next as a coarser-geography benchmark.
 
 \input{tables/es_pooled_sd_summary.tex}
 
@@ -1543,6 +1547,8 @@ headline tables and treat the count outcomes as the primary estimand.
 
 \input{tables/headline_block_muni_results.tex}
 
+The muni-rate cells deliver the headline block-level finding; the SD-rate cells from the same joint regression are reported next.
+
 \input{tables/headline_block_sd_results.tex}
 
 The Inc-nobind cell serves as the within-design placebo: it contains municipalities whose home
@@ -1594,6 +1600,8 @@ Table~\ref{tab:headline_muni_sd_side_results} reports the SD-rate
 cells from the same regression.
 
 \input{tables/headline_muni_cell_results.tex}
+
+The SD-rate cells from the same muni-level regression are reported below for comparability with the block-level SD-side estimates.
 
 \input{tables/headline_muni_sd_side_results.tex}
 
@@ -1972,42 +1980,6 @@ shift is captured by the share of tradeable jobs rising approximately
 operates \emph{via} local-services demand spillover from departing
 residents, not via direct nonresident-tax incidence.
 
-The block-level Inc-bind estimate also has a direct revenue implication.
-Apply the envelope-theorem decomposition of
-\citet{saezUsingElasticitiesDerive2001}: for a flat local rate
-$\tau$ on tax base $WN$ with residential semi-elasticity
-$\beta = \partial \ln N / \partial \tau$, the first-order effect
-of a small hike is
-\[
-  \frac{dR}{d\tau} \;=\; W \cdot N \cdot (1 + \tau\beta),
-\]
-a mechanical gain $WN$ minus the behavioral offset $\tau\beta$ from
-residents relocating. At the PA muni baseline $\tau \approx 1\%$
-and the block-level Inc-bind estimate $\beta \approx -21$ per unit
-rate ($-0.21$ log points per pp), $\tau\beta \approx -0.21$: the
-residential response offsets roughly $21\%$ of the mechanical
-revenue gain. The hike remains revenue-positive, paralleling the
-Spanish regional finding in
-\citet{agrawalRelocationRichMigration2019}.
-
-The flat-tax revenue-maximizing rate, obtained by setting
-$dR/d\tau = 0$, is $\tau^{\ast} = 1/|\beta| \approx 4.8\%$. This is
-the analog, for a flat local tax with only an extensive-margin
-mobility response, of the top-marginal-rate formula
-$\tau^{\ast} = 1/(1 + a\varepsilon + \eta)$ in the optimal-taxation-with-mobility
-literature reviewed by \citet{agrawalLessonsStateLocal}, where $a$
-is the Pareto coefficient of top earners, $\varepsilon$ is the
-intensive-margin elasticity of taxable income, and $\eta$ is the
-extensive-margin mobility elasticity. In my flat-tax setting
-neither $a$ nor $\varepsilon$ enters: there is no top tail and no
-intensive labor-supply channel, only the mobility margin captured
-by $\beta$. PA's statutory EIT range (roughly $0.5$--$3.4\%$) sits
-entirely in the revenue-positive interior; the headline sorting
-estimate is consistent with a revenue gain to the raising
-municipality at the muni boundary, with the welfare cost accruing
-elsewhere through relocation and the local-services demand
-spillover documented above.
-
 Eight limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and
 well-identified, the block-level share outcome
@@ -2178,6 +2150,8 @@ jurisdictions are candidate extensions.
 
 \subsection{Block-level share outcomes}
 \label{app:tables-block-shares}
+
+Block-level share outcomes from the same joint regression, reported for completeness; the share outcomes are mechanically fragile at block geography (see body discussion).
 
 \input{tables/headline_block_muni_shares.tex}
 
@@ -2366,15 +2340,7 @@ Section~\ref{sec:robustness}.
 
 Headline cell $\times$ dose specification re-estimated on pre-Act-32
 ($c<2012$) and post-Act-32 ($c\geq 2012$) cohort subsamples at each
-estimating unit. At the muni level, the Inc-bind coefficient on
-log live-and-work strengthens from $-0.339^{**}$ (pre) to
-$-0.534^{***}$ (post), consistent with consolidated employer
-withholding making the EIT binding
-\citep{bagchiEffectsIntroducingWithholding2022}. At the block level,
-the muni-cohort Inc-bind coefficient on log home-count is roughly
-constant pre/post, so the block-level effect predates the Act-32
-enforcement break. The within-design placebo (Inc-nobind) is null
-in both periods at the muni level.
+estimating unit.
 
 \input{tables/act32_cousub.tex}
 
@@ -2385,14 +2351,9 @@ in both periods at the muni level.
 \subsection{Sample variants}
 \label{app:rob-sample}
 
-Three sample variants for the DCED nonresident-rate panel: strict
-(drop NA \texttt{muni\_nonres\_eit}), filled
-(\texttt{nonres = resident\_eit} when missing), and drop-incomplete
-(drop NA at regression time). The headline muni Inc-bind
-coefficient on log live-and-work is $-0.401^{***}$ in all three.
-Inc-bind classification requires pre- and post-event home\_stack to
-exceed work\_nonres, which mechanically excludes munis where the
-binding state is undetermined.
+Three sample variants for the DCED nonresident-rate panel (strict,
+filled, drop-incomplete) leave the headline muni Inc-bind coefficient
+on log live-and-work essentially unchanged at $-0.401^{***}$.
 
 %==========================================================
 \end{document}
