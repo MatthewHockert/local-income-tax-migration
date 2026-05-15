@@ -480,10 +480,10 @@ nests blocks within county subdivisions (cousubs) by construction. A
 muni-name crosswalk maps each DCED \texttt{municipality\_id} to its
 corresponding COUSUBFP, matching $2{,}496$ of $2{,}505$ PA municipalities
 ($99.6\%$). The remaining $9$ are small boroughs that dissolved or
-merged during 2002--2019 and are dropped from the analysis. Appendix
-\ref{app:data} reports the full pipeline including scraper specs,
-PSD mapping, fiscal-control construction, and auxiliary
-cross-state-inflow handling.
+merged during 2002--2019 and are dropped from the analysis. The full
+pipeline (scraper specs, PSD mapping, fiscal-control construction,
+auxiliary cross-state-inflow handling) is documented in the
+replication archive.
 
 The residence--workplace data come from LEHD LODES Version~8,
 2002--2019 \citep{lehdLODES}: block-level origin--destination links
@@ -514,8 +514,8 @@ Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}. School-district
 fiscal controls come from the Census Annual Survey of School System
 Finances (F-33) \citep{censusF33}; the NCES \texttt{LEAID}-to-DCED
-\texttt{sd\_id} crosswalk covers all $500$ Pennsylvania districts
-(see Appendix~\ref{app:data}). Two auxiliary sources support the
+\texttt{sd\_id} crosswalk covers all $500$ Pennsylvania districts.
+Two auxiliary sources support the
 pre-treatment balance and robustness exercises: FBI Uniform Crime
 Reports, Offenses Known and Clearances by Arrest, in the
 concatenated agency-year files compiled by \citet{kaplanUCR}, and
@@ -540,8 +540,7 @@ estimand. Fiscal outcomes used as falsification placebos and
 pre-treatment balance variables (log EIT revenue, log total tax
 revenue, log total revenue, log police expenditure, log population,
 log market value of real estate, plus crime and building permits)
-are reported in Appendices~\ref{app:robustness} and
-\ref{app:data-balance}.
+are reported in Appendix~\ref{app:robustness}.
 
 This section reports summary statistics and key distributions of the
 estimation panels. Table~\ref{tab:summary_muni} reports the
@@ -1447,9 +1446,7 @@ cluster-robust variance matrix.
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} As in Figure~\ref{fig:pooled_es_block_muni},
     but with relative event-time $k$ defined against each block's
-    first school-district-rate event year $c^{SD}_b$. The combined
-    muni-cohort and SD-cohort overlay is reported in
-    Appendix~\ref{app:es-realized} for visual comparison.
+    first school-district-rate event year $c^{SD}_b$.
   \end{minipage}
 \end{figure}
 
@@ -1541,9 +1538,8 @@ secondary count outcome. Block-level share outcomes---the share of
 block residents working in their own municipality, the share of
 in-block jobs filled by out-commuters---are mechanically fragile at
 block geography because both the numerator and denominator can move
-and many blocks contain small worker counts. I report them in
-Appendix~\ref{sec:app-block-shares} as supporting estimates and do
-not use them to identify the headline causal effect.
+and many blocks contain small worker counts. I omit them from the
+headline tables and treat the count outcomes as the primary estimand.
 
 \input{tables/headline_block_muni_results.tex}
 
@@ -1772,12 +1768,12 @@ walking down monotonically across the post-window.
   \end{minipage}
 \end{figure}
 
-Appendix~\ref{app:es-figures} collects the muni-level realized-dose
-event-study figures for the remaining residence-side outcomes and the
-school-district-level analogues. The patterns mirror the
-live-and-work panel: Inc-bind has visible pre-event drift consistent
-with high-dose post-industrial selection, while the within-design
-Inc-nobind placebo is approximately flat.
+The patterns on the remaining residence-side outcomes and the
+school-district-level analogues mirror the live-and-work panel:
+Inc-bind shows visible pre-event drift consistent with high-dose
+post-industrial selection, while the within-design Inc-nobind placebo
+is approximately flat. The full per-outcome figure set is available
+in the replication archive.
 
 \subsection{Mechanism: Industry Decomposition}
 \label{subsec:het-industry}
@@ -2176,218 +2172,65 @@ jurisdictions are candidate extensions.
 \appendix
 
 %==========================================================
-\section{Pooled Inc/Dec Benchmark}
-\label{app:pooled}
+\section{Full Decomposition Tables}
+\label{app:tables}
 %==========================================================
 
-Full pooled-aggregate (Inc/Dec) benchmark tables and event-study
-diagnostics by estimating unit.
-
-\subsection{Block-level pooled benchmark}
-\label{app:pooled-block}
-
-Block-level per-pp pooled Inc/Dec specification
-(Equation~\ref{eq:pooled}); see Table~\ref{tab:pooled_per_pp_block}
-in Section~\ref{subsec:results-pooled}.
-
-\subsection{Municipality-level pooled benchmark}
-\label{app:pooled-muni}
-
-Municipality-level per-pp pooled Inc/Dec specification; see
-Table~\ref{tab:pooled_per_pp_cousub} in
-Section~\ref{subsec:results-pooled}.
-
-\subsection{School-district-level pooled benchmark}
-\label{app:pooled-sd}
-
-School-district per-pp pooled Inc/Dec specification; see
-Table~\ref{tab:pooled_per_pp_sd} in
-Section~\ref{subsec:results-pooled}. SD-level realized-dose
-pre-trends fail parallel trends on \texttt{log\_live\_and\_work}
-($\beta_{\text{pre}} = +0.061$, $|t| = 1.74$; see
-Appendix~\ref{app:decomp-es-realized}).
-
-\subsection{Realized-dose ES benchmark diagnostics}
-\label{app:pooled-es-realized}
-
-Pooled-cohort realized-dose Sun--Abraham figures (per-cell versions
-in Appendix~\ref{app:decomp-es-realized}).
-
-%==========================================================
-\section{Binding-State Decomposition}
-\label{app:decomp}
-\label{app:es-figures}
-%==========================================================
-
-Full binding-state decomposition tables and ES diagnostics by
-estimating unit; cells defined in Section~\ref{sec:theory}.
-
-\subsection{Block-level decomposition}
-\label{app:decomp-block}
-\label{sec:app-block-shares}
-
-Block-level share outcomes (supporting); count outcomes are in
-Section~\ref{subsec:results-block}
-(Tables~\ref{tab:headline_block_muni_results} and
-\ref{tab:headline_block_sd_results}).
+\subsection{Block-level share outcomes}
+\label{app:tables-block-shares}
 
 \input{tables/headline_block_muni_shares.tex}
 
 \input{tables/headline_block_sd_shares.tex}
 
-\subsection{Municipality-level decomposition}
-\label{app:decomp-muni}
-\label{sec:app-municipality-detail}
-\label{subsec:app-municipality-detail}
-
-Full muni-level Inc-cell coefficients with diagnostics, thin
-Dec-cell coefficients, per-outcome diagnostics, and the full
-single-regression specification with controls. Main-text tables
-are Tables~\ref{tab:headline_muni_cell_results} and
-\ref{tab:headline_muni_sd_side_results} in
-Section~\ref{subsec:results-headline}.
+\subsection{Municipality-level: Dec cells + full specification}
+\label{app:tables-muni-full}
 
 \begin{table}[H]
     \centering
-    \caption{Headline stacked-continuous DiD: muni-rate Inc cells with diagnostics}
-    \label{tab:headline}
-    \small
-    \begin{tabular}{lccc}
-        \toprule
-        Outcome & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
-        & ($n_{\text{muni}}$=40) & ($n_{\text{muni}}$=58) & ($n_{\text{muni}}$=26) \\
-        \midrule
-        \multicolumn{4}{l}{\textit{Coefficients (per 1 pp of $\Delta\tau^{\text{muni}}$)}} \\
-        log(live\_and\_work)    & $-0.402^{***}$ & $-0.181^{**}$  & $-0.062$ \\
-                                 & $(0.096)$      & $(0.072)$      & $(0.169)$ \\
-        log(in\_commuters)      & $-0.213^{**}$  & $-0.197^{***}$ & $-0.187$ \\
-                                 & $(0.083)$      & $(0.054)$      & $(0.204)$ \\
-        log(out\_commuters)     & $-0.053$       & $-0.042$       & $+0.217^{**}$ \\
-                                 & $(0.038)$      & $(0.029)$      & $(0.091)$ \\
-        log(total\_jobs)        & $-0.270^{***}$ & $-0.212^{***}$ & $-0.201$ \\
-                                 & $(0.086)$      & $(0.054)$      & $(0.203)$ \\
-        log(total\_residents)   & $-0.100^{***}$ & $-0.068^{*}$   & $+0.194^{**}$ \\
-                                 & $(0.033)$      & $(0.040)$      & $(0.095)$ \\
-        share\_live\_in         & $-0.045^{***}$ & $-0.012$       & $-0.012$ \\
-                                 & $(0.010)$      & $(0.009)$      & $(0.008)$ \\
-        share\_work\_outside    & $+0.041^{***}$ & $+0.020^{***}$ & $+0.017$ \\
-                                 & $(0.016)$      & $(0.007)$      & $(0.014)$ \\
-        \midrule
-        \multicolumn{4}{l}{\textit{Diagnostics (log\_live\_and\_work regression)}} \\
-        $N$                                  & \multicolumn{3}{c}{218{,}685} \\
-        $R^2$                                & \multicolumn{3}{c}{0.964} \\
-        Within $R^2$                          & \multicolumn{3}{c}{0.0007} \\
-        Dep.\ var.\ mean (log\_live\_and\_work)& \multicolumn{3}{c}{3.677} \\
-        Dep.\ var.\ SD                        & \multicolumn{3}{c}{1.934} \\
-        Fixed effects                         & \multicolumn{3}{c}{stack-muni $+$ stack-year} \\
-        Clusters (muni level)                 & \multicolumn{3}{c}{1{,}945} \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} Stacked continuous DiD,
-        Equation~(\ref{eq:headline}), drop-incomplete sample with NC
-        controls strictly defined as municipalities with no rate change on the
-        relevant side. Each muni in a treated cell appears in one
-        sub-experiment (its own first-event cohort); NC municipalities appear
-        in every sub-experiment. Only muni-side Inc cells are displayed
-        here; SD and nonresident-side cells are estimated jointly in
-        the same regression and reported in Table~\ref{tab:full-spec}.
-        Each regression also includes the share-based
-        control vector (police, streets, debt service / total expenditures;
-        EIT, real estate, intergov / total revenues); control coefficients
-        for the log\_live\_and\_work regression are in
-        Table~\ref{tab:full-spec}. Cluster-robust SEs by muni in parentheses.
-        Diagnostics row is for the log\_live\_and\_work regression; full
-        diagnostics for each outcome are in Table~\ref{tab:headline-diag}.
-        Inc-bind reduces \texttt{live\_and\_work} by $\approx 33\%$
-        per pp ($-0.402$ log points), \texttt{total\_jobs} by $\approx 24\%$,
-        and \texttt{total\_residents} by $\approx 10\%$; at the
-        log mean of 3.68 ($\approx 40$ workers), the typical 0.27 pp
-        Inc-bind event predicts $\approx -3.6$ live-and-work workers
-        over 5 years. Inc-becomes magnitudes are attenuated
-        relative to Inc-bind, consistent with partial incidence
-        (only the portion of $\Delta\tau$ above $\tau^{\text{nr}}$
-        is incident on the worker).
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
-
-\begin{table}[H]
-    \centering
-    \caption{Headline stacked-continuous DiD: muni-rate Dec cells (thin)}
+    \caption{Headline stacked-continuous DiD: muni-rate Dec cells.}
     \label{tab:headline-dec}
     \small
+    \resizebox{\textwidth}{!}{%
     \begin{tabular}{lccc}
         \toprule
-        Outcome & Dec-bind ($n_{\text{muni}}$=11) & Dec-becomes-non ($n_{\text{muni}}$=4) & Dec-nobind ($n_{\text{muni}}$=15) \\
+        Outcome & Dec-bind ($n$=11) & Dec-becomes-non ($n$=4) & Dec-nobind ($n$=15) \\
         \midrule
-        log(live\_and\_work)    & $+0.241^{***}$  (0.078)  & $-0.260$  (0.272)        & $+0.332^{**}$ (0.165) \\
-        log(in\_commuters)      & $+0.052$  (0.080)        & $+0.496$  (0.339)        & $+0.013$  (0.121) \\
-        log(out\_commuters)     & $-0.068$  (0.061)        & $-0.628$  (0.416)        & $+0.132$  (0.101) \\
-        log(total\_jobs)        & $+0.111$  (0.073)        & $+0.420$  (0.265)        & $+0.022$  (0.116) \\
-        log(total\_residents)   & $-0.056$  (0.043)        & $-0.651$  (0.420)        & $+0.135$  (0.099) \\
-        share\_live\_in         & $+0.054^{*}$  (0.030)    & $-0.071$  (0.095)        & $+0.012$  (0.030) \\
-        share\_work\_outside    & $-0.011$  (0.013)        & $+0.014$  (0.017)        & $-0.003^{*}$  (0.001) \\
+        log(live\_and\_work)    & $+0.241^{***}$ (0.078) & $-0.260$ (0.272) & $+0.332^{**}$ (0.165) \\
+        log(in\_commuters)      & $+0.052$ (0.080)       & $+0.496$ (0.339) & $+0.013$ (0.121) \\
+        log(out\_commuters)     & $-0.068$ (0.061)       & $-0.628$ (0.416) & $+0.132$ (0.101) \\
+        log(total\_jobs)        & $+0.111$ (0.073)       & $+0.420$ (0.265) & $+0.022$ (0.116) \\
+        log(total\_residents)   & $-0.056$ (0.043)       & $-0.651$ (0.420) & $+0.135$ (0.099) \\
+        share\_live\_in         & $+0.054^{*}$ (0.030)   & $-0.071$ (0.095) & $+0.012$ (0.030) \\
         \bottomrule
-    \end{tabular}
+    \end{tabular}}
     \vspace{0.3em}
     \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Same regression as Table~\ref{tab:headline}.
-        Dec cells are thin and noisy; I do not draw causal conclusions from
-        these coefficients individually.
+        \footnotesize \textit{Notes:} Same regression as the muni-level
+        headline decomposition. Cluster-robust SEs by muni. Dec cells
+        are thin; not used to draw causal conclusions individually.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
 \begin{table}[H]
     \centering
-    \caption{Headline regressions: per-outcome diagnostics}
-    \label{tab:headline-diag}
-    \small
-    \begin{tabular}{lccccc}
-        \toprule
-        Outcome & $N$ & $R^2$ & Within $R^2$ & Dep.\ mean & Dep.\ SD \\
-        \midrule
-        log(live\_and\_work)    & 218{,}685 & 0.964 & 0.0007 & 3.677 & 1.934 \\
-        log(in\_commuters)      & 239{,}031 & 0.959 & 0.0011 & 5.847 & 1.887 \\
-        log(out\_commuters)     & 242{,}730 & 0.979 & 0.0009 & 6.636 & 1.263 \\
-        log(total\_jobs)        & 239{,}041 & 0.961 & 0.0011 & 5.948 & 1.901 \\
-        log(total\_residents)   & 242{,}730 & 0.981 & 0.0010 & 6.697 & 1.299 \\
-        share\_live\_in         & 239{,}041 & 0.823 & 0.0010 & 0.093 & 0.076 \\
-        share\_work\_outside    & 242{,}730 & 0.945 & 0.0008 & 0.943 & 0.066 \\
-        share\_nonres           & 239{,}041 & 0.823 & 0.0010 & 0.907 & 0.076 \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Same regression structure as
-        Table~\ref{tab:headline}. $R^2$ is the standard within-stack
-        coefficient of determination; within-$R^2$ is the variation
-        explained by the cell$\times$dose interactions and controls,
-        net of the muni-stack and year-stack fixed effects. Dep.\ mean
-        and SD computed over the regression sample.
-    \end{minipage}
-\end{table}
-
-\begin{table}[H]
-    \centering
-    \caption{Full main spec: log(live\_and\_work) on all treatments + controls}
+    \caption{Full muni-level specification on log(live\_and\_work): all cells + controls.}
     \label{tab:full-spec}
     \small
     \begin{tabular}{lcc}
         \toprule
         Term & Coefficient & SE \\
         \midrule
-        \multicolumn{3}{l}{\textit{Muni resident-rate cells (vs NC$^{\text{muni}}$)}} \\
+        \multicolumn{3}{l}{\textit{Muni resident-rate cells (vs.\ NC$^{\text{muni}}$)}} \\
         Inc-bind $\times \Delta\tau^{\text{muni}}$       & $-0.402^{***}$ & $0.096$ \\
         Inc-becomes $\times \Delta\tau^{\text{muni}}$    & $-0.181^{**}$  & $0.072$ \\
         Inc-nobind $\times \Delta\tau^{\text{muni}}$     & $-0.062$       & $0.169$ \\
         Dec-bind $\times \Delta\tau^{\text{muni}}$       & $+0.241^{***}$ & $0.078$ \\
-        Dec-becomes-non $\times \Delta\tau^{\text{muni}}$ & $-0.260$       & $0.272$ \\
+        Dec-becomes-non $\times \Delta\tau^{\text{muni}}$ & $-0.260$      & $0.272$ \\
         Dec-nobind $\times \Delta\tau^{\text{muni}}$     & $+0.332^{**}$  & $0.165$ \\
         \midrule
-        \multicolumn{3}{l}{\textit{School district rate cells (vs NC$^{\text{SD}}$)}} \\
+        \multicolumn{3}{l}{\textit{School district rate cells (vs.\ NC$^{\text{SD}}$)}} \\
         Inc-bind $\times \Delta\tau^{\text{SD}}$         & $+0.177^{*}$   & $0.099$ \\
         Inc-becomes $\times \Delta\tau^{\text{SD}}$      & $+0.103$       & $0.090$ \\
         Dec-bind $\times \Delta\tau^{\text{SD}}$         & $-0.721^{***}$ & $0.191$ \\
@@ -2402,74 +2245,100 @@ Section~\ref{subsec:results-headline}.
         share\_re                                         & $-0.182^{**}$  & $0.087$ \\
         share\_intergov                                   & $+0.016$       & $0.044$ \\
         \midrule
-        \multicolumn{3}{l}{\textit{Diagnostics}} \\
-        $N$                                                & \multicolumn{2}{c}{218{,}685} \\
-        $R^2$                                              & \multicolumn{2}{c}{0.964} \\
-        Within $R^2$                                       & \multicolumn{2}{c}{0.0007} \\
-        Dep.\ mean (log\_live\_and\_work)                 & \multicolumn{2}{c}{3.677} \\
-        Dep.\ SD                                          & \multicolumn{2}{c}{1.934} \\
-        Fixed effects                                      & \multicolumn{2}{c}{stack-muni $+$ stack-year} \\
-        Clusters (muni)                                    & \multicolumn{2}{c}{1{,}945} \\
+        $N$                                              & \multicolumn{2}{c}{218{,}685} \\
+        $R^2$                                            & \multicolumn{2}{c}{0.964} \\
+        Within $R^2$                                     & \multicolumn{2}{c}{0.0007} \\
+        Dep.\ mean                                       & \multicolumn{2}{c}{3.677} \\
+        Dep.\ SD                                         & \multicolumn{2}{c}{1.934} \\
+        FE                                               & \multicolumn{2}{c}{stack-muni $+$ stack-year} \\
+        Clusters                                         & \multicolumn{2}{c}{1{,}945 munis} \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
     \begin{minipage}{0.92\textwidth}
         \footnotesize \textit{Notes:} All coefficients from a single
-        regression of log(live\_and\_work) on cell-specific dose
-        interactions for the two rate-setter sides (muni resident and
-        SD resident) plus muni-AFR share-based controls. Reference
-        category on each side is NC (never-changed) units. The
-        work-side nonresident rate $\tau^{\text{nr}}$ enters the cell
-        classification (binding state) but is not itself a treatment
-        in this regression. Cluster-robust SEs by muni.
+        regression on log(live\_and\_work). Reference category on each
+        rate-setter side is NC. Cluster-robust SEs by muni.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
 \end{table}
 
-\subsection{School-district-level decomposition}
-\label{app:decomp-sd}
-\label{sec:app-sd-results}
-\label{subsec:app-sd-headline}
+%==========================================================
+\section{Realized-Dose Event Studies, Full Set}
+\label{app:es-realized}
+%==========================================================
 
-SD-level dose-response coefficients;
-Table~\ref{tab:headline_sd_cell_results}. Binding-state
-classification uses the within-SD mean of \texttt{muni\_nonres\_eit}
-as the comparator.
+Per-cell realized-dose Sun--Abraham event studies at each estimating
+unit, on each residence-side outcome. The block-level
+$\log(\text{home\_count})$ figure and the muni-level
+$\log(\text{live\_and\_work})$ figure appear in the body
+(\S\ref{subsubsec:decomp-es}); the remaining outcomes and the SD-level
+analogues are here.
 
-\input{tables/headline_sd_cell_results.tex}
+\subsection{Municipality-level, by cell}
+\label{app:es-realized-muni}
 
 \begin{figure}[H]
   \centering
-  \caption{SD-level realized-dose ES on \texttt{log(live\_and\_work)} by cell.}
-  \label{fig:app-sd-es-logLW}
-  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_live_and_work.png}
-  \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} per-pp realized-dose coefficient at
-    each event-time, SD-level stacked-continuous DiD. The SD-level
-    results are reported for completeness. They show that sorting is
-    not robustly detected at the school-district aggregation: the
-    SD-resident-rate Inc-bind coefficient is positive in this
-    aggregation, sign-reversed relative to the muni- and block-level
-    findings, and the pre-event lead is marginally non-zero on
-    \texttt{log(live\_and\_work)} ($\beta_{\text{pre}} = +0.061$,
-    $|t| = 1.74$). These estimates should not be interpreted as
-    standalone evidence of an SD-channel residential response.
-  \end{minipage}
+  \caption{Muni-level realized-dose ES on $\log(\text{in-commuters})$, by cell.}
+  \label{fig:app_es_realized_muni_incomm}
+  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_in_commuters.png}
 \end{figure}
 
-\subsection{Realized-dose ES decomposition diagnostics}
-\label{app:decomp-es-realized}
-\label{app:es-realized}
-
-Realized-dose Sun--Abraham coefficient at each event-time, by
-binding-state cell. Block, muni, and SD figures and tables; the
-block-level home-count diagnostic
-(Figure~\ref{fig:block_es_homecount}) is in the main text.
+\begin{figure}[H]
+  \centering
+  \caption{Muni-level realized-dose ES on $\log(\text{total residents})$, by cell.}
+  \label{fig:app_es_realized_muni_residents}
+  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_total_residents.png}
+\end{figure}
 
 \begin{figure}[H]
   \centering
-  \caption{Block-level realized-dose ES on the log count of workers
-           working in the block, faceted by binding-state cell;
+  \caption{Muni-level realized-dose ES on the share of workers
+           living in their own muni, by cell.}
+  \label{fig:app_es_realized_muni_share_in}
+  \includegraphics[width=0.95\textwidth]{../figures/es_realized_share_live_in.png}
+\end{figure}
+
+\subsection{School-district-level, by cell}
+\label{app:es-realized-sd}
+
+\begin{figure}[H]
+  \centering
+  \caption{SD-level realized-dose ES on $\log(\text{live\_and\_work})$, by cell.}
+  \label{fig:app_sd_es_liveandwork}
+  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_live_and_work.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{SD-level realized-dose ES on $\log(\text{in-commuters})$, by cell.}
+  \label{fig:app_sd_es_incomm}
+  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_in_commuters.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{SD-level realized-dose ES on $\log(\text{total residents})$, by cell.}
+  \label{fig:app_sd_es_residents}
+  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_total_residents.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{SD-level realized-dose ES on the share of workers
+           living in their own muni, by cell.}
+  \label{fig:app_sd_es_share_in}
+  \includegraphics[width=0.95\textwidth]{../figures/sd_es_share_live_in.png}
+\end{figure}
+
+\subsection{Block-level, by cell}
+\label{app:es-realized-block}
+
+\begin{figure}[H]
+  \centering
+  \caption{Block-level realized-dose ES on $\log(\text{work count})$
+           (in-block jobs), faceted by binding-state cell;
            muni-cohort (red) and SD-cohort (blue).}
   \label{fig:app_block_es_workcount}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_log_work_count.png}
@@ -2483,121 +2352,6 @@ block-level home-count diagnostic
   \label{fig:app_block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
 \end{figure}
-
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on $\log(\text{total residents})$, by cell.}
-  \label{fig:app_es_realized_muni_residents}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_total_residents.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on $\log(\text{in-commuters})$, by cell.}
-  \label{fig:app_es_realized_muni_incomm}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_in_commuters.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on the share of workers
-           living in their own muni, by cell.}
-  \label{fig:app_es_realized_muni_share_in}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_share_live_in.png}
-\end{figure}
-
-
-\begin{figure}[H]
-  \centering
-  \caption{SD-level realized-dose ES on $\log(\text{live\_and\_work})$, by cell.}
-  \label{fig:app_sd_es_liveandwork}
-  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_live_and_work.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{SD-level realized-dose ES on $\log(\text{total residents})$, by cell.}
-  \label{fig:app_sd_es_residents}
-  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_total_residents.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{SD-level realized-dose ES on $\log(\text{in-commuters})$, by cell.}
-  \label{fig:app_sd_es_incomm}
-  \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_in_commuters.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{SD-level realized-dose ES on the share of workers
-           living in their own muni, by cell.}
-  \label{fig:app_sd_es_share_in}
-  \includegraphics[width=0.95\textwidth]{../figures/sd_es_share_live_in.png}
-\end{figure}
-
-\paragraph{Realized-dose ES coefficient tables.}
-\label{sec:app-es-realized}
-
-\input{tables/es_realized_cousub.tex}
-
-\input{tables/es_realized_sd.tex}
-
-\input{tables/es_realized_block.tex}
-
-%==========================================================
-\section{Industry Mechanism}
-\label{app:industry}
-%==========================================================
-
-\subsection{Consumer-facing vs tradeable jobs}
-\label{app:industry-consumer}
-
-Industry decomposition figure and table; see
-Section~\ref{subsec:het-industry} and
-Figure~\ref{fig:industry_inc_bind}.
-
-\subsection{Full industry decomposition}
-\label{app:industry-full}
-
-Full per-NAICS-supersector coefficients at the municipality level
-(Table~\ref{tab:industry_cousub} in
-Section~\ref{subsec:het-industry}) and the school-district
-aggregation (Table~\ref{tab:industry_sd}).
-
-\begin{table}[H]
-    \centering
-    \caption{Industry decomposition: municipality level (see Section~\ref{subsec:het-industry} for full table fragment).}
-    \label{tab:app-industry-cousub-cite}
-    \footnotesize
-    \begin{minipage}{0.92\textwidth}
-        \textit{Notes:} The full per-supersector regression table is
-        \texttt{tables/industry\_cousub.tex} and is reported inline in
-        Section~\ref{subsec:het-industry} of the main text as
-        Table~\ref{tab:industry_cousub}. Headline numbers (per pp of
-        Inc-bind muni resident-rate dose): log total jobs
-        $-0.258^{***}$; log consumer-facing $-0.297^{**}$; log
-        tradeable $+0.236$ (null); log health/education $-0.253^{*}$;
-        log public $-0.706^{*}$; share tradeable $+0.106^{*}$.
-    \end{minipage}
-\end{table}
-
-\paragraph{School-district aggregation.}
-Table~\ref{tab:industry_sd}: SD aggregation of the muni-level
-industry decomposition. Inc-bind on log consumer-facing jobs is
-$+0.094^{**}$ at the SD level (vs $-0.297^{**}$ at the muni level),
-consistent with workers leaving the rate-hiking muni but staying
-within the SD. Block-level industry decomposition is deferred
-(requires block-level LODES WAC files not in the data tree).
-
-\subsection{Alternative industry classifications}
-\label{app:industry-alt}
-
-The grouping uses the NAICS supersectors available in LODES WAC
-(consumer-facing, tradeable, health/education, public). Finer NAICS
-splits, the Mian--Sufi (2014) classification, and industry-by-firm-
-size cells require auxiliary data and are left for future work.
 
 %==========================================================
 \section{Robustness}
@@ -2641,462 +2395,4 @@ exceed work\_nonres, which mechanically excludes munis where the
 binding state is undetermined.
 
 %==========================================================
-\section{Data Construction}
-\label{app:data}
-%==========================================================
-
-\subsection{DCED rate scraping}
-\label{app:data-dced}
-
-Municipal and school-district EIT rates come from the Pennsylvania
-Department of Community and Economic Development (DCED) MunStats
-portal \citep{padcedMunStats}. The scraper
-(\texttt{scrape\_pa\_dced\_eit.py}) downloads annual XLS files from
-2002 through 2023 and extracts three rate variables per muni--year:
-the muni resident rate $\tau^{\text{res,muni}}$, the muni
-nonresident rate $\tau^{\text{nr,muni}}$, and the school-district
-rate $\tau^{\text{SD}}$ (the SD rate is reported on the muni file
-because DCED tracks rates at the muni--SD pair level). Each rate
-field is parsed as a percentage and converted to a numeric in
-$[0, 5]$.
-
-Municipality identifiers in DCED use the agency's internal
-\texttt{municipality\_id} (six-digit code). The crosswalk to Census
-geography uses a name-based match against Census COUSUBFP (county
-subdivision FIPS codes) for the 2020 vintage. Matching proceeds by
-normalized name (lower-case, stripped of suffixes ``borough'',
-``township'', ``city of'', etc.) and county. The match rate is
-$99.6\%$; the ${\sim}10$ unmatched municipalities are smaller boroughs that
-either dissolved or merged during the panel and are dropped.
-
-DCED's nonresident-rate coverage is incomplete pre-2012: only
-$55$--$60\%$ of municipalities report a nonresident rate before Act 32 made
-the field a legal requirement; $72$--$80\%$ report it post-2012. I
-backfill missing pre-2012 nonresident rates with the earliest
-observed post-2012 value per muni, on the assumption that a muni's
-nonresident rate is sticky over time. Sample-variant robustness
-checks (\S\ref{subsec:rob-sample}) compare the headline coefficients
-under strict drop-NA versus this filled-in nonresident-rate panel
-and show the binding-state classification is stable.
-
-A parallel scraper (\texttt{reparse\_dced.R}) recovers school
-district name and \texttt{sd\_id} on the DCED rate files, which the
-original Python scraper drops; this is needed for the NCES--DCED
-school-district crosswalk used to attach Census F-33 fiscal
-controls. School-district name normalization uses a Jaro--Winkler
-fuzzy match with abbreviation expansion (``\textsc{co}'' $\to$
-``county'', ``\textsc{sd}'' $\to$ ``school district'') and two
-manual overrides for districts that changed names entirely during
-the panel (\textsc{KNOCH} $\leftrightarrow$ \textsc{south butler
-co}; \textsc{river valley} $\leftrightarrow$ \textsc{blairsville
-saltsburg}). The final NCES \texttt{LEAID} $\to$ DCED
-\texttt{sd\_id} crosswalk covers $500/500$ Pennsylvania school
-districts.
-
-\subsection{LODES construction}
-\label{app:data-lodes}
-
-Residence--workplace flows come from the LEHD Origin--Destination
-Employment Statistics (LODES) Version 8
-\citep{lehdLODES,abowdProducerDynamicsNew2009}, the standard
-administrative source linking each employed worker's home block to
-their workplace block at annual frequency. LODES is constructed
-from state Unemployment Insurance wage records combined with the
-Quarterly Census of Employment and Wages, with synthetic noise
-infused at the block level to protect respondent confidentiality;
-the noise mechanism is calibrated so that aggregation to larger
-geographies recovers ground truth to within validated bounds at the
-tract level and above \citep{grahamDESIGNCOMPARISONLODES}.
-
-I download the Pennsylvania LODES OD files for 2002--2019 via the
-\texttt{lehdr} R package (\texttt{download\_lodes.R}). The full
-state-year file is ${\sim}200$ MB compressed; for 18 years and
-roughly $5{,}000$ blocks per muni, the raw block-pair-year panel is
-roughly $4$ GB on disk. I trim 2020--2021 from the analysis sample
-because COVID-19 disrupted both the underlying employment patterns
-and the LODES coverage methodology in ways that would conflate the
-pandemic shock with tax-driven sorting.
-
-LODES reports a ``main job'' indicator (\texttt{JT01}) that I use to
-restrict to primary-job employment relationships; secondary jobs and
-federal-government employees (which LODES handles separately) are
-excluded. For each (block, year) the panel records: the count of
-workers living in the block (\texttt{home\_count}), the count of
-workers working in the block (\texttt{work\_count}), the count of
-workers both living and working in the block (and in the block's own
-muni, after aggregation), and the directional commuter flows used
-in the muni- and SD-level aggregations.
-
-\subsection{Block-to-municipality crosswalk}
-\label{app:data-xwalk}
-
-Pennsylvania Census blocks nest in county subdivisions (cousubs) by
-construction: each block has a unique \texttt{COUSUBFP} via its
-\texttt{GEOID20} \citep{tigerline2020}. I build the block $\to$
-cousub crosswalk by joining the 2020 TIGER/Line block shapefile
-against the 2020 cousub shapefile on \texttt{STATEFP +
-COUNTYFP + COUSUBFP}, yielding $\texttt{pa\_block\_xwalk.rds}$ with
-exactly one cousub per block. This is the assignment used
-throughout the paper to attach the LODES block-level OD flows to
-the muni-level DCED rate panel.
-
-Earlier drafts of this paper attempted a tract-centroid join from
-LODES tracts to cousubs (joining each tract centroid to the cousub
-containing it) because LODES Version 7 reported tract-level OD
-files. That centroid-based assignment silently dropped $42\%$ of PA
-cousubs whose tract centroids fell outside the cousub polygon
-(typical of small boroughs surrounded by larger townships). The
-switch to block-level LODES (Version 8, 2022) plus the exact
-TIGER block-to-cousub nesting eliminated this artifact and is the
-basis for the block-level identification on which the paper rests.
-
-\subsection{PSD mapping}
-\label{app:data-psd}
-
-Pennsylvania assigns each address a six-digit Political Subdivision
-(PSD) code that uniquely identifies the (muni, school district)
-pair the address belongs to. Workers report the PSD code on the
-Residency Certification Form, and employers use it to determine
-withholding obligations after Act 32 of 2008 (effective 2012). The
-PSD code is the operational identifier that ties a worker's home
-address to the muni-side and SD-side EIT rates that compose the
-home stack $\tau^{\text{home}} = \tau^{\text{res,muni}} +
-\tau^{\text{SD}}$ in Equation~(\ref{eq:piecewise}).
-
-I do not observe individual workers' PSD codes; LODES is anonymized
-at the block level. I instead infer the (muni, SD) pair for each
-block by combining the block-to-cousub crosswalk
-(\S\ref{app:data-xwalk}) with a primary-SD assignment per muni. The
-primary SD per muni is the modal \texttt{sd\_id} across years from
-the raw DCED rate panel (most municipalities report rates to a single SD
-across the full panel; $97.6\%$ of muni-years are single-SD). For
-the $2.4\%$ of municipalities that span multiple SDs in DCED records, the
-cousub-level model uses $\max(\tau^{SD})$ across the muni's SDs
-(conservative, slightly biases the SD-rate coefficient toward zero);
-the block-level model assigns each block its muni's primary SD.
-
-\subsection{Fiscal controls}
-\label{app:data-fiscal}
-
-Fiscal controls are share-based and time-varying within unit. The
-exact control set varies by estimating unit, matching the unit's
-fiscal authority.
-
-\textbf{Muni-level Annual Financial Reports.} For municipality-level
-regressions and the muni side of block-level regressions, the
-controls are six expenditure and revenue shares constructed from
-the PA DCED Annual Financial Report database \citep{padcedAFR}:
-\texttt{share\_police} (police expenditure / total expenditure),
-\texttt{share\_streets}, \texttt{share\_debt\_svc},
-\texttt{share\_eit} (EIT revenue / total revenue),
-\texttt{share\_re} (real-estate tax revenue / total revenue), and
-\texttt{share\_intergov} (intergovernmental aid / total revenue).
-The DCED AFR panel covers 2002--2023; I trim to 2002--2019 to
-exclude ARPA-distorted years. Coverage is essentially $100\%$ of
-PA municipalities post-2006, falling to ${\sim}95\%$ in 2002--2005 due to
-sparser AFR filings; missing-year imputation is not applied (the
-ES regressions drop muni-years with missing controls).
-
-\textbf{Census F-33 school-district finance.} For SD-level
-regressions and the SD side of block-level regressions, the
-controls are eight share variables from the Census Annual Survey of
-School System Finances (F-33) \citep{censusF33}:
-\texttt{share\_state\_rev\_sd}, \texttt{share\_local\_rev\_sd},
-\texttt{share\_federal\_rev\_sd}, \texttt{share\_property\_tax\_sd}
-on the revenue side, and \texttt{share\_instructional\_sd},
-\texttt{share\_support\_sd}, \texttt{share\_capital\_sd},
-\texttt{share\_debt\_int\_sd} on the expenditure side. The F-33
-panel covers $10{,}790$ Pennsylvania SD--year observations across
-$500$ SDs and 2002--2019. The cross-reference between NCES F-33
-\texttt{LEAID} and DCED \texttt{sd\_id} is described in
-\S\ref{app:data-dced}.
-
-\textbf{Block-level regressions} use both sets of controls
-simultaneously, since each block is exposed to both its muni's
-fiscal posture (via the resident-rate channel) and its school
-district's fiscal posture (via the SD-rate channel).
-
-The block-level controls also include a within-SD aggregate of muni
-rates (\texttt{mean\_muni\_rate}) when the SD side of the regression
-is being estimated; this absorbs SD-level variation in the joint
-muni resident rate that the SD itself does not control.
-
-\subsection{Sample restrictions}
-\label{app:data-sample}
-
-The estimation sample is 2002--2019. LODES Version 8 covers
-2002--2021; I drop 2020--2021 because COVID-19 disrupted both
-commuting patterns (LODES coverage of stay-at-home workers is
-poorly defined) and municipal finances (ARPA transfers distort
-fiscal-share controls 2020--2023).
-
-I impose four additional sample filters at estimation time. First,
-a minimum-employment threshold of $50$ total jobs per muni--year is
-applied to muni-level regressions because share outcomes are
-dominated by sampling noise at smaller scales (a single worker
-moving changes \texttt{share\_live\_in} by $1/N$). Sensitivity to
-this threshold is documented in \S\ref{subsec:rob-sample};
-coefficients are stable across thresholds from $10$ to $500$.
-Second, I apply rate outlier filters: DCED reports the Local
-Services Tax (a flat dollar amount) in the same field as the EIT
-rate (a percentage) in some pre-2012 years, so any reported rate
-exceeding $5\%$ is treated as a data-entry error and dropped (the
-highest standard PA EIT is approximately $1\%$; only Philadelphia
-under the Sterling Act exceeds $3\%$, and Philadelphia is handled
-separately because it does not participate in the Act 32 framework
-described in \S\ref{subsec:pennsylvania}). Third, for each
-muni--year I assign the rate in effect on April 1, aligning with
-LODES's reference date so that rate-on-paycheck and OD-flow records
-refer to the same point in time. Rates that take effect mid-year
-are credited to the year following the effective date. Fourth, the
-binding-state cell decomposition requires a non-missing nonresident
-rate to classify the binding state at $c-1$ and $c$; muni--years
-with missing nonresident rates that have ambiguous binding states
-are categorized as ``Uncertain'' and dropped from the analysis
-(pooling them with NC would contaminate the control trend with
-treated-but-unclassified units; reporting them in their own cell
-would mix true binding states with measurement gaps; see
-\S\ref{sec:strategy}).
-
-Cluster definitions follow the rate-setting unit: muni-level
-regressions cluster at the muni; SD-level regressions cluster at
-the SD; block-level regressions two-way cluster at the muni and
-SD. The cluster-robust variance is the default
-\texttt{fixest::feols} sandwich estimator with finite-sample
-corrections.
-
-\subsection{Additional validation}
-\label{app:data-balance}
-\label{app:balance}
-
-This subsection collects three additional validation checks for the
-data pipeline: pre-treatment balance between rate-changing and
-never-changing municipalities, the geographic match rates that quantify how
-much of the universe each step of the crosswalk preserves, and a
-brief sample-composition diagnostic.
-
-\paragraph{Pre-treatment balance.}
-Table~\ref{tab:balance} reports normalized differences in fiscal,
-demographic, and supplementary observables between municipalities
-that raise the EIT during the panel and never-changed
-municipalities, computed on pre-treatment years only. Normalized
-differences are below the conventional $0.15$ threshold for all
-fiscal variables. Treated municipalities are larger in levels (median
-population $14$K versus $3.7$K) but the difference is small in
-normalized terms once the fiscal-share specification is used, which
-divides out the unit's overall scale. Market value of real estate
-(normalized diff. $0.211$) and building permits (normalized diff.
-$0.232$) exceed the threshold, reflecting that treated municipalities are
-disproportionately larger jurisdictions with more real estate value
-and higher absolute permit activity; both are level controls in
-robustness specs, not in the headline.
-
-% --- Balance Table ---
-\begin{table}[H]
-    \centering
-    \caption{Pre-Treatment Balance: Treated vs.\ Never-Treated PA Municipalities}
-    \label{tab:balance}
-    \small
-    \begin{tabular}{lrrrr}
-        \toprule
-        Variable & Treated Mean & Control Mean & Norm.\ Diff.\ & N (T / C) \\
-        \midrule
-        Population              & 14{,}174   & 3{,}711    & 0.139 & 1{,}265 / 39{,}688 \\
-        Total Revenue (\$)     & 25.7M      & 2.9M       & 0.077 & 1{,}267 / 39{,}692 \\
-        EIT Revenue (\$)       & 4.4M       & 438K       & 0.062 &                     \\
-        RE Tax Revenue (\$)    & 2.9M       & 538K       & 0.129 &                     \\
-        Police Expenditure (\$)& 3.1M       & 424K       & 0.110 &                     \\
-        Streets Expenditure (\$)& 1.5M      & 496K       & 0.121 &                     \\
-        Total Debt (\$)        & 28.6M      & 3.6M       & 0.089 &                     \\
-        Market Value RE (\$)   & 8.2M       & 2.1M       & 0.211 & 523 / 8{,}774       \\
-        Total Index Crime       & 985        & 133        & 0.124 & 816 / 18{,}322      \\
-        Building Permits        & 19.3       & 7.7        & 0.232 & 644 / 25{,}066      \\
-        EIT Rate (\%)          & 0.50       & 0.50       & 0.055 &                     \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.85\textwidth}
-        \footnotesize \textit{Notes:} Treated = municipalities that raised EIT during the
-        sample period (pre-treatment years only). Control = municipalities that never raised
-        EIT. Normalized differences $<0.15$ for all fiscal variables except market
-        value of real estate (0.211, limited pre-2012 coverage) and building permits
-        (0.232, treated municipalities are larger and issue more permits in levels).
-        Sources: PA DCED Annual Financial Reports, FBI UCR Offenses Known
-        (93.5\% agency match rate), Census Building Permits Survey
-        (93.3\% MCD match rate).
-    \end{minipage}
-\end{table}
-
-\paragraph{Crosswalk match rates.}
-Each step of the crosswalk pipeline is reported with its observed
-match rate, allowing the reader to track how many units drop at each
-join.
-
-\begin{itemize}
-\item DCED \texttt{municipality\_id} $\to$ Census 2020
-  \texttt{COUSUBFP}: 99.6\% match (name-based, county-keyed,
-  normalized-suffix). Unmatched municipalities are smaller boroughs that
-  dissolved or merged during 2002--2019; they are dropped, not
-  imputed.
-\item NCES F-33 \texttt{LEAID} $\to$ DCED \texttt{sd\_id}: 500/500
-  PA school districts matched (Jaro--Winkler with abbreviation
-  expansion + two manual overrides for fully-renamed districts).
-  This is the join that attaches Census F-33 SD finance to the DCED
-  rate panel.
-\item TIGER 2020 Census block $\to$ Census 2020 cousub: exact
-  spatial nesting; each block has a unique \texttt{COUSUBFP} by
-  construction.
-\item FBI UCR agency $\to$ DCED muni (for crime controls in
-  pre-treatment balance): 93.5\% match via Jacob Kaplan's
-  concatenated UCR file \citep{kaplanUCR} and
-  \texttt{fips\_place\_code} keying.
-\item Census Building Permits Survey place $\to$ DCED muni: 93.3\%
-  match via \texttt{fips\_mcd\_code}.
-\end{itemize}
-
-\paragraph{Sample-composition diagnostic.}
-Of the 2{,}503 DCED-listed Pennsylvania municipalities, the panel
-classifies $\sim$2{,}400 as never-changed (NC) on the muni resident
-rate side. The treated tail consists of $40$ Inc-bind, $58$
-Inc-becomes, and $26$ Inc-nobind municipalities (the remainder are Dec cells
-or ``Uncertain''; see Section~\ref{sec:strategy}). The treated tail
-spans eight cities, ten boroughs, and twenty-two townships in the
-Inc-bind cell; magnitudes of the headline coefficient are
-concentrated in the cities (see Companion Appendix), consistent
-with high-eventual-dose post-industrial municipalities being the
-identifying variation.
-
-%==========================================================
-\section{Additional Institutional Details}
-\label{app:theory}
-%==========================================================
-
-\subsection{Piecewise tax examples}
-\label{app:theory-piecewise}
-
-This subsection walks through worked numerical examples of the
-piecewise EIT formula in Equation~(\ref{eq:piecewise}) for the three
-binding-state cells the paper exploits. Each example uses a worker
-who lives in muni $j$ and works in muni $i$, with the standard
-$1\%$ combined cap split $0.5\%$ muni resident plus $0.5\%$
-school-district.
-
-\paragraph{Example 1: Inc-bind (the headline cell).}
-Pre-event, worker lives in a muni with
-$\tau^{\text{res,muni}}_j = 0.6\%$, $\tau^{\text{SD}}_j = 0.5\%$,
-and works in a muni with $\tau^{\text{nr,muni}}_i = 0.5\%$. The
-home stack is $0.6 + 0.5 = 1.1\%$; the work nonres rate is $0.5\%$;
-the home stack binds. The total bill is $\max(1.1\%, 0.5\%) =
-1.1\%$, split as $0.6\%$ to the home muni and SD ($0.6\%$ home
-stack $-$ $0\%$ residual to work, actually keep it simple: the home
-muni and SD get $\tau^{\text{home}} - \tau^{\text{nr}} = 1.1\% -
-0.5\% = 0.6\%$; the work muni gets $0.5\%$).
-
-Post-event, the muni raises its resident rate to
-$\tau^{\text{res,muni}}_j = 0.9\%$. The home stack becomes $1.4\%$,
-still binding ($1.4\% > 0.5\%$ work nonres). The total bill rises
-to $1.4\%$, an increase of $0.3$ pp; the home jurisdictions get
-$1.4 - 0.5 = 0.9\%$. A residential move to a lower-rate muni $j'$
-with $\tau^{\text{res,muni}}_{j'} = 0.5\%$ would lower the home
-stack to $0.5 + 0.5 = 1.0\%$, still binding, with a new total bill
-of $1.0\%$. The worker's savings from moving:
-$1.4\% - 1.0\% = 0.4\%$ of earned income. This is the cell where
-the institutional rule predicts the strongest sorting response.
-
-\paragraph{Example 2: Inc-nobind (the within-design placebo).}
-Pre-event, worker lives in a muni with
-$\tau^{\text{res,muni}}_j = 0.5\%$, $\tau^{\text{SD}}_j = 0.5\%$,
-and works in a Home Rule city with
-$\tau^{\text{nr,muni}}_i = 1.5\%$. The home stack is $1.0\%$; the
-work nonres rate is $1.5\%$; the work nonres binds. Total bill is
-$\max(1.0\%, 1.5\%) = 1.5\%$, with all of it going to the work
-muni. The home muni and SD collect zero.
-
-Post-event, the home muni raises its resident rate to $0.7\%$. The
-home stack becomes $1.2\%$, still below the $1.5\%$ work nonres
-rate; the work nonres still binds. Total bill remains $1.5\%$.
-The worker's bill is unchanged by the home-muni rate hike, so the
-institutional rule predicts no sorting response. The worker has no
-incentive to move home in response to this rate change. This is
-the placebo cell.
-
-\paragraph{Example 3: Inc-becomes (the intermediate case).}
-Pre-event setup identical to Example 2 in some respects: home stack
-$1.0\%$, work nonres $1.2\%$, work nonres binds, total bill
-$1.2\%$.
-
-Post-event, the home muni raises its resident rate to $1.0\%$,
-pushing the home stack to $1.5\%$. The home stack now binds
-($1.5\% > 1.2\%$ work nonres). Total bill rises to $1.5\%$, an
-increase of $0.3$ pp. But unlike Inc-bind, only the portion above
-the work nonres rate ($1.5 - 1.2 = 0.3\%$) accrues to the home
-jurisdictions; the work muni still collects its $1.2\%$. The
-worker's bill rises by less than the full statutory $\Delta\tau =
-0.5\%$ (it rises by only $0.3\%$, the amount the home stack
-exceeds the work nonres rate), so the institutional rule predicts
-an intermediate sorting response.
-
-\subsection{Additional institutional details}
-\label{app:theory-institutional}
-
-Three further institutional details affect interpretation but were
-deferred from the main text for space.
-
-\paragraph{Act 1 of 2006 (school-district EIT authorization).}
-The Taxpayer Relief Act of 2006 authorized school districts to
-levy or raise an EIT specifically to fund property-tax reduction,
-above the $0.5\%$ statutory default. This generated a wave of SD
-rate increases over 2006--2011 that the paper exploits as
-independent rate variation: the cross-panel correlation between
-muni and SD EIT rates is $-0.12$, so muni and SD rate changes can
-be identified separately in a joint regression.
-
-\paragraph{Act 47 distressed municipalities.}
-Approximately $15$ Pennsylvania municipalities have been designated
-``financially distressed'' under Act 47 of 1987 \citep{paAct47_1987} and granted authority
-to exceed the standard $0.5\%$ muni EIT cap (typically up to $1.5\%$
-or higher). These include Pittsburgh, Wilkes-Barre, Hazleton,
-Johnstown, and others in the Inc-bind cell, and they account for the
-right tail of the resident-rate distribution shown in
-Figure~\ref{fig:rate_double_histogram}. Their inclusion in the
-treated cohort is responsible for the large pre-2012 cumulative
-doses observed in some Inc-bind cohorts; sensitivity to dropping
-Act 47 municipalities is documented in the heterogeneity analysis in the
-companion appendix.
-
-\paragraph{Home Rule municipalities.}
-Pennsylvania's Home Rule Charter and Optional Plans Law
-(53 Pa.~C.S.~\S\,2961) authorizes municipalities to adopt a Home Rule
-Charter and exceed the standard $0.5\%$ muni-resident-rate cap
-without an Act 47 designation. About $80$ PA municipalities have a Home Rule
-Charter, of which around $20$ have used the authority to raise
-their muni EIT above the cap. These are typically older industrial
-boroughs (Bethlehem, Allentown, Reading, Lancaster, York, Erie).
-
-\subsection{Philadelphia treatment}
-\label{app:theory-philly}
-
-Philadelphia operates under the Sterling Act of 1932 (Act of August
-5, 1932, P.L.~45), which predates Act 511 and creates a separate
-EIT framework. Three features differ from the rest of Pennsylvania.
-First, Philadelphia residents pay the city resident rate
-($\sim$3.9\%) regardless of where they work, with no offset for
-work-location nonresident rates. Second, Philadelphia nonresidents
-working in Philadelphia pay the Philadelphia nonresident rate
-(${\sim}3.5\%$), with no residual flowing to their home
-jurisdiction's EIT. Third, the piecewise max-rule of Act 32 does
-not apply to Philadelphia-resident or Philadelphia-employed
-workers.
-
-The main estimates retain Philadelphia in the sample because (a)
-its $\sim 1.5$M residents contribute meaningful identifying
-variation in the residential-sorting outcomes; (b) the cousub
-crosswalk maps Philadelphia to a single COUSUBFP cleanly; and (c)
-the binding-state classification still applies internally
-(Philadelphia is in NC throughout the panel because its rates
-change only slightly and never trigger an Inc-bind / Inc-becomes /
-Inc-nobind transition). Sensitivity to dropping Philadelphia
-entirely is reported in the companion appendix and shows the
-headline coefficients are essentially unchanged.
-
 \end{document}
