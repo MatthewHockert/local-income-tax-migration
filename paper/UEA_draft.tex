@@ -553,11 +553,46 @@ dose magnitude in each cell.
 
 \input{tables/summary_muni.tex}
 
+The muni-year panel covers $43{,}374$ observations. The 25th, 50th,
+and 75th percentiles of the resident rate are all $0.5\%$,
+reflecting the statutory cap that the vast majority of municipalities
+adopt; the right tail reaches $4.33\%$ in Home-Rule and Act~47
+cities. Nonresident rates have a smaller $N$ ($34{,}080$) because
+DCED's pre-Act-32 coverage of the nonresident-rate field is
+incomplete. The typical Pennsylvania municipality has $\sim$360 jobs
+(median) and a $\sim$8\% share of workers who both live and work in
+the same municipality.
+
 \input{tables/summary_block.tex}
+
+The block-year panel is the largest of the three ($\sim$5.0M
+observations across $\sim$280{,}000 PA Census blocks). The median
+block has $10$ workers living in it and zero workers working in it
+(work-side counts are right-skewed and concentrated in commercial
+blocks), so block-level share outcomes are mechanically fragile at
+sparse geography. The $\log(\text{home count})$ regression sample
+restricts to blocks with at least one resident worker; $N=4.8$M.
 
 \input{tables/summary_sd.tex}
 
+The SD-year panel is much smaller: $500$ Pennsylvania school
+districts $\times$ $18$ years, $9{,}278$ observations with Census
+F-33 financial controls. School districts derive roughly $42\%$ of
+revenue from state aid, $54\%$ from local sources (of which
+property tax is the dominant component at $42\%$ of total revenue),
+and $5\%$ from federal sources. Instructional spending averages
+$52\%$ of expenditure.
+
 \input{tables/cell_counts_summary.tex}
+
+The binding-state decomposition assigns the $\sim$2{,}500
+municipalities into seven cells based on their first muni-rate
+event. $1{,}793$ municipalities are NC controls and never change
+their resident rate; $40$ are Inc-bind (the headline cell), $58$
+are Inc-becomes, $26$ are Inc-nobind (within-design placebo), and
+$30$ are Dec cells combined. The mean cumulative Inc-bind dose at
+event-time $k=+5$ is $0.19$ pp (Inc-becomes $0.34$ pp, Inc-nobind
+$0.27$ pp); the upper tail reaches $1.5$ pp for Act~47 cities.
 
 Figure~\ref{fig:rate_double_histogram} plots the empirical CDF of
 the three rate variables that enter the piecewise max-rule: the
