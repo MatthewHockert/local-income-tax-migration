@@ -2864,28 +2864,13 @@
     <bcf:citekey order="48">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
     <bcf:citekey order="49">callaway2021</bcf:citekey>
     <bcf:citekey order="49">dechaisemartin2024</bcf:citekey>
-    <bcf:citekey order="50">saezUsingElasticitiesDerive2001</bcf:citekey>
-    <bcf:citekey order="51">saezUsingElasticitiesDerive2001</bcf:citekey>
-    <bcf:citekey order="52">agrawalRelocationRichMigration2019</bcf:citekey>
-    <bcf:citekey order="53">agrawalRelocationRichMigration2019</bcf:citekey>
-    <bcf:citekey order="54">agrawalLessonsStateLocal</bcf:citekey>
-    <bcf:citekey order="55">agrawalLessonsStateLocal</bcf:citekey>
-    <bcf:citekey order="56">butts2023DiDSpatialSpillovers</bcf:citekey>
-    <bcf:citekey order="58">deChaisemartin2022Continuous</bcf:citekey>
-    <bcf:citekey order="60">deChaisemartin2020TWFE</bcf:citekey>
-    <bcf:citekey order="60">deChaisemartin2023ImperfectPT</bcf:citekey>
-    <bcf:citekey order="61">deChaisemartin2025MultipleGtDyn</bcf:citekey>
-    <bcf:citekey order="62">bagchiEffectsIntroducingWithholding2022</bcf:citekey>
-    <bcf:citekey order="63">bagchiEffectsIntroducingWithholding2022</bcf:citekey>
-    <bcf:citekey order="64">padcedMunStats</bcf:citekey>
-    <bcf:citekey order="65">lehdLODES</bcf:citekey>
-    <bcf:citekey order="65">abowdProducerDynamicsNew2009</bcf:citekey>
-    <bcf:citekey order="66">grahamDESIGNCOMPARISONLODES</bcf:citekey>
-    <bcf:citekey order="67">tigerline2020</bcf:citekey>
-    <bcf:citekey order="68">padcedAFR</bcf:citekey>
-    <bcf:citekey order="69">censusF33</bcf:citekey>
-    <bcf:citekey order="70">kaplanUCR</bcf:citekey>
-    <bcf:citekey order="71">paAct47_1987</bcf:citekey>
+    <bcf:citekey order="50">paAct47_1987</bcf:citekey>
+    <bcf:citekey order="51">butts2023DiDSpatialSpillovers</bcf:citekey>
+    <bcf:citekey order="53">deChaisemartin2022Continuous</bcf:citekey>
+    <bcf:citekey order="55">deChaisemartin2020TWFE</bcf:citekey>
+    <bcf:citekey order="55">deChaisemartin2023ImperfectPT</bcf:citekey>
+    <bcf:citekey order="56">deChaisemartin2025MultipleGtDyn</bcf:citekey>
+    <bcf:citekey order="57">bagchiEffectsIntroducingWithholding2022</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="apa">
