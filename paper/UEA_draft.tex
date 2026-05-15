@@ -1453,6 +1453,10 @@ The SD-cohort analogue at the block level uses the same ATT summary statistics w
 
 \input{tables/es_pooled_block_sd_summary.tex}
 
+Figure~\ref{fig:pooled_es_block_muni} plots the event-time path for
+the muni-cohort stack; Figure~\ref{fig:pooled_es_block_sd} plots the
+SD-cohort stack on the same four block outcomes.
+
 \begin{figure}[H]
   \centering
   \caption{Block-level pooled realized-dose event study, muni-cohort
@@ -1492,6 +1496,11 @@ The SD-cohort analogue at the block level uses the same ATT summary statistics w
 The school-district aggregation of the same pooled ES is reported next as a coarser-geography benchmark.
 
 \input{tables/es_pooled_sd_summary.tex}
+
+Figures~\ref{fig:pooled_es_muni_only} and \ref{fig:pooled_es_sd_only}
+plot the muni-level and SD-level pooled event studies separately;
+the muni-level Inc post-event path runs monotonically negative from
+$k=+1$ while the SD-level path is direction-mixed.
 
 \begin{figure}[H]
   \centering
@@ -1729,6 +1738,9 @@ post-event Inc-bind response is the cell the binding rule predicts.
 
 \input{tables/es_block_by_cell_summary.tex}
 
+Figure~\ref{fig:block_es_homecount} plots the per-event-time
+coefficients underlying that table, faceted by binding-state cell.
+
 \begin{figure}[H]
   \centering
   \caption{Block-level realized-dose event study on the log count of
@@ -1836,6 +1848,11 @@ by NAICS supersector, Table~\ref{tab:industry_cousub} reports the
 muni-resident-rate cell coefficients by industry bucket.
 
 \input{tables/industry_cousub.tex}
+
+Figure~\ref{fig:industry_inc_bind} visualizes the Inc-bind
+coefficient by industry bucket with $95\%$ confidence intervals,
+showing the consumer-facing contraction against the stable tradeable
+sector.
 
 \begin{figure}[H]
   \centering
@@ -1948,6 +1965,35 @@ block-level effect is roughly constant pre and post, so the
 finer-geography sorting response predates the Act-32 enforcement
 break (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
 
+\subsection{Act 47 Distressed-Municipality Exclusion}
+\label{subsec:rob-act47}
+
+The Inc-bind cohort is mechanically concentrated in Act~47
+distressed cities \citep{paAct47_1987}, because Act~47 is the legal
+designation that lets a municipality exceed the $0.5\%$ statutory
+muni-EIT cap. Selection-on-distress is therefore a candidate
+confounder: an Act~47 designation typically follows a period of
+population decline, so the rate hike happens after the muni is
+already losing residents and bundles with state oversight, debt
+restructuring, and service cuts. Of the 40 Inc-bind municipalities,
+$9$ match the DCED Act~47 designation list (Braddock, Carbondale,
+Coatesville, Farrell, Franklin, Hazleton, Jeannette, Johnstown,
+West Hazleton). Table~\ref{tab:act47_robustness} re-estimates the
+municipality-level Inc-bind coefficient on the remaining $31$
+non-Act-47 Inc-bind municipalities.
+
+\input{tables/act47_robustness.tex}
+
+The point estimates are direction-preserving and similar in
+magnitude when Act~47 munis are dropped: the live-and-work
+coefficient moves from $-0.41$ to $-0.33$, share-live-in from
+$-0.048$ to $-0.038$. Statistical significance falls because
+dropping $23\%$ of the treated cohort roughly doubles the standard
+errors, but the share-live-in coefficient is still significant at
+$1\%$ and live-and-work at $10\%$. The pattern is consistent with
+sample shrinkage rather than with the headline being driven entirely
+by Act~47 selection.
+
 %==========================================================
 \section{Discussion}
 \label{sec:discussion}
@@ -2014,6 +2060,20 @@ shift is captured by the share of tradeable jobs rising approximately
 11 percentage points in the binding cell. The decline in total jobs
 operates \emph{via} local-services demand spillover from departing
 residents, not via direct nonresident-tax incidence.
+
+The treated cohort is also disproportionately concentrated in
+Act~47 distressed cities, which raises a selection-on-distress
+concern: Act~47 designation typically follows a period of decline
+and bundles rate-hike authority with state oversight, debt
+restructuring, and service cuts. Section~\ref{subsec:rob-act47}
+re-estimates the headline excluding the 9 Act~47 Inc-bind
+municipalities; the point estimates are direction-preserving and
+similar in magnitude (live-and-work moves from $-0.41$ to $-0.33$,
+share-live-in from $-0.048$ to $-0.038$), with standard errors
+roughly doubling as expected from a 23\% sample reduction. The
+binding-state mechanism is therefore not a relabelling of Act~47
+fiscal distress, though the muni-level coefficient is identified
+off a treated set that includes substantial Act~47 weight.
 
 Eight limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and

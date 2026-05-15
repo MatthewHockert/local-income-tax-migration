@@ -1,0 +1,9 @@
+outcome,est,se,p,n,spec
+log_live_and_work,-0.4106,0.1187,6e-04,218680,All 40 Inc-bind munis
+log_in_commuters,-0.1708,0.1327,0.198,239026,All 40 Inc-bind munis
+log_total_residents,-0.0919,0.0349,0.0085,242725,All 40 Inc-bind munis
+share_live_in,-0.0484,0.0111,0,239036,All 40 Inc-bind munis
+log_live_and_work,-0.3299,0.1828,0.0713,218610,Drop 9 Act 47 Inc-bind
+log_in_commuters,-0.1761,0.2153,0.4135,238955,Drop 9 Act 47 Inc-bind
+log_total_residents,-0.0705,0.0576,0.2217,242654,Drop 9 Act 47 Inc-bind
+share_live_in,-0.0381,0.0128,0.0028,238965,Drop 9 Act 47 Inc-bind

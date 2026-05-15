@@ -1,0 +1,21 @@
+\begin{table}[H]
+  \centering
+  \caption{Act~47 robustness: dropping distressed Inc-bind municipalities from the cousub headline}
+  \label{tab:act47_robustness}
+  \small
+  \begin{tabular}{lcc}
+    \toprule
+    Outcome & All 40 Inc-bind & Drop $k$ Act~47 \\
+    \midrule
+    \texttt{log\_live\_and\_work} & $-0.411^{***}$ (0.119) & $-0.330^{*}$ (0.183) \\
+    \texttt{log\_in\_commuters} & $-0.171^{}$ (0.133) & $-0.176^{}$ (0.215) \\
+    \texttt{log\_total\_residents} & $-0.092^{***}$ (0.035) & $-0.070^{}$ (0.058) \\
+    \texttt{share\_live\_in} & $-0.048^{***}$ (0.011) & $-0.038^{***}$ (0.013) \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.85\textwidth}
+    \footnotesize \textit{Notes:} Muni-level Inc-bind coefficient on each residence-side outcome, with same FE / cluster / controls as the headline. Column 1 is the headline (all 40 Inc-bind municipalities). Column 2 drops 9 Act 47 distressed-designation municipalities from the Inc-bind cohort; the remaining 31 Inc-bind municipalities are mostly Home Rule and Boroughs. Cluster-robust SEs in parentheses. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
+\end{table}
+
