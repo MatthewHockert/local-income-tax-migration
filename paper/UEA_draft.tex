@@ -101,8 +101,7 @@ Second, the EIT operates using a piecewise maximization rule where each worker's
 $T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
 $\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$ is the
 sum of the municipal resident rate and the school-district resident
-rate at the worker's address (the \emph{home stack}, and the term I
-use throughout the paper), and $\tau^{\text{nr,work}}$ is the
+rate at the worker's address (the \home stack), and $\tau^{\text{nr,work}}$ is the
 nonresident rate at the work location. A statutory home-side rate
 change only moves the bill if the home stack is on the binding side
 of the max. Act~32 of 2008 (effective 2012) consolidated EIT
@@ -134,7 +133,12 @@ Dec mirrors. I am only able to identify causal effects for the increase cells be
 decrease cells are lack enough observations (eleven Dec-bind, four Dec-becomes-non,
 fifteen Dec-nobind municipalities in total). The
 discussion below focuses on the three Inc cells, with decrease
-results reported alongside for completeness. In the Inc-bind cell the home stack was binding both pre and post,
+results reported alongside for completeness. The three cells differ
+in the implied change in the worker's bill
+$\Delta T = \max(\tau^{\text{home}}_{\text{post}}, \tau^{\text{nr}}) -
+\max(\tau^{\text{home}}_{\text{pre}}, \tau^{\text{nr}})$, which depends
+on which side of the max is binding pre and post; Section~\ref{sec:background}
+walks through the institutional and arithmetic detail. In the Inc-bind cell the home stack was binding both pre and post,
 so the bill rises by the full $\Delta\tau$. In the Inc-becomes cell
 the home stack flips from non-binding to binding, so the bill rises
 only partially (the portion above the nonresident rate). The
