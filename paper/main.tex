@@ -128,9 +128,11 @@ aggregation-diagnostic channel because SD rate changes do not
 recover a robust sorting response. Second, the EIT operates a
 piecewise max-rule: each worker's bill is
 $T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
-$\tau^{\text{home}}$ is the municipal-plus-school-district stack at
-the worker's residence and $\tau^{\text{nr,work}}$ is the
-nonresident rate at the work location. A statutory rate change on
+$\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$ is
+the sum of the municipal resident rate and the school-district
+resident rate at the worker's address (the \emph{home stack}, and
+the term I use throughout the paper), and $\tau^{\text{nr,work}}$
+is the nonresident rate at the work location. A statutory rate change on
 the home side only moves the worker's bill if the home stack is on
 the binding (i.e., higher) side of the max; the work-side
 nonresident rate is always paid by nonresidents, so the home-side

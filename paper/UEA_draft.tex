@@ -79,7 +79,7 @@ residents rather than direct nonresident-tax incidence.
 %==========================================================
 
 The Tiebout hypothesis predicts that residents sort across
-jurisdictions which offer different fiscal amenities and different costs and residents will 'vote with their feet' and choose specific bundles of amenities for a given amount of taxation \citet{tiebout1956}. A survey of the literature conducted by \citet{agrawalLessonsStateLocal} highlights the current findings of state and local income taxation and identifies sub-state (county, municipality, school districts) income-tax sorting as one of the field's open questions.
+jurisdictions which offer different fiscal amenities and different costs and residents will 'vote with their feet' and choose specific bundles of amenities for a given amount of taxation, called the Tiebout margin \citet{tiebout1956}. A survey of the literature conducted by \citet{agrawalLessonsStateLocal} highlights the current findings of state and local income taxation and identifies sub-state (county, municipality, school districts) income-tax sorting as one of the field's open questions.
 The literature has focused mostly on state tax adjustments on high-earners
 \citep{young2016, agrawalRelocationRichMigration2019}. The research shows that
 top-income households are generally mobile when rates between states are large, and \citet{agrawal2015gradient} documents sharp discontinuities among commodity-taxes at sub-state borders, but does not estimate the sub-state Tiebout margin for income taxes. The closest existing research comes from
@@ -87,58 +87,52 @@ top-income households are generally mobile when rates between states are large, 
 
 This paper estimates the municipal and school district level migration effects among workers in Pennsylvania from 2002--2019, by merging local income tax data with the LEHD Origin-Destination
 Employment Statistics (LODES), which links each worker's residence to their workplace at annual
-frequency and at sub-municipal geography. In Pennsylvania there are roughly $2{,}500$ municipalities and $500$ school districts that set
+frequency and at sub-municipal geography. In Pennsylvania there are roughly $2{,}500$ municipalities and $500$ school districts (SD) that set
 their own Earned Income Tax (EIT) rates
 \citep{bagchiEffectsIntroducingWithholding2022,agrawalLessonsStateLocal},
 producing a deep cross-section of multiple sub-state income-tax opportunities. The EIT offers two additional dimensions of variation that my
 empirical design exploits. First, the EIT is set independently by two
 overlapping rate-setting jurisdictions (municipalities and school
 districts) and a resident's home-side tax bill is the sum of the
-municipality resident rate and the school-district rate. This paper's primary
-focus is the municipality resident rate the SD rate enters the empirical
-design but is treated as a secondary, aggregation-diagnostic channel
-because SD rate changes do not recover a robust sorting response.
-Second, the EIT operates a piecewise max-rule: each worker's bill is
+municipal resident rate and the school-district rate. This paper's primary
+focus is the municipal resident rate while the school district rate enters the empirical
+design but is treated as secondary.
+Second, the EIT operates using a piecewise maximization rule where each worker's bill is
 $T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$, where
-$\tau^{\text{home}}$ is the municipal-plus-school-district stack at
-the worker's residence and $\tau^{\text{nr,work}}$ is the
+$\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$ is the
+sum of the municipal resident rate and the school-district resident
+rate at the worker's address (the \emph{home stack}, and the term I
+use throughout the paper), and $\tau^{\text{nr,work}}$ is the
 nonresident rate at the work location. A statutory home-side rate
 change only moves the bill if the home stack is on the binding side
 of the max. Act~32 of 2008 (effective 2012) consolidated EIT
 collection into county-based Tax Collection Districts and mandated
 employer withholding at the higher of the two rates, which made the
-max-rule mechanically enforced;
-\citet{bagchiEffectsIntroducingWithholding2022} documents the
-canonical Act~32 compliance result and this paper is its
-residential-sorting counterpart.
+max-rule mechanically enforced.
+\citet{bagchiEffectsIntroducingWithholding2022} estimates that Act~32 resulted in a $14 \%$ increase in compliance and much higher local revenues. My paper does not analyze compliance but rather estimates
+residential-sorting and provides additional analysis pre-post Act~32.
 
-The paper's methodological contribution is a binding-state
-decomposition that exploits the piecewise structure of the EIT to
-generate a within-design placebo. A statutory rate change moves the
-worker's bill only when the home stack is on the binding side of the
-max; the same statutory change produces a predicted-null cell when
+Beyond contributing to the general literature on local tax rate changes and residential sorting  this paper's methodological contribution is utilizing the piecewise structure of the EIT to generate a binding-state decomposition to test how rate changes that move the tax bill from the non-resident side to resident side and producing a within-design placebo. A statutory rate change moves the worker's bill only when the home stack is on the binding side of the
+maximization function, but that same statutory change produces a predicted-null when
 the home stack stays below the work-side nonresident rate. Splitting
-rate-change events by binding-state transition isolates the cells
-whose bill actually moves from those whose bill does not, which is
-exactly the variation \citet{agrawalLessonsStateLocal} flag as
-necessary to recover the sub-state Tiebout margin and which the
-\citet{agrawalLocalPolicyChoice2022} theoretical setting motivates.
+rate-change events by whether or not they are binding isolates
+whose bill actually moves and those whose bill does not. Splitting rate-change events by binding state isolates the rate hikes that actually move the worker's bill and this within-design heterogeneity is what \citet{agrawalLessonsStateLocal} identifies as missing from the existing U.S. local-income-tax literature.
 The decomposition is implemented at three units of observation
 (municipality, school district, census block) in a continuous stacked
 difference-in-differences design that uses never-changed
 municipalities as the control pool.
 
-The max-rule turns a single statutory rate change into
-heterogeneous predicted effects depending on the binding-state
+The max-rule turns a single statutory rate change into multiple
+heterogeneous effects depending on the binding-state
 transition. For each rate-setter side $s \in \{\text{muni},
 \text{SD}\}$ I classify each rate event by direction (Increase or
-Decrease) crossed with the binding-state transition of the home
-stack relative to the work-side nonresident rate (bind, becomes
-binding, never binds), yielding six cells per rate-setter side: the
+Decrease). Within that grouping I further decompose them by the binding-state transition of the home
+rate changes relative to the work-side nonresident rate (bind, becomes
+binding, never binds) and six cells per rate-setter side: the
 three Inc cells (Inc-bind, Inc-becomes, Inc-nobind) and the three
-Dec mirrors. The increase cells carry the identification because the
-decrease cells are thin (eleven Dec-bind, four Dec-becomes-non,
-fifteen Dec-nobind municipalities in total) and most contain no cities; the
+Dec mirrors. I am only able to identify causal effects for the increase cells because the
+decrease cells are lack enough observations (eleven Dec-bind, four Dec-becomes-non,
+fifteen Dec-nobind municipalities in total). The
 discussion below focuses on the three Inc cells, with decrease
 results reported alongside for completeness. In the Inc-bind cell the home stack was binding both pre and post,
 so the bill rises by the full $\Delta\tau$. In the Inc-becomes cell
