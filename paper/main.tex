@@ -143,76 +143,27 @@ employer withholding at the higher of the two rates, which made
 the max-rule mechanically enforced and provides an enforcement-break
 heterogeneity test.
 
-The max-rule turns a single statutory rate change into
-heterogeneous predicted effects depending on the binding-state
-transition. For each rate-setter side $s \in \{\text{muni},
-\text{SD}\}$ I classify each rate event by direction (Increase or
-Decrease) crossed with the binding-state transition of the home
-stack relative to the work-side nonresident rate (bind, becomes
-binding, never binds), yielding six cells per rate-setter side: the
-three Inc cells (Inc-bind, Inc-becomes, Inc-nobind) and the three
-Dec mirrors. The increase cells carry the identification because the
-decrease cells are thin (eleven Dec-bind, four Dec-becomes-non,
-fifteen Dec-nobind municipalities in total) and most contain no cities; the
-discussion below focuses on the three Inc cells, with decrease
-results reported alongside for completeness. The three cells differ
-in the implied change in the worker's bill
-$\Delta T = \max(\tau^{\text{home}}_{\text{post}}, \tau^{\text{nr}}) -
-\max(\tau^{\text{home}}_{\text{pre}}, \tau^{\text{nr}})$, which depends
-on which side of the max is binding pre and post; Section~\ref{sec:background}
-walks through the institutional and arithmetic detail. In the Inc-bind cell the home stack was binding both pre and post,
-so the bill rises by the full $\Delta\tau$. In the Inc-becomes cell
-the home stack flips from non-binding to binding, so the bill rises
-only partially (the portion above the nonresident rate). The
-institutional rule's per-pp prediction is Inc-bind $>$
-Inc-becomes in magnitude because the per-pp bill change is larger,
-though a salience-based argument cuts the other way: Inc-becomes
-workers experience a discrete switch from paying zero home-side tax
-to paying a positive amount, which could trigger an outsized
-behavioral response on the threshold-crossing margin. The data
-favor the institutional prediction at both estimating units.
-In the Inc-nobind cell the home stack stays below the nonresident
-rate throughout, so the bill does not move and the predicted
-response is zero. Inc-nobind is therefore a within-design placebo: if the same
-statutory increase produces a response in Inc-bind and no response
-in Inc-nobind, the mechanism interpretation is credible; if
-Inc-nobind moves, the mechanism interpretation fails.
+Section~\ref{sec:theory} formalizes the binding-state cell
+decomposition---six cells per rate-setter side, partitioning each
+statutory rate event by direction (Increase/Decrease) and by the
+home-stack-vs-nonresident-rate binding transition---and lays out the
+worker-bill differencing function each cell implies.
 
-At the block level, a 1 percentage-point municipal resident-rate
-increase in the Inc-bind cell reduces the log count of workers
-living in the block by $-0.21$ log points, approximately $19\%$,
-with a clean realized-dose pre-trend
-($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The Inc-nobind
-within-design placebo is statistically null on the same count
-outcome. The block-level decomposition is the preferred causal
-estimate because both rate-setting jurisdictions---the municipality
-and the school district---enter at their native geography and the
-pre-trend is clean. The municipality-level Inc-bind coefficient is
-larger in absolute value ($-0.40$ log points on the count of
-residents who both live and work in the municipality, implying a
-$\approx 33\%$ decline per pp rate hike), and passes the joint
-Wald pre-trend test ($p = 0.23$). The block-level analogue is the
-preferred causal headline because the block observes both rate-setting
-jurisdictions at their native geography. I therefore report the
-municipality-level estimate as policy-jurisdiction magnitude
-calibration rather than as a second causal headline. School-district
-rate changes do not produce robust evidence of sorting and are
-treated as an aggregation diagnostic. Industry decomposition shows
-that consumer-facing jobs fall in the binding cell while tradeable
-jobs are insulated, consistent with a local-services demand
-spillover from departing residents rather than with direct
-nonresident-tax incidence on jobs.
-
-The narrow, credible claim of the paper is that local income taxes
-cause residential sorting when the institutional rule makes them
-mechanically change the worker's bill---that is, in the Inc-bind
-cell, and at the municipality level also in the Inc-becomes cell where the
-hike flips the home stack from non-binding to binding
-($\beta = -0.181^{**}$ on the count of residents who both live and
-work in the municipality). The pooled Inc/Dec specification that a
-conventional local-tax design would estimate is reported as a
-benchmark, but it mixes binding and non-binding events. The
-binding-state decomposition is the paper's contribution.
+At the block level, the preferred causal estimate, a 1 percentage-point
+municipal resident-rate increase in the Inc-bind cell reduces the
+log count of workers living in the block by $-0.21$ log points
+(approximately $19\%$); the Inc-nobind within-design placebo is
+null. The municipality-level analogue is larger ($-0.40$ log points
+on live-and-work residents, $\approx 33\%$ per pp) and is reported
+as policy-jurisdiction magnitude calibration. School-district rate
+changes do not produce robust evidence of sorting and are treated as
+an aggregation diagnostic. An industry decomposition shows consumer-facing
+jobs fall in the binding cell while tradeable jobs are insulated,
+consistent with a local-services demand spillover from departing
+residents rather than direct nonresident-tax incidence on jobs. The
+paper's contribution is the binding-state decomposition: local
+income taxes cause residential sorting precisely when the
+institutional rule makes them mechanically change the worker's bill.
 
 %==========================================================
 \section{Institutional Background}
@@ -393,10 +344,17 @@ district components.
 The piecewise tax allocation in Equation~(\ref{eq:piecewise}) is the
 analytical engine of the empirical design. A worker's bill is
 $T = \max(\tau^{\text{home}}, \tau^{\text{nr,work}})$. A rate change
-only \emph{moves the bill} when its side of the max binds. This
+only \emph{moves the bill} when its side of the max binds. The
+implied change in the worker's bill from a single rate event is
+\[
+  \Delta T \;=\; \max(\tau^{\text{home}}_{\text{post}}, \tau^{\text{nr}})
+              - \max(\tau^{\text{home}}_{\text{pre}},  \tau^{\text{nr}}),
+\]
+which depends jointly on the direction of the rate change and on
+which side of the max is binding pre- and post-event. This
 generates a sharp prediction: the same statutory rate change can
 produce a strong behavioral response, a moderate response, or no
-response at all depending on the binding state pre- and post-event.
+response at all depending on the binding-state transition.
 
 \subsection{Six Cells per Side}
 \label{subsec:cells}
@@ -418,17 +376,29 @@ The fundamental testable prediction of the institutional rule is an
 ordered ranking of cell magnitudes: Inc-bind effects exceed
 Inc-becomes effects, which in turn exceed Inc-nobind effects, with
 the last close to zero in absolute value and serving as the
-within-design placebo. The central empirical comparison of the
-paper is between Inc-bind and Inc-nobind: if statutory rates matter
-mechanically through tax liability, the residential response should
-appear in Inc-bind and not in Inc-nobind. If Inc-nobind moves, the
-mechanism interpretation fails---the response is something other
-than the binding rule, because Inc-nobind events do not change the
-worker's bill. This makes the design self-falsifying in a way that
-a conventional pooled Inc/Dec specification is not: in the pooled
+within-design placebo. A salience-based argument cuts the other way
+on Inc-bind versus Inc-becomes: workers in the Inc-becomes cell
+experience a discrete switch from paying zero home-side tax to
+paying a positive amount, which could trigger an outsized
+behavioral response on the threshold-crossing margin. The data
+favor the institutional prediction at both estimating units. The
+central empirical comparison of the paper is between Inc-bind and
+Inc-nobind: if statutory rates matter mechanically through tax
+liability, the residential response should appear in Inc-bind and
+not in Inc-nobind. If Inc-nobind moves, the mechanism
+interpretation fails---the response is something other than the
+binding rule, because Inc-nobind events do not change the worker's
+bill. This makes the design self-falsifying in a way that a
+conventional pooled Inc/Dec specification is not: in the pooled
 specification, every increase is a treated event, while here the
 institutional rule predicts that only a subset of statutory
 increases should generate a response.
+
+The increase cells carry the identification because the decrease
+cells are thin: eleven Dec-bind, four Dec-becomes-non, fifteen
+Dec-nobind municipalities in total. The empirical results below
+focus on the three Inc cells, with decrease cells reported alongside
+for completeness.
 
 \subsection{Three Treatment Margins}
 \label{subsec:treatments}
