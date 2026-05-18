@@ -452,11 +452,12 @@ write_act32_table <- function(coef_csv, diag_csv, outcomes, cells,
   if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
 
   out <- c(
-    "\\begin{table}[H]",
+    "\\begin{table}[!htbp]",
     "  \\centering",
     paste0("  \\caption{", caption, "}"),
     paste0("  \\label{", label_id, "}"),
-    "  \\small",
+    "  \\footnotesize",
+    "  \\renewcommand{\\arraystretch}{0.85}",
     tabular,
     "  \\vspace{0.3em}",
     "  \\begin{minipage}{0.95\\textwidth}",
