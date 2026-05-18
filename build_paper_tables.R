@@ -449,7 +449,7 @@ write_act32_table <- function(coef_csv, diag_csv, outcomes, cells,
     if (length(diag_block)) paste0("    ", diag_block) else character(0),
     "    \\bottomrule",
     "  \\end{tabular}")
-  if (ncols >= 4) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+  if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
 
   out <- c(
     "\\begin{table}[H]",
@@ -681,7 +681,7 @@ write_pooled_table <- function(level_tag, spec_mode, outcomes, caption, label_id
     if (length(diag_block)) paste0("    ", diag_block) else character(0),
     "    \\bottomrule",
     "  \\end{tabular}")
-  if (ncols >= 4) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+  if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
   out <- c(
     "\\begin{table}[H]",
     "  \\centering",
@@ -836,7 +836,7 @@ write_es_summary <- function(att_csv, row_var, row_levels, outcomes,
     paste0("    ", body),
     "    \\bottomrule",
     "  \\end{tabular}")
-  if (ncols >= 4) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+  if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
   out <- c(
     "\\begin{table}[H]",
     "  \\centering",

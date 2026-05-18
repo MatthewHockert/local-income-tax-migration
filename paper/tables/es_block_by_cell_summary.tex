@@ -3,6 +3,7 @@
   \caption{Realized-dose event study by binding-state cell --- block level (muni cohort).}
   \label{tab:es_block_by_cell}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lccc}
     \toprule
     Cell & Log(workers live) & Log(workers work) & Share live+work in muni \\
@@ -46,6 +47,7 @@
     Dep.\ SD         & --- & --- & --- \\
     \bottomrule
   \end{tabular}
+  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Post = mean of $\beta_k$ for $k = 0, \ldots, 5$; pre = mean for $k \leq -2$. Wald $p$ is the cluster-robust joint test of $H_0\colon \beta_k = 0$ across pre-event $k$. Per-cell decomposition of the pooled block-level ES; each cell is run as a separate regression on \{NC, cell\}. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.

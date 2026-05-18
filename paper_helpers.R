@@ -297,7 +297,7 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   # Auto-fit wide tables: if there are >= 4 outcome columns, wrap the
   # tabular in \resizebox{\textwidth}{!} so the table never overflows the
   # text width. Narrower tables are typeset at native size.
-  wide <- length(outcomes) >= 4
+  wide <- length(outcomes) >= 3
   tabular <- c(
     paste0("  \\begin{tabular}{", col_spec, "}"),
     "    \\toprule",

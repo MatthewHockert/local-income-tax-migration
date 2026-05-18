@@ -124,29 +124,9 @@ att_dt <- rbindlist(att_results, fill = TRUE)
 fwrite(es_dt,  file.path(out_dir, "sd_es_coefs.csv"))
 fwrite(att_dt, file.path(out_dir, "sd_es_att.csv"))
 
-# ES figures
-es_plot <- copy(es_dt)
-es_plot <- rbind(es_plot,
-                  unique(es_plot[, .(outcome, cell)])[, .(outcome, cell, rel = -1L,
-                                                          est = 0, se = 0, p = NA, n = NA)],
-                  fill = TRUE)
-es_plot[, lo := est - 1.96 * se]
-es_plot[, hi := est + 1.96 * se]
-for (o in outcomes) {
-  dd <- es_plot[outcome == o]
-  if (nrow(dd) == 0) next
-  p <- ggplot(dd, aes(x = rel, y = est)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-    geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey50") +
-    geom_pointrange(aes(ymin = lo, ymax = hi), size = 0.3) +
-    geom_line() +
-    facet_wrap(~ cell, ncol = 3, scales = "free_y") +
-    labs(title = paste0("SD-level Sun-Abraham ES (realized dose): ", o),
-         subtitle = "y-axis: per-pp realized SD-dose effect at event-time k",
-         x = "Event time", y = expression(beta[k])) +
-    theme_bw(base_size = 9)
-  ggsave(file.path(fig_dir, paste0("sd_es_", o, ".png")),
-         p, width = 8.5, height = 5, dpi = 300)
-}
+# Figures are built by build_appendix_es_figures.R using the project's
+# theme_paper() + ribbon style (PAPER_BLUE palette). Plotting here is
+# disabled to avoid two scripts writing the same file with inconsistent
+# styles.
 cat("\n--- SD-level ATT summary ---\n")
 print(att_dt)

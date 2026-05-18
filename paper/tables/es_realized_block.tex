@@ -3,6 +3,7 @@
   \caption{Realized-dose ES --- block level (muni cohort)}
   \label{tab:es_realized_block}
   \small
+  \resizebox{\textwidth}{!}{
   \begin{tabular}{lccc}
     \toprule
     Outcome & Log(workers live) & Log(workers work) & Share live+work in muni \\
@@ -31,6 +32,7 @@
     $N$ & 18,611,776 & 6,912,416 & 18,611,776 \\
     \bottomrule
   \end{tabular}
+  }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
     \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Each cell reports two rows: post-event ATT (mean of $\beta_k$ for $k = 0..5$) and pre-event lead (mean of $\beta_k$ for $k \leq -2$). Rows omitted (no estimable coefficients in any outcome column): Dec-becomes-non (pre), Dec-nobind (pre). These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
