@@ -525,7 +525,7 @@ mechanically sensitive at sparse geography because both the
 numerator and denominator move. At the municipality and
 school-district aggregations I also report resident-worker counts,
 workplace counts, in-commuter flows, and share outcomes
-(\textit{share\_live\_in}). Share outcomes at coarser geographies
+(live-in-muni share). Share outcomes at coarser geographies
 retain the interpretation of earlier literature; at the block level
 I treat them as supporting evidence rather than as the primary
 estimand. Fiscal outcomes used as falsification placebos and
@@ -569,7 +569,7 @@ sparse (mean $\sim 19$ workers per block, raw SD of $139$ on the
 work side), and a substantial share of blocks report zero on at
 least one count, which is why the log-count regressions condition
 on positive counts ($N=4.8$M for $\log$ home count, $N=1.9$M for
-$\log$ work count) while \texttt{home\_in\_muni\_share} keeps the
+$\log$ work count) while home-in-muni share keeps the
 full block panel. The granularity is what makes the
 stack-interacted block FE feasible without running out of degrees
 of freedom in any single muni-cohort.
@@ -715,9 +715,9 @@ NC-purity filter described in Section~\ref{sec:strategy}.
         \toprule
         Side & Inc-bind & Inc-becomes & Inc-nobind & Dec-bind & Dec-becomes-non & Dec-nobind & NC \\
         \midrule
-        Muni resident ($\tau^{\text{muni}}$) & 40 & 58 & 26  & 11 & 4  & 15  & 2{,}406 \\
-        School district ($\tau^{\text{SD}}$) & 75 & 197 & 14 & 4  & 10 & ---  & 2{,}253 \\
-        Muni nonresident ($\tau^{\text{nr}}$) & 0  & 0  & 171 & 0  & 5  & 109 & 2{,}276 \\
+        Muni resident ($\tau^{\text{muni}}$) & 24 & 43 & 20  & 4  & 3  & 11  & 1{,}730 \\
+        School district ($\tau^{\text{SD}}$) & 71 & 186 & 11 & --- & 4  & 6   & 1{,}558 \\
+        Muni nonresident ($\tau^{\text{nr}}$) & 23 & 0  & 5   & 30 & 0  & 1   & 1{,}638 \\
         \bottomrule
     \end{tabular}
     }
@@ -726,10 +726,7 @@ NC-purity filter described in Section~\ref{sec:strategy}.
         \footnotesize \textit{Notes:} Cells classified at each municipality's first
         observed rate event on the relevant rate-setter. Munis with rate changes
         whose first-event binding state cannot be determined (NA pre-event
-        nonresident rate) are dropped (not pooled with NC). On the
-        nonresident side, Inc-bind and Inc-becomes cells are empty in PA
-        because the municipality's nonresident rate almost never exceeds the municipality's
-        own home stack at the municipality-self-pair level.
+        nonresident rate) are dropped (not pooled with NC). On the nonresident rate-setter, the binding-state labels are inverted: "Inc-nobind" denotes events where the home stack stayed below the nonresident rate (bill paid via nonresident both pre and post), so these are the cells where a nonresident-rate change actually moves the worker bill. The 123 Inc-loses and 16 Dec-gains munis (not shown) are events where the nonresident change pulled the home stack across the binding threshold.
     \end{minipage}
 \end{table}
 
@@ -827,7 +824,7 @@ with treated-but-unclassified units, while reporting them in their
 own cell would mix true binding states with measurement gaps.
 Municipality-level regressions further impose a minimum employment
 threshold of $50$ total jobs. The threshold protects the share-based
-outcomes (\textit{share\_live\_in}, \textit{share\_work\_outside})
+outcomes (live-in-muni share, out-of-muni-work share)
 from mechanical measurement noise: at $N$ workers, a single worker
 moving changes the share by $1/N$, so at $N=10$ a one-worker move
 changes the outcome by 10 percentage points, dominating the per-pp
@@ -2296,7 +2293,7 @@ Section~\ref{subsec:results-pooled}. At the municipality level the
 pooled Inc coefficient on \texttt{log(live\_and\_work)} is sizable
 and negative; sign-symmetry with the Dec coefficient is partial
 (asymmetric magnitudes), and the residence-side outcomes
-(\texttt{share\_live\_in}, \texttt{log\_total\_residents}) move in
+(live-in-muni share, log total residents) move in
 the same direction. The pooled municipality Inc coefficient understates the
 binding-cell effect because it mixes Inc-bind (binding incidence)
 with Inc-becomes and Inc-nobind (partial / no incidence); the
@@ -2314,7 +2311,7 @@ coefficient on residence-side outcomes is small and sign-reversed
 relative to the municipality and block estimates, the SD pooled Dec
 coefficient is also direction-mixed, and SD-level realized-dose
 pre-trends fail parallel trends on
-\texttt{log\_live\_and\_work} ($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$; see Appendix~\ref{app:decomp-es-realized}). The
+log live-and-work ($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$; see Appendix~\ref{app:decomp-es-realized}). The
 SD-aggregation is reported as an aggregation diagnostic non-result
 and is not the load-bearing causal estimate. The binary analog is
 Table~\ref{tab:pooled_binary_sd}.
@@ -2372,7 +2369,7 @@ The block-level binding-state decomposition is the preferred causal
 estimate of the paper. The main-text reports
 Table~\ref{tab:headline_block_muni_results} (municipality-rate cells) and
 Table~\ref{tab:headline_block_sd_results} (SD-rate cells) on the
-count outcomes \texttt{log\_home\_count} and \texttt{log\_work\_count}
+count outcomes log home count and log work count
 in Section~\ref{subsec:results-block}. A 1 pp Inc-bind increase in
 the municipality resident rate reduces $\log(\text{home\_count})$ by $-0.340^{***}$
 ($\approx 19\%$), with a clean realized-dose pre-trend
@@ -2383,7 +2380,7 @@ within-design placebo on the same count outcome.
 \paragraph{Block-level share outcomes (supporting).}
 \label{sec:app-block-shares}
 The main paper reports block-level count outcomes
-(\texttt{log\_home\_count}, \texttt{log\_work\_count}) as the
+(log home count, log work count) as the
 primary residential-sorting evidence. Block-level share outcomes
 are reported here for completeness. Block geography has small and
 sometimes sparse denominators, and both the numerator and
@@ -2430,7 +2427,7 @@ Table~\ref{tab:headline-dec}.
     \begin{tabular}{lccc}
         \toprule
         Outcome & Inc-bind & Inc-becomes & Inc-nobind (placebo) \\
-        & ($n_{\text{muni}}$=40) & ($n_{\text{muni}}$=58) & ($n_{\text{muni}}$=26) \\
+        & ($n_{\text{muni}}$=24) & ($n_{\text{muni}}$=43) & ($n_{\text{muni}}$=20) \\
         \midrule
         \multicolumn{4}{l}{\textit{Coefficients (per 1 pp of $\Delta\tau^{\text{muni}}$)}} \\
         log(live\_and\_work)    & $-0.573^{***}$ & $-0.181^{**}$  & $-0.062$ \\
@@ -2443,16 +2440,16 @@ Table~\ref{tab:headline-dec}.
                                  & $(0.086)$      & $(0.054)$      & $(0.203)$ \\
         log(total\_residents)   & $-0.104^{**}$ & $-0.068^{*}$   & $+0.194^{**}$ \\
                                  & $(0.033)$      & $(0.040)$      & $(0.095)$ \\
-        share\_live\_in         & $-0.057^{***}$ & $-0.012$       & $-0.012$ \\
+        live-in-muni share         & $-0.057^{***}$ & $-0.012$       & $-0.012$ \\
                                  & $(0.010)$      & $(0.009)$      & $(0.008)$ \\
-        share\_work\_outside    & $+0.041^{***}$ & $+0.020^{***}$ & $+0.017$ \\
+        out-of-muni-work share    & $+0.041^{***}$ & $+0.020^{***}$ & $+0.017$ \\
                                  & $(0.016)$      & $(0.007)$      & $(0.014)$ \\
         \midrule
-        \multicolumn{4}{l}{\textit{Diagnostics (log\_live\_and\_work regression)}} \\
+        \multicolumn{4}{l}{\textit{Diagnostics (log live-and-work regression)}} \\
         $N$                                  & \multicolumn{3}{c}{218{,}685} \\
         $R^2$                                & \multicolumn{3}{c}{0.964} \\
         Within $R^2$                          & \multicolumn{3}{c}{0.0007} \\
-        Dep.\ var.\ mean (log\_live\_and\_work)& \multicolumn{3}{c}{3.677} \\
+        Dep.\ var.\ mean (log live-and-work)& \multicolumn{3}{c}{3.677} \\
         Dep.\ var.\ SD                        & \multicolumn{3}{c}{1.934} \\
         Fixed effects                         & \multicolumn{3}{c}{stack-municipality $+$ stack-year} \\
         Clusters (municipality level)                 & \multicolumn{3}{c}{1{,}945} \\
@@ -2471,9 +2468,9 @@ Table~\ref{tab:headline-dec}.
         Each regression also includes the share-based
         control vector (police, streets, debt service / total expenditures;
         EIT, real estate, intergov / total revenues); control coefficients
-        for the log\_live\_and\_work regression are in
+        for the log live-and-work regression are in
         Table~\ref{tab:full-spec}. Cluster-robust SEs by municipality in parentheses.
-        Diagnostics row is for the log\_live\_and\_work regression; full
+        Diagnostics row is for the log live-and-work regression; full
         diagnostics for each outcome are in Table~\ref{tab:headline-diag}.
         $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
     \end{minipage}
@@ -2522,8 +2519,8 @@ conclusions from these cells.
         log(out\_commuters)     & $-0.068$  (0.061)        & $-0.628$  (0.416)        & $+0.132$  (0.101) \\
         log(total\_jobs)        & $+0.111$  (0.073)        & $+0.420$  (0.265)        & $+0.022$  (0.116) \\
         log(total\_residents)   & $-0.056$  (0.043)        & $-0.651$  (0.420)        & $+0.135$  (0.099) \\
-        share\_live\_in         & $+0.054^{*}$  (0.030)    & $-0.071$  (0.095)        & $+0.012$  (0.030) \\
-        share\_work\_outside    & $-0.011$  (0.013)        & $+0.014$  (0.017)        & $-0.003^{*}$  (0.001) \\
+        live-in-muni share         & $+0.054^{*}$  (0.030)    & $-0.071$  (0.095)        & $+0.012$  (0.030) \\
+        out-of-muni-work share    & $-0.011$  (0.013)        & $+0.014$  (0.017)        & $-0.003^{*}$  (0.001) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
@@ -2553,9 +2550,9 @@ the dependent-variable mean for each headline regression.
         log(out\_commuters)     & 242{,}730 & 0.979 & 0.0009 & 6.636 & 1.263 \\
         log(total\_jobs)        & 239{,}041 & 0.961 & 0.0011 & 5.948 & 1.901 \\
         log(total\_residents)   & 242{,}730 & 0.981 & 0.0010 & 6.697 & 1.299 \\
-        share\_live\_in         & 239{,}041 & 0.823 & 0.0010 & 0.093 & 0.076 \\
-        share\_work\_outside    & 242{,}730 & 0.945 & 0.0008 & 0.943 & 0.066 \\
-        share\_nonres           & 239{,}041 & 0.823 & 0.0010 & 0.907 & 0.076 \\
+        live-in-muni share         & 239{,}041 & 0.823 & 0.0010 & 0.093 & 0.076 \\
+        out-of-muni-work share    & 242{,}730 & 0.945 & 0.0008 & 0.943 & 0.066 \\
+        nonresident share           & 239{,}041 & 0.823 & 0.0010 & 0.907 & 0.076 \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
@@ -2610,7 +2607,7 @@ cells, nonresident cells, and control coefficients.
         $N$                                                & \multicolumn{2}{c}{218{,}685} \\
         $R^2$                                              & \multicolumn{2}{c}{0.964} \\
         Within $R^2$                                       & \multicolumn{2}{c}{0.0007} \\
-        Dep.\ mean (log\_live\_and\_work)                 & \multicolumn{2}{c}{3.677} \\
+        Dep.\ mean (log live-and-work)                 & \multicolumn{2}{c}{3.677} \\
         Dep.\ SD                                          & \multicolumn{2}{c}{1.934} \\
         Fixed effects                                      & \multicolumn{2}{c}{stack-municipality $+$ stack-year} \\
         Clusters (municipality)                                    & \multicolumn{2}{c}{1{,}945} \\
@@ -3156,7 +3153,7 @@ three estimating units.
                                 & Inc-nobind   & $-0.062$ (0.169) & $-0.059$ (0.167) \\
         log(in\_commuters)      & Inc-bind     & $-0.213$ (0.083) & $-0.206$ (0.082) \\
         log(total\_residents)   & Inc-bind     & $-0.104$ (0.033) & $-0.104$ (0.033) \\
-        share\_live\_in         & Inc-bind     & $-0.057$ (0.010) & $-0.057$ (0.009) \\
+        live-in-muni share         & Inc-bind     & $-0.057$ (0.010) & $-0.057$ (0.009) \\
         \bottomrule
     \end{tabular}
     \vspace{0.3em}
@@ -3616,7 +3613,7 @@ I impose four additional sample filters at estimation time. First,
 a minimum-employment threshold of $50$ total jobs per municipality--year is
 applied to municipality-level regressions because share outcomes are
 dominated by sampling noise at smaller scales (a single worker
-moving changes \texttt{share\_live\_in} by $1/N$).
+moving changes live-in-muni share by $1/N$).
 Second, I apply rate outlier filters: DCED reports the Local
 Services Tax (a flat dollar amount) in the same field as the EIT
 rate (a percentage) in some pre-2012 years, so any reported rate

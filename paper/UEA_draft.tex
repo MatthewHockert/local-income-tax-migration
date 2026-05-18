@@ -621,9 +621,9 @@ NC-purity filter described in Section~\ref{sec:strategy}.
         \toprule
         Side & Inc-bind & Inc-becomes & Inc-nobind & Dec-bind & Dec-becomes-non & Dec-nobind & NC \\
         \midrule
-        Muni resident ($\tau^{\text{muni}}$) & 40 & 58 & 26  & 11 & 4  & 15  & 2{,}406 \\
-        School district ($\tau^{\text{SD}}$) & 75 & 197 & 14 & 4  & 10 & ---  & 2{,}253 \\
-        Muni nonresident ($\tau^{\text{nr}}$) & 0  & 0  & 171 & 0  & 5  & 109 & 2{,}276 \\
+        Muni resident ($\tau^{\text{muni}}$) & 24 & 43 & 20  & 4  & 3  & 11  & 1{,}730 \\
+        School district ($\tau^{\text{SD}}$) & 71 & 186 & 11 & --- & 4  & 6   & 1{,}558 \\
+        Muni nonresident ($\tau^{\text{nr}}$) & 23 & 0  & 5   & 30 & 0  & 1   & 1{,}638 \\
         \bottomrule
     \end{tabular}
     }
@@ -632,10 +632,7 @@ NC-purity filter described in Section~\ref{sec:strategy}.
         \footnotesize \textit{Notes:} Cells classified at each municipality's first
         observed rate event on the relevant rate-setter. Munis with rate changes
         whose first-event binding state cannot be determined (NA pre-event
-        nonresident rate) are dropped (not pooled with NC). On the
-        nonresident side, Inc-bind and Inc-becomes cells are empty in PA
-        because the municipality's nonresident rate almost never exceeds the municipality's
-        own home stack at the municipality-self-pair level.
+        nonresident rate) are dropped (not pooled with NC). On the nonresident rate-setter, the binding-state labels are inverted: "Inc-nobind" denotes events where the home stack stayed below the nonresident rate (bill paid via nonresident both pre and post), so these are the cells where a nonresident-rate change actually moves the worker bill. The 123 Inc-loses and 16 Dec-gains munis (not shown) are events where the nonresident change pulled the home stack across the binding threshold.
     \end{minipage}
 \end{table}
 
@@ -725,7 +722,7 @@ with treated-but-unclassified units, while reporting them in their
 own cell would mix true binding states with measurement gaps.
 Municipality-level regressions further impose a minimum employment
 threshold of $50$ total jobs. The threshold protects the share-based
-outcomes (\textit{share\_live\_in}, \textit{share\_work\_outside})
+outcomes (live-in-muni share, out-of-muni-work share)
 from mechanical measurement noise: at $N$ workers, a single worker
 moving changes the share by $1/N$, so at $N=10$ a one-worker move
 changes the outcome by 10 percentage points, dominating the per-pp
@@ -1998,7 +1995,7 @@ Block-level share outcomes from the same joint regression, reported for complete
         log(out\_commuters)     & $-0.068$ (0.061)       & $-0.628$ (0.416) & $+0.132$ (0.101) \\
         log(total\_jobs)        & $+0.111$ (0.073)       & $+0.420$ (0.265) & $+0.022$ (0.116) \\
         log(total\_residents)   & $-0.056$ (0.043)       & $-0.651$ (0.420) & $+0.135$ (0.099) \\
-        share\_live\_in         & $+0.054^{*}$ (0.030)   & $-0.071$ (0.095) & $+0.012$ (0.030) \\
+        live-in-muni share         & $+0.054^{*}$ (0.030)   & $-0.071$ (0.095) & $+0.012$ (0.030) \\
         \bottomrule
     \end{tabular}}
     \vspace{0.3em}
