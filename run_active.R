@@ -21,7 +21,7 @@ setwd(project_dir)
 # ---------------------------------------------------------------------------
 # Run-stage flags. Set to FALSE to skip.
 # ---------------------------------------------------------------------------
-RUN_DATA_BUILD     <- TRUE
+RUN_DATA_BUILD     <- FALSE
 RUN_DESCRIPTIVES   <- TRUE
 RUN_MAIN_MUNI      <- TRUE
 RUN_MAIN_SD        <- TRUE

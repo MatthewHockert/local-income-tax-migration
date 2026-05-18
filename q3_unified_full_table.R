@@ -148,6 +148,15 @@ classify_treatment <- function(p, rate_var, bind_ref, tag) {
   truly_stable <- rate_changes[n == 0, muni]
   p2[muni %in% truly_stable, (cell_v) := "NC"]
   p2[!muni %in% truly_stable & is.na(get(cell_v)), (cell_v) := "Uncertain"]
+  # Flip-flopper filter: after the first event, all subsequent rate changes
+  # in the same direction. Any opposite-direction reversal -> Uncertain.
+  ff <- p2[!is.na(get(rate_var)), .(year, rate = get(rate_var)), by = muni][
+    order(muni, year)]
+  ff[, d := c(NA_real_, diff(rate)), by = muni]
+  ff_summary <- ff[!is.na(d) & abs(d) > 1e-6, .(
+    n_inc = sum(d > 0), n_dec = sum(d < 0)), by = muni]
+  flip <- ff_summary[n_inc > 0 & n_dec > 0, muni]
+  p2[muni %in% flip, (cell_v) := "Uncertain"]
   p2[, (dose_v) := fifelse(!is.na(get(c_v)) & year >= get(c_v),
                            get(rate_var) - get(base_v), 0)]
   cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",

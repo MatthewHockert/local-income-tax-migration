@@ -7,34 +7,32 @@
     \toprule
     Outcome & Log(workers live) & Log(workers work) & Share live+work in muni \\
     \midrule
-    \textbf{Inc-bind (post)} & -0.042 & 0.025\sym{*} & 0.008 \\
-                      & (24.687) & (0.013) & (7.511) \\
-    \textbf{Inc-bind (pre)} & 0.034 & -0.098\sym{***} & 0.011 \\
-                      & (55.371) & (0.034) & (16.841) \\
-    \textbf{Inc-becomes (post)} & -0.025 & -0.802 & -0.015 \\
-                      & (340.330) & (1398.641) & (126.348) \\
-    \textbf{Inc-becomes (pre)} & 0.045 & -0.261 & -0.013 \\
-                      & (287.314) & (717.898) & (106.666) \\
-    \textbf{Inc-nobind (post)} & 0.152 & 0.001 & -0.012 \\
-                      & (22.688) & (0.012) & (11.095) \\
-    \textbf{Inc-nobind (pre)} & 0.111 & 0.095\sym{***} & 0.002 \\
-                      & (14.384) & (0.020) & (7.034) \\
-    \textbf{Dec-bind (post)} & -0.015 & 0.039\sym{**} & -0.013\sym{***} \\
-                      & (0.010) & (0.019) & (0.003) \\
-    \textbf{Dec-bind (pre)} & -0.339\sym{***} & -0.267\sym{***} & -0.024\sym{***} \\
-                      & (0.012) & (0.030) & (0.005) \\
-    \textbf{Dec-becomes-non (post)} & -0.033 & 0.049 & -0.012 \\
+    \textbf{Inc-bind (post)} & -0.074 & 0.006 & 0.006 \\
+                      & (13.800) & (0.011) & (4.920) \\
+    \textbf{Inc-bind (pre)} & -0.102 & -0.202\sym{***} & -0.004 \\
+                      & (33.594) & (0.025) & (11.976) \\
+    \textbf{Inc-becomes (post)} & -0.010 & -0.029\sym{***} & -0.009 \\
+                      & (23.994) & (0.009) & (5.234) \\
+    \textbf{Inc-becomes (pre)} & 0.087 & 0.039\sym{**} & -0.003 \\
+                      & (21.318) & (0.017) & (4.634) \\
+    \textbf{Inc-nobind (post)} & 0.071 & 0.077\sym{***} & 0.029 \\
+                      & (10.176) & (0.022) & (3.857) \\
+    \textbf{Inc-nobind (pre)} & 0.018 & 0.059\sym{***} & 0.018\sym{**} \\
+                      & (0.013) & (0.020) & (0.007) \\
+    \textbf{Dec-bind (post)} & -0.018 & 0.022 & 0.019 \\
                       & (0.000) & (0.000) & (0.000) \\
-    \textbf{Dec-becomes-non (pre)} & -0.046 & 0.330 & 0.045 \\
+    \textbf{Dec-bind (pre)} & -0.181 & -0.204 & -0.017 \\
                       & (0.000) & (0.000) & (0.000) \\
-    \textbf{Dec-nobind (post)} & -0.185\sym{***} & 0.050\sym{*} & -0.008\sym{***} \\
-                      & (0.010) & (0.028) & (0.001) \\
-    \textbf{Dec-nobind (pre)} & 0.125\sym{***} & 1.384\sym{***} & 0.092\sym{***} \\
-                      & (0.009) & (0.034) & (0.001) \\
+    \textbf{Dec-becomes-non (post)} & 0.021 & 0.301 & -0.034 \\
+                      & (0.000) & (0.000) & (0.000) \\
+    \textbf{Dec-nobind (post)} & -0.123\sym{***} & -0.141\sym{***} & -0.002 \\
+                      & (0.012) & (0.006) & (0.000) \\
+    \textbf{Dec-nobind (pre)} & -0.012\sym{**} & 0.218\sym{***} & 0.028 \\
+                      & (0.006) & (0.010) & (0.000) \\
     \bottomrule
   \end{tabular}
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Binary Sun--Abraham interaction-weighted ES. Post = mean of $\beta_k$ for $k=0..5$; pre = mean for $k\leq-2$. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Binary Sun--Abraham interaction-weighted ES. Post = mean of $\beta_k$ for $k=0..5$; pre = mean for $k\leq-2$. Rows omitted (no estimable coefficients in any outcome column): Dec-becomes-non (pre). These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

@@ -1,9 +1,9 @@
 period,outcome,n,r2,wr2,dep_mean,dep_sd
-pre,log_home_count,10977594,0.8516,3e-04,2.2249,1.1912
-pre,log_work_count,4091601,0.8638,2e-04,2.2863,1.6612
-pre,home_in_muni_share,10977594,0.5894,1e-04,0.1252,0.1897
-pre,share_work_outside,10977594,0.5894,1e-04,0.8748,0.1897
-post,log_home_count,12590300,0.8629,3e-04,2.2498,1.1813
-post,log_work_count,4660072,0.8664,1e-04,2.3462,1.6492
-post,home_in_muni_share,12590300,0.5372,4e-04,0.1178,0.1797
-post,share_work_outside,12590300,0.5372,4e-04,0.8822,0.1797
+pre,log_home_count,8339642,0.8555,3e-04,2.209,1.1916
+pre,log_work_count,3083788,0.8674,2e-04,2.2681,1.6505
+pre,home_in_muni_share,8339642,0.4685,1e-04,0.1049,0.1611
+pre,share_work_outside,8339642,0.4685,1e-04,0.8951,0.1611
+post,log_home_count,11711193,0.8623,3e-04,2.2387,1.1821
+post,log_work_count,4304245,0.8641,1e-04,2.3325,1.6386
+post,home_in_muni_share,11711193,0.4152,4e-04,0.1014,0.156
+post,share_work_outside,11711193,0.4152,4e-04,0.8986,0.156

@@ -5,20 +5,19 @@
   \small
   \begin{tabular}{lrrrr}
     \toprule
-    Cell & Munis & Muni-years & Mean dose (pp) & Max dose (pp) \\
+    Cell & Munis & Muni-years & Mean dose (pp) & Extreme dose (pp) \\
     \midrule
-    NA & 1 & 18 & 0.000 & 0.000 \\
-    NC & 1,793 & 32,266 & 0.000 & 0.000 \\
-    Inc-bind & 40 & 720 & 0.191 & 1.500 \\
-    Inc-becomes & 58 & 1,044 & 0.339 & 4.331 \\
-    Inc-nobind & 26 & 468 & 0.273 & 0.975 \\
-    Dec-bind & 11 & 198 & -0.104 & 0.350 \\
-    Dec-becomes-non & 4 & 72 & -0.217 & 0.000 \\
-    Dec-nobind & 15 & 270 & -0.283 & 0.700 \\
+    Never-changers & 1,730 & 31,132 & 0.000 & 0.000 \\
+    Inc-bind & 24 & 432 & 0.168 & 0.850 \\
+    Inc-becomes & 43 & 774 & 0.246 & 1.250 \\
+    Inc-nobind & 20 & 360 & 0.294 & 0.650 \\
+    Dec-bind & 4 & 72 & -0.138 & -0.500 \\
+    Dec-becomes-non & 3 & 54 & -0.278 & -0.500 \\
+    Dec-nobind & 11 & 198 & -0.380 & -1.000 \\
     \bottomrule
   \end{tabular}
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\Delta\tau$ at event-time $k=+5$.
+    \footnotesize \textit{Notes:} Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\Delta\tau$ within the 5-year event window. The Extreme dose column reports the max cumulative dose for Inc cells and the min (most negative) cumulative dose for Dec cells, since cell assignment is determined by the first event but subsequent reversals can pull the signed cumulative path back across zero.
   \end{minipage}
 \end{table}

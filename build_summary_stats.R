@@ -58,17 +58,17 @@ write_summary_table <- function(rows, caption, label_id, out_name, notes = chara
     sprintf("  \\label{%s}", label_id),
     "  \\small",
     "  \\resizebox{\\textwidth}{!}{",
-    "  \\begin{tabular}{lrrrrrrrr}",
+    "  \\begin{tabular}{lrrrrr}",
     "    \\toprule",
-    "    Variable & N & Mean & SD & p25 & p50 & p75 & Min & Max \\\\",
+    "    Variable & N & Mean & SD & Min & Max \\\\",
     "    \\midrule")
   for (i in seq_len(nrow(rows_dt))) {
     r <- rows_dt[i]
     body <- c(body, sprintf(
-      "    %s & %s & %.3f & %.3f & %.3f & %.3f & %.3f & %.3f & %.3f \\\\",
+      "    %s & %s & %.3f & %.3f & %.3f & %.3f \\\\",
       r$label,
       format(as.integer(r$N), big.mark = ","),
-      r$mean, r$sd, r$p25, r$p50, r$p75, r$min, r$max))
+      r$mean, r$sd, r$min, r$max))
   }
   body <- c(body, "    \\bottomrule", "  \\end{tabular}", "  }",
             "  \\vspace{0.3em}",
@@ -143,15 +143,15 @@ fwrite(type_split, file.path(data_dir, "summary_muni_by_type.csv"))
 # 2. Block-level summary
 # ---------------------------------------------------------------------------
 block_rows <- list(
+  mk_row("Resident rate $\\tau^{M}$ (\\%)",  block$resident_eit),
+  mk_row("Nonresident rate $\\tau^{nr,M}$ (\\%)", block$muni_nonres_eit),
+  mk_row("SD rate $\\tau^{SD}$ (\\%)",       block$sd_eit),
   mk_row("Home count (workers living)",   block$home_count),
   mk_row("$\\log$ home count",            block$log_home_count),
   mk_row("Work count (jobs in block)",    block$work_count),
   mk_row("$\\log$ work count",            block$log_work_count),
   mk_row("Share live-and-work in muni",   block$home_in_muni_share),
-  mk_row("Share work outside muni",       block$share_work_outside),
-  mk_row("Resident rate $\\tau^{M}$ (\\%)",  block$resident_eit),
-  mk_row("SD rate $\\tau^{SD}$ (\\%)",       block$sd_eit),
-  mk_row("Nonresident rate $\\tau^{nr,M}$ (\\%)", block$muni_nonres_eit)
+  mk_row("Share work outside muni",       block$share_work_outside)
 )
 blocks_per_muni <- block[, .(n_blocks = uniqueN(block_geoid)), by = muni][, n_blocks]
 write_summary_table(c(block_rows,
@@ -196,21 +196,27 @@ e <- new.env()
 sys.source(file.path(project_dir, "q3_unified_full_table.R"), envir = e)
 panel <- as.data.table(e$panel)
 
-cell_cnt <- panel[, .(n_muni_year = .N,
-                       n_munis = uniqueN(muni)),
+cell_levels_keep <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
+                       "Dec-bind","Dec-becomes-non","Dec-nobind")
+cell_cnt <- panel[as.character(cell_muni) %in% cell_levels_keep,
+                   .(n_muni_year = .N, n_munis = uniqueN(muni)),
                    keyby = .(cell_muni)]
-cell_cnt[, cell_muni := factor(cell_muni,
-   levels = c("NC","Inc-bind","Inc-becomes","Inc-nobind",
-              "Dec-bind","Dec-becomes-non","Dec-nobind"))]
+cell_cnt[, cell_muni := factor(as.character(cell_muni), levels = cell_levels_keep)]
 setorder(cell_cnt, cell_muni)
 
 mean_dose <- panel[!is.na(cell_muni) & cell_muni != "NC",
                     .(mean_dose_pp = mean(dose_muni, na.rm = TRUE),
+                      min_dose_pp  = min(dose_muni,  na.rm = TRUE),
                       max_dose_pp  = max(dose_muni,  na.rm = TRUE)),
                     by = .(cell_muni)]
 cell_tab <- merge(cell_cnt, mean_dose, by = "cell_muni", all.x = TRUE)
 cell_tab[is.na(mean_dose_pp), mean_dose_pp := 0]
+cell_tab[is.na(min_dose_pp),  min_dose_pp  := 0]
 cell_tab[is.na(max_dose_pp),  max_dose_pp  := 0]
+
+# For Inc cells, the "extreme dose" is the max; for Dec cells, the min.
+cell_tab[, extreme_dose_pp := fifelse(
+  grepl("^Dec", as.character(cell_muni)), min_dose_pp, max_dose_pp)]
 
 body <- c(
   "\\begin{table}[H]", "  \\centering",
@@ -219,21 +225,23 @@ body <- c(
   "  \\small",
   "  \\begin{tabular}{lrrrr}",
   "    \\toprule",
-  "    Cell & Munis & Muni-years & Mean dose (pp) & Max dose (pp) \\\\",
+  "    Cell & Munis & Muni-years & Mean dose (pp) & Extreme dose (pp) \\\\",
   "    \\midrule")
 for (i in seq_len(nrow(cell_tab))) {
   r <- cell_tab[i]
+  cell_label <- as.character(r$cell_muni)
+  if (cell_label == "NC") cell_label <- "Never-changers"
   body <- c(body, sprintf(
     "    %s & %s & %s & %.3f & %.3f \\\\",
-    as.character(r$cell_muni),
+    cell_label,
     format(r$n_munis, big.mark = ","),
     format(r$n_muni_year, big.mark = ","),
-    r$mean_dose_pp, r$max_dose_pp))
+    r$mean_dose_pp, r$extreme_dose_pp))
 }
 body <- c(body, "    \\bottomrule", "  \\end{tabular}",
           "  \\vspace{0.3em}",
           "  \\begin{minipage}{0.95\\textwidth}",
-          "    \\footnotesize \\textit{Notes:} Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\\Delta\\tau$ at event-time $k=+5$.",
+          "    \\footnotesize \\textit{Notes:} Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\\Delta\\tau$ within the 5-year event window. The Extreme dose column reports the max cumulative dose for Inc cells and the min (most negative) cumulative dose for Dec cells, since cell assignment is determined by the first event but subsequent reversals can pull the signed cumulative path back across zero.",
           "  \\end{minipage}", "\\end{table}")
 writeLines(body, file.path(tab_dir, "cell_counts_summary.tex"))
 cat("Wrote cell_counts_summary.tex\n")

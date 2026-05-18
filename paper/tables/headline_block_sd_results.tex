@@ -7,26 +7,24 @@
     \toprule
     Outcome & Log(workers live) & Log(workers work) \\
     \midrule
-    \textbf{Inc-bind} & 0.097 & 0.099\sym{**} \\
-                      & (0.062) & (0.047) \\
-    \textbf{Inc-becomes} & 0.016 & 0.009 \\
-                      & (0.032) & (0.025) \\
-    \textbf{Dec-bind} & 0.207\sym{***} & -0.052 \\
-                      & (0.021) & (0.144) \\
-    \textbf{Dec-becomes-non} & -0.013\sym{*} & 0.001 \\
-                      & (0.008) & (0.007) \\
-    \textbf{Dec-nobind} & -0.486\sym{***} & 0.502\sym{***} \\
-                      & (0.099) & (0.168) \\
+    \textbf{Inc-bind} & 0.105 & 0.136\sym{***} \\
+                      & (0.072) & (0.046) \\
+    \textbf{Inc-becomes} & 0.009 & 0.011 \\
+                      & (0.030) & (0.025) \\
+    \textbf{Dec-becomes-non} & 0.090\sym{***} & -0.060\sym{***} \\
+                      & (0.031) & (0.022) \\
+    \textbf{Dec-nobind} & 0.233\sym{**} & 0.844\sym{***} \\
+                      & (0.105) & (0.048) \\
     \midrule
-    $N$ & 23,567,655 & 8,751,581 \\
-    $R^2$ & 0.858 & 0.865 \\
+    $N$ & 20,050,835 & 7,388,033 \\
+    $R^2$ & 0.860 & 0.866 \\
     Within $R^2$ & 0.000 & 0.000 \\
-    Dep.\ mean & 2.238 & 2.318 \\
-    Dep.\ SD & 1.186 & 1.655 \\
+    Dep.\ mean & 2.226 & 2.306 \\
+    Dep.\ SD & 1.186 & 1.644 \\
     \bottomrule
   \end{tabular}
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with block-by-stack and year-by-stack fixed effects; standard errors two-way clustered at the muni and SD levels. Each block is exposed to one municipality and one school district; both rate-setters' policy variation enters at its native level. Share outcomes are reported in the appendix. Rows omitted (no estimable coefficients in any outcome column): Inc-nobind. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with block-by-stack and year-by-stack fixed effects; standard errors two-way clustered at the muni and SD levels. Each block is exposed to one municipality and one school district; both rate-setters' policy variation enters at its native level. Share outcomes are reported in the appendix. Rows omitted (no estimable coefficients in any outcome column): Inc-nobind, Dec-bind. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

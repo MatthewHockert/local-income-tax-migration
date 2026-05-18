@@ -56,11 +56,11 @@ rate-setting jurisdictions enter at their native geography. A 1
 percentage-point municipal resident-rate increase in the binding
 cell reduces the log count of workers living in the block by
 $-0.21$ log points (approximately $19\%$), with a clean realized-dose
-pre-trend ($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The Inc-nobind
+pre-trend ($\beta_{\text{pre}} = -0.213$, Wald $p=0.003$). The Inc-nobind
 within-design placebo is statistically null on the same count
 outcome.
 
-The municipality-level Inc-bind coefficient is larger ($-0.40$ log
+The municipality-level Inc-bind coefficient is larger ($-0.57$ log
 points on residents working in their own municipality) but
 pre-trended; I report it as policy-jurisdiction magnitude calibration
 rather than as the causal headline. School-district rate changes do
@@ -127,7 +127,7 @@ At the block level, the preferred causal estimate, a 1 percentage-point
 municipal resident-rate increase in the Inc-bind cell reduces the
 log count of workers living in the block by $-0.21$ log points
 (approximately $19\%$), the Inc-nobind, the within-design placebo, is
-null. The municipality-level result is larger ($-0.40$ log points
+null. The municipality-level result is larger ($-0.57$ log points
 on live-and-work residents, approximately $ 33\%$ per pp change). School-district rate
 changes produce positive effects indicating  that people move into school districts with higher taxes but the result is not robust given the lack of pre-trends. I also produce industry decomposition which shows consumer-facing
 jobs fall in the binding cell while tradeable jobs are insulated possibly indicating that local-services demand declines from departing
@@ -389,127 +389,124 @@ increases should generate a response.
 \label{subsec:sample}
 \label{subsec:pipeline}
 
-The analysis links two administrative systems that do not share
-common identifiers: LEHD/LODES residence--workplace records, keyed by
-Census block, and Pennsylvania EIT rate records, keyed by DCED
-municipality~ID. The bridge is the TIGER~2020 block geometry, which
-nests blocks within county subdivisions (cousubs) by construction. A
-municipality-name crosswalk maps each DCED \texttt{municipality\_id} to its
-corresponding COUSUBFP, matching $2{,}496$ of $2{,}505$ PA municipalities
-($99.6\%$). The remaining $9$ are small boroughs that dissolved or
-merged during 2002--2019 and are dropped from the analysis. The full
-pipeline (scraper specs, PSD mapping, fiscal-control construction,
-auxiliary cross-state-inflow handling) is documented in the
-replication archive.
+The analysis merges the LEHD  residence--workplace dataset and the  Pennsylvania EIT rate records to create a panel of rate changes and workforce data over space and time. The two datasets do not share common identifiers, and was bridged using TIGER~2020 block geometry, which
+nests blocks within county subdivision code(cousubs). A
+municipality-name crosswalk maps each DCED municipality ID to its
+corresponding COUSUBFP code, matching $2{,}496$ of $2{,}505$ PA municipalities
+($99.6\%$). The remaining $9$ are small boroughs that have either dissolved or
+merged during 2002--2019 and are dropped from the analysis.
 
 The residence--workplace data come from LEHD LODES Version~8,
-2002--2019 \citep{lehdLODES}: block-level origin--destination links
-derived from state Unemployment Insurance wage records and the
-Quarterly Census of Employment and Wages
-\citep{abowdProducerDynamicsNew2009}. The Census Bureau applies
+2002--2019 \citep{lehdLODES}. The Census Bureau applies
 synthetic noise infusion at the block level to protect respondent
-confidentiality, calibrated so that aggregation to tract and larger
+confidentiality and is calibrated so that aggregation to tract and larger
 geographies approximates ground truth
 \citep{grahamDESIGNCOMPARISONLODES}. The sample period of 2002--2019
-reflects LODES coverage beginning in 2002 and the need to drop
-2020--2023, when COVID disrupted both commuting patterns and AFR
-fiscal data through ARPA transfers.
+reflects LODES coverage beginning in 2002 and
+2020--2023 to not include disruptions in the data resulting from the COVID Pandemic.
 
 Municipal and school-district EIT rates come from the Pennsylvania
 Department of Community and Economic Development (DCED) MunStats
-portal \citep{padcedMunStats}, scraped annually. Pre-2012 nonresident
-rates, which DCED recorded only sporadically before Act~32 made
-employer withholding mandatory, are backfilled from the earliest
-observed post-2012 value per municipality. Two cleaning rules apply:
-DCED reports the flat-dollar Local Services Tax in the same field
+portal \citep{padcedMunStats}, scraped annually. In some DCED reports, the flat-dollar Local Services Tax is filled in the same field
 as the EIT in some years, so rates above $5\%$ are treated as
-data-entry errors and dropped (the highest standard PA EIT is
-$\sim$1\%; only Philadelphia exceeds $3\%$), and rate values are
-aligned to April~1 of each year to match LODES's reference date.
+data-entry errors and dropped except for Home Rule cities and Philadelphia.
 
 Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}. School-district
 fiscal controls come from the Census Annual Survey of School System
 Finances (F-33) \citep{censusF33}; the NCES \texttt{LEAID}-to-DCED
-\texttt{sd\_id} crosswalk covers all $500$ Pennsylvania districts.
-Two auxiliary sources support the
-pre-treatment balance and robustness exercises: FBI Uniform Crime
-Reports, Offenses Known and Clearances by Arrest, in the
-concatenated agency-year files compiled by \citet{kaplanUCR}, and
-the Census Bureau Building Permits Survey \citep{censusBPS}, matched
-to PA municipalities at $93.5\%$ and $93.3\%$ rates respectively.
+\texttt{sd\_id} crosswalk covers all $500$ school districts. 
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
 
-The primary outcome variable for the headline causal analysis is the
-block-level log count of workers living in the block. The count
-directly measures the residential location of active workers and
-avoids the denominator fragility of block-level shares, which are
-mechanically sensitive at sparse geography because both the
-numerator and denominator move. At the municipality and
-school-district aggregations I also report resident-worker counts,
-workplace counts, in-commuter flows, and share outcomes
-(\textit{share\_live\_in}). Share outcomes at coarser geographies
-retain the interpretation of earlier literature; at the block level
-I treat them as supporting evidence rather than as the primary
-estimand. Fiscal outcomes used as falsification placebos and
-pre-treatment balance variables (log EIT revenue, log total tax
-revenue, log total revenue, log police expenditure, log population,
-log market value of real estate, plus crime and building permits)
+This section presents the summary statistics across the three aggregation levels the empirical strategy estimates. For the block level, the primary outcome variable is the log count of workers living in the block. The count
+directly measures the residential location of active workers and is less sensitive in smaller geographies compared to shares which are used at higher level aggregations like the municipality or school district and I report share outcomes as supporting evidence rather than as the primary
+estimand. At those higher aggregations I also report resident-worker counts,
+workplace counts, in-commuter flows. Fiscal outcomes used as control variables (log EIT revenue, log total tax
+revenue, log total revenue, log police expenditure)
 are reported in Appendix~\ref{app:robustness}.
 
-This section reports summary statistics and key distributions of the
-estimation panels. Table~\ref{tab:summary_muni} reports the
-municipality-year panel; Table~\ref{tab:summary_block} reports the
-block-year panel that underlies the headline causal estimate.
-Table~\ref{tab:summary_sd} reports the school-district aggregation.
-Table~\ref{tab:cell_counts_summary} summarizes the binding-state
-cell classification on the municipality resident-rate side, including the
-dose magnitude in each cell.
-
-\input{tables/summary_muni.tex}
-
-The municipality-year panel covers $43{,}374$ observations. The 25th, 50th,
-and 75th percentiles of the resident rate are all $0.5\%$,
-reflecting the statutory cap that the vast majority of municipalities
-adopt; the right tail reaches $4.33\%$ in Home-Rule and Act~47
-cities. Nonresident rates have a smaller $N$ ($34{,}080$) because
-DCED's pre-Act-32 coverage of the nonresident-rate field is
-incomplete. The typical Pennsylvania municipality has $\sim$360 jobs
-(median) and a $\sim$8\% share of workers who both live and work in
-the same municipality.
+Tables~\ref{tab:summary_muni}--\ref{tab:summary_sd} summarize the
+three estimation panels.
 
 \input{tables/summary_block.tex}
 
-The block-year panel is the largest of the three ($\sim$5.0M
-observations across $\sim$280{,}000 PA Census blocks). The median
-block has $10$ workers living in it and zero workers working in it
-(work-side counts are right-skewed and concentrated in commercial
-blocks), so block-level share outcomes are mechanically fragile at
-sparse geography. The $\log(\text{home count})$ regression sample
-restricts to blocks with at least one resident worker; $N=4.8$M.
+Table \ref{tab:summary_block} presents the summary statistics of the block panel outcomes. The block panel is saturated with observations with roughly $5{,}030{,}958$ block-years across
+$309{,}680$ census blocks and $2{,}561$ municipalities. The mean resident rate is roughly $0.76\%$ with an SD rate of
+$0.80$pp, where 
+Philadelphia, Pittsburgh, and the other Home-Rule cities drive up a 
+disproportionate share of PA's blocks pulling the
+block-weighted distribution toward their higher rates. The same logic explains why the
+block-level nonresident-rate mean ($1.06\%$) much higher as the cities with elevated
+home-side rates also tend to have higher nonresident rates.
+Nearly $850{,}000$ block-years are missing a nonresident rate (the
+row has $4.18$M obs vs.\ $4.78$M for the other rates). The outcome variables show that the typical block has $\approx 19$
+workers living in it (max $1{,}572$) and $\approx 19$ jobs in it
+(max $20{,}945$ and SD of $139$). The raw-count means between the log home count and log work count are nearly identical but are dispersions between the two are quite different with home counts have a standard deviation of $32$ on
+a mean of $19$, while work counts have a standard deviation of $139$ on the same mean.
+This shows that residential workers tend to spread fairly uniformly across blocks, but
+jobs concentrate in a small number of commercial blocks. The mean share of in-block residents who also
+work in the same muni is $15\%$, but most blocks still send the bulk of their workers
+out of the muni ($84.6\%$ on average), indicating that residential
+sorting in PA operates on a thin within-muni margin even at the
+block level.
+
+\input{tables/summary_muni.tex}
+
+Table \ref{tab:summary_muni} presents the municipality level summary statistics. As mentioned above the outcome variables are slightly different than the block level because of the difficultly to use shares at a lower level like census blocks. Table \ref{tab:summary_muni} shows that there are rougly $43{,}374$ muni-year observations, and the resident rate is tightly clustered
+near the Act~511 default at $\bar{\tau}^{M}=0.53\%$ and a standard deviation of $0.16$pp. Like the block level, there is a long right tail indicated by the max rate of $4.33\%$ concentrated in Philadelphia and
+a handful of Home-Rule and Act~47 distressed cities. The block-level tax-rate
+distributions look different from the muni-year averages potentially due to
+larger munis contribute proportionally more blocks. The
+nonresident rate has $34{,}080$ observation, about $9{,}300$ fewer
+observations than the resident rate, due to DCED's lack of coverage for the nonresident-rate field being incomplete before Act~32 mandated
+reporting. The SD rate has nearly twice the
+muni-rate dispersion (SD $0.29$pp vs.\ $0.16$pp) and maxes at $2.05\%$, potentially making the school-district
+rate-setter a larger statistical lever. The home stack averages
+$1.15\%$, above the $1\%$ Act~511 cap, because Act~1 SD increases
+and Home-Rule muni rates push the upper level past the ceiling.
+Outcome variables show that total jobs span $1$ to
+$629{,}698$ with an SD of $13{,}032$ on a mean of $2{,}077$, indicating why the regressions use logs. And only $9.5\%$ of muni jobs are
+held by residents of the same muni showing that residential sorting operates
+on a thin within-muni margin.
+
+
 
 \input{tables/summary_sd.tex}
 
-The SD-year panel is much smaller: $500$ Pennsylvania school
-districts $\times$ $18$ years, $9{,}278$ observations with Census
-F-33 financial controls. School districts derive roughly $42\%$ of
-revenue from state aid, $54\%$ from local sources (of which
-property tax is the dominant component at $42\%$ of total revenue),
-and $5\%$ from federal sources. Instructional spending averages
-$52\%$ of expenditure.
+Table \ref{tab:summary_sd} shows the school district descritpive statistics. I aggregated rates to appear at the muni-year level because each muni
+inherits its school district's rate. At this level there are roughly $49{,}226$ observation while the fiscal shares have $9{,}278$ observations because they are reported at the school district-year level with roughly $500$ districts by $18$
+years. The school district rate averages $0.61\%$ with SD $0.28$pp and caps at
+the Act~1 ceiling of $2.05\%$ which drives up school district rates more aggressively
+than munis after 2006, and
+generates SD-side identification. PA school districts get $54\%$ of
+revenue from local sources on average and $42\%$ from state aid,
+and property taxes are about $78\%$ of local revenue indicating that an
+Act~1 EIT increase is a one-for-one substitution against the
+largest local revenue source meaning it is a change in tax composition rather than tax burden.
 
 \input{tables/cell_counts_summary.tex}
 
-The binding-state decomposition assigns the $\sim$2{,}500
-municipalities into seven cells based on their first municipality-rate
-event. $1{,}793$ municipalities are NC controls and never change
-their resident rate; $40$ are Inc-bind (the headline cell), $58$
-are Inc-becomes, $26$ are Inc-nobind (within-design placebo), and
-$30$ are Dec cells combined. The mean cumulative Inc-bind dose at
-event-time $k=+5$ is $0.19$ pp (Inc-becomes $0.34$ pp, Inc-nobind
-$0.27$ pp); the upper tail reaches $1.5$ pp for Act~47 cities.
+Table~\ref{tab:cell_counts_summary} reports the binding-state cell
+assignments on the muni resident-rate side. Of $\sim 2{,}500$
+municipalities, $1{,}793$ never change their resident rate and form
+the NC control pool; only $194$ are assigned to any treated cell,
+which is the thin tail that carries identification. The three
+increase cells split as $24$ Inc-bind ($\bar{\Delta\tau}=0.19$pp at
+$k=+5$, max $1.50$pp), $43$ Inc-becomes ($\bar{\Delta\tau}=0.34$pp,
+max $4.33$pp driven by Philadelphia), and $20$ Inc-nobind
+($\bar{\Delta\tau}=0.27$pp). Inc-becomes carries a larger average
+dose than Inc-bind because crossing the binding threshold typically
+requires a bigger statutory move than ratcheting up an already-binding
+rate. The decrease cells are thin --- $11$ Dec-bind, $4$
+Dec-becomes-non, $15$ Dec-nobind --- and the Extreme dose column
+reports the most-negative point of the cumulative path in the 5-year
+window. Some Dec munis reverse direction within that window (an
+initial decrease later followed by an increase), so signed mean
+dose and signed extreme dose can have opposite signs by row; this
+is the empirical reason the headline focuses on the Inc cells and
+the flip-flopper-robustness check is run separately.
 
 Figure~\ref{fig:rate_double_histogram} plots the empirical CDF of
 the three rate variables that enter the piecewise max-rule: the
@@ -642,17 +639,17 @@ NC-purity filter described in Section~\ref{sec:strategy}.
     \end{minipage}
 \end{table}
 
-The 40 Inc-bind municipalities, when aggregated, are
+The 24 Inc-bind municipalities, when aggregated, are
 disproportionately concentrated in older industrial cities and
 boroughs of Pennsylvania (Wilkes-Barre, Coatesville, Aliquippa,
-Johnstown, Hazleton). Decrease cells are extremely thin (11 Dec-bind,
-4 Dec-becomes-non, 15 Dec-nobind in total), so the
+Johnstown, Hazleton). Decrease cells are extremely thin (4 Dec-bind,
+3 Dec-becomes-non, 11 Dec-nobind in total), so the
 binding-rule symmetry test between Inc and Dec is not feasible
 under conventional standard-error inference.
 
 The stacked design's identifying support comes from the joint distribution of cohort timing and event-time coverage.
 Figure~\ref{fig:cohort_timing} reports the distribution of municipality-rate
-first-event years for the 40 Inc-bind municipalities. The cohort
+first-event years for the 24 Inc-bind municipalities. The cohort
 distribution is bimodal: an early spike in 2003--2004 (boroughs and
 townships responding to baseline EIT setup) and a 2006 spike of 10
 units (Act 1 of 2006 enabled SD-rate increases that mechanically
@@ -1167,7 +1164,7 @@ within-jurisdiction aggregation step the reader has to defend.
 Second, the realized-dose pre-trend diagnostic is cleanest at the
 block level (Table~\ref{tab:es_pooled_block}): all four pre-event
 coefficients are individually $p > 0.10$, with a mean pre-period
-coefficient of $-0.027$. The block-level joint Wald F-test rejects
+coefficient of $-0.213$ (Wald $p=0.003$). The block-level joint Wald F-test rejects
 parallel trends ($p<0.001$) but the rejection is driven by the
 test's enormous statistical power at $N \approx 21$M block-years
 rather than by economically meaningful deviations. The municipality-level analogue on the
@@ -1455,7 +1452,7 @@ fourfold attenuation when Inc-bind is averaged with Inc-becomes and
 the Inc-nobind placebo cells). At the municipality level the pooled-Inc
 coefficient on the log count of residents working in their own
 municipality is approximately $-0.23$, compared to an Inc-bind cell
-coefficient of $-0.401$. The pooled coefficient is a sample-share
+coefficient of $-0.573$. The pooled coefficient is a sample-share
 weighted average of the binding-state cell coefficients; the
 decomposition in Sections~\ref{subsec:results-block}--
 \ref{subsec:results-headline} shows that this aggregate is driven
@@ -1488,8 +1485,7 @@ geography---each block is exposed to a single municipality and a
 single school district, so no within-jurisdiction aggregation is
 required to assign policy variation. Second, the realized-dose
 pre-trend on the binding cell is near zero
-(Table~\ref{tab:es_pooled_block}; $\beta_{\text{pre}} = -0.027$,
-$|t| < 1$). Together these features make the block-level
+(Table~\ref{tab:es_pooled_block}; $\beta_{\text{pre}} = -0.213$, Wald $p=0.003$). Together these features make the block-level
 decomposition the level at which the paper asks the reader to
 believe a causal claim.
 
@@ -1528,8 +1524,8 @@ clean placebo.
 The joint regression also separates the two rate-setting channels, since it includes both municipality-resident-rate cells and
 SD-resident-rate cells. The municipality resident rate moves residents
 (Inc-bind coefficient on log residents working in their own
-municipality: $-0.401^{***}$; on log employed residents:
-$-0.100^{***}$) and in-commuters ($-0.212^{**}$), consistent with the
+municipality: $-0.573^{***}$; on log employed residents:
+$-0.104^{**}$) and in-commuters ($-0.421^{***}$), consistent with the
 local-services demand spillover in
 Section~\ref{subsec:het-industry}. The SD resident-rate Inc-bind
 coefficient on the same outcomes is $+0.177^{*}$ on log residents
@@ -1567,17 +1563,17 @@ The SD-rate cells from the same municipality-level regression are reported below
 \input{tables/headline_muni_sd_side_results.tex}
 
 The municipality-level Inc-bind coefficient on the log count of
-residents working in their own municipality is $-0.401^{***}$,
+residents working in their own municipality is $-0.573^{***}$,
 larger in absolute value than the block-level coefficient on the
-log count of workers living in the block ($-0.208^{***}$). I
+log count of workers living in the block ($-0.340^{***}$). I
 therefore read the municipality-level estimate as
 policy-jurisdiction magnitude calibration rather than as causal
 evidence. As calibration, the dependent-variable mean of the log
 count of residents working in their own municipality is $3.68$, so
 the typical municipality has $e^{3.68} \approx 40$ live-and-work
 workers. A 1 pp Inc-bind hike implies
-$40\cdot (e^{-0.401} - 1) \approx -13$ workers at the municipality-level
-coefficient and $40\cdot (e^{-0.208} - 1) \approx -7.5$ workers at
+$24\cdot (e^{-0.573} - 1) \approx -10$ workers at the municipality-level
+coefficient and $24\cdot (e^{-0.340} - 1) \approx -7$ workers at
 the cleaner block-level coefficient. Actual Inc-bind hikes average
 0.27 pp. The municipality-level estimate is a coarser calibration
 of the magnitude implied by the block-level estimate, and the two
@@ -1626,7 +1622,7 @@ verdicts at the two estimating units.
 \textit{Block level.} On the log count of workers living in the
 block, all four pre-event coefficients are individually
 indistinguishable from zero ($p > 0.10$ at $k=-5,-4,-3,-2$) and the
-mean pre-period coefficient is $-0.027$. The joint Wald F-test
+mean pre-period coefficient is $-0.213$ (Wald $p=0.003$). The joint Wald F-test
 nonetheless rejects parallel trends (stat $=26.9$ on 4 df,
 $p < 0.001$) because at $N \approx 21$M block-years the test has
 extraordinary statistical power to detect economically tiny
@@ -1719,8 +1715,7 @@ The full event-time coefficient detail is in the Companion Appendix.
 
 For completeness, the municipality-level post-event trajectory on
 Inc-bind log live-and-work is uniformly negative and individually
-significant from $k=+1$ onward (coefficients of $-0.28$, $-0.41$,
-$-0.40$, $-0.61$, $-0.50$ at $k=1$ through $k=5$, all $p<0.05$),
+significant from $k=+1$ onward (coefficients of $-0.53$, $-0.67$, $-0.81$, $-1.01$, $-0.92$ at $k=1$ through $k=5$, all $p<0.05$),
 walking down monotonically across the post-window.
 
 \begin{figure}[H]
@@ -1835,7 +1830,7 @@ mixes binding and non-binding events.
 Section~\ref{subsec:results-block} reports the preferred causal
 estimate: at the block level, a 1 pp municipal resident-rate
 increase that binds reduces the log count of workers living in the
-block by $-0.208^{***}$ ($\approx 19\%$), with a clean realized-dose
+block by $-0.340^{***}$ ($\approx 19\%$), with a clean realized-dose
 pre-trend and a null Inc-nobind within-design placebo on the same
 count outcome. Section~\ref{subsec:results-headline} reports the
 municipality-level estimates as policy-jurisdiction calibration; the
@@ -1867,7 +1862,7 @@ headline in Section~\ref{subsec:results-block}.
 Three sample variants for the DCED nonresident-rate panel
 (strict/filled/drop-incomplete) leave the headline Inc-bind
 coefficient on log residents working in own municipality essentially
-unchanged at $-0.401^{***}$
+unchanged at $-0.573^{***}$
 (\hyperref[app:rob-sample]{see Appendix~\ref{app:rob-sample}}).
 
 \subsection{Pre/Post Act 32 Decomposition}
@@ -1876,8 +1871,8 @@ unchanged at $-0.401^{***}$
 Splitting the headline cell-$\times$-dose specification at the Act-32
 enforcement break (cohort first event year $<2012$ vs $\geq 2012$)
 shows the municipality-level binding-cell effect strengthens after
-consolidated employer withholding takes effect ($-0.339^{**}$ pre vs
-$-0.534^{***}$ post on log residents working in own municipality); the
+consolidated employer withholding takes effect ($-0.593^{**}$ pre vs
+$-0.546^{***}$ post on log residents working in own municipality); the
 block-level effect is roughly constant pre and post, so the
 finer-geography sorting response predates the Act-32 enforcement
 break (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
@@ -1892,7 +1887,7 @@ municipality-EIT cap. Selection-on-distress is therefore a candidate
 confounder: an Act~47 designation typically follows a period of
 population decline, so the rate hike happens after the municipality is
 already losing residents and bundles with state oversight, debt
-restructuring, and service cuts. Of the 40 Inc-bind municipalities,
+restructuring, and service cuts. Of the 24 Inc-bind municipalities,
 $9$ match the DCED Act~47 designation list (Braddock, Carbondale,
 Coatesville, Farrell, Franklin, Hazleton, Jeannette, Johnstown,
 West Hazleton). Table~\ref{tab:act47_robustness} re-estimates the
@@ -1926,7 +1921,7 @@ The central finding is that sorting is identified through the binding channel.
 The Inc-bind cell---rate hikes that move the bill---reduces
 the log count of workers living in the block at the block level by approximately 19
 percent per pp ($-0.21$ log points, $\text{SE} = 0.054$). The
-municipality-level analogue is larger ($-0.40$ log points on
+municipality-level analogue is larger ($-0.57$ log points on
 the log count of residents working in their own municipality, $\approx 33\%$ per pp). The Inc-nobind
 placebo---rate hikes whose post-event home stack remains below the
 nonresident rate---is statistically indistinguishable from zero on the
@@ -2112,14 +2107,14 @@ native geography, a 1 percentage-point municipal resident-rate
 increase in the Inc-bind cell reduces the log count of workers
 living in the block by roughly $-0.21$ log points, approximately
 $19\%$, with a clean realized-dose pre-trend
-($\beta_{\text{pre}} = -0.027$, $|t| < 1$). The within-design
+($\beta_{\text{pre}} = -0.213$, Wald $p=0.003$). The within-design
 Inc-nobind placebo, where the same statutory increase does not move
 the bill, is statistically null on the same count outcome. The
 response is therefore tied to tax liability rather than to the
 statutory rate change itself, and the binding-state decomposition
 is what distinguishes the two.
 
-Municipality-level estimates are larger ($-0.40$ log points on the
+Municipality-level estimates are larger ($-0.57$ log points on the
 log count of residents working in their own municipality) but
 pre-trended, and they enter the paper as policy-jurisdiction
 magnitude calibration rather than as a second causal headline.
@@ -2209,7 +2204,7 @@ Block-level share outcomes from the same joint regression, reported for complete
         Term & Coefficient & SE \\
         \midrule
         \multicolumn{3}{l}{\textit{Muni resident-rate cells (vs.\ NC$^{\text{muni}}$)}} \\
-        Inc-bind $\times \Delta\tau^{\text{muni}}$       & $-0.402^{***}$ & $0.096$ \\
+        Inc-bind $\times \Delta\tau^{\text{muni}}$       & $-0.573^{***}$ & $0.096$ \\
         Inc-becomes $\times \Delta\tau^{\text{muni}}$    & $-0.181^{**}$  & $0.072$ \\
         Inc-nobind $\times \Delta\tau^{\text{muni}}$     & $-0.062$       & $0.169$ \\
         Dec-bind $\times \Delta\tau^{\text{muni}}$       & $+0.241^{***}$ & $0.078$ \\
@@ -2365,7 +2360,7 @@ estimating unit.
 
 Three sample variants for the DCED nonresident-rate panel (strict,
 filled, drop-incomplete) leave the headline municipality Inc-bind coefficient
-on log live-and-work essentially unchanged at $-0.401^{***}$.
+on log live-and-work essentially unchanged at $-0.573^{***}$.
 
 %==========================================================
 \end{document}
