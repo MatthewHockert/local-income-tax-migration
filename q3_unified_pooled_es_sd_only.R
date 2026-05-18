@@ -64,6 +64,7 @@ run_pooled <- function(direction) {
     post <- ic[rel >= 0 & rel <= 5]
     pre  <- ic[rel <= -2]
     wp <- wald_pretrend(m, "^rel::-[2-9]")
+    dep_vec <- m$fitted.values + m$residuals
     att[[length(att)+1L]] <- data.table(
       outcome = o, direction = direction,
       att_post = round(mean(post$est, na.rm = TRUE), 3),
@@ -73,7 +74,11 @@ run_pooled <- function(direction) {
       wald_pre_stat = round(wp$stat, 3),
       wald_pre_df = wp$df,
       wald_pre_p = round(wp$p, 4),
-      n = nobs(m))
+      n = nobs(m),
+      r2 = round(fitstat(m, "r2", simplify = TRUE), 4),
+      wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean = round(mean(dep_vec, na.rm = TRUE), 3),
+      dep_sd = round(sd(dep_vec, na.rm = TRUE), 3))
     cat(sprintf("  [sd %s pool %s] post=%.3f pre=%.3f  Wald(%d)=%.2f p=%.4f\n",
                 o, direction,
                 mean(post$est, na.rm = TRUE),

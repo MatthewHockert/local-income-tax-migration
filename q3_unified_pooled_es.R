@@ -81,6 +81,7 @@ run_pooled_es_muni <- function(direction) {
     post <- ic[rel >= 0 & rel <= 5]
     pre  <- ic[rel <= -2]
     wp <- wald_pretrend(m, "^rel::-[2-9]")
+    dep_vec <- m$fitted.values + m$residuals
     att[[length(att)+1L]] <- data.table(
       outcome = o, direction = direction,
       att_post = round(mean(post$est, na.rm = TRUE), 3),
@@ -90,7 +91,11 @@ run_pooled_es_muni <- function(direction) {
       wald_pre_stat = round(wp$stat, 3),
       wald_pre_df = wp$df,
       wald_pre_p = round(wp$p, 4),
-      n = nobs(m))
+      n = nobs(m),
+      r2 = round(fitstat(m, "r2", simplify = TRUE), 4),
+      wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean = round(mean(dep_vec, na.rm = TRUE), 3),
+      dep_sd = round(sd(dep_vec, na.rm = TRUE), 3))
     cat(sprintf("  [cousub %s pool %s] post=%.3f pre=%.3f  Wald(%d)=%.2f p=%.4f  N=%s\n",
                 o, direction,
                 mean(post$est, na.rm = TRUE),
@@ -164,13 +169,18 @@ run_pooled_es_block <- function(direction) {
     results[[length(results)+1L]] <- ic
     post <- ic[rel >= 0 & rel <= 5]
     pre  <- ic[rel <= -2]
+    dep_vec <- m$fitted.values + m$residuals
     att[[length(att)+1L]] <- data.table(
       outcome = o, direction = direction,
       att_post = round(mean(post$est, na.rm = TRUE), 3),
       att_post_se = round(sqrt(mean(post$se^2, na.rm = TRUE) / max(nrow(post),1)), 3),
       att_pre = round(mean(pre$est, na.rm = TRUE), 3),
       att_pre_se  = round(sqrt(mean(pre$se^2, na.rm = TRUE) / max(nrow(pre),1)), 3),
-      n = nobs(m))
+      n = nobs(m),
+      r2 = round(fitstat(m, "r2", simplify = TRUE), 4),
+      wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean = round(mean(dep_vec, na.rm = TRUE), 3),
+      dep_sd = round(sd(dep_vec, na.rm = TRUE), 3))
     cat(sprintf("post=%.3f pre=%.3f\n",
                 mean(post$est, na.rm = TRUE),
                 mean(pre$est, na.rm = TRUE)))

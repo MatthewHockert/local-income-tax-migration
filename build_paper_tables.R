@@ -793,6 +793,31 @@ write_es_summary <- function(att_csv, row_var, row_levels, outcomes,
               paste0("\\textbf{", lvl, "} Wald $p$ & ",
                      paste(wald_row, collapse = " & "), " \\\\"))
   }
+  # Diagnostics block (per outcome; uses Inc-direction model)
+  diag_rows <- character(0)
+  if (any(c("r2","wr2","dep_mean","dep_sd","n") %in% names(a))) {
+    pick <- function(field) {
+      out <- character(ncols)
+      for (j in seq_along(outcomes)) {
+        r <- a[outcome == outcomes[j]]
+        if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
+        v <- r[[field]][1]
+        if (is.na(v)) { out[j] <- "---"; next }
+        out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
+                   else formatC(v, format = "f", digits = 4)
+      }
+      out
+    }
+    diag_rows <- c(
+      paste0("\\multicolumn{", ncols + 1, "}{l}{\\textit{Diagnostics}} \\\\"),
+      paste0("$N$              & ", paste(pick("n"),       collapse = " & "), " \\\\"),
+      paste0("$R^2$            & ", paste(pick("r2"),      collapse = " & "), " \\\\"),
+      paste0("Within $R^2$     & ", paste(pick("wr2"),     collapse = " & "), " \\\\"),
+      paste0("Dep.\\ mean       & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
+      paste0("Dep.\\ SD         & ", paste(pick("dep_sd"),   collapse = " & "), " \\\\")
+    )
+  }
+  body <- c(body, "\\midrule", diag_rows)
   col_spec <- paste0("l", strrep("c", ncols))
   notes_all <- paste(c(
     "Cluster-robust standard errors in parentheses.",
