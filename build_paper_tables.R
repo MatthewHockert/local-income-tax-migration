@@ -112,6 +112,9 @@ read_controls_long <- function(csv_path, term_filter = NULL) {
   needed <- c("outcome","term","est","se","p")
   if (!all(needed %in% names(d))) return(NULL)
   if (!is.null(term_filter)) d <- d[term %in% term_filter]
+  # Mask rows with absurd SEs (near-singular fit; happens with collinear
+  # share controls in some regressions). Treat SE > 100 as not identified.
+  d[!is.na(se) & abs(se) > 100, `:=`(est = NA_real_, se = NA_real_, p = NA_real_)]
   d[, .(outcome, term, est, se, p)]
 }
 
