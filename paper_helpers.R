@@ -203,7 +203,9 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
                               caption, label, short_labels = TRUE,
                               notes = character(0), col_spec = NULL,
                               sideways = FALSE,
-                              diag_fields = c("n","r2","wr2","dep_mean","dep_sd")) {
+                              diag_fields = c("n","r2","wr2","dep_mean","dep_sd"),
+                              controls_dt = NULL, control_labels = NULL,
+                              section_header_above_cells = NULL) {
   stopifnot(is.data.table(coefs_dt), is.data.table(diag_dt))
   coefs_dt <- copy(coefs_dt)[, outcome := as.character(outcome)]
   diag_dt  <- copy(diag_dt)
@@ -262,6 +264,37 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
                       " stack-interacted fixed effects."))
   }
 
+  # Controls block (optional). Adds rows after the cell body.
+  controls_block <- character(0)
+  if (!is.null(controls_dt) && is.data.table(controls_dt) && nrow(controls_dt) > 0) {
+    ncols <- length(outcomes)
+    mc <- paste0("\\multicolumn{", ncols + 1, "}{l}")
+    controls_block <- c(controls_block,
+                        "\\midrule",
+                        paste0(mc, "{\\textit{Fiscal controls}} \\\\"))
+    ctrl_terms <- unique(controls_dt$term)
+    label_map <- if (!is.null(control_labels)) control_labels else setNames(ctrl_terms, ctrl_terms)
+    for (tm in ctrl_terms) {
+      est_vec <- character(ncols); se_vec <- character(ncols)
+      any_present <- FALSE
+      for (j in seq_along(outcomes)) {
+        r <- controls_dt[outcome == outcomes[j] & term == tm]
+        if (nrow(r) == 0) { est_vec[j] <- "---"; se_vec[j] <- ""; next }
+        e <- r$est[1]; se1 <- r$se[1]; p1 <- r$p[1]
+        if (is.na(e)) { est_vec[j] <- "---"; se_vec[j] <- ""; next }
+        any_present <- TRUE
+        stars <- sig_stars(p1)
+        est_vec[j] <- if (nchar(stars) == 0) fmt_est(e) else paste0(fmt_est(e), "\\sym{", stars, "}")
+        se_vec[j]  <- fmt_se(se1)
+      }
+      if (!any_present) next
+      pretty <- if (tm %in% names(label_map)) label_map[[tm]] else gsub("_", "\\\\_", tm)
+      controls_block <- c(controls_block,
+                          paste0(pretty, " & ", paste(est_vec, collapse = " & "), " \\\\"),
+                          paste0("                  & ", paste(se_vec,  collapse = " & "), " \\\\"))
+    }
+  }
+
   # Per-outcome diagnostics block
   diag_rows <- function(field, label_text, fmt = function(x) formatC(x, format = "f", digits = 3)) {
     vals <- character(length(outcomes))
@@ -304,6 +337,7 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
     paste0("    ", hdr),
     "    \\midrule",
     paste0("    ", body),
+    if (length(controls_block)) paste0("    ", controls_block) else character(0),
     if (length(diag_block)) "    \\midrule" else character(0),
     if (length(diag_block)) paste0("    ", diag_block) else character(0),
     "    \\bottomrule",

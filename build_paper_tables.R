@@ -102,6 +102,71 @@ write_cell_table <- function(coef_csv, diag_csv, side, outcomes, cells,
 # write_merged_cell_table: muni-side + SD-side from the SAME joint
 # regression in one table, with section headers. Used for appendix tables
 # where the same outcomes are shown for both rate-setters.
+# Read fiscal controls in long format (outcome, term, est, se, p)
+read_controls_long <- function(csv_path, term_filter = NULL) {
+  if (!file.exists(csv_path) || file.size(csv_path) == 0) return(NULL)
+  d <- fread(csv_path)
+  if ("Estimate" %in% names(d) && !"est" %in% names(d)) setnames(d, "Estimate", "est")
+  if ("Std. Error" %in% names(d) && !"se" %in% names(d)) setnames(d, "Std. Error", "se")
+  if ("Pr(>|t|)" %in% names(d) && !"p" %in% names(d)) setnames(d, "Pr(>|t|)", "p")
+  needed <- c("outcome","term","est","se","p")
+  if (!all(needed %in% names(d))) return(NULL)
+  if (!is.null(term_filter)) d <- d[term %in% term_filter]
+  d[, .(outcome, term, est, se, p)]
+}
+
+# Pretty labels for controls used in appendix full-spec tables
+muni_ctrl_labels <- c(
+  share_police   = "police-services share",
+  share_streets  = "streets share",
+  share_debt_svc = "debt-service share",
+  share_eit      = "EIT-revenue share",
+  share_re       = "real-estate-tax share",
+  share_intergov = "intergovernmental-revenue share"
+)
+sd_ctrl_labels <- c(
+  share_state_rev_sd       = "state-revenue share",
+  share_local_rev_sd       = "local-revenue share",
+  share_federal_rev_sd     = "federal-revenue share",
+  share_property_tax_sd    = "property-tax share",
+  share_instructional_sd   = "instructional-expenditure share",
+  share_support_sd         = "support-services share",
+  share_capital_sd         = "capital-expenditure share",
+  share_debt_int_sd        = "debt-interest share",
+  mean_muni_rate           = "mean municipality rate"
+)
+block_ctrl_labels <- c(muni_ctrl_labels, sd_ctrl_labels)
+
+# write_full_spec_table: same shape as write_cell_table but adds a
+# fiscal-controls block below the cell coefficients.
+write_full_spec_table <- function(coef_csv, diag_csv, ctrl_csv,
+                                    side, outcomes, cells,
+                                    caption, label_id, out_name,
+                                    ctrl_labels,
+                                    short = TRUE, notes = character(0)) {
+  coefs <- read_coefs(coef_csv, side = side)
+  if (is.null(coefs) || nrow(coefs) == 0) {
+    cat(sprintf("Skipping %s: source CSV missing or empty\n", out_name))
+    return(invisible())
+  }
+  diag <- read_diag(diag_csv)
+  controls <- read_controls_long(ctrl_csv, term_filter = names(ctrl_labels))
+  body <- build_pub_table(
+    coefs_dt  = coefs,
+    diag_dt   = diag,
+    outcomes  = outcomes,
+    cells     = cells,
+    caption   = caption,
+    label     = label_id,
+    short_labels = short,
+    notes     = notes,
+    controls_dt = controls,
+    control_labels = ctrl_labels
+  )
+  writeLines(body, file.path(out_dir, out_name))
+  cat(sprintf("Wrote %s\n", out_name))
+}
+
 write_merged_cell_table <- function(coef_csv, diag_csv,
                                       outcomes, cells,
                                       caption, label_id, out_name,
@@ -1003,5 +1068,79 @@ write_es_summary(
   label_id = "tab:es_block_by_cell",
   out_name = "es_block_by_cell_summary.tex",
   extra_notes = c("Per-cell decomposition of the pooled block-level ES; each cell is run as a separate regression on \\{NC, cell\\}."))
+
+# ===========================================================================
+# Appendix A: full-spec tables (cells + fiscal controls, same regression)
+# ===========================================================================
+cat("\n--- Building Appendix A full-spec tables (cells + controls) ---\n")
+
+## A.1 Municipality-level (cousub): muni cells with muni-AFR controls
+write_full_spec_table(
+  coef_csv = file.path(in_dir, "headline_full_table.csv"),
+  diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
+  ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
+  side     = "treat_cell",
+  outcomes = muni_outcomes, cells = cells_main,
+  caption  = "Municipality-level dose-response: muni resident-rate cells with fiscal controls (full spec)",
+  label_id = "tab:app_full_muni_cell_results",
+  out_name = "app_full_muni_cell_results.tex",
+  ctrl_labels = muni_ctrl_labels,
+  notes    = muni_notes
+)
+## A.1b cousub SD-side cells with muni-AFR controls (same regression)
+write_full_spec_table(
+  coef_csv = file.path(in_dir, "headline_full_table.csv"),
+  diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
+  ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
+  side     = "cell_sd",
+  outcomes = muni_outcomes, cells = cells_main,
+  caption  = "Municipality-level dose-response: SD resident-rate cells with fiscal controls (full spec)",
+  label_id = "tab:app_full_muni_sd_side_results",
+  out_name = "app_full_muni_sd_side_results.tex",
+  ctrl_labels = muni_ctrl_labels,
+  notes    = c(muni_notes[1],
+               "SD-side cell$\\times$dose coefficients from the same regression as the muni-side full-spec table.")
+)
+
+## A.2 School-district level: SD cells with F-33 controls
+write_full_spec_table(
+  coef_csv = file.path(in_dir, "sd_level_results.csv"),
+  diag_csv = file.path(in_dir, "sd_level_diagnostics.csv"),
+  ctrl_csv = file.path(in_dir, "sd_level_controls.csv"),
+  side     = "treat_cell",
+  outcomes = muni_outcomes, cells = cells_main,
+  caption  = "School-district-level dose-response: SD resident-rate cells with F-33 controls (full spec)",
+  label_id = "tab:app_full_sd_cell_results",
+  out_name = "app_full_sd_cell_results.tex",
+  ctrl_labels = sd_ctrl_labels,
+  notes    = sd_notes
+)
+
+## A.3 Block-level: muni cells with all controls (muni + SD)
+write_full_spec_table(
+  coef_csv = file.path(in_dir, "block_joint_results.csv"),
+  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
+  ctrl_csv = file.path(in_dir, "block_joint_controls.csv"),
+  side     = "muni",
+  outcomes = block_outcomes_main, cells = cells_main,
+  caption  = "Block-level dose-response: muni resident-rate cells with fiscal controls (full spec)",
+  label_id = "tab:app_full_block_muni_results",
+  out_name = "app_full_block_muni_results.tex",
+  ctrl_labels = block_ctrl_labels,
+  notes    = block_notes
+)
+write_full_spec_table(
+  coef_csv = file.path(in_dir, "block_joint_results.csv"),
+  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
+  ctrl_csv = file.path(in_dir, "block_joint_controls.csv"),
+  side     = "sd",
+  outcomes = block_outcomes_main, cells = cells_main,
+  caption  = "Block-level dose-response: SD resident-rate cells with fiscal controls (full spec)",
+  label_id = "tab:app_full_block_sd_results",
+  out_name = "app_full_block_sd_results.tex",
+  ctrl_labels = block_ctrl_labels,
+  notes    = c(block_notes,
+               "SD-side cell$\\times$dose coefficients from the same regression as the muni-side full-spec block table.")
+)
 
 cat("\nDone. Tables written to paper/tables/.\n")

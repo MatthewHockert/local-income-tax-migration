@@ -1,0 +1,65 @@
+\begin{table}[!htbp]
+  \centering
+  \caption{Block-level dose-response: muni resident-rate cells with fiscal controls (full spec)}
+  \label{tab:app_full_block_muni_results}
+  \footnotesize
+  \renewcommand{\arraystretch}{0.9}
+  \begin{tabular}{lcc}
+    \toprule
+    Outcome & Log(workers live) & Log(workers work) \\
+    \midrule
+    \textbf{Inc-bind} & -0.340\sym{***} & -0.108 \\
+                      & (0.051) & (0.096) \\
+    \textbf{Inc-becomes} & -0.038 & -0.065\sym{***} \\
+                      & (0.031) & (0.018) \\
+    \textbf{Inc-nobind} & 0.714\sym{***} & 0.115\sym{**} \\
+                      & (0.083) & (0.051) \\
+    \textbf{Dec-bind} & 0.097\sym{*} & -0.036 \\
+                      & (0.057) & (0.418) \\
+    \textbf{Dec-becomes-non} & -1.013\sym{***} & 0.939\sym{***} \\
+                      & (0.124) & (0.154) \\
+    \textbf{Dec-nobind} & -0.202\sym{***} & 0.266\sym{***} \\
+                      & (0.004) & (0.005) \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Fiscal controls}} \\
+    police-services share & 0.008 & -0.036 \\
+                      & (0.032) & (0.037) \\
+    streets share & -0.015 & 0.004 \\
+                      & (0.013) & (0.016) \\
+    debt-service share & -0.006 & -0.003 \\
+                      & (0.014) & (0.016) \\
+    EIT-revenue share & 0.089\sym{***} & 0.088\sym{***} \\
+                      & (0.030) & (0.033) \\
+    real-estate-tax share & -0.053 & -0.091\sym{***} \\
+                      & (0.038) & (0.029) \\
+    intergovernmental-revenue share & 0.016 & -0.004 \\
+                      & (0.014) & (0.018) \\
+    state-revenue share & -0.519\sym{***} & -0.037 \\
+                      & (0.135) & (32331.831) \\
+    local-revenue share & -0.329\sym{***} & 0.253 \\
+                      & (0.123) & (32331.840) \\
+    property-tax share & -0.013 & -0.027 \\
+                      & (0.093) & (0.120) \\
+    instructional-expenditure share & 0.019 & -0.012 \\
+                      & (0.077) & (0.067) \\
+    support-services share & -0.036 & 0.181 \\
+                      & (0.113) & (0.114) \\
+    capital-expenditure share & -0.011 & 0.063 \\
+                      & (0.063) & (0.053) \\
+    debt-interest share & -0.010 & -0.022\sym{***} \\
+                      & (0.007) & (0.007) \\
+    federal-revenue share & --- & 0.294 \\
+                      &  & (32331.832) \\
+    \midrule
+    $N$ & 20,050,835 & 7,388,033 \\
+    $R^2$ & 0.860 & 0.866 \\
+    Within $R^2$ & 0.000 & 0.000 \\
+    Dep.\ mean & 2.226 & 2.306 \\
+    Dep.\ SD & 1.186 & 1.644 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with block-by-stack and year-by-stack fixed effects; standard errors two-way clustered at the muni and SD levels. Each block is exposed to one municipality and one school district; both rate-setters' policy variation enters at its native level. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
+\end{table}

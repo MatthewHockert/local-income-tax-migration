@@ -1,0 +1,53 @@
+\begin{table}[!htbp]
+  \centering
+  \caption{School-district-level dose-response: SD resident-rate cells with F-33 controls (full spec)}
+  \label{tab:app_full_sd_cell_results}
+  \footnotesize
+  \renewcommand{\arraystretch}{0.9}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccc}
+    \toprule
+    Outcome & Log(work in own muni) & Log(in-commuters) & Log(employed residents) & Share live in muni \\
+    \midrule
+    \textbf{Inc-bind} & 0.027 & 0.057 & 0.106\sym{***} & 0.003 \\
+                      & (0.038) & (0.046) & (0.030) & (0.004) \\
+    \textbf{Inc-becomes} & 0.271\sym{*} & 0.184 & 0.318\sym{**} & 0.004 \\
+                      & (0.154) & (0.137) & (0.131) & (0.006) \\
+    \textbf{Inc-nobind} & 0.793 & 1.149\sym{*} & 0.422\sym{***} & -0.035 \\
+                      & (0.506) & (0.633) & (0.148) & (0.023) \\
+    \textbf{Dec-bind} & 0.060 & 0.050 & 0.178\sym{***} & 0.000 \\
+                      & (0.077) & (0.111) & (0.045) & (0.004) \\
+    \textbf{Dec-nobind} & -0.126\sym{***} & 0.154\sym{***} & 0.076\sym{***} & -0.032\sym{***} \\
+                      & (0.025) & (0.028) & (0.016) & (0.002) \\
+    \midrule
+    \multicolumn{5}{l}{\textit{Fiscal controls}} \\
+    mean municipality rate & -0.000 & 0.002 & 0.004 & -0.000 \\
+                      & (0.009) & (0.006) & (0.005) & (0.000) \\
+    state-revenue share & 0.215 & 0.036 & 0.012 & 0.033\sym{*} \\
+                      & (0.234) & (0.204) & (0.158) & (0.019) \\
+    local-revenue share & 0.265 & 0.169 & 0.210 & 0.028 \\
+                      & (0.233) & (0.196) & (0.164) & (0.020) \\
+    property-tax share & 0.167 & -0.088 & -0.140 & 0.029\sym{*} \\
+                      & (0.160) & (0.140) & (0.139) & (0.015) \\
+    instructional-expenditure share & -0.030 & -0.095 & -0.012 & 0.010 \\
+                      & (0.097) & (0.088) & (0.061) & (0.009) \\
+    support-services share & -0.071 & -0.186 & 0.032 & 0.011 \\
+                      & (0.184) & (0.171) & (0.130) & (0.017) \\
+    capital-expenditure share & -0.043 & -0.108 & 0.014 & 0.008 \\
+                      & (0.090) & (0.084) & (0.060) & (0.009) \\
+    debt-interest share & -0.008 & -0.003 & -0.003 & -0.001 \\
+                      & (0.006) & (0.005) & (0.003) & (0.001) \\
+    \midrule
+    $N$ & 51,420 & 51,454 & 51,454 & 51,454 \\
+    $R^2$ & 0.986 & 0.987 & 0.987 & 0.953 \\
+    Within $R^2$ & 0.004 & 0.004 & 0.005 & 0.004 \\
+    Dep.\ mean & 6.260 & 8.335 & 8.769 & 0.125 \\
+    Dep.\ SD & 1.298 & 1.202 & 0.909 & 0.068 \\
+    \bottomrule
+  \end{tabular}
+  }
+  \vspace{0.3em}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize \textit{Notes:} Cluster-robust standard errors in parentheses. Continuous stacked-DiD with SD-by-stack and year-by-stack fixed effects; standard errors clustered at the school-district level. Unit of observation is SD$\times$year. Binding-cell classification uses the within-SD mean of $\tau^{\text{nr,muni}}$ as the work-side comparator, aggregating the institutional nonresident-rate field over the SD's constituent munis. Rows omitted (no estimable coefficients in any outcome column): Dec-becomes-non. These cells contain too few units, or all coefficients were dropped for collinearity with the stack-interacted fixed effects. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+  \end{minipage}
+\end{table}

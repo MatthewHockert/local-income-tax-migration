@@ -2275,95 +2275,68 @@ jurisdictions are candidate extensions.
 \appendix
 
 %==========================================================
-\section{Pooled Inc/Dec Benchmark}
-\label{app:pooled}
+\section{Full Results with Control Coefficients}
+\label{app:full-results}
 %==========================================================
 
-This appendix collects the full pooled-aggregate (Inc/Dec) benchmark
-estimates and event-study diagnostics by estimating unit. The
-pooled specification is the symmetric Inc/Dec aggregate that
-precedes the binding-state decomposition reported in
-Appendix~\ref{app:decomp}.
+This appendix mirrors Section~\ref{sec:results} table-by-table.
+Each table reports the same cell coefficients as the body table
+plus the fiscal-control coefficients estimated in the same
+regression, with diagnostics. Section headings match the
+corresponding body subsections.
 
-\subsection{Block-level pooled benchmark}
-\label{app:pooled-block}
+\subsection{Binding-state decomposition: block level}
+\label{app:full-block}
 
-The block-level per-pp pooled Inc/Dec specification
-(Equation~\ref{eq:pooled}) is reported as
-Table~\ref{tab:pooled_per_pp_block} in
-Section~\ref{subsec:results-pooled}. Reading the table by sign and
-rate-setter: the municipality resident-rate increase reduces the log count of
-workers living in the block; the municipality resident-rate decrease moves
-the same outcome in the opposite direction with a smaller magnitude;
-the SD rate is essentially null on both rate-setters. The pooled
-specification mixes binding and non-binding events on each rate-setter and
-so the magnitudes are dose-attenuated relative to the
-binding-state-decomposed estimate
-(Appendix~\ref{app:decomp-block}); the pooled benchmark is reported
-as the conventional local-tax literature comparator and as motivation
-for the cell decomposition. The binary-event analog of this
-specification is in Appendix~\ref{app:pooled-es-binary}
-(Table~\ref{tab:pooled_binary_block}); coefficients agree in sign with
-the per-pp benchmark at every level.
+Block-level full specification. Each block is exposed to one
+municipality and one school district; the regression includes both
+sets of fiscal controls (muni AFR shares and F-33 SD shares).
+Table~\ref{tab:app_full_block_muni_results} reports the
+muni resident-rate cells with controls and
+Table~\ref{tab:app_full_block_sd_results} reports the SD
+resident-rate cells with controls from the same joint regression.
 
-\subsection{Municipality-level pooled benchmark}
-\label{app:pooled-municipality}
+\input{tables/app_full_block_muni_results.tex}
 
-The municipality-level per-pp pooled Inc/Dec specification is
-reported as Table~\ref{tab:pooled_per_pp_cousub} in
-Section~\ref{subsec:results-pooled}. At the municipality level the
-pooled Inc coefficient on log live-and-work is sizable
-and negative; sign-symmetry with the Dec coefficient is partial
-(asymmetric magnitudes), and the residence-side outcomes
-(live-in-muni share, log total residents) move in
-the same direction. The pooled municipality Inc coefficient understates the
-binding-cell effect because it mixes Inc-bind (binding incidence)
-with Inc-becomes and Inc-nobind (partial / no incidence); the
-decomposed cells in Appendix~\ref{app:decomp-municipality} show this directly.
-The binary analog is Table~\ref{tab:pooled_binary_cousub}.
+\input{tables/app_full_block_sd_results.tex}
 
-\subsection{School-district-level pooled benchmark}
-\label{app:pooled-sd}
+\subsection{Binding-state decomposition: municipality level}
+\label{app:full-muni}
 
-The school-district-level per-pp pooled Inc/Dec specification is
-reported as Table~\ref{tab:pooled_per_pp_sd} in
-Section~\ref{subsec:results-pooled}. SD-level identification is
-weaker than at the municipality and block levels: the pooled Inc
-coefficient on residence-side outcomes is small and sign-reversed
-relative to the municipality and block estimates, the SD pooled Dec
-coefficient is also direction-mixed, and SD-level realized-dose
-pre-trends fail parallel trends on
-log live-and-work ($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$; see Appendix~\ref{app:decomp-es-realized}). The
-SD-aggregation is reported as an aggregation diagnostic non-result
-and is not the load-bearing causal estimate. The binary analog is
-Table~\ref{tab:pooled_binary_sd}.
+Municipality-level full specification with muni AFR fiscal
+controls. Table~\ref{tab:app_full_muni_cell_results} reports the
+muni resident-rate cells and
+Table~\ref{tab:app_full_muni_sd_side_results} reports the SD
+resident-rate cells from the same joint regression.
 
-\subsection{Realized-dose ES benchmark diagnostics}
-\label{app:pooled-es-realized}
+\input{tables/app_full_muni_cell_results.tex}
 
-The realized-dose Sun--Abraham specification tests strong parallel
-trends across treatment-intensity magnitudes by interacting
-relative-event-time indicators with each unit's eventual cumulative
-dose. The pooled-cohort versions of these figures are collected here.
-(Per-cell decomposition versions appear in
-Appendix~\ref{app:decomp-es-realized}.)
+\input{tables/app_full_muni_sd_side_results.tex}
 
-\subsection{Binary ES benchmark diagnostics}
-\label{app:pooled-es-binary}
-\label{sec:app-pooled-binary}
+\subsection{Binding-state decomposition: school-district level}
+\label{app:full-sd}
 
-The binary-event analog of the per-pp pooled specification
-(Equation~\ref{eq:pooled}) replaces each $\Delta\tau^s_{it}$ dose
-interaction with a post-treatment indicator that equals one in the
-event year and after. The four reported coefficients per regression
-are $\{\mathrm{everInc}^{M}, \mathrm{everDec}^{M},
-\mathrm{everInc}^{SD}, \mathrm{everDec}^{SD}\}$. Sign-wise the
-binary estimates agree with the per-pp pooled headline at every
-level: municipality-rate increases reduce residence-side outcomes; SD-rate
-coefficients are small or sign-mixed. The binary analog complements
-the per-pp pooled specification by not weighting events by dose
-magnitude; cohort-event-time IW pooled estimates are reported by
-estimating unit below.
+School-district-level full specification with F-33 fiscal
+controls.
+Table~\ref{tab:app_full_sd_cell_results} reports the SD
+resident-rate cells with controls.
+
+\input{tables/app_full_sd_cell_results.tex}
+
+\subsection{Pooled Inc/Dec benchmark and event-study diagnostics}
+\label{app:pooled}
+
+The pooled Inc/Dec benchmark tables
+(Tables~\ref{tab:pooled_per_pp_block}--\ref{tab:pooled_per_pp_sd})
+and the binary Sun--Abraham IW analogues
+(Tables~\ref{tab:pooled_binary_block}--\ref{tab:pooled_binary_sd})
+appear in Section~\ref{subsec:results-pooled} of the body. The
+control coefficients enter those regressions identically to the
+cell-decomposed specifications reported above; the per-pp pooled
+analogue is therefore a direct sample-share-weighted aggregate of
+the cell-level coefficients in
+Tables~\ref{tab:app_full_block_muni_results}--\ref{tab:app_full_sd_cell_results}.
+The binary IW tables are reproduced below for completeness.
 
 \input{tables/pooled_binary_block.tex}
 
