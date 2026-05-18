@@ -1,0 +1,264 @@
+Cousub typology:
+       type     N
+     <char> <int>
+1: township  1547
+2:  borough   953
+3:     city    56
+4:    other     5
+Heterogeneity: dropping 102 uncertain munis
+
+========== Cell composition by muni type ==========
+          cell_muni     type     N
+             <fctr>   <char> <int>
+ 1:              NC township  1399
+ 2:              NC  borough   878
+ 3:              NC     city    25
+ 4:              NC    other     3
+ 5:        Inc-bind township    22
+ 6:        Inc-bind  borough    10
+ 7:        Inc-bind     city     8
+ 8:     Inc-becomes township    34
+ 9:     Inc-becomes     city    14
+10:     Inc-becomes  borough    10
+11:      Inc-nobind township    14
+12:      Inc-nobind  borough     8
+13:      Inc-nobind     city     4
+14:        Dec-bind     city     4
+15:        Dec-bind  borough     4
+16:        Dec-bind township     3
+17: Dec-becomes-non  borough     2
+18: Dec-becomes-non township     2
+19:      Dec-nobind township    11
+20:      Dec-nobind  borough     4
+          cell_muni     type     N
+
+========== Cell composition: mean size ==========
+          cell_muni     type     N mean_residents mean_lw
+             <fctr>   <char> <int>          <num>   <num>
+ 1:              NC township  1399           1771     162
+ 2:              NC  borough   878           1079      99
+ 3:              NC     city    25          11496    4711
+ 4:              NC    other     3           8808    1479
+ 5:        Inc-bind township    22           3468     277
+ 6:        Inc-bind  borough    10           2631     292
+ 7:        Inc-bind     city     8           6904    1615
+ 8:     Inc-becomes township    34           2625     155
+ 9:     Inc-becomes     city    14          47886   27578
+10:     Inc-becomes  borough    10           2184     292
+11:      Inc-nobind township    14           3230     314
+12:      Inc-nobind  borough     8            924     128
+13:      Inc-nobind     city     4          26808    8925
+14:        Dec-bind     city     4           6325     918
+15:        Dec-bind  borough     4           2445     299
+16:        Dec-bind township     3           2312     124
+17: Dec-becomes-non  borough     2            925      66
+18: Dec-becomes-non township     2           2947     167
+19:      Dec-nobind township    11           2453     283
+20:      Dec-nobind  borough     4           2161     140
+          cell_muni     type     N mean_residents mean_lw
+
+========== Inc-bind muni list ==========
+      muni     type                    NAMELSAD mean_residents mean_lw
+    <char>   <char>                      <char>          <num>   <num>
+ 1:  85152     city           Wilkes-Barre city          15989    4162
+ 2:  54656  borough          Norristown borough          14098    1257
+ 3:  84528 township          Whitehall township          12820    1414
+ 4:  33408     city               Hazleton city          11216    2452
+ 5:  79274 township    Upper St. Clair township           8619     643
+ 6:  38288     city              Johnstown city           8033    2350
+ 7:  44832 township        Lower Allen township           7100     748
+ 8:  70792 township      Silver Spring township           5623     636
+ 9:  53664 township        New Hanover township           4888     220
+10:  37784     city              Jeannette city           4828     660
+11:  49384 township            Milford township           4723     295
+12:  14712     city            Coatesville city           4583     187
+13:  81000     city                 Warren city           4496    1987
+14:  45104 township       Lower Saucon township           4391     225
+15:  11232     city             Carbondale city           4330     847
+16:  39792 township           Kingston township           3610     184
+17:  21760 township      East Rockhill township           2918      93
+18:  22000 township       East Vincent township           2902     119
+19:  05256  borough          Bellefonte borough           2833     488
+20:  04976 township         Bedminster township           2572     138
+21:  61088 township         Plainfield township           2496     188
+22:  83960 township      West Rockhill township           2264     248
+23:  39344 township            Kennett township           2118     271
+24:  78168  borough              Tyrone borough           2076     412
+25:  04032  borough              Bangor borough           2065     210
+26:  79184 township Upper Mount Bethel township           2014     268
+27:  83136  borough       West Hazleton borough           1820     195
+28:  25360     city                Farrell city           1755     278
+29:  84160 township       West Vincent township           1746      81
+30:  03064 township          Armstrong township           1295      55
+31:  81160 township            Warwick township           1204      45
+32:  83968 township      West Sadsbury township           1051      70
+33:  62048  borough             Portage borough           1005     146
+34:  45016 township Lower Mount Bethel township            968      65
+35:  10912  borough   Cambridge Springs borough            816      89
+36:  07992  borough            Braddock borough            799      44
+37:  87224  borough         Youngsville borough            649      81
+38:  34448 township           Highland township            609      60
+39:  39608 township             Kidder township            357      31
+40:  27360  borough            Franklin borough            150       1
+      muni     type                    NAMELSAD mean_residents mean_lw
+
+========== Heterogeneity: city vs non_city (borough + township) ==========
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+
+--- type = city ; N = 3,562 ; Inc-bind munis = 8 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.455 0.191 0.0205
+2: Inc-becomes -0.199 0.148 0.1842
+3:  Inc-nobind -0.058 0.218 0.7908
+4:    Dec-bind -0.591 0.182 0.0020
+NOTE: 1,050/0 fixed-effect singletons were removed (1,050 observations).
+
+--- type = non_city ; N = 270,893 ; Inc-bind munis = 32 ---
+              cell    est    se      p
+            <char>  <num> <num>  <num>
+1:        Inc-bind -0.194 0.148 0.1890
+2:     Inc-becomes -0.013 0.206 0.9514
+3:      Inc-nobind  0.352 0.262 0.1794
+4:        Dec-bind  0.249 0.100 0.0123
+5: Dec-becomes-non -0.248 0.889 0.7806
+6:      Dec-nobind  0.333 0.140 0.0176
+
+========== Three-way split (kept for comparison): ==========
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+
+--- type = city ; N = 3,562 ; Inc-bind munis = 8 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.455 0.191 0.0205
+2: Inc-becomes -0.199 0.148 0.1842
+3:  Inc-nobind -0.058 0.218 0.7908
+4:    Dec-bind -0.591 0.182 0.0020
+NOTE: 523/0 fixed-effect singletons were removed (523 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+
+--- type = borough ; N = 97,398 ; Inc-bind munis = 10 ---
+              cell    est    se      p
+            <char>  <num> <num>  <num>
+1:        Inc-bind -0.213 0.156 0.1734
+2:     Inc-becomes -0.041 0.032 0.2071
+3:        Dec-bind  0.180 0.093 0.0548
+4: Dec-becomes-non -1.374 0.097 0.0000
+5:      Dec-nobind  0.022 0.027 0.4233
+NOTE: 527/0 fixed-effect singletons were removed (527 observations).
+
+--- type = township ; N = 173,087 ; Inc-bind munis = 22 ---
+              cell    est    se      p
+            <char>  <num> <num>  <num>
+1:        Inc-bind -0.161 0.208 0.4379
+2:     Inc-becomes -0.029 0.371 0.9375
+3:      Inc-nobind  0.220 0.286 0.4423
+4:        Dec-bind  0.134 0.044 0.0022
+5: Dec-becomes-non  2.080 0.128 0.0000
+6:      Dec-nobind  0.420 0.114 0.0002
+
+========== City subset: full estimator suite + ES ==========
+City subset: 990 muni-years, 55 unique munis, Inc-bind = 8
+
+>> Q2 TWFE pooled (city)
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.342 0.075 0.0000
+2: Inc-becomes -0.158 0.065 0.0187
+3:  Inc-nobind -0.001 0.084 0.9883
+4:    Dec-bind -0.066 0.076 0.3875
+
+>> Single-event TWFE (city)
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind  0.220 0.289 0.4517
+2: Inc-becomes -0.231 0.106 0.0350
+3:  Inc-nobind  0.054 0.203 0.7926
+4:    Dec-bind -0.613 0.135 0.0001
+
+>> Stacked binary (city)
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.182 0.084 0.0339
+2: Inc-becomes -0.178 0.111 0.1164
+3:  Inc-nobind -0.016 0.078 0.8360
+4:    Dec-bind  0.120 0.041 0.0049
+
+>> Stacked continuous (city)
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.433 0.175 0.0162
+2: Inc-becomes -0.182 0.134 0.1801
+3:  Inc-nobind -0.033 0.199 0.8704
+4:    Dec-bind -0.577 0.186 0.0031
+
+>> DCDH (city, Inc-bind cell)
+       cell         est        se     n
+     <char>       <num>     <num> <num>
+1: Inc-bind 0.008791786 0.1444753   322
+
+========== City Inc-bind: STACKED CONTINUOUS event study ==========
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+   rel_year    est    se      p
+      <int>  <num> <num>  <num>
+1:       -1  0.000 0.000     NA
+2:        0 -0.307 0.123 0.0176
+3:        1 -0.428 0.189 0.0303
+4:        2 -0.541 0.278 0.0603
+5:        3 -0.449 0.161 0.0088
+6:        4 -0.416 0.256 0.1133
+7:        5 -0.473 0.180 0.0133
+Saved figures/unified_es_city_inc_bind_lw_stackcont.png
+
+========== City Inc-bind: Sun-Abraham (binary cohort, reference) ==========
+NOTE: 1 observation removed because of NA values (RHS: 1).
+    rel_year    est    se      p
+       <int>  <num> <num>  <num>
+ 1:       -5  0.194 0.047 0.0003
+ 2:       -4  0.105 0.046 0.0283
+ 3:       -3  0.119 0.049 0.0203
+ 4:       -2  0.099 0.036 0.0103
+ 5:       -1  0.000 0.000     NA
+ 6:        0 -0.053 0.045 0.2507
+ 7:        1  0.021 0.061 0.7396
+ 8:        2 -0.061 0.034 0.0834
+ 9:        3 -0.150 0.073 0.0480
+10:        4 -0.181 0.097 0.0704
+11:        5 -0.146 0.082 0.0855
+Saved figures/unified_es_city_inc_bind_lw.png
+
+========== Inc-bind magnitudes in absolute jobs ==========
+     rel mean_lw median_lw mean_res
+   <int>   <num>     <num>    <num>
+1:    -1   592.1     229.0   3927.6
+2:     0   566.9     234.5   3878.6
+3:     1   555.6     238.0   3988.0
+4:     2   547.4     197.0   3859.5
+5:     3   534.0     208.5   4029.8
+6:     4   496.8     201.0   3904.7
+7:     5   513.2     204.5   3996.1
+
+  Implied: a -39% effect on a mean Inc-bind muni with 592 live_and_work workers = -231 workers
+
+Done.
+Warning messages:
+1: In rgl.init(initValue, onlyNULL) : X11 error: GLXBadContext
+2: 'rgl.init' failed, will use the null device.
+See '?rgl.useNULL' for ways to avoid this warning. 
+3: The VCOV matrix is not positive semi-definite and was 'fixed' (see ?vcov). 
+Inc-bind munis: 40 (city=8, borough=10, township=22)
+Saved: support_cohort_timing.png
+Warning message:
+In max(dose_muni, na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf
+Saved: support_dose_distribution.png
+
+Dose summary stats: median 0.25pp, mean 0.27pp, range [-0.20, 1.00]
+Saved: support_cell_type_heatmap.png
+Saved: support_stack_coverage.png
+Saved: support_dose_trajectory.png
+
+Done. Five support graphics in figures/.
