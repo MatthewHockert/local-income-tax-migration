@@ -268,17 +268,22 @@ ctrls_sd_pop <- paste(c("pop_weighted_muni_rate", sd_share_ctrls), collapse = " 
 cat("\n--- SD-level stacked-continuous DiD (control: mean muni rate) ---\n")
 results <- list()
 diags <- list()
+controls_out <- list()
 for (o in outcomes) {
   m <- run_sd_headline(stk_sd, o, ctrls_sd)
   if (is.null(m)) next
-  ct <- as.data.table(m$coeftable, keep.rownames = "term")
-  setnames(ct, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
+  ct_all <- as.data.table(m$coeftable, keep.rownames = "term")
+  setnames(ct_all, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"),
            skip_absent = TRUE)
-  ct <- ct[grepl("treat_cell::", term)]
+  ct <- ct_all[grepl("treat_cell::", term)]
   ct[, cell := sub("^.*treat_cell::([^:]+):.*$", "\\1", term)]
   ct[, outcome := o]; ct[, n := nobs(m)]
   results[[o]] <- ct[, .(outcome, cell, est = round(est, 3),
                           se = round(se, 3), p = round(p, 4), n)]
+  cc <- ct_all[!grepl("treat_cell::", term)]
+  if (nrow(cc) > 0)
+    controls_out[[o]] <- data.table(outcome = o, term = cc$term,
+                                      est = cc$est, se = cc$se, p = cc$p)
   diags[[o]] <- data.table(
     outcome = o, n = nobs(m),
     R2 = round(fitstat(m, "r2", simplify = TRUE), 4),
@@ -294,6 +299,9 @@ res_dt[, sig := fifelse(p < 0.01, "***",
 fwrite(res_dt, file.path(out_dir, "sd_level_results.csv"))
 diag_dt <- rbindlist(diags, fill = TRUE)
 fwrite(diag_dt, file.path(out_dir, "sd_level_diagnostics.csv"))
+if (length(controls_out) > 0)
+  fwrite(rbindlist(controls_out, fill = TRUE),
+         file.path(out_dir, "sd_level_controls.csv"))
 
 cat("\n--- SD-level Inc cells, all outcomes ---\n")
 print(res_dt[cell %in% c("Inc-bind","Inc-becomes","Inc-nobind")])

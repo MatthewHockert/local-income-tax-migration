@@ -151,8 +151,9 @@ cat(sprintf("Stack: %s rows; treated blocks %s; NC blocks %s\n",
 #       | block_geoid^stack + year^stack
 #    cluster = ~muni + sd_id
 # ---------------------------------------------------------------------------
-joint_results <- list()
-diagnostics   <- list()
+joint_results  <- list()
+joint_controls <- list()
+diagnostics    <- list()
 for (o in outcomes) {
   cols <- c("block_geoid","year","muni","sd_id","stack",
              "treat_cell_muni","dose_stack","cell_sd","dose_sd",
@@ -178,6 +179,13 @@ for (o in outcomes) {
     n = nobs(m),
     r2  = fitstat(m, "r2",  simplify = TRUE),
     wr2 = fitstat(m, "wr2", simplify = TRUE))
+  # Save control coefficients (non-cell terms) for full-spec appendix table
+  cc <- ct[!grepl("treat_cell_muni::|cell_sd::", term)]
+  if (nrow(cc) > 0) {
+    joint_controls[[length(joint_controls)+1L]] <- data.table(
+      outcome = o, term = cc$term,
+      est = cc$Estimate, se = cc$`Std. Error`, p = cc$`Pr(>|t|)`)
+  }
   dep_vec <- m$residuals + m$fitted.values
   diagnostics[[o]] <- data.table(
     outcome = o, n = nobs(m),
@@ -193,6 +201,10 @@ joint_dt <- rbindlist(joint_results, fill = TRUE)
 fwrite(joint_dt, file.path(out_dir, "block_joint_results.csv"))
 fwrite(rbindlist(diagnostics, fill = TRUE),
        file.path(out_dir, "block_joint_diagnostics.csv"))
+if (length(joint_controls) > 0) {
+  fwrite(rbindlist(joint_controls, fill = TRUE),
+         file.path(out_dir, "block_joint_controls.csv"))
+}
 
 cat("\n--- Joint block-level stacked fully-parameterized results ---\n")
 print(joint_dt[, .(outcome, side, cell, est = round(est,3), se = round(se,3),

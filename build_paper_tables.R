@@ -99,6 +99,117 @@ write_cell_table <- function(coef_csv, diag_csv, side, outcomes, cells,
   cat(sprintf("Wrote %s\n", out_name))
 }
 
+# write_merged_cell_table: muni-side + SD-side from the SAME joint
+# regression in one table, with section headers. Used for appendix tables
+# where the same outcomes are shown for both rate-setters.
+write_merged_cell_table <- function(coef_csv, diag_csv,
+                                      outcomes, cells,
+                                      caption, label_id, out_name,
+                                      short = TRUE, notes = character(0)) {
+  coefs_muni <- read_coefs(coef_csv, side = "muni")
+  coefs_sd   <- read_coefs(coef_csv, side = "sd")
+  if (is.null(coefs_muni) || nrow(coefs_muni) == 0) {
+    cat(sprintf("Skipping %s: source CSV missing\n", out_name)); return(invisible())
+  }
+  diag <- read_diag(diag_csv)
+  short_lab <- short
+  ncols <- length(outcomes)
+  hdr_labels <- outcome_label(outcomes, short = short_lab)
+  hdr <- paste0("Cell & ", paste(hdr_labels, collapse = " & "), " \\\\")
+
+  fmt_one <- function(side_coefs, cells, ncols) {
+    body <- character(0); dropped <- character(0)
+    for (cl in cells) {
+      est_row <- character(ncols); se_row <- character(ncols); any_present <- FALSE
+      for (j in seq_along(outcomes)) {
+        r <- side_coefs[cell == cl & outcome == outcomes[j]]
+        if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
+        stars <- sig_stars(r$p[1])
+        est_str <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+        est_row[j] <- est_str; se_row[j] <- fmt_se(r$se[1])
+        if (est_str != "---") any_present <- TRUE
+      }
+      if (!any_present) { dropped <- c(dropped, cl); next }
+      body <- c(body,
+                paste0("\\textbf{", cl, "} & ", paste(est_row, collapse = " & "), " \\\\"),
+                paste0("                  & ", paste(se_row,  collapse = " & "), " \\\\"))
+    }
+    list(body = body, dropped = dropped)
+  }
+
+  muni_section <- fmt_one(coefs_muni, cells, ncols)
+  sd_section   <- fmt_one(coefs_sd,   cells, ncols)
+  mc <- paste0("\\multicolumn{", ncols + 1, "}{l}")
+
+  body <- c(
+    paste0(mc, "{\\textit{Muni resident rate ($\\tau^M$)}} \\\\"),
+    muni_section$body,
+    "\\midrule",
+    paste0(mc, "{\\textit{School district rate ($\\tau^{SD}$)}} \\\\"),
+    sd_section$body
+  )
+
+  diag_block <- character(0)
+  if (nrow(diag) > 0) {
+    pick <- function(field) {
+      out <- character(ncols)
+      for (j in seq_along(outcomes)) {
+        r <- diag[outcome == outcomes[j]]
+        if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
+        v <- r[[field]][1]
+        if (is.na(v)) { out[j] <- "---"; next }
+        out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
+                   else formatC(v, format = "f", digits = 3)
+      }
+      out
+    }
+    diag_block <- c(
+      paste0(mc, "{\\textit{Diagnostics}} \\\\"),
+      paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
+      paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
+      paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\"),
+      paste0("Dep.\\ mean    & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
+      paste0("Dep.\\ SD      & ", paste(pick("dep_sd"),   collapse = " & "), " \\\\")
+    )
+  }
+
+  col_spec <- paste0("l", strrep("c", ncols))
+  notes_all <- paste(c(notes,
+                        "Both rate-setters enter the same joint regression; the table reports both sets of cell$\\times$dose coefficients.",
+                        if (length(muni_section$dropped) + length(sd_section$dropped) > 0)
+                          paste0("Cells omitted (no estimable coefficients): ",
+                                  paste(unique(c(muni_section$dropped, sd_section$dropped)), collapse = ", "), "."),
+                        "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
+                      collapse = " ")
+  tabular <- c(
+    paste0("  \\begin{tabular}{", col_spec, "}"),
+    "    \\toprule",
+    paste0("    ", hdr),
+    "    \\midrule",
+    paste0("    ", body),
+    if (length(diag_block)) "    \\midrule" else character(0),
+    if (length(diag_block)) paste0("    ", diag_block) else character(0),
+    "    \\bottomrule",
+    "  \\end{tabular}")
+  if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+
+  out <- c(
+    "\\begin{table}[!htbp]",
+    "  \\centering",
+    paste0("  \\caption{", caption, "}"),
+    paste0("  \\label{", label_id, "}"),
+    "  \\footnotesize",
+    "  \\renewcommand{\\arraystretch}{0.9}",
+    tabular,
+    "  \\vspace{0.3em}",
+    "  \\begin{minipage}{0.95\\textwidth}",
+    paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
+    "  \\end{minipage}",
+    "\\end{table}")
+  writeLines(out, file.path(out_dir, out_name))
+  cat(sprintf("Wrote %s\n", out_name))
+}
+
 # ---------------------------------------------------------------------------
 # 1. Headline tables (municipality + SD + block)
 # ---------------------------------------------------------------------------
@@ -186,29 +297,20 @@ write_cell_table(
                "Share outcomes are reported in the appendix.")
 )
 
-## Appendix (share outcomes only)
-write_cell_table(
+## Appendix (share outcomes only) -- merged muni + SD into one table
+write_merged_cell_table(
   coef_csv = file.path(in_dir, "block_joint_results.csv"),
   diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  side     = "muni",
   outcomes = block_outcomes_shares, cells = cells_main,
-  caption  = "Block-level dose-response: muni resident-rate cells (share outcomes, supporting)",
-  label_id = "tab:headline_block_muni_shares",
-  out_name = "headline_block_muni_shares.tex",
+  caption  = "Block-level dose-response: share outcomes, both rate-setters (supporting)",
+  label_id = "tab:headline_block_shares",
+  out_name = "headline_block_shares.tex",
   notes    = c(block_notes,
                "Block-level share outcomes are reported for completeness. Sparse denominators and endogenous denominator dynamics make these estimates mechanically fragile at block geography; they are not used to identify the headline causal effect.")
 )
-write_cell_table(
-  coef_csv = file.path(in_dir, "block_joint_results.csv"),
-  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  side     = "sd",
-  outcomes = block_outcomes_shares, cells = cells_main,
-  caption  = "Block-level dose-response: SD resident-rate cells (share outcomes, supporting)",
-  label_id = "tab:headline_block_sd_shares",
-  out_name = "headline_block_sd_shares.tex",
-  notes    = c(block_notes,
-               "Block-level share outcomes are reported for completeness; not used for headline identification.")
-)
+# Keep the old two-table outputs as empty stubs to preserve any \ref{} resolution
+writeLines("% Superseded by tab:headline_block_shares (merged)", file.path(out_dir, "headline_block_muni_shares.tex"))
+writeLines("% Superseded by tab:headline_block_shares (merged)", file.path(out_dir, "headline_block_sd_shares.tex"))
 
 # ---------------------------------------------------------------------------
 # 2. Realized-dose ES (pre/post ATT)

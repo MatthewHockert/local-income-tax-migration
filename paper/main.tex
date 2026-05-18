@@ -2412,9 +2412,7 @@ use the share-outcome coefficients to identify the headline causal
 effect; the count coefficients in the main text are the preferred
 estimands.
 
-\input{tables/headline_block_muni_shares.tex}
-
-\input{tables/headline_block_sd_shares.tex}
+\input{tables/headline_block_shares.tex}
 
 \subsection{Municipality-level decomposition}
 \label{app:decomp-municipality}
@@ -2593,11 +2591,12 @@ Table~\ref{tab:full-spec} reports all coefficients from the headline
 regression on log live-and-work: municipality rate-setter cells, SD
 cells, nonresident cells, and control coefficients.
 
-\begin{table}[H]
+\begin{table}[!htbp]
     \centering
-    \caption{Full main spec: log(live\_and\_work) on all treatments + controls}
+    \caption{Full main spec: log(live-and-work) on all treatments + controls}
     \label{tab:full-spec}
-    \small
+    \footnotesize
+    \renewcommand{\arraystretch}{0.85}
     \begin{tabular}{lcc}
         \toprule
         Term & Coefficient & SE \\
