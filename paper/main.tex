@@ -870,13 +870,13 @@ the level of total spending.
 
 Municipality-level regressions use six share controls from the DCED
 Annual Financial Report. Three are expenditure shares:
-\texttt{share\_police} (police-services line / total expenditure),
-\texttt{share\_streets} (streets and highways), and
-\texttt{share\_debt\_svc} (debt service: principal and interest
+police-services share (police-services line / total expenditure),
+streets share (streets and highways), and
+debt-service share (debt service: principal and interest
 payments on outstanding general-obligation and revenue debt). Three
-are revenue shares: \texttt{share\_eit} (Earned Income Tax revenue
-collected / total revenue), \texttt{share\_re} (real-estate property
-tax revenue / total revenue), and \texttt{share\_intergov}
+are revenue shares: EIT-revenue share (Earned Income Tax revenue
+collected / total revenue), real-estate-tax share (real-estate property
+tax revenue / total revenue), and intergovernmental-revenue share
 (intergovernmental revenue, which is grant and pass-through revenue
 from state and federal governments---e.g., Liquid Fuels Tax
 distributions, Community Development Block Grants, ARPA transfers---divided
@@ -885,21 +885,21 @@ by total revenue).
 School-district regressions use eight share controls from the
 Census Annual Survey of School System Finances (F-33)
 \citep{censusF33}. Four are revenue shares:
-\texttt{share\_state\_rev\_sd} (state aid: basic education subsidy,
+state-revenue share (state aid: basic education subsidy,
 special-education subsidy, transportation reimbursement, etc.),
-\texttt{share\_local\_rev\_sd} (locally raised revenue: property tax,
-EIT, occupation tax, public-utility taxes), \texttt{share\_federal\_rev\_sd}
+local-revenue share (locally raised revenue: property tax,
+EIT, occupation tax, public-utility taxes), federal-revenue share
 (federal Title~I, IDEA, school-lunch, and other direct or
-pass-through federal aid), and \texttt{share\_property\_tax\_sd}
+pass-through federal aid), and property-tax share
 (real-estate property-tax revenue as a share of total revenue,
-which is a subset of \texttt{share\_local\_rev\_sd} and isolates the
+which is a subset of local-revenue share and isolates the
 SD's primary local-tax lever). Four are expenditure shares:
-\texttt{share\_instructional\_sd} (teacher salaries, classroom
-supplies, instructional staff), \texttt{share\_support\_sd}
+instructional-expenditure share (teacher salaries, classroom
+supplies, instructional staff), support-services share
 (non-instructional operating costs: administration, transportation,
 maintenance, food service, student services),
-\texttt{share\_capital\_sd} (capital outlay---construction,
-renovation, equipment), and \texttt{share\_debt\_int\_sd}
+capital-expenditure share (capital outlay---construction,
+renovation, equipment), and debt-interest share
 (interest payments on the district's outstanding debt; principal
 appears as a capital outlay rather than as a current expense).
 
@@ -2596,12 +2596,12 @@ cells, nonresident cells, and control coefficients.
         Dec-nobind $\times \Delta\tau^{\text{SD}}$       & $+0.048$       & $0.179$ \\
         \midrule
         \multicolumn{3}{l}{\textit{Share-based controls}} \\
-        share\_police                                     & $+0.097$       & $0.100$ \\
-        share\_streets                                    & $+0.049$       & $0.039$ \\
-        share\_debt\_svc                                  & $-0.058$       & $0.051$ \\
-        share\_eit                                        & $-0.022$       & $0.085$ \\
-        share\_re                                         & $-0.182^{**}$  & $0.087$ \\
-        share\_intergov                                   & $+0.016$       & $0.044$ \\
+        police-services share                                     & $+0.097$       & $0.100$ \\
+        streets share                                    & $+0.049$       & $0.039$ \\
+        debt-service share                                  & $-0.058$       & $0.051$ \\
+        EIT-revenue share                                        & $-0.022$       & $0.085$ \\
+        real-estate-tax share                                         & $-0.182^{**}$  & $0.087$ \\
+        intergovernmental-revenue share                                   & $+0.016$       & $0.044$ \\
         \midrule
         \multicolumn{3}{l}{\textit{Diagnostics}} \\
         $N$                                                & \multicolumn{2}{c}{218{,}685} \\
@@ -3565,11 +3565,11 @@ fiscal authority.
 regressions and the municipality rate-setter in block-level regressions, the
 controls are six expenditure and revenue shares constructed from
 the PA DCED Annual Financial Report database \citep{padcedAFR}:
-\texttt{share\_police} (police expenditure / total expenditure),
-\texttt{share\_streets}, \texttt{share\_debt\_svc},
-\texttt{share\_eit} (EIT revenue / total revenue),
-\texttt{share\_re} (real-estate tax revenue / total revenue), and
-\texttt{share\_intergov} (intergovernmental aid / total revenue).
+police-services share (police expenditure / total expenditure),
+streets share, debt-service share,
+EIT-revenue share (EIT revenue / total revenue),
+real-estate-tax share (real-estate tax revenue / total revenue), and
+intergovernmental-revenue share (intergovernmental aid / total revenue).
 The DCED AFR panel covers 2002--2023; I trim to 2002--2019 to
 exclude ARPA-distorted years. Coverage is essentially $100\%$ of
 PA municipalities post-2006, falling to ${\sim}95\%$ in 2002--2005 due to
@@ -3580,11 +3580,11 @@ ES regressions drop municipality-years with missing controls).
 regressions and the SD rate-setter in block-level regressions, the
 controls are eight share variables from the Census Annual Survey of
 School System Finances (F-33) \citep{censusF33}:
-\texttt{share\_state\_rev\_sd}, \texttt{share\_local\_rev\_sd},
-\texttt{share\_federal\_rev\_sd}, \texttt{share\_property\_tax\_sd}
-on the revenue side, and \texttt{share\_instructional\_sd},
-\texttt{share\_support\_sd}, \texttt{share\_capital\_sd},
-\texttt{share\_debt\_int\_sd} on the expenditure side. The F-33
+state-revenue share, local-revenue share,
+federal-revenue share, property-tax share
+on the revenue side, and instructional-expenditure share,
+support-services share, capital-expenditure share,
+debt-interest share on the expenditure side. The F-33
 panel covers $10{,}790$ Pennsylvania SD--year observations across
 $500$ SDs and 2002--2019. The cross-reference between NCES F-33
 \texttt{LEAID} and DCED \texttt{sd\_id} is described in
@@ -3596,7 +3596,7 @@ fiscal posture (via the resident-rate channel) and its school
 district's fiscal posture (via the SD-rate channel).
 
 The block-level controls also include a within-SD aggregate of municipality
-rates (\texttt{mean\_muni\_rate}) when the SD rate-setter portion of the regression
+rates (mean municipality rate) when the SD rate-setter portion of the regression
 is being estimated; this absorbs SD-level variation in the joint
 municipality resident rate that the SD itself does not control.
 
