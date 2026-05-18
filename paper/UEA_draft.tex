@@ -1097,6 +1097,19 @@ coefficients $\beta^{SD}_{\text{Inc}}, \beta^{SD}_{\text{Dec}}$.
 
 \input{tables/pooled_per_pp_block.tex}
 
+The municipality resident-rate Inc coefficient is small and only
+marginally significant on the count outcomes when binding and
+non-binding events are pooled. The Dec coefficient is the larger
+of the two, consistent with the institutional rule's prediction
+that the bill moves on the binding side and bind events
+dominate the Dec cell. The school-district resident rate produces
+null effects in the pooled specification at this level.
+Figure~\ref{fig:pooled_es_block_muni} plots the event-time
+trajectory for each coefficient on the municipality-cohort stack,
+and Figure~\ref{fig:pooled_es_block_sd} reports the analogous
+trajectory on the school-district-cohort stack; both figures
+correspond row-by-row to Table~\ref{tab:pooled_per_pp_block}.
+
 \subsubsection{Municipality level}
 \label{subsubsec:pooled-municipality}
 
@@ -1105,6 +1118,15 @@ pooled coefficients at the municipality level, with the same four
 coefficients of interest per outcome.
 
 \input{tables/pooled_per_pp_cousub.tex}
+
+The municipality-level pooled coefficients are noticeably larger
+than the block-level analogues, because the cousub aggregation
+loads onto the residents who actually move whereas the block
+denominator includes many residents whose own behavior is
+unchanged. The Inc-bind cell decomposition reported below picks
+out the binding sub-events that drive these effects.
+Figure~\ref{fig:pooled_es_muni_only} reports the event-study
+analogue.
 
 \subsubsection{School-district level (brief)}
 \label{subsubsec:pooled-sd}
@@ -1116,6 +1138,15 @@ than at the municipality or block level and the table is included for
 completeness.
 
 \input{tables/pooled_per_pp_sd.tex}
+
+The school-district aggregation produces direction-mixed
+coefficients. Aggregating residents across an entire SD averages
+together workers in the rate-changing municipality (who may move
+out) with workers in non-changing municipalities within the same
+SD (who do not), which dilutes any binding-channel response. The
+pooled SD specification is reported only for completeness.
+Figure~\ref{fig:pooled_es_sd_only} reports the event-study
+analogue.
 
 \subsubsection{Realized-dose ES benchmark diagnostics}
 \label{subsubsec:pooled-es}
