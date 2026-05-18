@@ -838,11 +838,12 @@ write_pooled_table <- function(level_tag, spec_mode, outcomes, caption, label_id
     "  \\end{tabular}")
   if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
   out <- c(
-    "\\begin{table}[H]",
+    "\\begin{table}[!htbp]",
     "  \\centering",
     paste0("  \\caption{", caption, "}"),
     paste0("  \\label{", label_id, "}"),
-    "  \\small",
+    "  \\footnotesize",
+    "  \\renewcommand{\\arraystretch}{0.85}",
     tabular,
     "  \\vspace{0.3em}",
     "  \\begin{minipage}{0.95\\textwidth}",
@@ -993,11 +994,12 @@ write_es_summary <- function(att_csv, row_var, row_levels, outcomes,
     "  \\end{tabular}")
   if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
   out <- c(
-    "\\begin{table}[H]",
+    "\\begin{table}[!htbp]",
     "  \\centering",
     paste0("  \\caption{", caption, "}"),
     paste0("  \\label{", label_id, "}"),
-    "  \\small",
+    "  \\footnotesize",
+    "  \\renewcommand{\\arraystretch}{0.85}",
     tabular,
     "  \\vspace{0.3em}",
     "  \\begin{minipage}{0.95\\textwidth}",
