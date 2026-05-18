@@ -1830,98 +1830,61 @@ jurisdictions are candidate extensions.
 \appendix
 
 %==========================================================
-\section{Full Decomposition Tables}
-\label{app:tables}
+\section{Full Results with Control Coefficients}
+\label{app:full-results}
 %==========================================================
+
+This appendix mirrors Section~\ref{sec:results} table-by-table.
+Each table reports the same cell coefficients as the body table
+plus the fiscal-control coefficients estimated in the same
+regression, with diagnostics.
+
+\subsection{Binding-state decomposition: block level}
+\label{app:full-block}
+
+Block-level full specification. Each block is exposed to one
+municipality and one school district; the regression includes both
+sets of fiscal controls (muni AFR shares and F-33 SD shares).
+Table~\ref{tab:app_full_block_muni_results} reports the
+muni resident-rate cells with controls and
+Table~\ref{tab:app_full_block_sd_results} reports the SD
+resident-rate cells with controls from the same joint regression.
+
+\input{tables/app_full_block_muni_results.tex}
+
+\input{tables/app_full_block_sd_results.tex}
+
+\subsection{Binding-state decomposition: municipality level}
+\label{app:full-muni}
+
+Municipality-level full specification with muni AFR fiscal
+controls. Table~\ref{tab:app_full_muni_cell_results} reports the
+muni resident-rate cells and
+Table~\ref{tab:app_full_muni_sd_side_results} reports the SD
+resident-rate cells from the same joint regression.
+
+\input{tables/app_full_muni_cell_results.tex}
+
+\input{tables/app_full_muni_sd_side_results.tex}
+
+\subsection{Binding-state decomposition: school-district level}
+\label{app:full-sd}
+
+School-district-level full specification with F-33 fiscal
+controls.
+Table~\ref{tab:app_full_sd_cell_results} reports the SD
+resident-rate cells with controls.
+
+\input{tables/app_full_sd_cell_results.tex}
 
 \subsection{Block-level share outcomes}
 \label{app:tables-block-shares}
 
-Block-level share outcomes from the same joint regression, reported for completeness; the share outcomes are mechanically fragile at block geography (see body discussion).
+Block-level share outcomes from the same joint regression, reported
+for completeness; share outcomes are mechanically fragile at block
+geography (see body discussion).
 
-\input{tables/headline_block_muni_shares.tex}
-
-\input{tables/headline_block_sd_shares.tex}
-
-\subsection{Municipality-level: Dec cells + full specification}
-\label{app:tables-municipality-full}
-
-\begin{table}[H]
-    \centering
-    \caption{Headline stacked-continuous DiD: municipality-rate Dec cells.}
-    \label{tab:headline-dec}
-    \small
-    \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lccc}
-        \toprule
-        Outcome & Dec-bind ($n$=11) & Dec-becomes-non ($n$=4) & Dec-nobind ($n$=15) \\
-        \midrule
-        log(live\_and\_work)    & $+0.241^{***}$ (0.078) & $-0.260$ (0.272) & $+0.332^{**}$ (0.165) \\
-        log(in\_commuters)      & $+0.052$ (0.080)       & $+0.496$ (0.339) & $+0.013$ (0.121) \\
-        log(out\_commuters)     & $-0.068$ (0.061)       & $-0.628$ (0.416) & $+0.132$ (0.101) \\
-        log(total\_jobs)        & $+0.111$ (0.073)       & $+0.420$ (0.265) & $+0.022$ (0.116) \\
-        log(total\_residents)   & $-0.056$ (0.043)       & $-0.651$ (0.420) & $+0.135$ (0.099) \\
-        live-in-muni share         & $+0.054^{*}$ (0.030)   & $-0.071$ (0.095) & $+0.012$ (0.030) \\
-        \bottomrule
-    \end{tabular}}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} Same regression as the municipality-level
-        headline decomposition. Cluster-robust SEs by municipality. Dec cells
-        are thin; not used to draw causal conclusions individually.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
-
-\begin{table}[H]
-    \centering
-    \caption{Full municipality-level specification on log(live\_and\_work): all cells + controls.}
-    \label{tab:full-spec}
-    \small
-    \begin{tabular}{lcc}
-        \toprule
-        Term & Coefficient & SE \\
-        \midrule
-        \multicolumn{3}{l}{\textit{Muni resident-rate cells (vs.\ NC$^{\text{muni}}$)}} \\
-        Inc-bind $\times \Delta\tau^{\text{muni}}$       & $-0.573^{***}$ & $0.096$ \\
-        Inc-becomes $\times \Delta\tau^{\text{muni}}$    & $-0.181^{**}$  & $0.072$ \\
-        Inc-nobind $\times \Delta\tau^{\text{muni}}$     & $-0.062$       & $0.169$ \\
-        Dec-bind $\times \Delta\tau^{\text{muni}}$       & $+0.241^{***}$ & $0.078$ \\
-        Dec-becomes-non $\times \Delta\tau^{\text{muni}}$ & $-0.260$      & $0.272$ \\
-        Dec-nobind $\times \Delta\tau^{\text{muni}}$     & $+0.332^{**}$  & $0.165$ \\
-        \midrule
-        \multicolumn{3}{l}{\textit{School district rate cells (vs.\ NC$^{\text{SD}}$)}} \\
-        Inc-bind $\times \Delta\tau^{\text{SD}}$         & $+0.177^{*}$   & $0.099$ \\
-        Inc-becomes $\times \Delta\tau^{\text{SD}}$      & $+0.103$       & $0.090$ \\
-        Dec-bind $\times \Delta\tau^{\text{SD}}$         & $-0.721^{***}$ & $0.191$ \\
-        Dec-becomes-non $\times \Delta\tau^{\text{SD}}$  & $-0.223^{**}$  & $0.109$ \\
-        Dec-nobind $\times \Delta\tau^{\text{SD}}$       & $+0.048$       & $0.179$ \\
-        \midrule
-        \multicolumn{3}{l}{\textit{Share-based controls}} \\
-        police-services share                                     & $+0.097$       & $0.100$ \\
-        streets share                                    & $+0.049$       & $0.039$ \\
-        debt-service share                                  & $-0.058$       & $0.051$ \\
-        EIT-revenue share                                        & $-0.022$       & $0.085$ \\
-        real-estate-tax share                                         & $-0.182^{**}$  & $0.087$ \\
-        intergovernmental-revenue share                                   & $+0.016$       & $0.044$ \\
-        \midrule
-        $N$                                              & \multicolumn{2}{c}{218{,}685} \\
-        $R^2$                                            & \multicolumn{2}{c}{0.964} \\
-        Within $R^2$                                     & \multicolumn{2}{c}{0.0007} \\
-        Dep.\ mean                                       & \multicolumn{2}{c}{3.677} \\
-        Dep.\ SD                                         & \multicolumn{2}{c}{1.934} \\
-        FE                                               & \multicolumn{2}{c}{stack-municipality $+$ stack-year} \\
-        Clusters                                         & \multicolumn{2}{c}{1{,}945 munis} \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.3em}
-    \begin{minipage}{0.92\textwidth}
-        \footnotesize \textit{Notes:} All coefficients from a single
-        regression on log(live\_and\_work). Reference category on each
-        rate-setter is NC. Cluster-robust SEs by municipality.
-        $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
-    \end{minipage}
-\end{table}
+\input{tables/headline_block_shares.tex}
 
 %==========================================================
 \section{Realized-Dose Event Studies, Full Set}
