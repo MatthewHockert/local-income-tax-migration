@@ -279,12 +279,7 @@ write_merged_cell_table <- function(coef_csv, diag_csv,
 # 1. Headline tables (municipality + SD + block)
 # ---------------------------------------------------------------------------
 muni_notes <- c(
-  paste("Continuous stacked-DiD with municipality-by-stack and",
-        "year-by-stack fixed effects; standard errors clustered at the",
-        "municipality level."),
-  paste("Each column is a separate regression on the indicated outcome.",
-        "Both muni-side and SD-side cell$\\times$dose interactions enter",
-        "the same regression; this table reports the muni-side cells.")
+  paste("Stacked-DiD; muni$\\times$stack and year$\\times$stack FE; SE clustered at muni.")
 )
 
 write_cell_table(
@@ -307,19 +302,11 @@ write_cell_table(
   label_id = "tab:headline_muni_sd_side_results",
   out_name = "headline_muni_sd_side_results.tex",
   notes    = c(muni_notes[1],
-               paste("SD-side cell$\\times$dose coefficients from the same",
-                     "regression as the muni-side cell table; the muni-side",
-                     "interaction is partialled out."))
+               "SD-side cells from the same regression as the muni-side table.")
 )
 
 sd_notes <- c(
-  paste("Continuous stacked-DiD with SD-by-stack and year-by-stack fixed",
-        "effects; standard errors clustered at the school-district level.",
-        "Unit of observation is SD$\\times$year."),
-  paste("Binding-cell classification uses the within-SD mean of",
-        "$\\tau^{\\text{nr,muni}}$ as the work-side comparator,",
-        "aggregating the institutional nonresident-rate field over the",
-        "SD's constituent munis.")
+  paste("Stacked-DiD; SD$\\times$stack and year$\\times$stack FE; SE clustered at SD.")
 )
 write_cell_table(
   coef_csv = file.path(in_dir, "sd_level_results.csv"),
@@ -333,10 +320,7 @@ write_cell_table(
 )
 
 block_notes <- c(
-  paste("Continuous stacked-DiD with block-by-stack and year-by-stack fixed",
-        "effects; standard errors two-way clustered at the muni and SD levels."),
-  paste("Each block is exposed to one municipality and one school district;",
-        "both rate-setters' policy variation enters at its native level.")
+  paste("Stacked-DiD; block$\\times$stack and year$\\times$stack FE; SE two-way clustered at muni $+$ SD.")
 )
 ## Main (count outcomes only)
 write_cell_table(

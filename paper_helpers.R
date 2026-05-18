@@ -257,11 +257,8 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   }
   if (length(dropped_cells) > 0) {
     notes <- c(notes,
-               paste0("Rows omitted (no estimable coefficients in any outcome",
-                      " column): ", paste(dropped_cells, collapse = ", "),
-                      ". These cells contain too few units, or all",
-                      " coefficients were dropped for collinearity with the",
-                      " stack-interacted fixed effects."))
+               paste0("Rows omitted (no estimable coefficients): ",
+                      paste(dropped_cells, collapse = ", "), "."))
   }
 
   # Controls block (optional). Adds rows after the cell body.
@@ -323,9 +320,8 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
     }
   }
 
-  note_default <- "Cluster-robust standard errors in parentheses."
-  note_sig     <- "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."
-  note_all     <- paste(c(note_default, notes, note_sig), collapse = " ")
+  note_sig <- "SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."
+  note_all <- paste(c(notes, note_sig), collapse = " ")
 
   # Auto-fit wide tables: if there are >= 4 outcome columns, wrap the
   # tabular in \resizebox{\textwidth}{!} so the table never overflows the
