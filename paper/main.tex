@@ -469,7 +469,7 @@ common identifiers: LEHD/LODES residence--workplace records, keyed by
 Census block, and Pennsylvania EIT rate records, keyed by DCED
 municipality~ID. The bridge is the TIGER~2020 block geometry, which
 nests blocks within county subdivisions (cousubs) by construction. A
-municipality-name crosswalk maps each DCED \texttt{municipality\_id} to its
+municipality-name crosswalk maps each DCED municipality ID to its
 corresponding COUSUBFP, matching $2{,}496$ of $2{,}505$ PA municipalities
 ($99.6\%$). The remaining $9$ are small boroughs that dissolved or
 merged during 2002--2019 and are dropped from the analysis. Appendix
@@ -506,7 +506,7 @@ Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}. School-district
 fiscal controls come from the Census Annual Survey of School System
 Finances (F-33) \citep{censusF33}; the NCES \texttt{LEAID}-to-DCED
-\texttt{sd\_id} crosswalk covers all $500$ Pennsylvania districts
+SD ID crosswalk covers all $500$ Pennsylvania districts
 (see Appendix~\ref{app:data}). Two auxiliary sources support the
 pre-treatment balance and robustness exercises: FBI Uniform Crime
 Reports, Offenses Known and Clearances by Arrest, in the
@@ -844,16 +844,16 @@ unaffected.
 
 Outcomes are run in parallel across counts and shares. The
 municipality-level workplace and residence outcomes are the logs of
-\texttt{live\_and\_work} (residents employed in the municipality),
-\texttt{in\_commuters} (workers in the municipality from elsewhere),
-\texttt{out\_commuters}, \texttt{total\_jobs}, and
-\texttt{total\_residents}, plus the shares of workers living in their
+live-and-work (residents employed in the municipality),
+in-commuters (workers in the municipality from elsewhere),
+out-commuters, total jobs, and
+total residents, plus the shares of workers living in their
 own municipality, of workers who are nonresidents, and of residents working
 outside the municipality. The school-district aggregation uses the same outcomes computed by
 summing block-level LODES counts up to the SD: each block has a
 unique cousub assignment (via the TIGER 2020 block-to-cousub
 crosswalk), each cousub has a primary SD assignment (the modal
-\texttt{sd\_id} in the DCED rate panel; $97.6\%$ of munis are
+SD ID in the DCED rate panel; $97.6\%$ of munis are
 single-SD), and the SD-level outcomes are block sums via this
 two-step block~$\to$~cousub~$\to$~SD path. At the
 block level, outcomes are the log count of workers living in the
@@ -1232,9 +1232,9 @@ AFR shares at the muni level, F-33 SD shares at the SD level, and both
 at the block level. Fixed effects follow the estimating unit, clusters
 follow the underlying rate jurisdiction: muni-by-stack and year-by-stack
 FE with clustering at \texttt{muni} for the cousub spec; SD-by-stack and
-year-by-stack FE with clustering at \texttt{sd\_id} for the SD spec;
+year-by-stack FE with clustering at SD ID for the SD spec;
 block-by-stack and year-by-stack FE with two-way clustering at
-\texttt{muni} and \texttt{sd\_id} for the block spec.
+\texttt{muni} and SD ID for the block spec.
 
 The cousub-level estimate is the headline. Its realized-dose pre-trend
 is the only one that does not reject parallel trends ($\beta_{\text{pre}}
@@ -2290,7 +2290,7 @@ the per-pp benchmark at every level.
 The municipality-level per-pp pooled Inc/Dec specification is
 reported as Table~\ref{tab:pooled_per_pp_cousub} in
 Section~\ref{subsec:results-pooled}. At the municipality level the
-pooled Inc coefficient on \texttt{log(live\_and\_work)} is sizable
+pooled Inc coefficient on log live-and-work is sizable
 and negative; sign-symmetry with the Dec coefficient is partial
 (asymmetric magnitudes), and the residence-side outcomes
 (live-in-muni share, log total residents) move in
@@ -2479,12 +2479,12 @@ Table~\ref{tab:headline-dec}.
 \paragraph{Inc-bind: the binding-cell effect.}
 A 1 percentage-point increase in the municipality resident rate in the Inc-bind
 cell (where the bill rises by the full $\Delta\tau$ for in-municipality residents)
-reduces \texttt{live\_and\_work} by roughly 33 percent (a $-0.57$
-log-point coefficient), \texttt{in\_commuters} by roughly 19 percent
-($-0.21$ log points), \texttt{total\_jobs} by roughly 24 percent
-($-0.27$ log points), and \texttt{total\_residents} by roughly 10
+reduces live-and-work by roughly 33 percent (a $-0.57$
+log-point coefficient), in-commuters by roughly 19 percent
+($-0.21$ log points), total jobs by roughly 24 percent
+($-0.27$ log points), and total residents by roughly 10
 percent ($-0.10$ log points). The dependent variable mean
-on \texttt{log(live\_and\_work)} is 3.68, so the typical municipality has
+on log live-and-work is 3.68, so the typical municipality has
 $e^{3.68} \approx 40$ live-and-work workers; a 1 pp hike at this mean
 predicts $24 \cdot (e^{-0.573} - 1) \approx -10$ live-and-work workers.
 Actual rate hikes in the Inc-bind cell average 0.27 pp, which scales
@@ -2493,8 +2493,8 @@ the predicted effect down to roughly $0.27 \cdot 24 \cdot (e^{-0.573} - 1)
 
 \paragraph{Inc-becomes: the bill-flip cell.}
 Inc-becomes events show smaller but still significant effects: $-0.181$
-on \texttt{live\_and\_work}, $-0.212$ on \texttt{total\_jobs}, $-0.068$
-on \texttt{total\_residents}. The attenuation relative to Inc-bind is
+on live-and-work, $-0.212$ on total jobs, $-0.068$
+on total residents. The attenuation relative to Inc-bind is
 consistent with the bill rising by less than the full $\Delta\tau$ in
 this cell---only the portion of the rate change above the work nonresident
 rate is incident on the worker.
@@ -2568,7 +2568,7 @@ the dependent-variable mean for each headline regression.
 
 \paragraph{Full main specification with control estimates.}
 Table~\ref{tab:full-spec} reports all coefficients from the headline
-regression on \texttt{log(live\_and\_work)}: municipality rate-setter cells, SD
+regression on log live-and-work: municipality rate-setter cells, SD
 cells, nonresident cells, and control coefficients.
 
 \begin{table}[H]
@@ -2640,7 +2640,7 @@ decomposition; the within-SD aggregate of constituent municipality rates
 enters as a control; and SD-level fiscal share controls constructed
 from Census F-33 data control for SD fiscal posture. Binding-state
 classification at the SD level uses the within-SD mean of
-\texttt{muni\_nonres\_eit} (the work-side nonresident rate) as the
+muni nonresident rate (the work-side nonresident rate) as the
 comparator, aggregating the institutional rate field across the SD's
 constituent municipalities (the previous draft used the within-SD mean
 resident rate as a proxy; that proxy has been retired and the cell
@@ -2650,7 +2650,7 @@ labels reproduce essentially unchanged under the corrected definition).
 
 \begin{figure}[H]
   \centering
-  \caption{SD-level realized-dose ES on \texttt{log(live\_and\_work)} by cell.}
+  \caption{SD-level realized-dose ES on log live-and-work by cell.}
   \label{fig:app-sd-es-logLW}
   \includegraphics[width=0.95\textwidth]{../figures/sd_es_log_live_and_work.png}
   \begin{minipage}{0.95\textwidth}
@@ -2661,7 +2661,7 @@ labels reproduce essentially unchanged under the corrected definition).
     SD-resident-rate Inc-bind coefficient is positive in this
     aggregation, sign-reversed relative to the municipality- and block-level
     findings, and the pre-event lead is marginally non-zero on
-    \texttt{log(live\_and\_work)} ($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$). These estimates should not be interpreted as
+    log live-and-work ($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$). These estimates should not be interpreted as
     standalone evidence of an SD-channel residential response.
   \end{minipage}
 \end{figure}
@@ -3017,7 +3017,7 @@ sub-sample and $-0.546^{***}$ in the post-2012 sub-sample---roughly
 a 50\% larger response after Act 32 makes the EIT binding through
 consolidated employer withholding. The same pattern holds on
 the log count of in-commuters ($-0.156$ pre vs $-0.334^{***}$ post),
-\texttt{log(employed residents)} ($-0.098^{**}$ vs $-0.104^{***}$),
+log total residents ($-0.098^{**}$ vs $-0.104^{***}$),
 and the share of workers living in their own municipality ($-0.047^{***}$ vs $-0.040^{***}$). The
 pre-Act-32 Inc-bind effects are non-zero and statistically detectable
 on most outcomes, so the binding-rule mechanism was not entirely
@@ -3108,8 +3108,8 @@ small and large rate hikes within the binding cell.
 
 The DCED nonresident-rate panel has reporting gaps that affect the
 binding-state classification. I run three sample variants: strict
-(drop NA \texttt{muni\_nonres\_eit}), filled (impute
-\texttt{nonres = resident\_eit} when missing, statute-anchored), and
+(drop NA muni nonresident rate), filled (impute
+nonresident = resident rate when missing, statute-anchored), and
 drop-incomplete (keep all years; drop NA at regression time per
 outcome). The headline Inc-bind coefficient on log residents working in own municipality is
 $-0.573^{***}$ in all three samples; the cell is robust to NA-handling
@@ -3443,7 +3443,7 @@ field is parsed as a percentage and converted to a numeric in
 $[0, 5]$.
 
 Municipality identifiers in DCED use the agency's internal
-\texttt{municipality\_id} (six-digit code). The crosswalk to Census
+municipality ID (six-digit code). The crosswalk to Census
 geography uses a name-based match against Census COUSUBFP (county
 subdivision FIPS codes) for the 2020 vintage. Matching proceeds by
 normalized name (lower-case, stripped of suffixes ``borough'',
@@ -3459,7 +3459,7 @@ observed post-2012 value per municipality, on the assumption that a municipality
 nonresident rate is sticky over time.
 
 A parallel scraper (\texttt{reparse\_dced.R}) recovers school
-district name and \texttt{sd\_id} on the DCED rate files, which the
+district name and SD ID on the DCED rate files, which the
 original Python scraper drops; this is needed for the NCES--DCED
 school-district crosswalk used to attach Census F-33 fiscal
 controls. School-district name normalization uses a Jaro--Winkler
@@ -3469,7 +3469,7 @@ manual overrides for districts that changed names entirely during
 the panel (\textsc{KNOCH} $\leftrightarrow$ \textsc{south butler
 co}; \textsc{river valley} $\leftrightarrow$ \textsc{blairsville
 saltsburg}). The final NCES \texttt{LEAID} $\to$ DCED
-\texttt{sd\_id} crosswalk covers $500/500$ Pennsylvania school
+SD ID crosswalk covers $500/500$ Pennsylvania school
 districts.
 
 \subsection{LODES construction}
@@ -3500,8 +3500,8 @@ LODES reports a ``main job'' indicator (\texttt{JT01}) that I use to
 restrict to primary-job employment relationships; secondary jobs and
 federal-government employees (which LODES handles separately) are
 excluded. For each (block, year) the panel records: the count of
-workers living in the block (\texttt{home\_count}), the count of
-workers working in the block (\texttt{work\_count}), the count of
+workers living in the block (home count), the count of
+workers working in the block (work count), the count of
 workers both living and working in the block (and in the block's own
 municipality, after aggregation), and the directional commuter flows used
 in the municipality- and SD-level aggregations.
@@ -3546,7 +3546,7 @@ I do not observe individual workers' PSD codes; LODES is anonymized
 at the block level. I instead infer the (municipality, SD) pair for each
 block by combining the block-to-cousub crosswalk
 (\S\ref{app:data-xwalk}) with a primary-SD assignment per municipality. The
-primary SD per municipality is the modal \texttt{sd\_id} across years from
+primary SD per municipality is the modal SD ID across years from
 the raw DCED rate panel (most municipalities report rates to a single SD
 across the full panel; $97.6\%$ of municipality-years are single-SD). For
 the $2.4\%$ of municipalities that span multiple SDs in DCED records, the
@@ -3587,7 +3587,7 @@ support-services share, capital-expenditure share,
 debt-interest share on the expenditure side. The F-33
 panel covers $10{,}790$ Pennsylvania SD--year observations across
 $500$ SDs and 2002--2019. The cross-reference between NCES F-33
-\texttt{LEAID} and DCED \texttt{sd\_id} is described in
+\texttt{LEAID} and DCED SD ID is described in
 \S\ref{app:data-dced}.
 
 \textbf{Block-level regressions} use both sets of controls
@@ -3710,12 +3710,12 @@ match rate, allowing the reader to track how many units drop at each
 join.
 
 \begin{itemize}
-\item DCED \texttt{municipality\_id} $\to$ Census 2020
+\item DCED municipality ID $\to$ Census 2020
   \texttt{COUSUBFP}: 99.6\% match (name-based, county-keyed,
   normalized-suffix). Unmatched municipalities are smaller boroughs that
   dissolved or merged during 2002--2019; they are dropped, not
   imputed.
-\item NCES F-33 \texttt{LEAID} $\to$ DCED \texttt{sd\_id}: 500/500
+\item NCES F-33 \texttt{LEAID} $\to$ DCED SD ID: 500/500
   PA school districts matched (Jaro--Winkler with abbreviation
   expansion + two manual overrides for fully-renamed districts).
   This is the join that attaches Census F-33 SD finance to the DCED

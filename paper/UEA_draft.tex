@@ -281,6 +281,23 @@ Section~\ref{sec:robustness} shows the binding-cell sorting
 response strengthens (the effect existed prior to Act 32) after Act 32, complementing the
 compliance-response finding.
 
+Figure~\ref{fig:act32_cdf} documents the institutional break at
+Act 32. Before 2012, fewer than 60\% of PA municipalities reported a
+nonresident rate to DCED; after 2012, when consolidated withholding
+made the max-rule mechanically binding, coverage rises sharply.
+This is the pre-/post-Act-32 enforcement break used in the
+heterogeneity test of Section~\ref{subsec:rob-act32}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{../figures/nonres_coverage.png}
+    \caption{Share of PA municipalities reporting a nonresident
+    rate to DCED, by year. The break at 2012 reflects the Act 32
+    requirement that employers withhold at the higher of the home
+    resident and work nonresident rates.}
+    \label{fig:act32_cdf}
+\end{figure}
+
 School districts in Pennsylvania also levy an EIT under Act 511
 \citep{paAct511_1965}, typically at 0.5\% (the other half of the
 standard 1\% cap). Act 1 of 2006 \citep{paAct1_2006} (the Taxpayer
@@ -415,7 +432,7 @@ Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}. School-district
 fiscal controls come from the Census Annual Survey of School System
 Finances (F-33) \citep{censusF33}; the NCES \texttt{LEAID}-to-DCED
-\texttt{sd\_id} crosswalk covers all $500$ school districts. 
+SD ID crosswalk covers all $500$ school districts. 
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
@@ -508,49 +525,6 @@ dose and signed extreme dose can have opposite signs by row; this
 is the empirical reason the headline focuses on the Inc cells and
 the flip-flopper-robustness check is run separately.
 
-Figure~\ref{fig:rate_double_histogram} plots the empirical CDF of
-the three rate variables that enter the piecewise max-rule: the
-municipality resident rate $\tau^M$, the municipality nonresident rate
-$\tau^{nr,M}$, and the home stack $\tau^M + \tau^{SD}$. Under
-Act~511 of 1965 \citep{paAct511_1965}, the combined home-side EIT
-is capped at $1\%$ for ordinary boroughs and townships and is
-conventionally split $0.5\%$ municipal plus $0.5\%$ school district;
-the vast majority of Pennsylvania municipalities sit at this
-statutory default and never adjust. Approximately $121$ of the
-$\sim$2{,}500 municipalities change their resident rate at any
-point in the sample, and most school districts likewise hold at
-$0.5\%$. The ECDF makes this concentration visible: roughly $95\%$
-of municipality-years sit at or below the $0.5\%$ resident-rate
-cap, and the home-stack CDF reaches $\sim 78\%$ by the $1\%$
-combined cap. The long right tails correspond to two policy
-carve-outs: Act~47 distressed cities \citep{paAct47_1987}
-(Pittsburgh-area municipalities, Wilkes-Barre, Hazleton, Johnstown,
-and others) that exceeded the municipality half of the $1\%$ cap, and Act~1
-school districts \citep{paAct1_2006} that converted property-tax
-authority into EIT authority. Philadelphia operates under the
-Sterling Act of 1932 \citep{paSterlingAct_1932} rather than Act~511
-and accordingly sits at the far right of the resident-rate
-distribution. These tail municipalities and school districts
-generate the identifying variation that the binding-state
-decomposition then splits by whether each statutory rate change
-moved the worker's bill.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{../figures/rate_double_histogram.png}
-    \caption{Empirical CDF of Pennsylvania EIT rates, 2002--2019.
-    Each step shows the share of municipality-years at or below a
-    given rate, separately for the municipality resident rate $\tau^{M}$
-    (red), the municipality nonresident rate $\tau^{nr,M}$ (blue), and the
-    home stack $\tau^{M}+\tau^{SD}$ (purple). Dotted reference lines
-    mark the 0.5\% municipality cap and the 1\% combined home-side cap under
-    Act~511 of 1965. Approximately $95\%$ of municipality-years sit
-    at the 0.5\% resident-rate cap and $\sim 78\%$ at the 1\%
-    combined home-stack cap; the long right tails are Act~47
-    distressed cities, Home-Rule cities, and Act~1 school districts.}
-    \label{fig:rate_double_histogram}
-\end{figure}
-
 Figure~\ref{fig:rate_changes_by_year} reports the timing of
 municipal resident-rate changes across the panel. Increases outnumber
 decreases nearly two-to-one overall ($210$ increases vs.~$119$
@@ -568,22 +542,6 @@ political cost of cutting a rate that is now mechanically enforced.
     \label{fig:rate_changes_by_year}
 \end{figure}
 
-Figure~\ref{fig:act32_cdf} documents the institutional break at
-Act 32. Before 2012, fewer than 60\% of PA municipalities reported a
-nonresident rate to DCED; after 2012, when consolidated withholding
-made the max-rule mechanically binding, coverage rises sharply.
-This is the pre-/post-Act-32 enforcement break used in the
-heterogeneity test of Section~\ref{subsec:rob-act32}.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../figures/nonres_coverage.png}
-    \caption{Share of PA municipalities reporting a nonresident
-    rate to DCED, by year. The break at 2012 reflects the Act 32
-    requirement that employers withhold at the higher of the home
-    resident and work nonresident rates.}
-    \label{fig:act32_cdf}
-\end{figure}
 
 % --- Treatment Geography Map ---
 \begin{figure}[H]
@@ -592,81 +550,6 @@ heterogeneity test of Section~\ref{subsec:rob-act32}.
     \caption{Pennsylvania EIT rate changes, 2000--2019. Red =
     increased; blue = decreased; purple = both; grey = no change.}
     \label{fig:pa_map}
-\end{figure}
-
-\subsubsection{Cell counts and stacked-design support}
-\label{subsubsec:cell-counts}
-
-Before turning to the empirical strategy, this subsection documents
-the sample composition of the binding-state decomposition. The
-purpose is twofold: to verify that each cell in
-Section~\ref{sec:strategy} has enough municipalities to identify a
-per-pp coefficient, and to characterize which types of
-Pennsylvania municipalities populate the treated cells---a
-within-state heterogeneity that matters because PA legal-organization
-classes (city, borough, township) have different revenue authorities
-and fiscal-capacity profiles.
-
-Table~\ref{tab:cell-counts} reports the number of unique municipalities
-in each binding-state cell on each rate-setter after the
-NC-purity filter described in Section~\ref{sec:strategy}.
-
-\begin{table}[H]
-    \centering
-    \caption{Cell composition by rate-setter (drop sample, post-NC-fix)}
-    \label{tab:cell-counts}
-    \small
-    \resizebox{\textwidth}{!}{
-    \begin{tabular}{lccccccc}
-        \toprule
-        Side & Inc-bind & Inc-becomes & Inc-nobind & Dec-bind & Dec-becomes-non & Dec-nobind & NC \\
-        \midrule
-        Muni resident ($\tau^{\text{muni}}$) & 24 & 43 & 20  & 4  & 3  & 11  & 1{,}730 \\
-        School district ($\tau^{\text{SD}}$) & 71 & 186 & 11 & --- & 4  & 6   & 1{,}558 \\
-        Muni nonresident ($\tau^{\text{nr}}$) & 23 & 0  & 5   & 30 & 0  & 1   & 1{,}638 \\
-        \bottomrule
-    \end{tabular}
-    }
-    \vspace{0.3em}
-    \begin{minipage}{0.95\textwidth}
-        \footnotesize \textit{Notes:} Cells classified at each municipality's first
-        observed rate event on the relevant rate-setter. Munis with rate changes
-        whose first-event binding state cannot be determined (NA pre-event
-        nonresident rate) are dropped (not pooled with NC). On the nonresident rate-setter, the binding-state labels are inverted: "Inc-nobind" denotes events where the home stack stayed below the nonresident rate (bill paid via nonresident both pre and post), so these are the cells where a nonresident-rate change actually moves the worker bill. The 123 Inc-loses and 16 Dec-gains munis (not shown) are events where the nonresident change pulled the home stack across the binding threshold.
-    \end{minipage}
-\end{table}
-
-The 24 Inc-bind municipalities, when aggregated, are
-disproportionately concentrated in older industrial cities and
-boroughs of Pennsylvania (Wilkes-Barre, Coatesville, Aliquippa,
-Johnstown, Hazleton). Decrease cells are extremely thin (4 Dec-bind,
-3 Dec-becomes-non, 11 Dec-nobind in total), so the
-binding-rule symmetry test between Inc and Dec is not feasible
-under conventional standard-error inference.
-
-The stacked design's identifying support comes from the joint distribution of cohort timing and event-time coverage.
-Figure~\ref{fig:cohort_timing} reports the distribution of municipality-rate
-first-event years for the 24 Inc-bind municipalities. The cohort
-distribution is bimodal: an early spike in 2003--2004 (boroughs and
-townships responding to baseline EIT setup) and a 2006 spike of 10
-units (Act 1 of 2006 enabled SD-rate increases that mechanically
-flipped some municipalities into Inc-bind via the joint
-$\tau^{\text{muni}} + \tau^{\text{SD}}$ stack), with a long tail
-through 2014.
-
-\begin{figure}[H]
-  \centering
-  \caption{Inc-bind first-event year.}
-  \label{fig:cohort_timing}
-  \includegraphics[width=0.85\textwidth]{../figures/support_cohort_timing_agg.png}
-  \begin{minipage}{0.85\textwidth}
-    \footnotesize \textit{Notes:} Counts of Inc-bind municipalities
-    by year of first municipality-rate event, aggregated across municipality
-    classifications. The 2006 spike reflects Act~1 of 2006
-    (school-district EIT authorization), which mechanically flipped
-    some municipalities into the binding cell via the joint home-stack
-    $\tau^{\text{muni}} + \tau^{\text{SD}}$.
-  \end{minipage}
 \end{figure}
 
 %==========================================================
@@ -742,16 +625,16 @@ unaffected.
 
 Outcomes are run in parallel across counts and shares. The
 municipality-level workplace and residence outcomes are the logs of
-\texttt{live\_and\_work} (residents employed in the municipality),
-\texttt{in\_commuters} (workers in the municipality from elsewhere),
-\texttt{out\_commuters}, \texttt{total\_jobs}, and
-\texttt{total\_residents}, plus the shares of workers living in their
+live-and-work (residents employed in the municipality),
+in-commuters (workers in the municipality from elsewhere),
+out-commuters, total jobs, and
+total residents, plus the shares of workers living in their
 own municipality, of workers who are nonresidents, and of residents working
 outside the municipality. The school-district aggregation uses the same outcomes computed by
 summing block-level LODES counts up to the SD: each block has a
 unique cousub assignment (via the TIGER 2020 block-to-cousub
 crosswalk), each cousub has a primary SD assignment (the modal
-\texttt{sd\_id} in the DCED rate panel; $97.6\%$ of munis are
+SD ID in the DCED rate panel; $97.6\%$ of munis are
 single-SD), and the SD-level outcomes are block sums via this
 two-step block~$\to$~cousub~$\to$~SD path. At the
 block level, outcomes are the log count of workers living in the
@@ -809,17 +692,6 @@ distribution of each share variable pooled across municipality-years
 broad on every dimension, so the share controls absorb meaningful
 fiscal heterogeneity without collinearity with the rate-treatment
 variable.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.95\textwidth]{../figures/fiscal_controls_distributions.png}
-  \caption{Distribution of share-based fiscal controls across the
-  Pennsylvania panel, 2002--2019. Top six panels: municipality AFR
-  shares (DCED). Lower eight panels: school-district F-33 shares
-  (Census). Each panel pools all municipality-years (top) or
-  SD-years (bottom) over 2002--2019.}
-  \label{fig:fiscal_controls_distributions}
-\end{figure}
 
 
 \subsection{Pooled Aggregate Specification}
@@ -1091,9 +963,9 @@ AFR shares at the muni level, F-33 SD shares at the SD level, and both
 at the block level. Fixed effects follow the estimating unit, clusters
 follow the underlying rate jurisdiction: muni-by-stack and year-by-stack
 FE with clustering at \texttt{muni} for the cousub spec; SD-by-stack and
-year-by-stack FE with clustering at \texttt{sd\_id} for the SD spec;
+year-by-stack FE with clustering at SD ID for the SD spec;
 block-by-stack and year-by-stack FE with two-way clustering at
-\texttt{muni} and \texttt{sd\_id} for the block spec.
+\texttt{muni} and SD ID for the block spec.
 
 The cousub-level estimate is the headline. Its realized-dose pre-trend
 is the only one that does not reject parallel trends ($\beta_{\text{pre}}
