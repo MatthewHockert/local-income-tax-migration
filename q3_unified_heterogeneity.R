@@ -167,6 +167,14 @@ cat(sprintf("Heterogeneity: dropping %d uncertain munis\n", length(u)))
 panel <- panel[!muni %in% u]
 panel[, cell_muni := droplevels(cell_muni)]
 
+# Strip Dec munis (paper-wide policy).
+dec_cell_set <- c("Dec-bind","Dec-becomes-non","Dec-nobind","Dec-gains")
+dec_munis <- unique(panel[as.character(cell_muni) %in% dec_cell_set, muni])
+cat(sprintf("Heterogeneity: dropping %d Dec munis (paper excludes Dec cells)\n",
+            length(dec_munis)))
+panel <- panel[!muni %in% dec_munis]
+panel[, cell_muni := droplevels(cell_muni)]
+
 # Merge typology
 panel <- merge(panel, type_panel[, .(muni, type)], by = "muni", all.x = TRUE)
 

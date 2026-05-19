@@ -32,6 +32,8 @@ if (!file.exists(cousub_csv) || !file.exists(sd_csv)) {
 cousub <- fread(cousub_csv)[, side := "Municipality"]
 sd_dt  <- fread(sd_csv)[,     side := "School district"]
 es <- rbind(cousub, sd_dt, fill = TRUE)
+# Drop Dec cells (paper now Inc-only)
+es <- es[!grepl("^Dec", cell)]
 
 # Clip event-time window to a sensible band: [-5, +5]
 es <- es[rel >= -5 & rel <= 5]
@@ -45,8 +47,7 @@ es <- rbind(es, ref, fill = TRUE)
 es[, lo := est - 1.96 * se]
 es[, hi := est + 1.96 * se]
 
-cell_levels_main <- c("Inc-bind","Inc-becomes","Inc-nobind",
-                      "Dec-bind","Dec-becomes-non","Dec-nobind")
+cell_levels_main <- c("Inc-bind","Inc-becomes","Inc-nobind")
 es[, cell := factor(cell, levels = cell_levels_main)]
 es[, side := factor(side, levels = c("Municipality","School district"))]
 

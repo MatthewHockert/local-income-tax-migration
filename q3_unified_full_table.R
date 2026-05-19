@@ -173,6 +173,18 @@ u <- Reduce(union, list(unique(panel[cell_muni == "Uncertain", muni]),
                          unique(panel[cell_sd   == "Uncertain", muni]),
                          unique(panel[cell_nr   == "Uncertain", muni])))
 panel <- panel[!muni %in% u]
+
+# Drop Dec munis entirely (paper scope: Inc cells only).
+# Removes any muni whose muni-side OR SD-side classification is in the Dec set;
+# Dec munis are not treated, not controls.
+dec_cells_drop <- c("Dec-bind","Dec-becomes-non","Dec-nobind","Dec-gains")
+dec_munis <- unique(c(panel[cell_muni %in% dec_cells_drop, muni],
+                       panel[cell_sd   %in% dec_cells_drop, muni],
+                       panel[cell_nr   %in% dec_cells_drop, muni]))
+cat(sprintf("Dropping %d Dec munis (%.1f%% of panel).\n",
+            length(dec_munis),
+            100 * length(dec_munis) / uniqueN(panel$muni)))
+panel <- panel[!muni %in% dec_munis]
 panel[, cell_muni := droplevels(cell_muni)]
 panel[, cell_sd   := droplevels(cell_sd)]
 panel[, cell_nr   := droplevels(cell_nr)]

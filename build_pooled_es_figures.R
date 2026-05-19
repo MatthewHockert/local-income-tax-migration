@@ -29,6 +29,7 @@ sd_csv     <- file.path(in_dir, "pooled_es_sd_coefs.csv")
 prep <- function(path, level_tag, side_tag = NA) {
   if (!file.exists(path)) return(NULL)
   d <- fread(path)[, level := level_tag]
+  if ("direction" %in% names(d)) d <- d[direction != "Dec"]
   if (!is.na(side_tag)) d[, side := side_tag]
   # Add reference period at rel = -1 with zero so lines are continuous
   ref_keys <- intersect(c("outcome","direction","level","side"), names(d))
@@ -51,7 +52,7 @@ plot_block_pooled <- function(dt, side_label, color_main, out_path) {
   dt <- copy(dt)
   dt[, lo := est - 1.96 * se]
   dt[, hi := est + 1.96 * se]
-  dt[, direction := factor(direction, levels = c("Inc","Dec"))]
+  dt[, direction := factor(direction, levels = c("Inc"))]
   block_outcomes <- c("log_home_count","log_work_count",
                        "home_in_muni_share","share_work_outside")
   dt[, outcome := factor(outcome, levels = block_outcomes,
@@ -65,10 +66,9 @@ plot_block_pooled <- function(dt, side_label, color_main, out_path) {
     geom_line(linewidth = 0.7) +
     geom_point(size = 1.1) +
     facet_wrap(~ outcome, ncol = 2, scales = "free_y") +
-    scale_color_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
-                        labels = c(Inc = "Pooled Inc",
-                                   Dec = "Pooled Dec")) +
-    scale_fill_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
+    scale_color_manual(values = c(Inc = PAPER_RED),
+                        labels = c(Inc = "Pooled Inc")) +
+    scale_fill_manual(values = c(Inc = PAPER_RED),
                        guide = "none") +
     labs(title = paste0("Block-level pooled realized-dose ES (", side_label, " cohort)"),
          subtitle = "Per-pp coefficient by event-time. Color = direction. 95% confidence ribbons.",
@@ -89,7 +89,7 @@ block_dt <- rbind(block_muni_dt, block_sd_dt, fill = TRUE)
 if (!is.null(block_dt) && nrow(block_dt) > 0) {
   block_dt[, lo := est - 1.96 * se]
   block_dt[, hi := est + 1.96 * se]
-  block_dt[, direction := factor(direction, levels = c("Inc","Dec"))]
+  block_dt[, direction := factor(direction, levels = c("Inc"))]
   block_dt[, side := factor(side, levels = c("Municipality","School district"))]
   block_outcomes <- c("log_home_count","log_work_count",
                       "home_in_muni_share","share_work_outside")
@@ -104,10 +104,9 @@ if (!is.null(block_dt) && nrow(block_dt) > 0) {
     geom_line(linewidth = 0.6) +
     geom_point(size = 1.0) +
     facet_wrap(~ outcome, ncol = 2, scales = "free_y") +
-    scale_color_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
-                        labels = c(Inc = "Pooled Inc",
-                                   Dec = "Pooled Dec")) +
-    scale_fill_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
+    scale_color_manual(values = c(Inc = PAPER_RED),
+                        labels = c(Inc = "Pooled Inc")) +
+    scale_fill_manual(values = c(Inc = PAPER_RED),
                        guide = "none") +
     scale_linetype_manual(values = c(Municipality = "solid",
                                       "School district" = "dotted")) +
@@ -130,7 +129,7 @@ if (!is.null(cousub_dt) && !is.null(sd_dt)) {
   muni_sd <- rbind(cousub_dt, sd_dt, fill = TRUE)
   muni_sd[, lo := est - 1.96 * se]
   muni_sd[, hi := est + 1.96 * se]
-  muni_sd[, direction := factor(direction, levels = c("Inc","Dec"))]
+  muni_sd[, direction := factor(direction, levels = c("Inc"))]
   muni_sd[, level := factor(level, levels = c("Municipality","School district"))]
   muni_outcomes <- c("log_live_and_work","log_in_commuters",
                      "log_total_residents",
@@ -146,10 +145,9 @@ if (!is.null(cousub_dt) && !is.null(sd_dt)) {
     geom_line(linewidth = 0.6) +
     geom_point(size = 1.0) +
     facet_wrap(~ outcome, ncol = 2, scales = "free_y") +
-    scale_color_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
-                        labels = c(Inc = "Pooled Inc",
-                                   Dec = "Pooled Dec")) +
-    scale_fill_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
+    scale_color_manual(values = c(Inc = PAPER_RED),
+                        labels = c(Inc = "Pooled Inc")) +
+    scale_fill_manual(values = c(Inc = PAPER_RED),
                        guide = "none") +
     scale_linetype_manual(values = c(Municipality = "solid",
                                       "School district" = "dotted")) +

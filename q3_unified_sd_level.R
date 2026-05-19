@@ -195,6 +195,13 @@ cat(sprintf("\nDropping %d uncertain SDs\n", length(ucs)))
 sd_panel <- sd_panel[!sd_id %in% ucs]
 sd_panel[, cell_sd := droplevels(cell_sd)]
 
+# Strip Dec SDs from the panel (paper-wide policy: Dec cells excluded).
+dec_cell_set <- c("Dec-bind","Dec-becomes-non","Dec-nobind","Dec-gains")
+dec_sds <- unique(sd_panel[as.character(cell_sd) %in% dec_cell_set, sd_id])
+cat(sprintf("Dropping %d Dec SDs (paper excludes Dec cells)\n", length(dec_sds)))
+sd_panel <- sd_panel[!sd_id %in% dec_sds]
+sd_panel[, cell_sd := droplevels(cell_sd)]
+
 cat("\nSD cell composition (unique SDs):\n")
 print(unique(sd_panel[, .(sd_id, cell_sd)])[, .N, by = cell_sd][order(cell_sd)])
 

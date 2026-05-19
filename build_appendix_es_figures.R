@@ -27,9 +27,8 @@ fig_dir     <- file.path(project_dir, "figures")
 PAPER_RED  <- "#C5283D"
 PAPER_BLUE <- "#1F5673"
 
-# Cell-order matches the institutional taxonomy (Inc before Dec, bind > becomes > nobind)
-cell_levels <- c("Inc-bind","Inc-becomes","Inc-nobind",
-                 "Dec-bind","Dec-becomes-non","Dec-nobind")
+# Cell-order matches the institutional taxonomy (Inc cells only; paper drops Dec)
+cell_levels <- c("Inc-bind","Inc-becomes","Inc-nobind")
 
 make_plot <- function(dt, title_prefix, outcome_val,
                        caption_subtitle, color = PAPER_RED) {

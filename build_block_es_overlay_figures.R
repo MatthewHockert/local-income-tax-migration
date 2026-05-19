@@ -35,6 +35,8 @@ if (!file.exists(sd_csv)) {
 muni_dt <- fread(muni_csv)[, side := "Municipality"]
 sd_dt   <- fread(sd_csv)[,   side := "School district"]
 es <- rbind(muni_dt, sd_dt, fill = TRUE)
+# Drop Dec cells (paper now Inc-only)
+es <- es[!grepl("^Dec", cell)]
 
 # Add the reference period at rel = -1 as a zero point with zero SE so the
 # line is continuous through the event-time window.
@@ -45,8 +47,7 @@ es <- rbind(es, ref, fill = TRUE)
 es[, lo := est - 1.96 * se]
 es[, hi := est + 1.96 * se]
 
-cell_levels_main <- c("Inc-bind","Inc-becomes","Inc-nobind",
-                      "Dec-bind","Dec-becomes-non","Dec-nobind")
+cell_levels_main <- c("Inc-bind","Inc-becomes","Inc-nobind")
 es[, cell := factor(cell, levels = cell_levels_main)]
 es[, side := factor(side, levels = c("Municipality","School district"))]
 

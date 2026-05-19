@@ -1,6 +1,6 @@
 outcome,n,R2,Within_R2,dep_mean,dep_sd
-log_jobs_total,51454,0.9916,0.0018,8.5308,1.1788
-log_jobs_consumer,51454,0.9891,0.0056,7.0462,1.2848
-log_jobs_tradeable,51454,0.9785,0.0017,7.1303,1.3831
-share_consumer,51454,0.9111,0.005,0.245,0.0969
-share_tradeable,51454,0.9035,0.0034,0.2761,0.1241
+log_jobs_total,43463,0.9915,0.0024,8.5264,1.178
+log_jobs_consumer,43463,0.9884,0.0071,7.0435,1.282
+log_jobs_tradeable,43463,0.9781,0.0024,7.1391,1.3807
+share_consumer,43463,0.9089,0.0058,0.2454,0.0974
+share_tradeable,43463,0.9022,0.0041,0.2792,0.1244

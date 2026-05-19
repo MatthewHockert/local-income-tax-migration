@@ -196,8 +196,7 @@ e <- new.env()
 sys.source(file.path(project_dir, "q3_unified_full_table.R"), envir = e)
 panel <- as.data.table(e$panel)
 
-cell_levels_keep <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
-                       "Dec-bind","Dec-becomes-non","Dec-nobind")
+cell_levels_keep <- c("NC","Inc-bind","Inc-becomes","Inc-nobind")
 cell_cnt <- panel[as.character(cell_muni) %in% cell_levels_keep,
                    .(n_muni_year = .N, n_munis = uniqueN(muni)),
                    keyby = .(cell_muni)]
@@ -314,16 +313,14 @@ cat("Saved act32_cdf.png\n")
 # 7. Figure: rate changes by year (red increases above zero, blue decreases below)
 # ---------------------------------------------------------------------------
 rate_yr <- rate[year >= 2002 & year <= 2019 & !is.na(rate_change),
-                .(n_inc = sum(rate_change >  1e-6),
-                  n_dec = sum(rate_change < -1e-6)),
+                .(n_inc = sum(rate_change >  1e-6)),
                 by = year]
 rc_long <- melt(rate_yr, id.vars = "year",
-                measure.vars = c("n_inc","n_dec"),
+                measure.vars = c("n_inc"),
                 variable.name = "direction", value.name = "n")
-rc_long[, n := ifelse(direction == "n_dec", -n, n)]
 rc_long[, direction := factor(direction,
-        levels = c("n_inc","n_dec"),
-        labels = c("Resident-rate increase","Resident-rate decrease"))]
+        levels = c("n_inc"),
+        labels = c("Resident-rate increase"))]
 
 g_rc <- ggplot(rc_long, aes(x = year, y = n, fill = direction)) +
   geom_col(width = 0.75, alpha = 0.9) +
@@ -331,11 +328,10 @@ g_rc <- ggplot(rc_long, aes(x = year, y = n, fill = direction)) +
   geom_vline(xintercept = 2012, linetype = "dashed", color = "grey40") +
   annotate("text", x = 2012.2, y = max(rc_long$n) * 0.9,
            label = "Act 32", hjust = 0, size = 3.5, color = "grey25") +
-  scale_fill_manual(values = c("Resident-rate increase" = PAPER_RED,
-                                "Resident-rate decrease" = PAPER_BLUE),
+  scale_fill_manual(values = c("Resident-rate increase" = PAPER_RED),
                      name = NULL) +
   scale_x_continuous(breaks = seq(2002, 2019, by = 2)) +
-  labs(x = "Year", y = "Number of municipalities (+ increase / − decrease)") +
+  labs(x = "Year", y = "Number of municipalities (resident-rate increase)") +
   theme_paper() +
   theme(legend.position = "bottom")
 ggsave(file.path(fig_dir, "rate_changes_by_year.png"), g_rc,
@@ -434,18 +430,14 @@ label_centroids$muni_lbl <- tools::toTitleCase(tolower(label_centroids$municipal
 pa_outline <- st_union(map_dt)
 
 g_map <- ggplot() +
-  geom_sf(data = map_dt[map_dt$change_type == "No change", ],
+  geom_sf(data = map_dt[map_dt$change_type %in% c("No change","Decreased","Both"), ],
           fill = "grey96", color = "black", linewidth = 0.08) +
   geom_sf(data = map_dt[map_dt$change_type == "Increased", ],
           fill = PAPER_RED, color = "black", linewidth = 0.08, alpha = 0.85) +
-  geom_sf(data = map_dt[map_dt$change_type == "Decreased", ],
-          fill = PAPER_BLUE, color = "black", linewidth = 0.08, alpha = 0.85) +
-  geom_sf(data = map_dt[map_dt$change_type == "Both", ],
-          fill = "#7B2CBF", color = "black", linewidth = 0.08, alpha = 0.85) +
   geom_sf(data = pa_outline, fill = NA, color = "black", linewidth = 0.5) +
   coord_sf() +
   labs(title = NULL,
-       caption = "Red: muni raised resident rate. Blue: lowered. Purple: both directions. Grey: no change.") +
+       caption = "Red: muni raised resident rate at least once. Grey: no qualifying increase.") +
   theme_paper() +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),

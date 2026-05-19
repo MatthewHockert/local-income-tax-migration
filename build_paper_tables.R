@@ -27,8 +27,7 @@ block_outcomes        <- c("log_home_count","log_work_count",
                            "home_in_muni_share")
 block_outcomes_main   <- c("log_home_count","log_work_count")
 block_outcomes_shares <- c("home_in_muni_share")
-cells_main     <- c("Inc-bind","Inc-becomes","Inc-nobind",
-                    "Dec-bind","Dec-becomes-non","Dec-nobind")
+cells_main     <- c("Inc-bind","Inc-becomes","Inc-nobind")
 
 # ---------------------------------------------------------------------------
 # Read + parse helpers (data CSVs come in slightly different formats)
@@ -47,10 +46,15 @@ read_coefs <- function(coef_csv, side = NULL) {
   # the data.table's column scope, becoming `column == column` (always TRUE).
   if (!is.null(side)) {
     .side_arg <- side
+    # Aliases: cousub headline CSV uses term prefixes `treat_cell::` (muni)
+    # and `cell_sd::` (SD); block CSV uses a literal `side` column.
+    term_prefix_alias <- c(muni = "treat_cell", sd = "cell_sd")
     if ("side" %in% names(d)) {
       d <- d[side == .side_arg]
     } else if ("term" %in% names(d)) {
-      d <- d[grepl(paste0("^", .side_arg, "::"), term)]
+      pfx <- if (.side_arg %in% names(term_prefix_alias))
+              term_prefix_alias[[.side_arg]] else .side_arg
+      d <- d[grepl(paste0("^", pfx, "::"), term)]
     }
   }
   # Harmonize coefficient column names
@@ -306,6 +310,17 @@ write_cell_table(
   out_name = "headline_muni_sd_side_results.tex",
   notes    = c(muni_notes[1],
                "SD-side cells from the same regression as the muni-side table.")
+)
+
+# Combined muni + SD coefficients from the same joint regression in one table
+write_merged_cell_table(
+  coef_csv = file.path(in_dir, "headline_full_table.csv"),
+  diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
+  outcomes = muni_outcomes, cells = cells_main,
+  caption  = "Municipality-level dose-response: muni and SD resident-rate cells (joint regression)",
+  label_id = "tab:headline_muni_combined",
+  out_name = "headline_muni_combined.tex",
+  notes    = muni_notes
 )
 
 sd_notes <- c(
@@ -781,7 +796,7 @@ write_pooled_table <- function(level_tag, spec_mode, outcomes, caption, label_id
     body <- c(body,
               paste0("\\textbf{", side_labels[[side_tag]], "} ",
                      paste(rep("&", ncols), collapse = " "), " \\\\"))
-    for (dir in c("Inc","Dec")) {
+    for (dir in c("Inc")) {
       est_row <- character(ncols); se_row <- character(ncols)
       for (j in seq_along(outcomes)) {
         r <- a[side == side_tag & direction == dir & outcome == outcomes[j]]
@@ -823,7 +838,7 @@ write_pooled_table <- function(level_tag, spec_mode, outcomes, caption, label_id
   col_spec <- paste0("l", strrep("c", ncols))
   notes_all <- paste(c(notes,
     paste0("Cluster-robust standard errors in parentheses.",
-           if (has_two_sides) " Each regression includes both rate-setters' direction-pooled treatments jointly; the four reported coefficients are $\\beta^M_{\\text{Inc}}$, $\\beta^M_{\\text{Dec}}$, $\\beta^{SD}_{\\text{Inc}}$, $\\beta^{SD}_{\\text{Dec}}$." else ""),
+           if (has_two_sides) " Each regression includes both rate-setters' direction-pooled Inc treatments jointly; the reported coefficients are $\\beta^M_{\\text{Inc}}$ and $\\beta^{SD}_{\\text{Inc}}$." else ""),
     "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
     collapse = " ")
   tabular <- c(
@@ -1015,7 +1030,7 @@ direction_row <- list(col = "direction", label = "Direction")
 
 write_es_summary(
   att_csv = file.path(in_dir, "pooled_es_block_att.csv"),
-  row_var = direction_row, row_levels = c("Inc","Dec"),
+  row_var = direction_row, row_levels = c("Inc"),
   outcomes = block_outcomes,
   caption  = "Pooled realized-dose event study --- block level (muni-cohort).",
   label_id = "tab:es_pooled_block",
@@ -1024,7 +1039,7 @@ write_es_summary(
 
 write_es_summary(
   att_csv = file.path(in_dir, "pooled_es_block_sd_att.csv"),
-  row_var = direction_row, row_levels = c("Inc","Dec"),
+  row_var = direction_row, row_levels = c("Inc"),
   outcomes = block_outcomes,
   caption  = "Pooled realized-dose event study --- block level (SD-cohort).",
   label_id = "tab:es_pooled_block_sd",
@@ -1033,7 +1048,7 @@ write_es_summary(
 
 write_es_summary(
   att_csv = file.path(in_dir, "pooled_es_cousub_att.csv"),
-  row_var = direction_row, row_levels = c("Inc","Dec"),
+  row_var = direction_row, row_levels = c("Inc"),
   outcomes = muni_outcomes,
   caption  = "Pooled realized-dose event study --- municipality level.",
   label_id = "tab:es_pooled_cousub",
@@ -1041,7 +1056,7 @@ write_es_summary(
 
 write_es_summary(
   att_csv = file.path(in_dir, "pooled_es_sd_att.csv"),
-  row_var = direction_row, row_levels = c("Inc","Dec"),
+  row_var = direction_row, row_levels = c("Inc"),
   outcomes = muni_outcomes,
   caption  = "Pooled realized-dose event study --- school district level.",
   label_id = "tab:es_pooled_sd",

@@ -1159,8 +1159,8 @@ runs the regression on the stacked panel:
 \begin{equation}
 \begin{split}
 Y_{\tilde{i}\tilde{t}} \;=\; \alpha_{\tilde{i}} \;+\; \gamma_{\tilde{t}}
-&+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{muni}}_k \;\Delta\tau^{\text{muni}}_{it} \cdot \mathbf{1}\{\text{cell}^{\text{muni}}_i = k\} \\
-&+ \sum_{k \in \mathcal{C}_{\backslash \text{NC}}} \beta^{\text{SD}}_k  \;\Delta\tau^{\text{SD}}_{it}   \cdot \mathbf{1}\{\text{cell}^{\text{SD}}_i = k\}   \\
+&+ \sum_{k \in \mathcal{C}_{-\text{NC}}} \beta^{\text{muni}}_k \;\Delta\tau^{\text{muni}}_{it} \cdot \mathbf{1}\{\text{cell}^{\text{muni}}_i = k\} \\
+&+ \sum_{k \in \mathcal{C}_{-\text{NC}}} \beta^{\text{SD}}_k  \;\Delta\tau^{\text{SD}}_{it}   \cdot \mathbf{1}\{\text{cell}^{\text{SD}}_i = k\}   \\
 &+ \mathbf{X}'_{it}\boldsymbol{\phi}
 \;+\; \varepsilon_{\tilde{i}\tilde{t}},
 \end{split}
@@ -1168,7 +1168,7 @@ Y_{\tilde{i}\tilde{t}} \;=\; \alpha_{\tilde{i}} \;+\; \gamma_{\tilde{t}}
 \end{equation}
 
 where
-$\mathcal{C}_{\backslash \text{NC}} = \{\text{Inc-bind, Inc-becomes, Inc-nobind, Dec-bind, Dec-becomes-non, Dec-nobind}\}$ is the set of non-NC cells. NC is the omitted reference category on each rate-setter, so for each of the two rate-setters (municipality and SD) the regression estimates six $\beta_k$ coefficients, each interpreted as the dose-response coefficient relative to the NC trend for that rate-setter, holding the other rate-setter's cell $\times$ dose interaction fixed. The unit of observation $\tilde{i}$ in the regression is a (municipality, stack) pair: each treated municipality contributes observations in exactly one stack (its first-event cohort), while each NC municipality contributes observations in every stack. The fixed effect $\alpha_{\tilde{i}}$ is therefore a separate intercept for each (municipality, stack) combination---so a single NC municipality has a different FE in each cohort it appears in---and $\gamma_{\tilde{t}} = \gamma_{(c, t)}$ is a separate calendar-year shock per cohort. The control vector $\mathbf{X}_{it}$ holds the share-based fiscal controls described above. Standard errors are clustered at the underlying municipality, not at the (municipality, stack) level. Cluster-at-municipality is the right choice because the same municipality's outcomes are correlated across the multiple stacks in which it appears as an NC control; the municipality-by-stack FE absorbs the level but not the residual covariance.
+$\mathcal{C}_{-\text{NC}} = \{\text{Inc-bind, Inc-becomes, Inc-nobind, Dec-bind, Dec-becomes-non, Dec-nobind}\}$ is the set of non-NC cells. NC is the omitted reference category on each rate-setter, so for each of the two rate-setters (municipality and SD) the regression estimates six $\beta_k$ coefficients, each interpreted as the dose-response coefficient relative to the NC trend for that rate-setter, holding the other rate-setter's cell $\times$ dose interaction fixed. The unit of observation $\tilde{i}$ in the regression is a (municipality, stack) pair: each treated municipality contributes observations in exactly one stack (its first-event cohort), while each NC municipality contributes observations in every stack. The fixed effect $\alpha_{\tilde{i}}$ is therefore a separate intercept for each (municipality, stack) combination---so a single NC municipality has a different FE in each cohort it appears in---and $\gamma_{\tilde{t}} = \gamma_{(c, t)}$ is a separate calendar-year shock per cohort. The control vector $\mathbf{X}_{it}$ holds the share-based fiscal controls described above. Standard errors are clustered at the underlying municipality, not at the (municipality, stack) level. Cluster-at-municipality is the right choice because the same municipality's outcomes are correlated across the multiple stacks in which it appears as an NC control; the municipality-by-stack FE absorbs the level but not the residual covariance.
 
 The cell coefficient $\beta^s_k$ is the per-pp dose-response of outcome
 $Y$ to a 1 percentage-point change in rate $s$, restricted to municipalities
@@ -2158,7 +2158,7 @@ never-changed-only controls and municipality-by-stack fixed effects, but it
 does not formally model spatial spillovers, so the per-pp
 coefficient is best read as a local displacement elasticity rather
 than a net-migration one. The
-\citet{butts2023DiDSpatialSpillovers} estimator generalizes stacked
+\citet{buttsDifferenceinDifferencesEstimationSpatial2023} estimator generalizes stacked
 DiD to allow for SUTVA violations from spatial spillovers across
 treated units, using an explicit spatial weighting matrix on the
 adjacency graph. Applying it to the PA cousub adjacency graph is
@@ -2166,9 +2166,9 @@ left for future work.
 
 Sixth, I do not currently estimate the headline using the
 heterogeneity-robust continuous-treatment difference-in-differences
-estimator of \citet{deChaisemartin2022Continuous}, which generalizes
+estimator of \citet{dechaisemartinDifferenceinDifferencesEstimatorsTreatments2022}, which generalizes
 the de~Chaisemartin--D'Haultf{\oe}uille framework
-\citep{deChaisemartin2020TWFE, deChaisemartin2023ImperfectPT} to
+\citep{dechaisemartinTwoWayFixedEffects2020, dechaisemartinTwoWayFixedEffects2023} to
 continuously distributed treatments at every period and leverages
 switchers (units that move both up and down in dose) for
 identification. An earlier iteration of this paper used a
@@ -2177,7 +2177,7 @@ block-level analog is computationally prohibitive on the current
 stacked panel ($\sim 21$M block-years $\times$ multiple cohorts) and
 is left for future work. Re-estimating the headline with
 \texttt{did\_multiplegt\_dyn}
-\citep{deChaisemartin2025MultipleGtDyn}---once the package
+\citep{chaisemartinUsingDid_multiplegt_dynEstimate2025}---once the package
 documentation and switcher-based identification at this scale are
 stable---would also let me exploit the rate-decrease (Dec)
 cohorts, currently too thin under conventional cluster-robust

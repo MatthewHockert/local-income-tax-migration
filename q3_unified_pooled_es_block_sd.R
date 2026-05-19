@@ -127,7 +127,7 @@ cat(sprintf("Stack: %s rows; treated %s; NC %s\n",
 
 # 6. Pooled ES per direction
 es_results <- list(); att_results <- list()
-for (direction in c("Inc","Dec")) {
+for (direction in c("Inc")) {
   cat(sprintf("\n=== Pooled %s (SD cohort) ===\n", direction))
   dd_base <- if (direction == "Inc") stk[pool_inc == 1 | is_nc == 1]
              else                    stk[pool_dec == 1 | is_nc == 1]
@@ -159,6 +159,7 @@ for (direction in c("Inc","Dec")) {
     post <- ic[rel >= 0 & rel <= 5]
     pre  <- ic[rel <= -2]
     wp <- wald_pretrend(m, "^rel::-[2-9]")
+    dep_vec <- m$fitted.values + m$residuals
     att_results[[length(att_results)+1L]] <- data.table(
       outcome = o, direction = direction,
       att_post = round(mean(post$est, na.rm = TRUE), 3),
@@ -168,7 +169,11 @@ for (direction in c("Inc","Dec")) {
       wald_pre_stat = round(wp$stat, 3),
       wald_pre_df = wp$df,
       wald_pre_p = round(wp$p, 4),
-      n = nobs(m))
+      n = nobs(m),
+      r2 = round(fitstat(m, "r2", simplify = TRUE), 4),
+      wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean = round(mean(dep_vec, na.rm = TRUE), 3),
+      dep_sd = round(sd(dep_vec, na.rm = TRUE), 3))
     cat(sprintf("post=%.3f pre=%.3f  Wald(%d)=%.2f p=%.4f\n",
                 mean(post$est, na.rm = TRUE),
                 mean(pre$est, na.rm = TRUE),

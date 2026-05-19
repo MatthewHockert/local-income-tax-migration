@@ -24,7 +24,7 @@ setwd(project_dir)
 RUN_DATA_BUILD     <- FALSE
 RUN_DESCRIPTIVES   <- TRUE
 RUN_MAIN_MUNI      <- TRUE
-RUN_MAIN_SD        <- TRUE
+RUN_MAIN_SD        <- FALSE  # SD-as-unit dropped from paper
 RUN_MAIN_BLOCK     <- TRUE
 RUN_HET_ACT32      <- TRUE
 RUN_HET_INDUSTRY   <- TRUE

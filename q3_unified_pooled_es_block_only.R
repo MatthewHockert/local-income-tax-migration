@@ -124,7 +124,7 @@ cat(sprintf("Stack: %s rows; treated %s; NC %s\n",
 
 # 6. Pooled ES per direction (Inc / Dec) per outcome
 es_results <- list(); att_results <- list()
-for (direction in c("Inc","Dec")) {
+for (direction in c("Inc")) {
   cat(sprintf("\n=== Pooled %s ===\n", direction))
   dd_base <- if (direction == "Inc") stk[pool_inc == 1 | is_nc == 1]
              else                    stk[pool_dec == 1 | is_nc == 1]

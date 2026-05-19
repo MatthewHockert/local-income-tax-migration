@@ -167,6 +167,19 @@ panel[, cell_muni := droplevels(cell_muni)]
 panel[, cell_sd   := droplevels(cell_sd)]
 panel[, cell_nr   := droplevels(cell_nr)]
 
+# Strip Dec munis (paper-wide policy: Dec cells excluded).
+dec_cell_set <- c("Dec-bind","Dec-becomes-non","Dec-nobind","Dec-gains")
+dec_munis <- Reduce(union, list(
+  unique(panel[as.character(cell_muni) %in% dec_cell_set, muni]),
+  unique(panel[as.character(cell_sd)   %in% dec_cell_set, muni]),
+  unique(panel[as.character(cell_nr)   %in% dec_cell_set, muni])
+))
+cat(sprintf("Industry: dropping %d Dec munis (paper excludes Dec cells)\n", length(dec_munis)))
+panel <- panel[!muni %in% dec_munis]
+panel[, cell_muni := droplevels(cell_muni)]
+panel[, cell_sd   := droplevels(cell_sd)]
+panel[, cell_nr   := droplevels(cell_nr)]
+
 cat("\ncell_muni counts:\n"); print(unique(panel[, .(muni, cell_muni)])[, .N, by = cell_muni][order(cell_muni)])
 cat("cell_sd counts:\n");   print(unique(panel[, .(muni, cell_sd)])[, .N, by = cell_sd][order(cell_sd)])
 cat("cell_nr counts:\n");   print(unique(panel[, .(muni, cell_nr)])[, .N, by = cell_nr][order(cell_nr)])

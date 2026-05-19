@@ -1,5 +1,5 @@
 outcome,n,R2,Within_R2,dep_mean,dep_sd,fe,se_type
-log_home_count,20050835,0.8595,2e-04,2.2263,1.1862,block_geoid^stack + year^stack,cluster: muni + sd_id
-log_work_count,7388033,0.8655,1e-04,2.3056,1.6438,block_geoid^stack + year^stack,cluster: muni + sd_id
-home_in_muni_share,20050835,0.4382,2e-04,0.1028,0.1581,block_geoid^stack + year^stack,cluster: muni + sd_id
-share_work_outside,20050835,0.4382,2e-04,0.8972,0.1581,block_geoid^stack + year^stack,cluster: muni + sd_id
+log_home_count,18147312,0.8577,3e-04,2.227,1.1872,block_geoid^stack + year^stack,cluster: muni + sd_id
+log_work_count,6695392,0.8648,1e-04,2.305,1.6468,block_geoid^stack + year^stack,cluster: muni + sd_id
+home_in_muni_share,18147312,0.443,2e-04,0.1033,0.1587,block_geoid^stack + year^stack,cluster: muni + sd_id
+share_work_outside,18147312,0.443,2e-04,0.8967,0.1587,block_geoid^stack + year^stack,cluster: muni + sd_id

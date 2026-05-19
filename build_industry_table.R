@@ -15,8 +15,7 @@ out_path <- file.path(project_dir, "paper/tables/industry_cousub.tex")
 
 a <- fread(in_path)
 
-cells <- c("Inc-bind","Inc-becomes","Inc-nobind",
-            "Dec-bind","Dec-becomes-non","Dec-nobind")
+cells <- c("Inc-bind","Inc-becomes","Inc-nobind")
 muni_cols <- paste0("muni_", cells)
 
 outcomes <- c("log_jobs_total","log_jobs_consumer","log_jobs_tradeable",

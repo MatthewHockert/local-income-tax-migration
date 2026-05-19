@@ -91,11 +91,9 @@ run_pooled <- function(direction) {
 
 cat("\nSD pool-Inc:\n")
 r_inc <- run_pooled("Inc")
-cat("\nSD pool-Dec:\n")
-r_dec <- run_pooled("Dec")
 
-fwrite(rbind(r_inc$coefs, r_dec$coefs, fill = TRUE),
+fwrite(r_inc$coefs,
        file.path(out_dir, "pooled_es_sd_coefs.csv"))
-fwrite(rbind(r_inc$att, r_dec$att, fill = TRUE),
+fwrite(r_inc$att,
        file.path(out_dir, "pooled_es_sd_att.csv"))
 cat("\nDone.\n")

@@ -141,9 +141,10 @@ run_one <- function(stk, outcome) {
 
 outcomes <- c("log_live_and_work","log_in_commuters",
               "log_total_residents","share_live_in")
-cat("\n=== Cousub headline (all 40 Inc-bind munis) ===\n")
+n_inc_bind_total <- nrow(treated_incbind)
+cat(sprintf("\n=== Cousub headline (all %d Inc-bind munis) ===\n", n_inc_bind_total))
 res_full <- rbindlist(lapply(outcomes, function(o) run_one(stk_full, o)))
-res_full[, spec := "All 40 Inc-bind munis"]
+res_full[, spec := sprintf("All %d Inc-bind munis", n_inc_bind_total)]
 print(res_full)
 
 cat("\n=== Cousub headline (excluding Act 47 Inc-bind munis) ===\n")
@@ -163,23 +164,29 @@ fmt_coef <- function(est, se, p) {
   sprintf("$%+.3f^{%s}$ (%.3f)", est, stars, se)
 }
 
-tex <- "\\begin{table}[H]
+tex <- sprintf("\\begin{table}[H]
   \\centering
   \\caption{Act~47 robustness: dropping distressed Inc-bind municipalities from the cousub headline}
   \\label{tab:act47_robustness}
   \\small
   \\begin{tabular}{lcc}
     \\toprule
-    Outcome & All 40 Inc-bind & Drop $k$ Act~47 \\\\
+    Outcome & All %d Inc-bind & Drop $k$ Act~47 \\\\
     \\midrule
-"
+", n_inc_bind_total)
+pretty_outcome <- function(o) switch(o,
+  log_live_and_work   = "log live-and-work",
+  log_in_commuters    = "log in-commuters",
+  log_total_residents = "log total residents",
+  share_live_in       = "live-in-muni share",
+  gsub("_", " ", o))
 for (i in seq_along(outcomes)) {
   o <- outcomes[i]
   r_full <- res_full[outcome == o]
   r_drop <- res_a47drop[outcome == o]
   tex <- paste0(tex,
-    sprintf("    \\texttt{%s} & %s & %s \\\\\n",
-            gsub("_","\\\\_", o),
+    sprintf("    %s & %s & %s \\\\\n",
+            pretty_outcome(o),
             fmt_coef(r_full$est, r_full$se, r_full$p),
             fmt_coef(r_drop$est, r_drop$se, r_drop$p)))
 }
@@ -187,8 +194,8 @@ tex <- paste0(tex,
   "    \\bottomrule\n  \\end{tabular}\n",
   "  \\vspace{0.3em}\n",
   "  \\begin{minipage}{0.85\\textwidth}\n",
-  sprintf("    \\footnotesize \\textit{Notes:} Muni-level Inc-bind coefficient on each residence-side outcome, with same FE / cluster / controls as the headline. Column 1 is the headline (all 40 Inc-bind municipalities). Column 2 drops %d Act 47 distressed-designation municipalities from the Inc-bind cohort; the remaining %d Inc-bind municipalities are mostly Home Rule and Boroughs. Cluster-robust SEs in parentheses. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.\n",
-          length(act47_munis_in_panel), 40 - length(act47_munis_in_panel)),
+  sprintf("    \\footnotesize \\textit{Notes:} Muni-level Inc-bind coefficient on each residence-side outcome, with same FE / cluster / controls as the headline. Column 1 is the headline (all %d Inc-bind municipalities). Column 2 drops %d Act 47 distressed-designation municipalities from the Inc-bind cohort; the remaining %d Inc-bind municipalities are mostly Home Rule and Boroughs. Cluster-robust SEs in parentheses. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.\n",
+          n_inc_bind_total, length(act47_munis_in_panel), n_inc_bind_total - length(act47_munis_in_panel)),
   "  \\end{minipage}\n",
   "\\end{table}\n")
 

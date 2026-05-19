@@ -13,35 +13,25 @@
                       & (0.053) \\
     \textbf{Inc-becomes} & -0.035\sym{***} \\
                       & (0.013) \\
-    \textbf{Inc-nobind} & -0.162\sym{***} \\
-                      & (0.030) \\
-    \textbf{Dec-bind} & -0.031 \\
-                      & (0.037) \\
-    \textbf{Dec-becomes-non} & -0.211\sym{***} \\
-                      & (0.032) \\
-    \textbf{Dec-nobind} & -0.009\sym{***} \\
-                      & (0.002) \\
+    \textbf{Inc-nobind} & -0.169\sym{***} \\
+                      & (0.026) \\
     \midrule
     \multicolumn{2}{l}{\textit{School district rate ($\tau^{SD}$)}} \\
-    \textbf{Inc-bind} & 0.008\sym{***} \\
+    \textbf{Inc-bind} & 0.008\sym{**} \\
                       & (0.003) \\
     \textbf{Inc-becomes} & -0.001 \\
                       & (0.006) \\
-    \textbf{Dec-becomes-non} & -0.084\sym{***} \\
-                      & (0.011) \\
-    \textbf{Dec-nobind} & -0.155\sym{***} \\
-                      & (0.027) \\
     \midrule
     \multicolumn{2}{l}{\textit{Diagnostics}} \\
-    $N$           & 20,050,835 \\
-    $R^2$         & 0.438 \\
+    $N$           & 18,147,312 \\
+    $R^2$         & 0.443 \\
     Within $R^2$  & 0.000 \\
     Dep.\ mean    & 0.103 \\
-    Dep.\ SD      & 0.158 \\
+    Dep.\ SD      & 0.159 \\
     \bottomrule
   \end{tabular}
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Stacked-DiD; block$\times$stack and year$\times$stack FE; SE two-way clustered at muni $+$ SD. Block-level share outcomes are reported for completeness. Sparse denominators and endogenous denominator dynamics make these estimates mechanically fragile at block geography; they are not used to identify the headline causal effect. Both rate-setters enter the same joint regression; the table reports both sets of cell$\times$dose coefficients. Cells omitted (no estimable coefficients): Inc-nobind, Dec-bind. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \footnotesize \textit{Notes:} Stacked-DiD; block$\times$stack and year$\times$stack FE; SE two-way clustered at muni $+$ SD. Block-level share outcomes are reported for completeness. Sparse denominators and endogenous denominator dynamics make these estimates mechanically fragile at block geography; they are not used to identify the headline causal effect. Both rate-setters enter the same joint regression; the table reports both sets of cell$\times$dose coefficients. Cells omitted (no estimable coefficients): Inc-nobind. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}
