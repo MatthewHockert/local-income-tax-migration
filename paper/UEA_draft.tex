@@ -908,14 +908,21 @@ NC trend for the same rate-setter. The triple decomposition (municipality $\time
 $\times$ nr) lets us read off, in a single regression: which rate moves
 which outcome, conditional on the municipality's binding state for that rate-setter.
 
-The identifying variation in this design comes from the cross-unit distribution of cumulative rate changes after each unit's first event.
-Figure~\ref{fig:dose_trajectory} traces the mean cumulative
-municipality-resident-rate change (with IQR) of Inc-bind units relative to
-their pre-event baseline. The pre-event window is mechanically flat
-at zero by construction (dose is measured relative to the unit's own
-$c-1$ rate); the post-event window shows the realized cumulative
-$\Delta\tau^{\text{muni}}$ rising to roughly $0.2$ percentage points
-for townships, $0.3$ for boroughs, and $0.4$ for cities by $k = +5$.
+The identifying variation in this design comes from the cross-unit
+distribution of cumulative rate changes after each unit's first
+event. Figure~\ref{fig:dose_trajectory} and Figure~\ref{fig:dose_trajectory_inc_becomes}
+are descriptive: each line plots the cross-muni mean and
+inter-quartile range of cumulative $\Delta\tau$ at each event-time,
+without regression or covariate adjustment. The muni-cohort and
+SD-cohort lines are computed on different muni samples (those in
+the cell on the muni rate vs.\ on the SD rate). Figure~\ref{fig:dose_trajectory}
+traces the mean cumulative municipality-resident-rate change (with
+IQR) of Inc-bind units relative to their pre-event baseline. The
+pre-event window is mechanically flat at zero by construction (dose
+is measured relative to the unit's own $c-1$ rate); the post-event
+window shows the realized cumulative $\Delta\tau^{\text{muni}}$
+rising to roughly $0.2$ percentage points for townships, $0.3$ for
+boroughs, and $0.4$ for cities by $k = +5$.
 Most Inc-bind municipalities experience cumulative changes of
 $0.2$--$0.4$ pp, with a small right tail (Wilkes-Barre and
 Coatesville) at $0.8$--$0.9$ pp. The realized-dose ES diagnostic
