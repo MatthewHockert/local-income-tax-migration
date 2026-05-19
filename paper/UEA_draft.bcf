@@ -2841,20 +2841,18 @@
     <bcf:citekey order="25">padcedAFR</bcf:citekey>
     <bcf:citekey order="26">censusF33</bcf:citekey>
     <bcf:citekey order="27">grahamDESIGNCOMPARISONLODES</bcf:citekey>
-    <bcf:citekey order="28">yangRESPONSIVENESSINCOMELOCAL2017</bcf:citekey>
-    <bcf:citekey order="29">yangRESPONSIVENESSINCOMELOCAL2017</bcf:citekey>
-    <bcf:citekey order="30">bagchiEffectsIntroducingWithholding2022</bcf:citekey>
+    <bcf:citekey order="28">bagchiEffectsIntroducingWithholding2022</bcf:citekey>
+    <bcf:citekey order="29">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
+    <bcf:citekey order="30">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
     <bcf:citekey order="31">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
-    <bcf:citekey order="32">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
-    <bcf:citekey order="33">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
-    <bcf:citekey order="34">callaway2021</bcf:citekey>
-    <bcf:citekey order="34">dechaisemartin2024</bcf:citekey>
-    <bcf:citekey order="35">paAct47_1987</bcf:citekey>
-    <bcf:citekey order="36">butts2023DiDSpatialSpillovers</bcf:citekey>
-    <bcf:citekey order="38">deChaisemartin2022Continuous</bcf:citekey>
-    <bcf:citekey order="40">deChaisemartin2020TWFE</bcf:citekey>
-    <bcf:citekey order="40">deChaisemartin2023ImperfectPT</bcf:citekey>
-    <bcf:citekey order="41">deChaisemartin2025MultipleGtDyn</bcf:citekey>
+    <bcf:citekey order="32">callaway2021</bcf:citekey>
+    <bcf:citekey order="32">dechaisemartin2024</bcf:citekey>
+    <bcf:citekey order="33">paAct47_1987</bcf:citekey>
+    <bcf:citekey order="34">butts2023DiDSpatialSpillovers</bcf:citekey>
+    <bcf:citekey order="36">deChaisemartin2022Continuous</bcf:citekey>
+    <bcf:citekey order="38">deChaisemartin2020TWFE</bcf:citekey>
+    <bcf:citekey order="38">deChaisemartin2023ImperfectPT</bcf:citekey>
+    <bcf:citekey order="39">deChaisemartin2025MultipleGtDyn</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="apa">

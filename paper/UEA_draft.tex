@@ -576,40 +576,40 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
 \label{sec:strategy}
 %==========================================================
 
-I estimate two specifications. The pooled Inc/Dec aggregate
-(\S\ref{subsec:pooled-spec}) collapses all rate-change events at
-each rate-setter into directional indicators, approximating the
-conventional local-tax sorting design. The binding decomposition
-(\S\ref{subsec:stacked-continuous}) subsets each direction into the
-three cells defined in Section~\ref{sec:theory}, isolating the rate
-changes that move the worker's bill from those that do not. Both
-specifications are estimated at three units of observation
-(\S\ref{subsec:three-units}): municipality-year, school-district-year,
-and census-block-year. Pre-trends are tested separately by a
-realized-dose Sun--Abraham event study
+I estimate two specifications using a continuous stacked
+difference-in-differences design. First, I run a pooled Inc/Dec
+aggregate (\S\ref{subsec:pooled-spec}) that collapses all
+rate-change events at each rate-setter into an only-increase group
+and an only-decrease group. Second, I estimate a binding
+decomposition (\S\ref{subsec:stacked-continuous}) that subsets each
+direction into the three cells defined in
+Section~\ref{sec:theory}, isolating the rate changes that move the
+worker's bill from those that do not. Both specifications are
+estimated at three units of observation
+(\S\ref{subsec:three-units}): municipality-year,
+school-district-year, and census-block-year. Pre-trends are tested
+separately by a realized-dose Sun--Abraham event study
 (\S\ref{subsec:pretrend-diagnostics}). Fiscal controls and outcomes
 are introduced in Section~\ref{sec:data}; this section focuses on
-estimating equations, identification logic, and diagnostics.
+estimating equations, identification, and diagnostics.
 
 
 \subsection{Pooled Aggregate Specification}
 \label{subsec:pooled-spec}
 
-Before the binding decomposition I report an aggregate
-specification that pools all six cells per rate-setter into
-two direction tags ($\text{Inc}$ for any rate increase, $\text{Dec}$
-for any rate decrease). The pooled regression is the
-literature-comparable baseline: it answers ``what is the average per-pp
-effect of a municipality-rate hike on residents, ignoring binding state?''
-This is closest in form to the population-elasticity work of
-\citet{yangRESPONSIVENESSINCOMELOCAL2017} on Indiana local income
-taxes. The
-binding decomposition that follows in
-Equation~(\ref{eq:headline}) then explains which sub-population
-of the treated municipality cohort drives the pooled coefficient.
+In this section I report an aggregate specification that pools all
+six cells per rate-setter into two directional groups: $\text{Inc}$
+for any rate increase, $\text{Dec}$ for any rate decrease, with
+$\text{NC}$ never-changers as the omitted reference. The pooled
+regression answers: what is the average per-percentage-point (pp)
+effect of a rate hike on residents, ignoring whether or not the
+hike binds? The binding decomposition that follows in
+Equation~(\ref{eq:headline}) then explains which sub-population of
+the treated municipality cohort drives the pooled coefficient.
 
-For each unit-time observation $(i, t)$ on the stacked panel, define
-the per-pp pooled spec
+For each unit-time observation $(i, t)$ on the stacked panel, the
+per-pp pooled regression is
+
 \begin{equation}
 \begin{split}
 Y_{\tilde i \tilde t} \;=\; \alpha_{\tilde i} \;+\; \gamma_{\tilde t}
@@ -618,39 +618,52 @@ Y_{\tilde i \tilde t} \;=\; \alpha_{\tilde i} \;+\; \gamma_{\tilde t}
 &+ \beta^{SD}_{\text{Inc}}\;\Delta\tau^{SD}_{it}\,\mathbf{1}\!\left\{d^{SD}_{i} = \text{Inc}\right\}
 \;+\; \beta^{SD}_{\text{Dec}}\;\Delta\tau^{SD}_{it}\,\mathbf{1}\!\left\{d^{SD}_{i} = \text{Dec}\right\} \\
 &+ \mathbf{X}'_{it}\boldsymbol{\phi}
-\;+\; \varepsilon_{\tilde i \tilde t},
+\;+\; \varepsilon_{\tilde i \tilde t}.
 \end{split}
 \label{eq:pooled}
 \end{equation}
-where $d^{s}_{i} \in \{\text{NC}, \text{Inc}, \text{Dec}\}$ is the
-direction tag on rate-setter $s \in \{M, SD\}$ (NC is the omitted reference),
-$\Delta\tau^{s}_{it}$ is the cumulative dose defined in
-Section~\ref{subsec:stacked-continuous}, and the fixed effects and
-clustering follow the rule in
+
+\noindent The variables are:
+\begin{itemize}
+  \item[] $Y_{\tilde i \tilde t}$ --- the outcome (e.g.\ log live-and-work workers, or live-in-muni share). Outcomes are defined in Section~\ref{subsec:descriptive}.
+  \item[] $\tilde i = (i, c)$ and $\tilde t = (t, c)$ --- the unit-by-stack and year-by-stack indices. Each treated municipality $i$ appears in exactly one sub-experiment (its first-event cohort $c$); each NC municipality appears in every cohort it overlaps.
+  \item[] $\alpha_{\tilde i}$ --- unit-by-stack fixed effects: a separate intercept for each (municipality, cohort) pair.
+  \item[] $\gamma_{\tilde t}$ --- year-by-stack fixed effects: a separate calendar-year shock per cohort.
+  \item[] $d^{s}_{i} \in \{\text{NC},\text{Inc},\text{Dec}\}$ --- direction tag on rate-setter $s \in \{M, SD\}$; NC is the omitted reference.
+  \item[] $\Delta\tau^{s}_{it}$ --- the rate-change dose for rate-setter $s$ at municipality $i$ in year $t$. The $\Delta$ is a time-difference: $\Delta\tau^{s}_{it} = \tau^{s}_{it} - \tau^{s}_{i, c-1}$, the cumulative change in the rate from the pre-event baseline ($c-1$, one year before the first event) to year $t$, measured in percentage points. It is zero in pre-event years and for NC municipalities, and accumulates with subsequent rate changes (Section~\ref{subsec:stacked-continuous}).
+  \item[] $\mathbf{1}\{\cdot\}$ --- an indicator equal to one when the condition inside the brackets is true and zero otherwise.
+  \item[] $\mathbf{X}_{it}$ --- fiscal share controls. Municipality regressions use six DCED AFR shares (police-services, streets, debt-service, EIT-revenue, real-estate-tax, intergovernmental-revenue); SD regressions use eight F-33 shares; block regressions use both sets simultaneously. Source and construction in Section~\ref{subsec:sources}.
+  \item[] $\boldsymbol{\phi}$ --- coefficient vector on the fiscal controls.
+  \item[] $\varepsilon_{\tilde i \tilde t}$ --- the residual.
+\end{itemize}
+
+\noindent Fixed effects and clustering follow the rule in
 Section~\ref{subsec:three-units}: unit-by-stack and year-by-stack
-fixed effects, with clustering at the policy-jurisdiction level.
+fixed effects, with standard errors clustered at the underlying
+policy-jurisdiction.
 
-The pooled coefficient $\beta^{M}_{\text{Inc}}$ is a weighted average
-of the six cell coefficients for the municipality rate-setter
-(Inc-bind, Inc-becomes, Inc-nobind; with equivalent decomposition for
-Dec). It is interpretable as the elasticity a prior-literature
-specification would recover. The decomposition in
-Section~\ref{subsec:results-block} then reveals that the pooled
-coefficient is dominated by the Inc-bind cell at the block level and
-attenuated toward zero in the Inc-nobind placebo cell---direct evidence
-that the institutional binding rule, not the statutory rate per
-se, drives the response.
+The pooled coefficient $\beta^{M}_{\text{Inc}}$ is a sample-share
+weighted average of the three muni-side cell coefficients
+(Inc-bind, Inc-becomes, Inc-nobind); $\beta^{M}_{\text{Dec}}$ is
+the analogous average over the three Dec cells.
+$\beta^{SD}_{\text{Inc}}$ and $\beta^{SD}_{\text{Dec}}$ are the
+same averages on the school-district rate-setter.
 
-I also report a binary analog of Equation~(\ref{eq:pooled}) in
-which the four per-pp interactions are replaced by four
+I also report a binary analog of Equation~(\ref{eq:pooled}). This
+is the same regression but with the four continuous
+$\Delta\tau^{s}_{it}$ interactions replaced by four
 post-treatment indicators
-$\{\mathrm{everInc}^{M}_{it}, \mathrm{everDec}^{M}_{it},
-\mathrm{everInc}^{SD}_{it}, \mathrm{everDec}^{SD}_{it}\}$, each equal
-to $1$ in the event year and after for the relevant direction on the
-relevant rate-setter. The binary coefficients are comparable to the
-event-study coefficients in Bagchi
-(\citeyear{bagchiEffectsIntroducingWithholding2022}); both versions
-appear together in Section~\ref{subsec:results-block}.
+$\{\mathrm{everInc}^{M}_{it},\, \mathrm{everDec}^{M}_{it},\,
+\mathrm{everInc}^{SD}_{it},\, \mathrm{everDec}^{SD}_{it}\}$, each
+equal to $1$ from the first event onward for the matching
+(rate-setter, direction) pair and $0$ otherwise. The binary version
+loses the per-pp dose information --- a $0.1$pp hike and a $1$pp
+hike both turn the indicator on identically --- but it produces
+coefficients directly comparable to the two-way-fixed-effects
+event-study estimates in
+Bagchi~(\citeyear{bagchiEffectsIntroducingWithholding2022}). Both
+versions are reported together in
+Section~\ref{subsec:results-block}.
 
 \subsection{Binding Decomposition: Stacked Continuous DiD}
 \label{subsec:stacked-continuous}
