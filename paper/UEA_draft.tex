@@ -46,7 +46,7 @@ resident rates and $\tau^{\text{nr,work}}$ is the work-location
 nonresident rate. A statutory rate change only moves the bill when
 the changed side of the max binds. I exploit this structure with a
 continuous stacked difference-in-differences design that decomposes
-each rate event by direction and binding-state transition, generating
+each rate event by direction and binding transition, generating
 a within-design placebo: rate hikes whose post-event home stack
 stays below the nonresident rate (Inc-nobind) do not change the bill
 and should not move residents.
@@ -110,7 +110,7 @@ max-rule mechanically enforced.
 \citet{bagchiEffectsIntroducingWithholding2022} estimates that Act~32 resulted in a $14 \%$ increase in compliance and much higher local revenues. My paper does not analyze compliance but rather estimates
 residential-sorting and provides additional analysis pre-post Act~32.
 
-Beyond contributing to the general literature on local tax rate changes and residential sorting  this paper's methodological contribution is utilizing the piecewise structure of the EIT to generate a binding-state decomposition to test how rate changes that move the tax bill from the non-resident side to resident side and producing a within-design placebo. A statutory rate change moves the worker's bill only when the home stack is on the binding side of the
+Beyond contributing to the general literature on local tax rate changes and residential sorting  this paper's methodological contribution is utilizing the piecewise structure of the EIT to generate a binding decomposition to test how rate changes that move the tax bill from the non-resident side to resident side and producing a within-design placebo. A statutory rate change moves the worker's bill only when the home stack is on the binding side of the
 maximization function, but that same statutory change produces a predicted-null when
 the home stack stays below the work-side nonresident rate. Splitting
 rate-change events by whether or not they are binding isolates
@@ -118,7 +118,7 @@ whose bill actually moves and those whose bill does not. Splitting rate-change e
 The decomposition is implemented at three units of observation
 (municipality, school district, census block) in a continuous stacked
 difference-in-differences design that uses never-changed
-municipalities as the control pool. Section~\ref{sec:theory} formalizes the binding-state cell
+municipalities as the control pool. Section~\ref{sec:theory} formalizes the binding cell
 decomposition and lays out the
 worker-bill differencing function each cell implies.
 
@@ -137,7 +137,7 @@ completeness.
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec:background} describes the institutional setting and
-Act~32. Section~\ref{sec:theory} introduces the six-cell binding-state
+Act~32. Section~\ref{sec:theory} introduces the six-cell binding
 decomposition. Section~\ref{sec:data} describes the downloading and merging of the multiple data sources: LODES, the DCED rate
 panel, and the municipal and school-district controls.
 Section~\ref{sec:strategy} explains the continuous stacked
@@ -178,7 +178,7 @@ available from DCED, and I leave the comparison to property-tax
 sorting as a separate exercise. Across 2002--2019, the panel contains
 210 municipality resident-rate increases, 119 municipality decreases, 611
 school-district increases, and 52 school-district decreases; the
-binding-state breakdown of these events is in
+binding breakdown of these events is in
 Table~\ref{tab:cell_counts_summary}.
 
 Each Pennsylvania municipality has three EIT rates relevant to a
@@ -234,7 +234,7 @@ while keeping the same job at $i$ saves at least the SD rate at $j$:
 the new bill is $\max(\tau^{\text{home}}_{j'}, \tau^{\text{nr}}_i)$,
 which is at most the old bill $\tau^{\text{home}}_j$ minus
 $\tau^{\text{SD}}_j$. The empirical design follows this logic directly: both the treatment
-$\Delta\tau^{\text{muni}}$ and the binding-state classification are
+$\Delta\tau^{\text{muni}}$ and the binding classification are
 built from the worker's home stack. The regressions therefore measure
 sorting in response to the same tax a mover would actually face.
 
@@ -277,7 +277,7 @@ income in the rate-raising municipality, and shifted the de facto incidence
 toward workers. The present paper complements that work by isolating
 the residential-sorting response to the same withholding-enforcement
 regime, exploiting the cross-sectional variation in whether a given
-rate change actually moves the worker's bill (the binding-state
+rate change actually moves the worker's bill (the binding
 decomposition); the pre/post-Act-32 split in
 Section~\ref{sec:robustness} shows the binding-cell sorting
 response strengthens (the effect existed prior to Act 32) after Act 32, complementing the
@@ -329,7 +329,7 @@ implied change in the worker's bill from a single rate event is
 which depends jointly on the direction of the rate change and on
 which side of the max is binding pre- and post-event. This tax difference from pre and post rate changes can
 produce a strong behavioral response, a moderate response, or no
-response at all depending on the binding-state transition.
+response at all depending on the binding transition.
 
 \subsection{Six Cells per Rate-Setter}
 \label{subsec:cells}
@@ -350,7 +350,7 @@ at a time.
 
 For each rate-setter $\tau$, a cell classifies a municipality
 by (i)~the direction of its first rate event in $\tau$ (Increase or
-Decrease) and (ii)~the binding-state transition of its home stack
+Decrease) and (ii)~the binding transition of its home stack
 across that event: stayed-binding, flipped, or stayed-non-binding.
 The cross gives six cells plus a seventh never-changed control pool
 (Table~\ref{tab:cells}). Each municipality therefore carries three
@@ -507,7 +507,7 @@ largest local revenue source meaning it is a change in tax composition rather th
 
 \input{tables/cell_counts_summary.tex}
 
-Table~\ref{tab:cell_counts_summary} reports the binding-state cell
+Table~\ref{tab:cell_counts_summary} reports the binding cell
 assignments on the muni resident-rate side. Of roughly $2{,}500$
 municipalities, $1{,}793$ never change their resident rate and form
 the NC control pool; only $194$ are assigned to any treated cell. The three
@@ -550,7 +550,7 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
 %==========================================================
 
 The empirical framework is a continuous stacked
-difference-in-differences design with binding-state cell decomposition,
+difference-in-differences design with binding cell decomposition,
 estimated on a panel spanning 2002--2019 at three units of observation:
 municipality, school district, and census block. Pre-2002 data are not
 consistently available in LODES; post-2019 years are excluded because
@@ -574,13 +574,13 @@ the cumulative change in the school-district rate. Baseline for each
 is the rate at year $c_i^s - 1$, where $c_i^s$ is unit $i$'s first
 event year on rate-setter $s \in \{\text{municipality, SD}\}$, and cumulative dose
 accumulates with subsequent rate changes within $i$. The work-side
-nonresident rate $\tau^{\text{nr}}$ enters the binding-state
+nonresident rate $\tau^{\text{nr}}$ enters the binding
 classification of cells but is not itself a treatment in the headline
 regression: I focus on the resident-side mechanism and defer the
 work-side behavioral response to a separate analysis.
 
 Each rate-change event is classified by direction
-$\in \{\text{Inc, Dec}\}$ and binding-state transition
+$\in \{\text{Inc, Dec}\}$ and binding transition
 $\in \{\text{bind, becomes, nobind}\}$ to yield the six non-NC cells
 introduced in Section~\ref{subsec:cells}. For each unit $i$ and each
 rate-setter $s$, I locate the first rate event year $c^s_i$ and
@@ -686,8 +686,8 @@ collinearity with the rate-treatment variable.
 \subsection{Pooled Aggregate Specification}
 \label{subsec:pooled-spec}
 
-Before the binding-state decomposition I report an aggregate
-specification that pools all six binding-state cells per rate-setter into
+Before the binding decomposition I report an aggregate
+specification that pools all six binding cells per rate-setter into
 two direction tags ($\text{Inc}$ for any rate increase, $\text{Dec}$
 for any rate decrease). The pooled regression is the
 literature-comparable baseline: it answers ``what is the average per-pp
@@ -695,7 +695,7 @@ effect of a municipality-rate hike on residents, ignoring binding state?''
 This is closest in form to the population-elasticity work of
 \citet{yangRESPONSIVENESSINCOMELOCAL2017} on Indiana local income
 taxes. The
-binding-state decomposition that follows in
+binding decomposition that follows in
 Equation~(\ref{eq:headline}) then explains which sub-population
 of the treated municipality cohort drives the pooled coefficient.
 
@@ -722,7 +722,7 @@ Section~\ref{subsec:three-units}: unit-by-stack and year-by-stack
 fixed effects, with clustering at the policy-jurisdiction level.
 
 The pooled coefficient $\beta^{M}_{\text{Inc}}$ is a weighted average
-of the six binding-state cell coefficients for the municipality rate-setter
+of the six binding cell coefficients for the municipality rate-setter
 (Inc-bind, Inc-becomes, Inc-nobind; with equivalent decomposition for
 Dec). It is interpretable as the elasticity a prior-literature
 specification would recover. The decomposition in
@@ -746,8 +746,8 @@ appear together in Section~\ref{subsec:results-block}.
 \subsection{Binding-State Decomposition: Stacked Continuous DiD}
 \label{subsec:stacked-continuous}
 
-The binding-state decomposition extends the pooled spec by splitting
-each direction tag into its three binding-state cells, and is the
+The binding decomposition extends the pooled spec by splitting
+each direction tag into its three binding cells, and is the
 main estimator of the paper. The construction is stacked continuous
 difference-in-differences. For each rate-setter
 $s \in \{\text{muni},\, \text{SD}\}$ and each cohort year $c$ at
@@ -807,8 +807,8 @@ problem in vanilla TWFE under staggered treatment
 Figure~\ref{fig:design_timeline} sketches the construction. Each
 row is one example municipality. The colored bar is its
 $[c-K, c+K]$ window; the open circle marks its first-event year $c$;
-the cell label on the right is the binding-state classification. The
-six treated examples are one per binding-state cell. The bottom row
+the cell label on the right is the binding classification. The
+six treated examples are one per binding cell. The bottom row
 is the never-changed (NC) control band: every NC municipality
 contributes observations to every treated cohort's
 sub-experiment, in calendar years matching that cohort's window.
@@ -823,7 +823,7 @@ the unobserved pre-event years.
   \caption{Stacked continuous DiD: timeline of example sub-experiments.
   Each row is a municipality; the colored bar is the
   $[c-K,\, c+K]$ window with $K=5$; the open circle marks the
-  first-event year $c$; the cell label gives the binding-state
+  first-event year $c$; the cell label gives the binding
   classification. The bottom (grey) row is the never-changed (NC)
   control pool; in the stacked panel, every NC municipality
   contributes observations to every cohort's window. Municipality
@@ -833,13 +833,13 @@ the unobserved pre-event years.
 
 The stacked-DiD construction follows the negative-weighting fix of
 \citet{goodman-baconDifferenceindifferencesVariationTreatment2021};
-the binding-state cell partitioning is novel and central to the
+the binding cell partitioning is novel and central to the
 design's within-design placebo (Inc-nobind), which the standard
 stacked DiD cannot produce.
 
 Some treated municipalities change rates more than once in 2002--2019, raising a coding question about which event defines the cohort.
 A treated municipality $i$ may have more than one rate-change event over
-the panel. I classify each such municipality by the binding-state transition
+the panel. I classify each such municipality by the binding transition
 of its first event and assign $i$ to the corresponding cell on
 rate-setter $s$. The municipality then appears in exactly one sub-experiment
 (its first-event cohort $c^s_i$), not in subsequent cohorts triggered
@@ -1049,7 +1049,7 @@ block-level log home count in the Inc-bind cell passes the strong
 standard; other outcomes are retained with the caveats appropriate
 to their role.
 
-Section~\ref{sec:results} reports the headline binding-state
+Section~\ref{sec:results} reports the headline binding
 decomposition at each estimating unit and the pooled Inc/Dec
 benchmark. Auxiliary diagnostics (pre/post Act~32 split, Act~47
 exclusion) are in Section~\ref{sec:robustness}.
@@ -1063,7 +1063,7 @@ exclusion) are in Section~\ref{sec:robustness}.
 I report results in two layers. Section~\ref{subsec:results-pooled}
 presents the pooled Inc/Dec benchmark---what a conventional local-tax
 design would recover if it ignored the Pennsylvania max-rule.
-Section~\ref{subsec:results-decomp} reports the binding-state
+Section~\ref{subsec:results-decomp} reports the binding
 decomposition at three levels of aggregation. The block-level
 decomposition is the preferred causal estimate because both
 rate-setting jurisdictions enter at their native geography; the
@@ -1088,7 +1088,7 @@ change without distinguishing whether the rate change moves the
 worker's bill. In Pennsylvania, however, the pooled specification is
 not the structural object of interest. It averages together rate
 changes that raise tax liability (Inc-bind) and rate changes that do
-not (Inc-nobind), and the binding-state decomposition in
+not (Inc-nobind), and the binding decomposition in
 Section~\ref{subsec:results-decomp}
 shows which sub-population of the pooled treated cohort drives each
 coefficient. Cell counts and stacked-design support are reported in
@@ -1267,7 +1267,7 @@ the Inc-nobind placebo cells). At the municipality level the pooled-Inc
 coefficient on the log count of residents working in their own
 municipality is approximately $-0.23$, compared to an Inc-bind cell
 coefficient of $-0.573$. The pooled coefficient is a sample-share
-weighted average of the binding-state cell coefficients; the
+weighted average of the binding cell coefficients; the
 decomposition in Sections~\ref{subsec:results-block}--
 \ref{subsec:results-headline} shows that this aggregate is driven
 almost entirely by Inc-bind, while Inc-nobind delivers the predicted
@@ -1443,7 +1443,7 @@ something other than the binding-rule mechanism at this outcome.
 \label{subsec:results-sd}
 
 Because school district EIT rates also enter the home-side tax
-stack, I estimate the same binding-state decomposition at the
+stack, I estimate the same binding decomposition at the
 school-district level and report the full tables in the Appendix.
 The SD aggregation does not produce robust evidence of residential
 sorting: the SD-rate Inc-bind coefficient on the log count of
@@ -1456,7 +1456,7 @@ an aggregation diagnostic rather than as a second causal treatment
 channel. The substantive conclusion is negative: the sorting
 response is concentrated in municipal resident-rate increases that
 bind, not in school-district rate changes. This is what the
-binding-state mechanism predicts, since municipal rate changes have
+binding mechanism predicts, since municipal rate changes have
 a direct, sharp identity at the home-side stack while SD averaging
 mixes municipal policy environments within the same school district.
 Full SD tables are deferred to the Appendix.
@@ -1465,7 +1465,7 @@ Full SD tables are deferred to the Appendix.
 \label{subsubsec:decomp-es}
 
 The realized-dose event study disaggregates the pooled pre-trend by
-binding-state cell. Table~\ref{tab:es_block_by_cell} reports the
+binding cell. Table~\ref{tab:es_block_by_cell} reports the
 post/pre ATT summary for the per-cell ES at the block level;
 Figure~\ref{fig:block_es_homecount} plots the same coefficients by
 event-time, faceted by cell, and
@@ -1507,13 +1507,13 @@ post-event Inc-bind response is the cell the binding rule predicts.
 \input{tables/es_block_by_cell_summary.tex}
 
 Figure~\ref{fig:block_es_homecount} plots the per-event-time
-coefficients underlying that table, faceted by binding-state cell.
+coefficients underlying that table, faceted by binding cell.
 
 \begin{figure}[H]
   \centering
   \caption{Block-level realized-dose event study on the log count of
            workers living in the block: municipality-cohort (red)
-           and school-district-cohort (blue), faceted by binding-state
+           and school-district-cohort (blue), faceted by binding
            cell.}
   \label{fig:block_es_homecount}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_log_home_count.png}
@@ -1534,7 +1534,7 @@ coefficients underlying that table, faceted by binding-state cell.
   \caption{Block-level realized-dose event study on the share of
            block residents working in their own municipality:
            municipality-cohort (red) and school-district-cohort
-           (blue), faceted by binding-state cell.}
+           (blue), faceted by binding cell.}
   \label{fig:block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
   \begin{minipage}{0.95\textwidth}
@@ -1577,7 +1577,7 @@ walking down monotonically across the post-window.
   \centering
   \caption{Municipality-level realized-dose event study on
            $\log(\text{residents who live and work in the municipality})$,
-           faceted by binding-state cell.}
+           faceted by binding cell.}
   \label{fig:es_realized_muni_live_work}
   \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_live_and_work.png}
   \begin{minipage}{0.95\textwidth}
@@ -1744,7 +1744,7 @@ municipalities; the point estimates are direction-preserving and
 similar in magnitude (live-and-work moves from $-0.41$ to $-0.33$,
 share-live-in from $-0.048$ to $-0.038$), with standard errors
 roughly doubling as expected from a 23\% sample reduction. The
-binding-state mechanism is therefore not a relabelling of Act~47
+binding mechanism is therefore not a relabelling of Act~47
 fiscal distress, though the municipality-level coefficient is identified
 off a treated set that includes substantial Act~47 weight.
 
@@ -1755,7 +1755,7 @@ well-identified, the block-level share outcome
 the binding cell ($-0.035$, $p = 0.26$) and marginally significant
 in the Inc-nobind placebo ($-0.037$, $p = 0.015$). The share outcome
 at block scale appears to reflect mechanical denominator dynamics on
-very small populations rather than binding-state-specific behavior,
+very small populations rather than binding-specific behavior,
 so the share-based block evidence should be read as suggestive
 rather than identified. The count-based block evidence remains the
 cleanest test. Second, the school-district aggregation produces
@@ -1773,10 +1773,10 @@ Fourth, the paper estimates the residential-sorting response to the
 home-side resident rate but does not separately estimate the
 work-side response to the municipality nonresident rate ($\tau^{\text{nr}}$).
 The nonresident rate enters the design only through the
-binding-state classification of cells. A complementary work-side
+binding classification of cells. A complementary work-side
 specification---estimating in-commuter and total-jobs responses to
 $\tau^{\text{nr}}$ events at the municipality level, with a parallel
-binding-state decomposition---would test the workplace-side
+binding decomposition---would test the workplace-side
 response separately. I defer this to a separate paper.
 
 Fifth, the design treats each treated municipality's stack as if
@@ -1870,7 +1870,7 @@ $19\%$, with a clean realized-dose pre-trend
 Inc-nobind placebo, where the same statutory increase does not move
 the bill, is statistically null on the same count outcome. The
 response is therefore tied to tax liability rather than to the
-statutory rate change itself, and the binding-state decomposition
+statutory rate change itself, and the binding decomposition
 is what distinguishes the two.
 
 Municipality-level estimates are larger ($-0.57$ log points on the
@@ -1884,7 +1884,7 @@ small Inc-bind sample.
 
 The narrow, credible claim is that local income taxes cause
 residential sorting when they bind. The same design framework---a
-continuous stacked DiD with binding-state cell decomposition, a
+continuous stacked DiD with binding cell decomposition, a
 realized-dose event study as a strong-parallel-trends diagnostic,
 and a within-design placebo cell whose theoretical prediction is
 zero---is portable to other settings where a piecewise tax rule
@@ -2039,7 +2039,7 @@ analogues are here.
 \begin{figure}[H]
   \centering
   \caption{Block-level realized-dose ES on $\log(\text{work count})$
-           (in-block jobs), faceted by binding-state cell;
+           (in-block jobs), faceted by binding cell;
            municipality-cohort (red) and SD-cohort (blue).}
   \label{fig:app_block_es_workcount}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_log_work_count.png}
@@ -2049,7 +2049,7 @@ analogues are here.
   \centering
   \caption{Block-level realized-dose ES on the share of block
            residents working in their own municipality, faceted by
-           binding-state cell.}
+           binding cell.}
   \label{fig:app_block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
 \end{figure}
