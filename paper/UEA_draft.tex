@@ -508,32 +508,21 @@ largest local revenue source meaning it is a change in tax composition rather th
 \input{tables/cell_counts_summary.tex}
 
 Table~\ref{tab:cell_counts_summary} reports the binding-state cell
-assignments on the muni resident-rate side. Of $\sim 2{,}500$
+assignments on the muni resident-rate side. Of roughly $2{,}500$
 municipalities, $1{,}793$ never change their resident rate and form
-the NC control pool; only $194$ are assigned to any treated cell,
-which is the thin tail that carries identification. The three
-increase cells split as $24$ Inc-bind ($\bar{\Delta\tau}=0.19$pp at
-$k=+5$, max $1.50$pp), $43$ Inc-becomes ($\bar{\Delta\tau}=0.34$pp,
-max $4.33$pp driven by Philadelphia), and $20$ Inc-nobind
-($\bar{\Delta\tau}=0.27$pp). Inc-becomes carries a larger average
-dose than Inc-bind because crossing the binding threshold typically
-requires a bigger statutory move than ratcheting up an already-binding
-rate. The decrease cells are thin --- $11$ Dec-bind, $4$
-Dec-becomes-non, $15$ Dec-nobind --- and the Extreme dose column
-reports the most-negative point of the cumulative path in the 5-year
-window. Some Dec munis reverse direction within that window (an
-initial decrease later followed by an increase), so signed mean
-dose and signed extreme dose can have opposite signs by row; this
-is the empirical reason the headline focuses on the Inc cells and
-the flip-flopper-robustness check is run separately.
+the NC control pool; only $194$ are assigned to any treated cell. The three
+increase cells split as $24$ Inc-bind $43$ Inc-becomes, and $20$ Inc-nobind. Inc-becomes shows a larger average
+dose than Inc-bind because indicating that crossing the binding threshold typically
+requires a bigger statutory move than slowly intching up an already-binding
+rate. The decrease cells are thin ($4$ Dec-bind, $3$
+Dec-becomes-non, and $11$ Dec-nobind). Because of this the decreasing only municipalities generally are not reliable estimates in the results section.
 
 Figure~\ref{fig:rate_changes_by_year} reports the timing of
 municipal resident-rate changes across the panel. Increases outnumber
 decreases nearly two-to-one overall ($210$ increases vs.~$119$
-decreases over 2002--2019), and the gap widens further after Act~32
-took effect in 2012: roughly $80\%$ of post-2012 rate-change events
-are increases, consistent with consolidated withholding raising the
-political cost of cutting a rate that is now mechanically enforced.
+decreases over 2002--2019), and the gap does not seem to widen after Act~32
+took effect in 2012 but the majority of the post-2012 rate-change events
+are increases.
 
 \begin{figure}[H]
     \centering
@@ -544,6 +533,7 @@ political cost of cutting a rate that is now mechanically enforced.
     \label{fig:rate_changes_by_year}
 \end{figure}
 
+Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate changers in my sample. Most rate changers occur along the east coast but some are also scattered within the interior of the state.
 
 % --- Treatment Geography Map ---
 \begin{figure}[H]
@@ -939,12 +929,24 @@ on eventual treatment intensity.
   \includegraphics[width=0.85\textwidth]{../figures/support_dose_trajectory_muni_vs_sd.png}
   \begin{minipage}{0.85\textwidth}
     \footnotesize \textit{Notes:} Mean and inter-quartile range of
-    cumulative dose by relative event-time $k$, separately for the
-    municipality cohort (red, $\Delta\tau^{\text{muni}}_{it}$
-    relative to baseline $\tau^{\text{muni}}_{i, c-1}$) and the
-    school-district cohort (blue, $\Delta\tau^{\text{SD}}_{it}$
-    relative to $\tau^{\text{SD}}_{i, c-1}$). Pre-event values are
-    zero by construction.
+    cumulative dose by relative event-time $k$. The municipality
+    cohort (red) reaches a mean of $0.24$ pp at $k=+5$; the
+    school-district cohort (blue) reaches $0.65$ pp. Pre-event
+    values are zero by construction.
+  \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{Cumulative Inc-becomes dose by event-time: municipality cohort vs.\ school-district cohort.}
+  \label{fig:dose_trajectory_inc_becomes}
+  \includegraphics[width=0.85\textwidth]{../figures/support_dose_trajectory_inc_becomes.png}
+  \begin{minipage}{0.85\textwidth}
+    \footnotesize \textit{Notes:} As in Figure~\ref{fig:dose_trajectory}
+    but for the Inc-becomes cell, where the home stack flips from
+    non-binding to binding at the first event. Mean cumulative
+    $\Delta\tau$ at $k=+5$ is $0.41$ pp on the municipality cohort
+    and roughly $0.78$ pp on the school-district cohort.
   \end{minipage}
 \end{figure}
 
@@ -1370,22 +1372,43 @@ The SD-rate cells from the same municipality-level regression are reported below
 
 \input{tables/headline_muni_sd_side_results.tex}
 
-The municipality-level Inc-bind coefficient on the log count of
-residents working in their own municipality is $-0.573^{***}$,
-larger in absolute value than the block-level coefficient on the
-log count of workers living in the block ($-0.340^{***}$). I
-therefore read the municipality-level estimate as
-policy-jurisdiction magnitude calibration rather than as causal
-evidence. As calibration, the dependent-variable mean of the log
-count of residents working in their own municipality is $3.68$, so
-the typical municipality has $e^{3.68} \approx 40$ live-and-work
-workers. A 1 pp Inc-bind hike implies
-$24\cdot (e^{-0.573} - 1) \approx -10$ workers at the municipality-level
-coefficient and $24\cdot (e^{-0.340} - 1) \approx -7$ workers at
-the cleaner block-level coefficient. Actual Inc-bind hikes average
-0.27 pp. The municipality-level estimate is a coarser calibration
-of the magnitude implied by the block-level estimate, and the two
-directionally agree.
+The municipality-level Inc-bind estimates have clean realized-dose
+pre-trends on the two count outcomes (log live-and-work,
+$\beta_{\text{pre}}=-0.073$, Wald $p=0.33$; log in-commuters,
+$\beta_{\text{pre}}=+0.118$, Wald $p=0.73$) and are the load-bearing
+causal claim in the paper. Translating to a typical event: the
+mean cumulative resident-rate increase at $k=+5$ for the $24$
+Inc-bind municipalities is $0.24$ pp (Figure~\ref{fig:dose_trajectory},
+red line). At that typical dose, the Inc-bind coefficient on
+log live-and-work implies a $0.24\times(-0.573)=-0.14$ log-point
+change, or $e^{-0.14}-1\approx -13\%$ in residents who both live
+and work in their own municipality. The dependent-variable mean of
+$3.66$ on the log scale corresponds to about $e^{3.66}\approx 39$
+workers in the typical municipality, so a $13\%$ drop is roughly
+$5$ fewer live-and-work workers per Inc-bind municipality over five
+years. The same scaling on log in-commuters
+($\beta=-0.421$) implies $-10\%$ in-commuters, or about $33$ fewer
+in-commuters relative to a typical baseline of $e^{5.84}\approx 343$.
+
+Two additional Inc-bind coefficients are statistically significant
+but fail the strict pre-trend test and so do not carry the same
+causal weight: log total residents ($-0.104^{**}$,
+Wald $p=0.003$) and the share of workers living in their own
+municipality ($-0.057^{***}$, Wald $p=0.003$). Both point in the
+direction predicted by the binding-rule mechanism but the
+pre-event lead coefficients are non-zero, so I do not translate
+these into typical-event magnitudes.
+
+The Inc-becomes cell produces statistically significant coefficients
+on the same two log count outcomes ($-0.239^{***}$ on log
+live-and-work; $-0.247^{***}$ on log in-commuters), but the
+realized-dose pre-trend on both fails the parallel-trends test
+(Wald $p=0.0003$ and $p=0.0084$ respectively). The mean cumulative
+Inc-becomes dose at $k=+5$ is $0.41$ pp
+(Figure~\ref{fig:dose_trajectory_inc_becomes}), so a typical-event
+calculation would deliver larger magnitudes than the Inc-bind cell
+purely from the bigger dose; I do not report those numbers because
+the pre-trend failure rules out a causal interpretation.
 
 % Full municipality-level Inc/Dec coefficient tables, per-outcome
 % diagnostics, and the full main-spec control-coefficient table are
