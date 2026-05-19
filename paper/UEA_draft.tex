@@ -118,7 +118,7 @@ whose bill actually moves and those whose bill does not. Splitting rate-change e
 The decomposition is implemented at three units of observation
 (municipality, school district, census block) in a continuous stacked
 difference-in-differences design that uses never-changed
-municipalities as the control pool. Section~\ref{sec:theory} formalizes the binding cell
+municipalities as the control pool. Section~\ref{sec:theory} formalizes the binding decomposition
 decomposition and lays out the
 worker-bill differencing function each cell implies.
 
@@ -507,7 +507,7 @@ largest local revenue source meaning it is a change in tax composition rather th
 
 \input{tables/cell_counts_summary.tex}
 
-Table~\ref{tab:cell_counts_summary} reports the binding cell
+Table~\ref{tab:cell_counts_summary} reports the cell
 assignments on the muni resident-rate side. Of roughly $2{,}500$
 municipalities, $1{,}793$ never change their resident rate and form
 the NC control pool; only $194$ are assigned to any treated cell. The three
@@ -533,7 +533,7 @@ are increases.
     \label{fig:rate_changes_by_year}
 \end{figure}
 
-Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate changers in my sample. Most rate changers occur along the east coast but some are also scattered within the interior of the state.
+Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate changers in my sample. Most rate changers occur along the east coast, but some are also scattered within the interior of the state. This spatial distribution highlights the value of future work to understand the effects when two neighboring municipalities raise or lower rates across time, which is left for future research. 
 
 % --- Treatment Geography Map ---
 \begin{figure}[H]
@@ -550,7 +550,7 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
 %==========================================================
 
 The empirical framework is a continuous stacked
-difference-in-differences design with binding cell decomposition,
+difference-in-differences design with binding decomposition,
 estimated on a panel spanning 2002--2019 at three units of observation:
 municipality, school district, and census block. Pre-2002 data are not
 consistently available in LODES; post-2019 years are excluded because
@@ -558,7 +558,7 @@ COVID disrupted commuting patterns and ARPA fiscal transfers distorted
 municipal budgets. Each estimating unit plays a different role. The
 block-level estimate is the preferred causal specification because
 both rate-setting jurisdictions enter the regression at their native
-geography and the realized-dose pre-trend on the binding cell is
+geography and the realized-dose pre-trend on the Inc-bind cell is
 clean. The municipality-level estimate is retained as
 policy-jurisdiction magnitude calibration, and the school-district
 aggregation is used as a diagnostic. The first-difference
@@ -687,7 +687,7 @@ collinearity with the rate-treatment variable.
 \label{subsec:pooled-spec}
 
 Before the binding decomposition I report an aggregate
-specification that pools all six binding cells per rate-setter into
+specification that pools all six cells per rate-setter into
 two direction tags ($\text{Inc}$ for any rate increase, $\text{Dec}$
 for any rate decrease). The pooled regression is the
 literature-comparable baseline: it answers ``what is the average per-pp
@@ -722,7 +722,7 @@ Section~\ref{subsec:three-units}: unit-by-stack and year-by-stack
 fixed effects, with clustering at the policy-jurisdiction level.
 
 The pooled coefficient $\beta^{M}_{\text{Inc}}$ is a weighted average
-of the six binding cell coefficients for the municipality rate-setter
+of the six cell coefficients for the municipality rate-setter
 (Inc-bind, Inc-becomes, Inc-nobind; with equivalent decomposition for
 Dec). It is interpretable as the elasticity a prior-literature
 specification would recover. The decomposition in
@@ -747,7 +747,7 @@ appear together in Section~\ref{subsec:results-block}.
 \label{subsec:stacked-continuous}
 
 The binding decomposition extends the pooled spec by splitting
-each direction tag into its three binding cells, and is the
+each direction tag into its three cells, and is the
 main estimator of the paper. The construction is stacked continuous
 difference-in-differences. For each rate-setter
 $s \in \{\text{muni},\, \text{SD}\}$ and each cohort year $c$ at
@@ -808,7 +808,7 @@ Figure~\ref{fig:design_timeline} sketches the construction. Each
 row is one example municipality. The colored bar is its
 $[c-K, c+K]$ window; the open circle marks its first-event year $c$;
 the cell label on the right is the binding classification. The
-six treated examples are one per binding cell. The bottom row
+six treated examples are one per cell. The bottom row
 is the never-changed (NC) control band: every NC municipality
 contributes observations to every treated cohort's
 sub-experiment, in calendar years matching that cohort's window.
@@ -833,7 +833,7 @@ the unobserved pre-event years.
 
 The stacked-DiD construction follows the negative-weighting fix of
 \citet{goodman-baconDifferenceindifferencesVariationTreatment2021};
-the binding cell partitioning is novel and central to the
+the cell partitioning is novel and central to the
 design's within-design placebo (Inc-nobind), which the standard
 stacked DiD cannot produce.
 
@@ -1028,7 +1028,7 @@ I do not impose a uniform pre-trend standard across every outcome
 in the paper, because not every outcome carries the causal claim.
 The primary residential-sorting outcome is the block-level log
 count of workers living in the block, and the realized-dose
-pre-trend on the binding cell must be clean here for the headline
+pre-trend on the Inc-bind cell must be clean here for the headline
 to go through; this is the outcome the paper asks the reader to
 believe. Municipality-level resident counts---log residents working
 in their own municipality, log employed residents---are retained as
@@ -1267,7 +1267,7 @@ the Inc-nobind placebo cells). At the municipality level the pooled-Inc
 coefficient on the log count of residents working in their own
 municipality is approximately $-0.23$, compared to an Inc-bind cell
 coefficient of $-0.573$. The pooled coefficient is a sample-share
-weighted average of the binding cell coefficients; the
+weighted average of the cell coefficients; the
 decomposition in Sections~\ref{subsec:results-block}--
 \ref{subsec:results-headline} shows that this aggregate is driven
 almost entirely by Inc-bind, while Inc-nobind delivers the predicted
@@ -1465,7 +1465,7 @@ Full SD tables are deferred to the Appendix.
 \label{subsubsec:decomp-es}
 
 The realized-dose event study disaggregates the pooled pre-trend by
-binding cell. Table~\ref{tab:es_block_by_cell} reports the
+cell. Table~\ref{tab:es_block_by_cell} reports the
 post/pre ATT summary for the per-cell ES at the block level;
 Figure~\ref{fig:block_es_homecount} plots the same coefficients by
 event-time, faceted by cell, and
@@ -1507,7 +1507,7 @@ post-event Inc-bind response is the cell the binding rule predicts.
 \input{tables/es_block_by_cell_summary.tex}
 
 Figure~\ref{fig:block_es_homecount} plots the per-event-time
-coefficients underlying that table, faceted by binding cell.
+coefficients underlying that table, faceted by cell.
 
 \begin{figure}[H]
   \centering
@@ -1534,7 +1534,7 @@ coefficients underlying that table, faceted by binding cell.
   \caption{Block-level realized-dose event study on the share of
            block residents working in their own municipality:
            municipality-cohort (red) and school-district-cohort
-           (blue), faceted by binding cell.}
+           (blue), faceted by cell.}
   \label{fig:block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
   \begin{minipage}{0.95\textwidth}
@@ -1577,7 +1577,7 @@ walking down monotonically across the post-window.
   \centering
   \caption{Municipality-level realized-dose event study on
            $\log(\text{residents who live and work in the municipality})$,
-           faceted by binding cell.}
+           faceted by cell.}
   \label{fig:es_realized_muni_live_work}
   \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_live_and_work.png}
   \begin{minipage}{0.95\textwidth}
@@ -1752,7 +1752,7 @@ Eight limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and
 well-identified, the block-level share outcome
 (the share of block residents working in their own municipality) is null in
-the binding cell ($-0.035$, $p = 0.26$) and marginally significant
+the Inc-bind cell ($-0.035$, $p = 0.26$) and marginally significant
 in the Inc-nobind placebo ($-0.037$, $p = 0.015$). The share outcome
 at block scale appears to reflect mechanical denominator dynamics on
 very small populations rather than binding-specific behavior,
@@ -1884,7 +1884,7 @@ small Inc-bind sample.
 
 The narrow, credible claim is that local income taxes cause
 residential sorting when they bind. The same design framework---a
-continuous stacked DiD with binding cell decomposition, a
+continuous stacked DiD with binding decomposition, a
 realized-dose event study as a strong-parallel-trends diagnostic,
 and a within-design placebo cell whose theoretical prediction is
 zero---is portable to other settings where a piecewise tax rule
@@ -2039,7 +2039,7 @@ analogues are here.
 \begin{figure}[H]
   \centering
   \caption{Block-level realized-dose ES on $\log(\text{work count})$
-           (in-block jobs), faceted by binding cell;
+           (in-block jobs), faceted by cell;
            municipality-cohort (red) and SD-cohort (blue).}
   \label{fig:app_block_es_workcount}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_log_work_count.png}
@@ -2049,7 +2049,7 @@ analogues are here.
   \centering
   \caption{Block-level realized-dose ES on the share of block
            residents working in their own municipality, faceted by
-           binding cell.}
+           cell.}
   \label{fig:app_block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
 \end{figure}

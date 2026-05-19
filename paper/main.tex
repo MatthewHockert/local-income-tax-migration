@@ -142,7 +142,7 @@ employer withholding at the higher of the two rates, which made
 the max-rule mechanically enforced and provides an enforcement-break
 heterogeneity test.
 
-Section~\ref{sec:theory} formalizes the binding cell
+Section~\ref{sec:theory} formalizes the binding decomposition
 decomposition---six cells per rate-setter, partitioning each
 statutory rate event by direction (Increase/Decrease) and by the
 home-stack-vs-nonresident-rate binding transition---and lays out the
@@ -593,7 +593,7 @@ observed at the block granularity that makes the stacked DiD
 econometrically feasible (Table~\ref{tab:summary_block}), in an
 institutional setting where SD-rate changes are a property-tax
 substitution rather than a net-new tax burden
-(Table~\ref{tab:summary_sd}). The binding cell counts and
+(Table~\ref{tab:summary_sd}). The cell counts and
 realized doses, summarized next in
 Table~\ref{tab:cell_counts_summary}, partition this variation by
 whether each rate change actually moved the worker's tax bill.
@@ -700,7 +700,7 @@ classes (city, borough, township) have different revenue authorities
 and fiscal-capacity profiles.
 
 Table~\ref{tab:cell-counts} reports the number of unique municipalities
-in each binding cell on each rate-setter after the
+in each cell on each rate-setter after the
 NC-purity filter described in Section~\ref{sec:strategy}.
 
 \begin{table}[H]
@@ -765,7 +765,7 @@ stack), with a long tail through 2014.
     \footnotesize \textit{Notes:} Counts of Inc-bind municipalities
     by year of first municipality-rate event. The 2006 spike reflects Act 1
     of 2006 (school-district EIT authorization) flipping some municipalities
-    into the binding cell via the joint home-stack mechanism.
+    into the Inc-bind cell via the joint home-stack mechanism.
   \end{minipage}
 \end{figure}
 
@@ -775,7 +775,7 @@ stack), with a long tail through 2014.
 %==========================================================
 
 The empirical framework is a continuous stacked
-difference-in-differences design with binding cell decomposition,
+difference-in-differences design with binding decomposition,
 estimated on a panel spanning 2002--2019 at three units of observation:
 municipality, school district, and census block. Pre-2002 data are not
 consistently available in LODES; post-2019 years are excluded because
@@ -783,7 +783,7 @@ COVID disrupted commuting patterns and ARPA fiscal transfers distorted
 municipal budgets. Each estimating unit plays a different role. The
 block-level estimate is the preferred causal specification because
 both rate-setting jurisdictions enter the regression at their native
-geography and the realized-dose pre-trend on the binding cell is
+geography and the realized-dose pre-trend on the Inc-bind cell is
 clean. The municipality-level estimate is retained as
 policy-jurisdiction magnitude calibration, and the school-district
 aggregation is used as a diagnostic. The first-difference
@@ -926,7 +926,7 @@ variable.
 \label{subsec:pooled-spec}
 
 Before the binding decomposition I report an aggregate
-specification that pools all six binding cells per rate-setter into
+specification that pools all six cells per rate-setter into
 two direction tags ($\text{Inc}$ for any rate increase, $\text{Dec}$
 for any rate decrease). The pooled regression is the
 literature-comparable baseline: it answers ``what is the average per-pp
@@ -961,7 +961,7 @@ Section~\ref{subsec:three-units}: unit-by-stack and year-by-stack
 fixed effects, with clustering at the policy-jurisdiction level.
 
 The pooled coefficient $\beta^{M}_{\text{Inc}}$ is a weighted average
-of the six binding cell coefficients for the municipality rate-setter
+of the six cell coefficients for the municipality rate-setter
 (Inc-bind, Inc-becomes, Inc-nobind; with equivalent decomposition for
 Dec). It is interpretable as the elasticity a prior-literature
 specification would recover. The decomposition in
@@ -986,7 +986,7 @@ appear together in Section~\ref{subsec:results-block}.
 \label{subsec:stacked-continuous}
 
 The binding decomposition extends the pooled spec by splitting
-each direction tag into its three binding cells, and is the
+each direction tag into its three cells, and is the
 main estimator of the paper. The construction is stacked continuous
 difference-in-differences. For each rate-setter
 $s \in \{\text{muni},\, \text{SD}\}$ and each cohort year $c$ at
@@ -1048,7 +1048,7 @@ Figure~\ref{fig:design_timeline} sketches the construction. Each
 row is one example municipality. The colored bar is its
 $[c-K, c+K]$ window; the open circle marks its first-event year $c$;
 the cell label on the right is the binding classification. The
-six treated examples are one per binding cell. The bottom row
+six treated examples are one per cell. The bottom row
 is the never-changed (NC) control band: every NC municipality
 contributes observations to every treated cohort's
 sub-experiment, in calendar years matching that cohort's window.
@@ -1104,7 +1104,7 @@ cell-specific dose-response coefficients via the
 $i(\text{cell}, \Delta\tau)$ interaction, which their pooled
 event-by-event spec does not produce.
 
-The third difference is the binding cell partitioning, which is
+The third difference is the cell partitioning, which is
 new relative to all three antecedents. \citet{cengizEffectMinimumWages2019a} pools all minimum-wage
 events without a within-design taxonomy of treated units;
 \citet{fadlonFamilyLaborSupply2021b} and \citet{deshpandeWhoScreenedOut2019a} have homogeneous
@@ -1306,8 +1306,7 @@ Y_{it} = \alpha_i + \gamma_t
 estimating a separate dynamic ATT $\delta_{e,k}$ per cohort $e$ and
 event-time $k$, then interaction-weighting the $\delta_{e,k}$ across
 cohorts to deliver a single cohort-robust path of pre- and post-event
-coefficients. Binary cohort assignment is constructed per
-binding cell: ever-Inc-bind municipalities are coded $\mathbf{1}$ in the
+coefficients. Binary cohort assignment is constructed per cell: ever-Inc-bind municipalities are coded $\mathbf{1}$ in the
 year of their first Inc-bind event and thereafter, NC municipalities are
 coded $\mathbf{0}$ throughout, and other cells are excluded from the
 cell-specific subset.
@@ -1325,7 +1324,7 @@ I do not impose a uniform pre-trend standard across every outcome
 in the paper, because not every outcome carries the causal claim.
 The primary residential-sorting outcome is the block-level log
 count of workers living in the block, and the realized-dose
-pre-trend on the binding cell must be clean here for the headline
+pre-trend on the Inc-bind cell must be clean here for the headline
 to go through; this is the outcome the paper asks the reader to
 believe. Municipality-level resident counts---log residents working
 in their own municipality, log employed residents---are retained as
@@ -1544,7 +1543,7 @@ the Inc-nobind placebo cells). At the municipality level the pooled-Inc
 coefficient on the log count of residents working in their own
 municipality is approximately $-0.23$, compared to an Inc-bind cell
 coefficient of $-0.573$. The pooled coefficient is a sample-share
-weighted average of the binding cell coefficients; the
+weighted average of the cell coefficients; the
 decomposition in Sections~\ref{subsec:results-block}--
 \ref{subsec:results-headline} shows that this aggregate is driven
 almost entirely by Inc-bind, while Inc-nobind delivers the predicted
@@ -1715,7 +1714,7 @@ Full SD tables are deferred to the Appendix.
 \label{subsubsec:decomp-es}
 
 The realized-dose event study disaggregates the pooled pre-trend by
-binding cell. Table~\ref{tab:es_block_by_cell} reports the
+cell. Table~\ref{tab:es_block_by_cell} reports the
 post/pre ATT summary for the per-cell ES at the block level;
 Figure~\ref{fig:block_es_homecount} plots the same coefficients by
 event-time, faceted by cell, and
@@ -1783,7 +1782,7 @@ post-event Inc-bind response is the cell the binding rule predicts.
   \caption{Block-level realized-dose event study on the share of
            block residents working in their own municipality:
            municipality-cohort (red) and school-district-cohort
-           (blue), faceted by binding cell.}
+           (blue), faceted by cell.}
   \label{fig:block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
   \begin{minipage}{0.95\textwidth}
@@ -1826,7 +1825,7 @@ walking down monotonically across the post-window.
   \centering
   \caption{Municipality-level realized-dose event study on
            $\log(\text{residents who live and work in the municipality})$,
-           faceted by binding cell.}
+           faceted by cell.}
   \label{fig:es_realized_muni_live_work}
   \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_live_and_work.png}
   \begin{minipage}{0.95\textwidth}
@@ -1853,7 +1852,7 @@ Inc-nobind placebo is approximately flat.
 \label{subsubsec:decomp-binary-es}
 
 Binary Sun--Abraham interaction-weighted event studies for the
-binding cells at the municipality and school-district levels
+cells at the municipality and school-district levels
 are reported in Appendix~\ref{app:es-figures}; the block-level
 binary IW analogue is unstable because of thin cohort $\times$
 event-time cells and is omitted. The binary IW patterns agree in
@@ -2116,7 +2115,7 @@ Eight limitations merit acknowledgment. First, while the block-level
 stacked headline on the count outcomes is large, negative, and
 well-identified, the block-level share outcome
 (the share of block residents working in their own municipality) is null in
-the binding cell ($-0.035$, $p = 0.26$) and marginally significant
+the Inc-bind cell ($-0.035$, $p = 0.26$) and marginally significant
 in the Inc-nobind placebo ($-0.037$, $p = 0.015$). The share outcome
 at block scale appears to reflect mechanical denominator dynamics on
 very small populations rather than binding-specific behavior,
@@ -2251,7 +2250,7 @@ small Inc-bind sample.
 
 The narrow, credible claim is that local income taxes cause
 residential sorting when they bind. The same design framework---a
-continuous stacked DiD with binding cell decomposition, a
+continuous stacked DiD with binding decomposition, a
 realized-dose event study as a strong-parallel-trends diagnostic,
 and a within-design placebo cell whose theoretical prediction is
 zero---is portable to other settings where a piecewise tax rule
@@ -2673,7 +2672,7 @@ remaining block-level outcomes are reported here.
 \begin{figure}[H]
   \centering
   \caption{Block-level realized-dose ES on the log count of workers
-           working in the block, faceted by binding cell;
+           working in the block, faceted by cell;
            municipality-cohort (red) and SD-cohort (blue).}
   \label{fig:app_block_es_workcount}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_log_work_count.png}
@@ -2683,7 +2682,7 @@ remaining block-level outcomes are reported here.
   \centering
   \caption{Block-level realized-dose ES on the share of block
            residents working in their own municipality, faceted by
-           binding cell.}
+           cell.}
   \label{fig:app_block_es_homeinmuni}
   \includegraphics[width=0.95\textwidth]{../figures/block_es_overlay_home_in_muni_share.png}
 \end{figure}
@@ -2752,7 +2751,7 @@ aggregation diagnostic in Section~\ref{subsec:results-sd}.
 \paragraph{Realized-dose ES coefficient tables.}
 \label{sec:app-es-realized}
 The tables below report the per-cell post-event mean ATT and
-pre-event lead by binding cell from the realized-dose ES at
+pre-event lead by cell from the realized-dose ES at
 each estimating unit.
 
 \input{tables/es_realized_cousub.tex}
@@ -2867,7 +2866,7 @@ Reported here for completeness; the thin-cohort caveat applies.
 
 \paragraph{Binary SA-IW ES coefficient tables.}
 The tables below report the post-event mean ATT and pre-event lead by
-binding cell from the binary Sun--Abraham IW ES at the
+cell from the binary Sun--Abraham IW ES at the
 municipality and school-district levels. (Block-level binary SA-IW
 is unstable under stacking and is not reported in table form.)
 
@@ -2997,7 +2996,7 @@ Inc-cell coefficients pre and post.
 \input{tables/act32_block.tex}
 
 All three estimating units use the stacked-continuous DiD with
-binding cells, re-estimated separately on the pre-2012 and
+cells, re-estimated separately on the pre-2012 and
 post-2012 cohort subsamples. The municipality and SD splits use
 municipality-by-stack and SD-by-stack fixed effects respectively, matching
 their pooled headlines; the block split uses block-by-stack and
@@ -3095,7 +3094,7 @@ The small and large dose terciles produce essentially identical per-pp
 coefficients ($-0.440$ vs $-0.417$). The medium tercile is too thin
 to identify but is direction-consistent. The linearity assumption is
 supported: the per-pp dose-response does not vary meaningfully across
-small and large rate hikes within the binding cell.
+small and large rate hikes within the Inc-bind cell.
 
 \subsection{Sample variants}
 \label{app:rob-sample}
@@ -3620,7 +3619,7 @@ municipality--year I assign the rate in effect on April 1, aligning with
 LODES's reference date so that rate-on-paycheck and OD-flow records
 refer to the same point in time. Rates that take effect mid-year
 are credited to the year following the effective date. Fourth, the
-binding cell decomposition requires a non-missing nonresident
+binding decomposition requires a non-missing nonresident
 rate to classify the binding state at $c-1$ and $c$; municipality--years
 with missing nonresident rates that have ambiguous binding states
 are categorized as ``Uncertain'' and dropped from the analysis
@@ -3747,7 +3746,7 @@ identifying variation.
 
 This subsection walks through worked numerical examples of the
 piecewise EIT formula in Equation~(\ref{eq:piecewise}) for the three
-binding cells the paper exploits. Each example uses a worker
+cells the paper exploits. Each example uses a worker
 who lives in municipality $j$ and works in municipality $i$, with the standard
 $1\%$ combined cap split $0.5\%$ municipality resident plus $0.5\%$
 school-district.
