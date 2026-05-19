@@ -1281,7 +1281,7 @@ count outcomes, carries the causal weight in the analysis.
 \subsection{Binding-State Decomposition}
 \label{subsec:results-decomp}
 
-\subsubsection{Block level (main causal evidence)}
+\subsubsection{Block level (companion estimate)}
 \label{subsec:results-block}
 
 The preferred causal estimate is the block-level municipal Inc-bind
@@ -1316,40 +1316,45 @@ headline tables and treat the count outcomes as the primary estimand.
 
 \input{tables/headline_block_muni_results.tex}
 
-The municipality-rate cells deliver the headline block-level finding; the SD-rate cells from the same joint regression are reported next.
+The municipality-rate cells deliver the block-level finding; the
+SD-rate cells from the same joint regression are reported next.
 
 \input{tables/headline_block_sd_results.tex}
 
-The Inc-nobind cell serves as the within-design placebo: it contains municipalities whose home
-stack remained below the municipality's nonresident rate after the rate hike,
-so the bill never moved for in-municipality residents. The institutional rule
-predicts no behavioral response, and the Inc-nobind coefficient on
-the log count of residents working in their own municipality is statistically null ($-0.062$, SE
-$0.169$); on log total jobs is $-0.201$ (SE $0.203$); and
-on the share of workers living in their own municipality is $-0.012$ (SE $0.008$). The placebo
-passes on the headline outcomes. Two outcomes show small marginally
-significant deviations (the log count of out-commuters $+0.217^{**}$
-and log employed residents $+0.194^{**}$); with $n=26$ in this
-cell these are imprecise and I disclose rather than claim a perfectly
-clean placebo.
+The block-level Inc-bind coefficient on log home count is
+$-0.340^{***}$, direction-consistent with the municipality-level
+result ($-0.573^{***}$ on log live-and-work) and the central
+substantive finding: blocks in municipalities that raised the
+resident rate while the home stack was already binding lost
+residents. I do not translate this coefficient into a typical-event
+magnitude because the realized-dose pre-trend at the block level
+fails the parallel-trends test ($\beta_{\text{pre}}=-0.213$, Wald
+$p=0.003$). I read this as selection at finer geography that the
+municipality-level aggregation washes out, not as econometric noise:
+within Home-Rule cities that drive the Inc-bind cell, the blocks
+that take rate hikes are also blocks experiencing
+neighborhood-level residential composition shifts on a faster
+timescale than the muni outcome. I therefore use the block estimate
+as a direction-confirming companion rather than as a second causal
+headline.
 
-The joint regression also separates the two rate-setting channels, since it includes both municipality-resident-rate cells and
-SD-resident-rate cells. The municipality resident rate moves residents
-(Inc-bind coefficient on log residents working in their own
-municipality: $-0.573^{***}$; on log employed residents:
-$-0.104^{**}$) and in-commuters ($-0.421^{***}$). The SD resident-rate Inc-bind
-coefficient on the same outcomes is $+0.177^{*}$ on log residents
-working in their own municipality and $+0.063$ on log employed
-residents: SD rate changes do not produce a clean sorting response
-through the binding channel even when SD changes flip the binding
-state. An earlier draft using tract-centroid LODES recovered a
-positive SD-rate ``attraction'' effect; under block-level LODES with
-the unified two-rate-setter design that artifact disappears. The
-work-side nonresident rate $\tau^{\text{nr}}$ enters the
-binding-state classification but is not itself a treatment in the
-headline regression; its cell coefficients are imprecise because the
-municipality nonresident rate almost never exceeds the municipality's own home stack
-at the municipality-self-pair level in PA.
+The within-design placebo at the block level is also imperfect: the
+block-level Inc-nobind coefficient on log home count is
+$+0.714^{***}$, which would not pass a strict placebo test under
+the institutional rule. The realized-dose ATT for the same cell is
+$-0.349^{***}$ (post-period mean of the event-study coefficients),
+so the joint-regression and event-study summaries disagree, again
+consistent with finer-geography selection. The clean placebo
+result is at the municipality level (see
+Section~\ref{subsec:results-headline}): cousub Inc-nobind on log
+live-and-work is statistically indistinguishable from zero
+($-0.082$, SE $0.143$).
+
+The SD resident-rate cells in the same block-level regression are
+small and direction-mixed. The Inc-bind SD coefficient on log home
+count is $+0.105$ (not significant) and on log work count
+$+0.136^{***}$ (small magnitude); SD rate changes do not produce
+clean sorting through the binding channel even at block resolution.
 
 \subsubsection{Municipality level (calibration)}
 \label{subsec:results-headline}
@@ -1409,6 +1414,18 @@ Inc-becomes dose at $k=+5$ is $0.41$ pp
 calculation would deliver larger magnitudes than the Inc-bind cell
 purely from the bigger dose; I do not report those numbers because
 the pre-trend failure rules out a causal interpretation.
+
+The Inc-nobind cell is the within-design placebo: $20$
+municipalities whose home stack stays below the work-side
+nonresident rate after the rate hike, so the institutional rule
+predicts the worker's bill never moves. The placebo passes on the
+two count outcomes that carry the causal claim --- Inc-nobind on
+log live-and-work is $-0.082$ (SE $0.143$), and on log in-commuters
+$-0.657$ (SE $0.653$); both statistically indistinguishable from
+zero. On log total residents the Inc-nobind coefficient is
+$+0.235^{***}$ and fails its own pre-trend ($p<0.0001$), consistent
+with the Inc-bind log-total-residents result being driven by
+something other than the binding-rule mechanism at this outcome.
 
 % Full municipality-level Inc/Dec coefficient tables, per-outcome
 % diagnostics, and the full main-spec control-coefficient table are
