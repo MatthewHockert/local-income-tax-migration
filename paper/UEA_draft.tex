@@ -434,7 +434,34 @@ Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}. School-district
 fiscal controls come from the Census Annual Survey of School System
 Finances (F-33) \citep{censusF33}; the NCES \texttt{LEAID}-to-DCED
-SD ID crosswalk covers all $500$ school districts. 
+SD ID crosswalk covers all $500$ school districts. All fiscal
+controls are share-based and time-varying. Municipality regressions
+use six DCED AFR shares: three expenditure shares
+(police-services, streets, debt-service) and three revenue shares
+(EIT-revenue, real-estate-tax, intergovernmental-revenue).
+School-district regressions use eight F-33 shares: four revenue
+shares (state-revenue, local-revenue, federal-revenue, property-tax)
+and four expenditure shares (instructional-expenditure,
+support-services, capital-expenditure, debt-interest). Block-level
+regressions use both sets simultaneously, since each block is
+exposed to both rate-setters' fiscal posture.
+
+The municipality--SD aggregation path for the school-district panel
+is block~$\to$~cousub~$\to$~SD: each block has a unique cousub
+assignment via the TIGER 2020 crosswalk, each cousub has a primary
+SD assignment (modal SD ID in the DCED rate panel; $97.6\%$ of
+municipalities are single-SD), and SD-level outcomes are block sums
+along this two-step path. Municipality regressions further impose a
+minimum employment threshold of $50$ total jobs, which protects the
+share-based outcomes from mechanical noise (a single worker moving
+changes a share by $1/N$, so at $N=10$ a one-worker move dominates
+the per-pp coefficient) and matches the LODES synthetic-noise
+calibration that is validated at tract scale and above
+\citep{grahamDESIGNCOMPARISONLODES}. The threshold drops $185$ of
+$2{,}559$ municipalities ($7.2\%$), almost all sparsely populated
+NC-pool townships; the treated cohort is essentially unaffected.
+Sensitivity analysis in Section~\ref{sec:robustness} confirms the
+Inc-bind coefficient is stable across thresholds from $10$ to $500$.
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
@@ -549,141 +576,20 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
 \label{sec:strategy}
 %==========================================================
 
-The empirical framework is a continuous stacked
-difference-in-differences design with an aggregated effect on units that are within municipalities or school districts that only increased or decreased over the time period and a binding decomposition where I subset the increases by whether or not the home-stack rate moves become binding or not. The panel spans 2002--2019 at three units of observation:
-municipality, school district, and census block. Pre-2002 data are not
-consistently available in LODES and post-2019 years are excluded due to
-COVID pandemic and fiscal transfers distorted
-municipal budgets. Each estimating unit plays a different role. The
-municipality-level estimate is the preferred causal specification
-because it is the only level where the realized-dose pre-trend on
-the Inc-bind cell does not reject parallel trends
-($\beta_{\text{pre}}=-0.073$, Wald $p=0.33$). The block-level
-estimate is direction-confirming but has a non-zero pre-trend
-($\beta_{\text{pre}}=-0.213$, Wald $p=0.003$), which I read as
-selection at finer geography that the municipality-level
-aggregation washes out; the block-level coefficient enters as a
-companion, not the headline. The school-district aggregation is
-used as a diagnostic non-result. The first-difference
-dose-response specification estimates the post-event effect of a one
-percentage-point change in the relevant tax rate; a separate
-realized-dose event-study diagnostic tests for differential pre-event
-trajectories across units of varying eventual treatment intensity.
-
-The resident-side specification includes two simultaneous rate-setter
-treatments: $\Delta\tau^{\text{muni}}_{it}$, the cumulative change in
-the municipality resident rate from baseline, and $\Delta\tau^{\text{SD}}_{it}$,
-the cumulative change in the school-district rate. Baseline for each
-is the rate at year $c_i^s - 1$, where $c_i^s$ is unit $i$'s first
-event year on rate-setter $s \in \{\text{municipality, SD}\}$, and cumulative dose
-accumulates with subsequent rate changes within $i$. The work-side
-nonresident rate $\tau^{\text{nr}}$ enters the binding
-classification of cells but is not itself a treatment in the headline
-regression: I focus on the resident-side mechanism and defer the
-work-side behavioral response to a separate analysis.
-
-Each rate-change event is classified by direction
-$\in \{\text{Inc, Dec}\}$ and binding transition
-$\in \{\text{bind, becomes, nobind}\}$ to yield the six non-NC cells
-introduced in Section~\ref{subsec:cells}. For each unit $i$ and each
-rate-setter $s$, I locate the first rate event year $c^s_i$ and
-assign $i$ to one of the six cells based on the direction of the
-change and the binding state of the home stack relative to
-$\tau^{\text{nr,muni}}$ in the pre- and post-event years. The NC
-reference category is restricted strictly to units whose rate
-$\tau^s$ never changes over 2002--2019. Units with rate changes
-whose first event has an undefined binding state---typically because
-the municipality's nonresident rate is missing in the pre-event year due to
-DCED reporting gaps before Act 32---are categorized as ``Uncertain''
-and dropped: pooling them with NC would contaminate the control trend
-with treated-but-unclassified units, while reporting them in their
-own cell would mix true binding states with measurement gaps.
-Municipality-level regressions further impose a minimum employment
-threshold of $50$ total jobs. The threshold protects the share-based
-outcomes (live-in-muni share, out-of-muni-work share)
-from mechanical measurement noise: at $N$ workers, a single worker
-moving changes the share by $1/N$, so at $N=10$ a one-worker move
-changes the outcome by 10 percentage points, dominating the per-pp
-treatment magnitude. At $N=50$ the one-worker noise floor is $2\%$,
-roughly an order of magnitude below the headline coefficient. The
-threshold also matches the LODES synthetic-noise-infusion design:
-the Census Bureau's noise calibration is validated at the tract
-level and above \citep{grahamDESIGNCOMPARISONLODES}, which in
-Pennsylvania typically contains at least $50$ workers. Choosing
-exactly $50$ rather than $20$ or $100$ is a judgment call;
-sensitivity analysis in Section~\ref{sec:robustness} confirms the
-headline Inc-bind coefficient is stable across thresholds from $10$
-to $500$. Imposing the threshold drops $185$ of $2{,}559$ PA municipalities
-($7.2\%$), almost all of which are sparsely populated rural
-townships in the NC pool; the treated cohort is essentially
-unaffected.
-
-Outcomes are run in parallel across counts and shares. The
-municipality-level workplace and residence outcomes are the logs of
-live-and-work (residents employed in the municipality),
-in-commuters (workers in the municipality from elsewhere),
-out-commuters, total jobs, and
-total residents, plus the shares of workers living in their
-own municipality, of workers who are nonresidents, and of residents working
-outside the municipality. The school-district aggregation uses the same outcomes computed by
-summing block-level LODES counts up to the SD: each block has a
-unique cousub assignment (via the TIGER 2020 block-to-cousub
-crosswalk), each cousub has a primary SD assignment (the modal
-SD ID in the DCED rate panel; $97.6\%$ of munis are
-single-SD), and the SD-level outcomes are block sums via this
-two-step block~$\to$~cousub~$\to$~SD path. At the
-block level, outcomes are the log count of workers living in the
-block, the log count of workers working in the block, the share of
-block residents working in their own municipality, and the share working
-outside; geometry and aggregation details are in
-Section~\ref{subsec:three-units}.
-
-Fiscal controls are share-based and time-varying, with the exact set
-keyed to the estimating unit. The shares are constructed as
-numerator-over-total ratios so that they absorb compositional changes
-in the municipality's or district's fiscal posture without conflating with
-the level of total spending.
-
-Municipality-level regressions use six share controls from the DCED
-Annual Financial Report. Three are expenditure shares:
-police-services share (police-services line / total expenditure),
-streets share (streets and highways), and
-debt-service share (debt service: principal and interest
-payments on outstanding general-obligation and revenue debt). Three
-are revenue shares: EIT-revenue share (Earned Income Tax revenue
-collected / total revenue), real-estate-tax share (real-estate property
-tax revenue / total revenue), and intergovernmental-revenue share
-(intergovernmental revenue, which is grant and pass-through revenue
-from state and federal governments---e.g.\ Liquid Fuels Tax
-distributions, Community Development Block Grants, ARPA transfers---divided
-by total revenue).
-
-School-district regressions use eight share controls from the
-Census Annual Survey of School System Finances (F-33)
-\citep{censusF33}. Four are revenue shares:
-state-revenue share (state aid: basic education subsidy,
-special-education subsidy, transportation reimbursement, etc.),
-local-revenue share (locally raised revenue: property tax,
-EIT, occupation tax, public-utility taxes), federal-revenue share
-(federal Title~I, IDEA, school-lunch, and other direct or
-pass-through federal aid), and property-tax share
-(real-estate property-tax revenue as a share of total revenue,
-which is a subset of local-revenue share and isolates the
-SD's primary local-tax lever). Four are expenditure shares:
-instructional-expenditure share (teacher salaries, classroom
-supplies, instructional staff), support-services share
-(non-instructional operating costs: administration, transportation,
-maintenance, food service, student services),
-capital-expenditure share (capital outlay---construction,
-renovation, equipment), and debt-interest share
-(interest payments on the district's outstanding debt; principal
-appears as a capital outlay rather than as a current expense).
-
-Block-level regressions use both sets of controls simultaneously,
-since each block is exposed to both rate-setters' fiscal posture.
-Cross-unit variation is broad on every dimension, so the share
-controls absorb meaningful fiscal heterogeneity without
-collinearity with the rate-treatment variable.
+I estimate two specifications. The pooled Inc/Dec aggregate
+(\S\ref{subsec:pooled-spec}) collapses all rate-change events at
+each rate-setter into directional indicators, approximating the
+conventional local-tax sorting design. The binding decomposition
+(\S\ref{subsec:stacked-continuous}) subsets each direction into the
+three cells defined in Section~\ref{sec:theory}, isolating the rate
+changes that move the worker's bill from those that do not. Both
+specifications are estimated at three units of observation
+(\S\ref{subsec:three-units}): municipality-year, school-district-year,
+and census-block-year. Pre-trends are tested separately by a
+realized-dose Sun--Abraham event study
+(\S\ref{subsec:pretrend-diagnostics}). Fiscal controls and outcomes
+are introduced in Section~\ref{sec:data}; this section focuses on
+estimating equations, identification logic, and diagnostics.
 
 
 \subsection{Pooled Aggregate Specification}
@@ -815,6 +721,14 @@ six treated examples are one per cell. The bottom row
 is the never-changed (NC) control band: every NC municipality
 contributes observations to every treated cohort's
 sub-experiment, in calendar years matching that cohort's window.
+NC is restricted to municipalities whose rate $\tau^s$ never changes
+across 2002--2019. Municipalities with rate changes whose
+binding state at the first event is undefined---typically because
+the nonresident rate is missing in the pre-event year due to DCED
+reporting gaps before Act~32---are categorized as ``Uncertain'' and
+dropped. Pooling them with NC would contaminate the control trend
+with treated-but-unclassified units, while reporting them in their
+own cell would mix true binding states with measurement gaps.
 Early cohorts (e.g.\ the 2006 Inc-becomes example) have a slightly
 truncated pre-period because their $c-K$ year falls just before the
 panel's 2002 start; the stacked panel handles this by simply omitting
