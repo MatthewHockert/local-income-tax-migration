@@ -781,12 +781,16 @@ municipality, school district, and census block. Pre-2002 data are not
 consistently available in LODES; post-2019 years are excluded because
 COVID disrupted commuting patterns and ARPA fiscal transfers distorted
 municipal budgets. Each estimating unit plays a different role. The
-block-level estimate is the preferred causal specification because
-both rate-setting jurisdictions enter the regression at their native
-geography and the realized-dose pre-trend on the Inc-bind cell is
-clean. The municipality-level estimate is retained as
-policy-jurisdiction magnitude calibration, and the school-district
-aggregation is used as a diagnostic. The first-difference
+municipality-level estimate is the preferred causal specification
+because it is the only level where the realized-dose pre-trend on
+the Inc-bind cell does not reject parallel trends
+($\beta_{\text{pre}}=-0.073$, Wald $p=0.33$). The block-level
+estimate is direction-confirming but has a non-zero pre-trend
+($\beta_{\text{pre}}=-0.213$, Wald $p=0.003$), which I read as
+selection at finer geography that the municipality-level
+aggregation washes out; the block-level coefficient enters as a
+companion, not the headline. The school-district aggregation is
+used as a diagnostic non-result. The first-difference
 dose-response specification estimates the post-event effect of a one
 percentage-point change in the relevant tax rate; a separate
 realized-dose event-study diagnostic tests for differential pre-event
