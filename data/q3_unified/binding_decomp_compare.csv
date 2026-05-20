@@ -1,0 +1,13 @@
+outcome,side,cell,n_munis,att,att_se,att_p,es_post,es_pre,wald_pre_p
+log_in_commuters,muni,Inc-bind,24,-0.412,0.126,0.0011,-0.488,0.115,0.6877
+log_in_commuters,muni,Inc-becomes,39,-0.247,0.055,0,-0.224,0.075,2e-04
+log_in_commuters,muni,Inc-nobind,14,0.233,0.302,0.441,-0.547,-0.434,0.6723
+log_in_commuters,sd,Inc-bind,68,0.18,0.105,0.0861,0.17,-0.088,0
+log_in_commuters,sd,Inc-becomes,177,0.102,0.113,0.3664,0.03,-0.36,0.5519
+log_in_commuters,sd,Inc-nobind,1,,,,-0.026,,
+log_live_and_work,muni,Inc-bind,24,-0.573,0.162,4e-04,-0.772,-0.073,0.3255
+log_live_and_work,muni,Inc-becomes,39,-0.25,0.056,0,-0.218,0.063,0.0038
+log_live_and_work,muni,Inc-nobind,13,-0.073,0.143,0.6069,0.072,0.181,0
+log_live_and_work,sd,Inc-bind,64,0.128,0.098,0.1923,0.151,0.055,0
+log_live_and_work,sd,Inc-becomes,172,0.105,0.11,0.3388,0.102,-0.105,0.464
+log_live_and_work,sd,Inc-nobind,1,,,,-0.048,,

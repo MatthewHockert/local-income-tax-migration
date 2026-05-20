@@ -9,6 +9,8 @@
 #   figures/act32_cdf.png
 #   figures/rate_changes_by_year.png
 #   figures/pa_rate_trajectories.png
+#   figures/pa_map.png
+#   figures/binding_levels_by_year.png       (overlaid bars: home stack behind, work rate in front, pp)
 
 suppressMessages({
   library(data.table); library(ggplot2); library(scales); library(patchwork)
@@ -118,8 +120,7 @@ muni_rows <- list(
   mk_row("Home stack $\\tau^{M}+\\tau^{SD}$ (\\%)", m$home_stack),
   mk_row("$\\log$ live-and-work",                   m$log_live_in),
   mk_row("$\\log$ total jobs",                      m$log_total_jobs),
-  mk_row("Share live-and-work in muni",             m$share_live_in),
-  mk_row("Total jobs",                              m$total_jobs)
+  mk_row("Share live-and-work in muni",             m$share_live_in)
 )
 write_summary_table(muni_rows,
   "Muni-year summary statistics (2002--2019)",
@@ -429,24 +430,135 @@ label_centroids$muni_lbl <- tools::toTitleCase(tolower(label_centroids$municipal
 # Dissolve cousub geometries into a single state outline for the thicker border
 pa_outline <- st_union(map_dt)
 
-g_map <- ggplot() +
-  geom_sf(data = map_dt[map_dt$change_type %in% c("No change","Decreased","Both"), ],
-          fill = "grey96", color = "black", linewidth = 0.08) +
-  geom_sf(data = map_dt[map_dt$change_type == "Increased", ],
-          fill = PAPER_RED, color = "black", linewidth = 0.08, alpha = 0.85) +
+map_dt$change_type <- factor(map_dt$change_type,
+                             levels = c("Increased","Decreased","Both","No change"))
+g_map <- ggplot(map_dt) +
+  geom_sf(aes(fill = change_type), color = "black", linewidth = 0.08) +
   geom_sf(data = pa_outline, fill = NA, color = "black", linewidth = 0.5) +
+  scale_fill_manual(values = c("Increased" = PAPER_RED, "Decreased" = PAPER_BLUE,
+                               "Both" = "#7B2CBF", "No change" = "grey92"),
+                    breaks = c("Increased","Decreased","Both","No change"),
+                    name = NULL, drop = FALSE) +
   coord_sf() +
-  labs(title = NULL,
-       caption = "Red: muni raised resident rate at least once. Grey: no qualifying increase.") +
+  labs(title = NULL) +
   theme_paper() +
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         panel.grid = element_blank(),
         panel.border = element_blank(),
-        plot.caption = element_text(size = 8, hjust = 0))
+        legend.position = "bottom")
 ggsave(file.path(fig_dir, "pa_map.png"), g_map,
        width = 11, height = 7, dpi = 220)
 cat("Saved pa_map.png\n")
+
+# ---------------------------------------------------------------------------
+# 10-12. Aggregate "work side rarely binds" figures
+# ---------------------------------------------------------------------------
+# Supports one claim: PA municipalities raise the home stack (resident + SD)
+# faster than the work (nonresident) rate, so the work side almost never
+# becomes the binding margin -- which is why the paper estimates no work-side
+# binding decomposition. AGGREGATE only: no municipalities named or plotted.
+#
+#   home stack     = resident rate + SD rate
+#   work rate      = municipality nonresident rate
+#   binding margin = home stack - work rate   (positive => home binds)
+#
+# Population: muni-years that GENUINELY REPORT a work rate (non-imputed). DCED
+# work-rate reporting is incomplete before Act 32 (2012), so N rises sharply
+# at 2012; imputed pre-2012 values are excluded so the comparison is real.
+# Tie convention: fold exact ties into "home binds" -- if home stack >= work
+# rate, the home side is the margin a mover faces -- so the work rate binds
+# only when work_rate > home_stack (strictly). Home side = navy, work = red.
+cat("Building 'work side rarely binds' figures...\n")
+
+BM_HOME <- PAPER_BLUE      # home side (resident + SD stack)
+BM_WORK <- PAPER_RED       # work side (nonresident rate)
+
+bm_rate <- rate[!is.na(cousub_fips) & year >= 2002 & year <= max_year]
+# Muni-year aggregation mirroring q3_unified_full_table.R (resident = mean,
+# sd = max, nonres = mean). nonres counts as reported only if not imputed.
+bm_agg <- bm_rate[, .(resident_eit    = mean(resident_eit,    na.rm = TRUE),
+                      sd_eit          = max(sd_eit,            na.rm = TRUE),
+                      muni_nonres_eit = mean(muni_nonres_eit,  na.rm = TRUE),
+                      nonres_imputed  = as.logical(max(nonres_imputed, na.rm = TRUE))),
+                  by = .(muni = cousub_fips, year)]
+for (cc in c("resident_eit", "sd_eit", "muni_nonres_eit"))
+  bm_agg[!is.finite(get(cc)), (cc) := NA_real_]
+bm_agg[, home_stack := resident_eit + sd_eit]
+bm_agg[, work_rate  := muni_nonres_eit]
+
+# Restrict to muni-years reporting a (non-imputed) work rate, with a defined
+# home stack, so the home-vs-work comparison is real.
+bm_wb <- bm_agg[!is.na(home_stack) & !is.na(work_rate) & nonres_imputed == FALSE]
+bm_wb[, work_binds := work_rate > home_stack + 1e-6]
+
+bm_yr <- bm_wb[, .(n           = .N,
+                   mean_home   = mean(home_stack),
+                   mean_work   = mean(work_rate),
+                   median_home = median(home_stack),
+                   median_work = median(work_rate),
+                   share_work  = mean(work_binds)),
+               by = year][order(year)]
+
+cat("\nBinding aggregates by year (municipalities reporting a work rate):\n")
+for (i in seq_len(nrow(bm_yr))) {
+  r <- bm_yr[i]
+  cat(sprintf("  %d: N=%4d  mean home=%.3f  mean work=%.3f  work binds=%5.2f%%\n",
+              r$year, r$n, r$mean_home, r$mean_work, 100 * r$share_work))
+}
+cat(sprintf("  Overall: work binds in %.2f%% of %s reporting muni-years (coverage rises at the 2012 Act 32 break).\n",
+            100 * mean(bm_wb$work_binds), format(nrow(bm_wb), big.mark = ",")))
+
+## -- Figure A: levels by year -- overlaid translucent bars (dark theme) -----
+# Tax rates in pp (not shares). Home stack drawn first so it sits BEHIND;
+# work rate drawn on top. Both are the same width, fully overlapping, and
+# semi-transparent: the lavender work-rate bar fills the lower portion and the
+# maroon home stack shows above it. Light background, translucent-bar style.
+bm_bg   <- "white"     # light background
+bm_fg   <- "grey20"    # dark text / axes
+bm_grid <- "grey88"    # faint horizontal gridlines
+# Red/blue from support_dose_trajectory_muni_vs_sd.png (build_uea_aggregate_figures.R):
+# blue #1F5673, red #C5283D; light tints for the translucent fills.
+HOME_FILL <- "#9AB3C0"; HOME_LINE <- "#1F5673"   # home stack (back, blue)
+WORK_FILL <- "#E59EA7"; WORK_LINE <- "#C5283D"   # work rate (front, red)
+home_lab <- "Home Stack (resident + SD)"
+work_lab <- "Work Rate (nonresident)"
+
+g_lev <- ggplot(bm_yr, aes(x = year)) +
+  geom_col(aes(y = mean_home, fill = home_lab, color = home_lab),
+           width = 0.82, alpha = 0.72, linewidth = 0.6) +
+  geom_col(aes(y = mean_work, fill = work_lab, color = work_lab),
+           width = 0.82, alpha = 0.72, linewidth = 0.6) +
+  scale_fill_manual(values = setNames(c(HOME_FILL, WORK_FILL), c(home_lab, work_lab)),
+                    name = NULL, breaks = c(home_lab, work_lab)) +
+  scale_color_manual(values = setNames(c(HOME_LINE, WORK_LINE), c(home_lab, work_lab)),
+                     name = NULL, breaks = c(home_lab, work_lab)) +
+  scale_x_continuous(breaks = 2002:2019) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.04))) +
+  labs(x = "Year", y = "Mean EIT rate (pp)") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.background       = element_rect(fill = bm_bg, color = NA),
+    panel.background      = element_rect(fill = bm_bg, color = NA),
+    panel.grid.major.y    = element_line(color = bm_grid, linewidth = 0.3),
+    panel.grid.minor      = element_blank(),
+    panel.grid.major.x    = element_blank(),
+    axis.line             = element_line(color = bm_fg, linewidth = 0.4),
+    axis.ticks            = element_line(color = bm_fg, linewidth = 0.4),
+    axis.text             = element_text(color = bm_fg),
+    axis.text.x           = element_text(color = bm_fg, angle = 45, hjust = 1),
+    axis.title            = element_text(color = bm_fg),
+    legend.text           = element_text(color = bm_fg, size = 14),
+    legend.position       = "bottom",
+    legend.key            = element_rect(fill = bm_bg, color = NA),
+    legend.key.width      = unit(2.2, "lines"),
+    legend.background     = element_rect(fill = bm_bg, color = NA),
+    legend.box.background = element_rect(color = bm_fg, fill = NA),
+    legend.box.margin     = margin(4, 8, 4, 8)
+  )
+ggsave(file.path(fig_dir, "binding_levels_by_year.png"), g_lev,
+       width = 10, height = 6, dpi = 300)
+cat("Saved binding_levels_by_year.png\n")
 
 cat("\nDone. Tables in paper/tables/, figures in figures/.\n")

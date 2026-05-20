@@ -1,0 +1,2330 @@
+================================================================
+ACTIVE PIPELINE: continuous stacked DiD, three-level unified design
+================================================================
+
+
+[1b] Descriptive statistics: summary tables + rate ECDF + Act-32 CDF
+Wrote summary_muni.tex
+Wrote summary_block.tex
+Wrote summary_sd.tex
+Sourcing q3_unified_full_table.R for cell classifications...
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+Wrote cell_counts_summary.tex
+Saved rate_double_histogram.png (ECDF)
+Saved act32_cdf.png
+Saved rate_changes_by_year.png
+Saved pa_rate_trajectories.png
+Building labeled PA map...
+Saved pa_map.png
+
+Done. Tables in paper/tables/, figures in figures/.
+Warning message:
+Removed 4 rows containing non-finite outside the scale range (`stat_ecdf()`). 
+
+[2a] Main results: municipality level
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+
+[2c] Main results: block level
+Sourcing cousub-level full table prep for SD/nonres cells...
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+Loading block panel...
+Merged SD fiscal controls: 4778508 / 5030958 block-years
+
+Muni cell distribution (block-year):
+Key: <cell_muni>
+     cell_muni       N
+        <fctr>   <int>
+1:        <NA> 1713599
+2:          NC 2982677
+3:    Inc-bind  108760
+4: Inc-becomes  141744
+5:  Inc-nobind   84178
+
+SD cell distribution (block-year):
+Key: <cell_sd>
+       cell_sd       N
+        <fctr>   <int>
+1:        <NA> 1713599
+2:          NC 2956687
+3:    Inc-bind   84576
+4: Inc-becomes  271930
+5:  Inc-nobind    4166
+
+Building stacked block panel (this is large)...
+Stacks to build: 15 cohorts; 1,687 NC munis to replicate.
+Stack: 23,699,623 rows; treated blocks 19,352; NC blocks 184,103
+
+[log_home_count] N=18,225,814 ... NOTE: 78,502/0 fixed-effect singletons were removed (78,502 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'share_federal_rev_sd' have been
+removed because of collinearity (see $collin.var).
+done.
+
+[log_work_count] N=6,890,775 ... NOTE: 195,383/0 fixed-effect singletons were removed (195,383 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'share_federal_rev_sd' have been
+removed because of collinearity (see $collin.var).
+done.
+
+[home_in_muni_share] N=18,225,814 ... NOTE: 78,502/0 fixed-effect singletons were removed (78,502 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'share_federal_rev_sd' have been
+removed because of collinearity (see $collin.var).
+done.
+
+[share_work_outside] N=18,225,814 ... NOTE: 78,502/0 fixed-effect singletons were removed (78,502 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'share_federal_rev_sd' have been
+removed because of collinearity (see $collin.var).
+done.
+
+--- Joint block-level stacked fully-parameterized results ---
+               outcome   side        cell    est    se      p          n
+                <char> <char>      <char>  <num> <num>  <num>     <char>
+ 1:     log_home_count   muni    Inc-bind -0.340 0.051 0.0000 18,147,312
+ 2:     log_home_count   muni Inc-becomes -0.038 0.031 0.2106 18,147,312
+ 3:     log_home_count   muni  Inc-nobind  0.754 0.057 0.0000 18,147,312
+ 4:     log_home_count     sd    Inc-bind  0.125 0.084 0.1348 18,147,312
+ 5:     log_home_count     sd Inc-becomes  0.007 0.030 0.8155 18,147,312
+ 6:     log_work_count   muni    Inc-bind -0.106 0.095 0.2663  6,695,392
+ 7:     log_work_count   muni Inc-becomes -0.064 0.019 0.0006  6,695,392
+ 8:     log_work_count   muni  Inc-nobind  0.118 0.053 0.0274  6,695,392
+ 9:     log_work_count     sd    Inc-bind  0.114 0.042 0.0065  6,695,392
+10:     log_work_count     sd Inc-becomes  0.011 0.025 0.6550  6,695,392
+11: home_in_muni_share   muni    Inc-bind -0.062 0.053 0.2435 18,147,312
+12: home_in_muni_share   muni Inc-becomes -0.035 0.013 0.0056 18,147,312
+13: home_in_muni_share   muni  Inc-nobind -0.169 0.026 0.0000 18,147,312
+14: home_in_muni_share     sd    Inc-bind  0.008 0.003 0.0115 18,147,312
+15: home_in_muni_share     sd Inc-becomes -0.001 0.006 0.8465 18,147,312
+16: share_work_outside   muni    Inc-bind  0.062 0.053 0.2435 18,147,312
+17: share_work_outside   muni Inc-becomes  0.035 0.013 0.0056 18,147,312
+18: share_work_outside   muni  Inc-nobind  0.169 0.026 0.0000 18,147,312
+19: share_work_outside     sd    Inc-bind -0.008 0.003 0.0115 18,147,312
+20: share_work_outside     sd Inc-becomes  0.001 0.006 0.8465 18,147,312
+               outcome   side        cell    est    se      p          n
+
+Saved data/q3_unified/block_joint_results.csv
+Saved data/q3_unified/block_joint_diagnostics.csv
+
+[3a] Heterogeneity: pre/post Act 32 (all 3 levels)
+
+========================================================
+Cousub-level Act 32 split
+========================================================
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 559/0 fixed-effect singletons were removed (559 observations).
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+
+[cousub] Act 32 split saved (25 coef rows, 10 diag rows).
+
+========================================================
+SD-level Act 32 split
+========================================================
+Cousub-year-SD assignments: 49,117
+Unique SDs: 488, unique munis: 2472
+
+SD panel: 8,698 SD-years, 488 unique SDs
+Mean munis per SD: 5.1
+Merged SD fiscal controls: 8939 / 8949 SD-years matched
+
+Dropping 0 uncertain SDs
+Dropping 4 Dec SDs (paper excludes Dec cells)
+
+SD cell composition (unique SDs):
+       cell_sd     N
+        <fctr> <int>
+1:          NC   432
+2:    Inc-bind    25
+3: Inc-becomes    23
+4:  Inc-nobind     4
+
+Stacked panel: 43,552 SD-stack-year obs, 484 unique SDs
+
+--- SD-level stacked-continuous DiD (control: mean muni rate) ---
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+
+--- SD-level Inc cells, all outcomes ---
+                outcome        cell    est    se      p     n    sig
+                 <char>      <char>  <num> <num>  <num> <int> <char>
+ 1:   log_live_and_work    Inc-bind  0.029 0.038 0.4557 43434       
+ 2:   log_live_and_work Inc-becomes  0.271 0.154 0.0793 43434      *
+ 3:   log_live_and_work  Inc-nobind  0.797 0.505 0.1153 43434       
+ 4:    log_in_commuters    Inc-bind  0.058 0.046 0.2061 43463       
+ 5:    log_in_commuters Inc-becomes  0.185 0.137 0.1794 43463       
+ 6:    log_in_commuters  Inc-nobind  1.152 0.632 0.0690 43463      *
+ 7:   log_out_commuters    Inc-bind  0.106 0.032 0.0011 43463    ***
+ 8:   log_out_commuters Inc-becomes  0.334 0.131 0.0112 43463     **
+ 9:   log_out_commuters  Inc-nobind  0.404 0.124 0.0012 43463    ***
+10:      log_total_jobs    Inc-bind  0.064 0.043 0.1418 43463       
+11:      log_total_jobs Inc-becomes  0.190 0.138 0.1701 43463       
+12:      log_total_jobs  Inc-nobind  1.114 0.610 0.0686 43463      *
+13: log_total_residents    Inc-bind  0.107 0.030 0.0004 43463    ***
+14: log_total_residents Inc-becomes  0.318 0.131 0.0158 43463     **
+15: log_total_residents  Inc-nobind  0.423 0.147 0.0041 43463    ***
+16:       share_live_in    Inc-bind  0.003 0.004 0.4449 43463       
+17:       share_live_in Inc-becomes  0.004 0.006 0.5739 43463       
+18:       share_live_in  Inc-nobind -0.035 0.023 0.1285 43463       
+19:  share_work_outside    Inc-bind  0.000 0.004 0.9523 43463       
+20:  share_work_outside Inc-becomes  0.012 0.010 0.2120 43463       
+21:  share_work_outside  Inc-nobind -0.016 0.021 0.4508 43463       
+22:        share_nonres    Inc-bind -0.003 0.004 0.4449 43463       
+23:        share_nonres Inc-becomes -0.004 0.006 0.5739 43463       
+24:        share_nonres  Inc-nobind  0.035 0.023 0.1285 43463       
+                outcome        cell    est    se      p     n    sig
+
+--- Diagnostics ---
+               outcome     n     R2 Within_R2 dep_mean dep_sd
+                <char> <int>  <num>     <num>    <num>  <num>
+1:   log_live_and_work 43434 0.9848    0.0046   6.2665 1.3036
+2:    log_in_commuters 43463 0.9862    0.0041   8.3281 1.2027
+3:   log_out_commuters 43463 0.9845    0.0053   8.6515 0.8758
+4:      log_total_jobs 43463 0.9873    0.0047   8.4665 1.2041
+5: log_total_residents 43463 0.9861    0.0055   8.7633 0.9099
+6:       share_live_in 43463 0.9510    0.0040   0.1261 0.0688
+7:  share_work_outside 43463 0.9758    0.0043   0.8984 0.0771
+8:        share_nonres 43463 0.9510    0.0040   0.8739 0.0688
+
+Saved data/q3_unified/sd_level_results.csv
+Saved data/q3_unified/sd_level_diagnostics.csv
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+
+[sd] Act 32 split saved (20 coef rows, 10 diag rows).
+
+========================================================
+Block-level Act 32 split (stacked design)
+========================================================
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+Building stacked block panel (this is large)...
+Stack: 23,699,623 rows; treated blocks 19,352; NC blocks 184,103
+NOTE: 49,834/0 fixed-effect singletons were removed (49,834 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 109,987/0 fixed-effect singletons were removed (109,987 observations).
+The variables 'treat_cell::Inc-nobind:dose_stack' and 'share_federal_rev_sd'
+have been removed because of collinearity (see $collin.var).
+NOTE: 49,834/0 fixed-effect singletons were removed (49,834 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 49,834/0 fixed-effect singletons were removed (49,834 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 28,668/0 fixed-effect singletons were removed (28,668 observations).
+NOTE: 85,396/0 fixed-effect singletons were removed (85,396 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 28,668/0 fixed-effect singletons were removed (28,668 observations).
+NOTE: 28,668/0 fixed-effect singletons were removed (28,668 observations).
+
+[block] Act 32 split saved (20 coef rows, 8 diag rows).
+
+Done. Outputs in data/q3_unified/act32_split_*.csv
+There were 50 or more warnings (use warnings() to see the first 50)
+
+[3b] Heterogeneity: industry decomposition
+Industry: dropping 613 uncertain munis
+Industry: dropping 154 Dec munis (paper excludes Dec cells)
+
+cell_muni counts:
+     cell_muni     N
+        <fctr> <int>
+1:          NC  1695
+2:    Inc-bind    31
+3: Inc-becomes    49
+4:  Inc-nobind    17
+cell_sd counts:
+       cell_sd     N
+        <fctr> <int>
+1:          NC  1537
+2:    Inc-bind    69
+3: Inc-becomes   184
+4:  Inc-nobind     2
+cell_nr counts:
+       cell_nr     N
+        <fctr> <int>
+1:          NC  1626
+2:    Inc-bind    30
+3: Inc-becomes     4
+4:  Inc-nobind     7
+5:   Inc-loses   125
+
+-- Q2 TWFE pooled (industry outcomes) --
+NOTE: 3/0 fixed-effect singletons were removed (3 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 17/0 fixed-effect singletons were removed (17 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 32/0 fixed-effect singletons were removed (32 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 31/0 fixed-effect singletons were removed (31 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 31/0 fixed-effect singletons were removed (31 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 9/0 fixed-effect singletons were removed (9 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 3/0 fixed-effect singletons were removed (3 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+NOTE: 3/0 fixed-effect singletons were removed (3 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+-- Stacked continuous (industry outcomes) --
+NOTE: 132/0 fixed-effect singletons were removed (132 observations).
+NOTE: 434/0 fixed-effect singletons were removed (434 observations).
+NOTE: 686/0 fixed-effect singletons were removed (686 observations).
+NOTE: 791/0 fixed-effect singletons were removed (791 observations).
+NOTE: 1,831/0 fixed-effect singletons were removed (1,831 observations).
+NOTE: 386/0 fixed-effect singletons were removed (386 observations).
+NOTE: 132/0 fixed-effect singletons were removed (132 observations).
+NOTE: 132/0 fixed-effect singletons were removed (132 observations).
+NOTE: 112/0 fixed-effect singletons were removed (112 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 355/0 fixed-effect singletons were removed (355 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 554/0 fixed-effect singletons were removed (554 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 589/0 fixed-effect singletons were removed (589 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 1,481/0 fixed-effect singletons were removed (1,481 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 296/0 fixed-effect singletons were removed (296 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 112/0 fixed-effect singletons were removed (112 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 112/0 fixed-effect singletons were removed (112 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+NOTE: 129/0 fixed-effect singletons were removed (129 observations).
+NOTE: 449/0 fixed-effect singletons were removed (449 observations).
+NOTE: 676/0 fixed-effect singletons were removed (676 observations).
+NOTE: 745/0 fixed-effect singletons were removed (745 observations).
+NOTE: 1,775/0 fixed-effect singletons were removed (1,775 observations).
+NOTE: 406/0 fixed-effect singletons were removed (406 observations).
+NOTE: 129/0 fixed-effect singletons were removed (129 observations).
+NOTE: 129/0 fixed-effect singletons were removed (129 observations).
+Saved: industry_table_twfe_pooled.csv 
+Saved: industry_table_stacked_continuous.csv 
+
+Done.
+SD industry panel: 8856 SD-years, 492 SDs
+Cousub-year-SD assignments: 49,117
+Unique SDs: 488, unique munis: 2472
+
+SD panel: 8,698 SD-years, 488 unique SDs
+Mean munis per SD: 5.1
+Merged SD fiscal controls: 8939 / 8949 SD-years matched
+
+Dropping 0 uncertain SDs
+Dropping 4 Dec SDs (paper excludes Dec cells)
+
+SD cell composition (unique SDs):
+       cell_sd     N
+        <fctr> <int>
+1:          NC   432
+2:    Inc-bind    25
+3: Inc-becomes    23
+4:  Inc-nobind     4
+
+Stacked panel: 43,552 SD-stack-year obs, 484 unique SDs
+
+--- SD-level stacked-continuous DiD (control: mean muni rate) ---
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+
+--- SD-level Inc cells, all outcomes ---
+                outcome        cell    est    se      p     n    sig
+                 <char>      <char>  <num> <num>  <num> <int> <char>
+ 1:   log_live_and_work    Inc-bind  0.029 0.038 0.4557 43434       
+ 2:   log_live_and_work Inc-becomes  0.271 0.154 0.0793 43434      *
+ 3:   log_live_and_work  Inc-nobind  0.797 0.505 0.1153 43434       
+ 4:    log_in_commuters    Inc-bind  0.058 0.046 0.2061 43463       
+ 5:    log_in_commuters Inc-becomes  0.185 0.137 0.1794 43463       
+ 6:    log_in_commuters  Inc-nobind  1.152 0.632 0.0690 43463      *
+ 7:   log_out_commuters    Inc-bind  0.106 0.032 0.0011 43463    ***
+ 8:   log_out_commuters Inc-becomes  0.334 0.131 0.0112 43463     **
+ 9:   log_out_commuters  Inc-nobind  0.404 0.124 0.0012 43463    ***
+10:      log_total_jobs    Inc-bind  0.064 0.043 0.1418 43463       
+11:      log_total_jobs Inc-becomes  0.190 0.138 0.1701 43463       
+12:      log_total_jobs  Inc-nobind  1.114 0.610 0.0686 43463      *
+13: log_total_residents    Inc-bind  0.107 0.030 0.0004 43463    ***
+14: log_total_residents Inc-becomes  0.318 0.131 0.0158 43463     **
+15: log_total_residents  Inc-nobind  0.423 0.147 0.0041 43463    ***
+16:       share_live_in    Inc-bind  0.003 0.004 0.4449 43463       
+17:       share_live_in Inc-becomes  0.004 0.006 0.5739 43463       
+18:       share_live_in  Inc-nobind -0.035 0.023 0.1285 43463       
+19:  share_work_outside    Inc-bind  0.000 0.004 0.9523 43463       
+20:  share_work_outside Inc-becomes  0.012 0.010 0.2120 43463       
+21:  share_work_outside  Inc-nobind -0.016 0.021 0.4508 43463       
+22:        share_nonres    Inc-bind -0.003 0.004 0.4449 43463       
+23:        share_nonres Inc-becomes -0.004 0.006 0.5739 43463       
+24:        share_nonres  Inc-nobind  0.035 0.023 0.1285 43463       
+                outcome        cell    est    se      p     n    sig
+
+--- Diagnostics ---
+               outcome     n     R2 Within_R2 dep_mean dep_sd
+                <char> <int>  <num>     <num>    <num>  <num>
+1:   log_live_and_work 43434 0.9848    0.0046   6.2665 1.3036
+2:    log_in_commuters 43463 0.9862    0.0041   8.3281 1.2027
+3:   log_out_commuters 43463 0.9845    0.0053   8.6515 0.8758
+4:      log_total_jobs 43463 0.9873    0.0047   8.4665 1.2041
+5: log_total_residents 43463 0.9861    0.0055   8.7633 0.9099
+6:       share_live_in 43463 0.9510    0.0040   0.1261 0.0688
+7:  share_work_outside 43463 0.9758    0.0043   0.8984 0.0771
+8:        share_nonres 43463 0.9510    0.0040   0.8739 0.0688
+
+Saved data/q3_unified/sd_level_results.csv
+Saved data/q3_unified/sd_level_diagnostics.csv
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+
+Saved data/q3_unified/industry_sd.csv (15 rows)
+               outcome        cell    est    se      p
+                <char>      <char>  <num> <num>  <num>
+ 1:     log_jobs_total    Inc-bind  0.034 0.043 0.4294
+ 2:     log_jobs_total Inc-becomes  0.048 0.030 0.1132
+ 3:     log_jobs_total  Inc-nobind  0.522 0.277 0.0599
+ 4:  log_jobs_consumer    Inc-bind  0.126 0.071 0.0771
+ 5:  log_jobs_consumer Inc-becomes  0.046 0.031 0.1434
+ 6:  log_jobs_consumer  Inc-nobind  0.341 0.076 0.0000
+ 7: log_jobs_tradeable    Inc-bind -0.094 0.110 0.3920
+ 8: log_jobs_tradeable Inc-becomes  0.010 0.089 0.9102
+ 9: log_jobs_tradeable  Inc-nobind  0.541 0.140 0.0001
+10:     share_consumer    Inc-bind  0.023 0.012 0.0636
+11:     share_consumer Inc-becomes  0.000 0.009 0.9961
+12:     share_consumer  Inc-nobind -0.032 0.058 0.5791
+13:    share_tradeable    Inc-bind -0.042 0.024 0.0826
+14:    share_tradeable Inc-becomes -0.013 0.020 0.5167
+15:    share_tradeable  Inc-nobind  0.028 0.031 0.3701
+There were 50 or more warnings (use warnings() to see the first 50)
+
+[3c] Heterogeneity: muni type (city / borough / township)
+Cousub typology:
+       type     N
+     <char> <int>
+1: township  1547
+2:  borough   953
+3:     city    56
+4:    other     5
+Heterogeneity: dropping 102 uncertain munis
+Heterogeneity: dropping 30 Dec munis (paper excludes Dec cells)
+
+========== Cell composition by muni type ==========
+      cell_muni     type     N
+         <fctr>   <char> <int>
+ 1:          NC township  1399
+ 2:          NC  borough   878
+ 3:          NC     city    25
+ 4:          NC    other     3
+ 5:    Inc-bind township    22
+ 6:    Inc-bind  borough    10
+ 7:    Inc-bind     city     8
+ 8: Inc-becomes township    34
+ 9: Inc-becomes     city    14
+10: Inc-becomes  borough    10
+11:  Inc-nobind township    14
+12:  Inc-nobind  borough     8
+13:  Inc-nobind     city     4
+
+========== Cell composition: mean size ==========
+      cell_muni     type     N mean_residents mean_lw
+         <fctr>   <char> <int>          <num>   <num>
+ 1:          NC township  1399           1771     162
+ 2:          NC  borough   878           1079      99
+ 3:          NC     city    25          11496    4711
+ 4:          NC    other     3           8808    1479
+ 5:    Inc-bind township    22           3468     277
+ 6:    Inc-bind  borough    10           2631     292
+ 7:    Inc-bind     city     8           6904    1615
+ 8: Inc-becomes township    34           2625     155
+ 9: Inc-becomes     city    14          47886   27578
+10: Inc-becomes  borough    10           2184     292
+11:  Inc-nobind township    14           3230     314
+12:  Inc-nobind  borough     8            924     128
+13:  Inc-nobind     city     4          26808    8925
+
+========== Inc-bind muni list ==========
+      muni     type                    NAMELSAD mean_residents mean_lw
+    <char>   <char>                      <char>          <num>   <num>
+ 1:  85152     city           Wilkes-Barre city          15989    4162
+ 2:  54656  borough          Norristown borough          14098    1257
+ 3:  84528 township          Whitehall township          12820    1414
+ 4:  33408     city               Hazleton city          11216    2452
+ 5:  79274 township    Upper St. Clair township           8619     643
+ 6:  38288     city              Johnstown city           8033    2350
+ 7:  44832 township        Lower Allen township           7100     748
+ 8:  70792 township      Silver Spring township           5623     636
+ 9:  53664 township        New Hanover township           4888     220
+10:  37784     city              Jeannette city           4828     660
+11:  49384 township            Milford township           4723     295
+12:  14712     city            Coatesville city           4583     187
+13:  81000     city                 Warren city           4496    1987
+14:  45104 township       Lower Saucon township           4391     225
+15:  11232     city             Carbondale city           4330     847
+16:  39792 township           Kingston township           3610     184
+17:  21760 township      East Rockhill township           2918      93
+18:  22000 township       East Vincent township           2902     119
+19:  05256  borough          Bellefonte borough           2833     488
+20:  04976 township         Bedminster township           2572     138
+21:  61088 township         Plainfield township           2496     188
+22:  83960 township      West Rockhill township           2264     248
+23:  39344 township            Kennett township           2118     271
+24:  78168  borough              Tyrone borough           2076     412
+25:  04032  borough              Bangor borough           2065     210
+26:  79184 township Upper Mount Bethel township           2014     268
+27:  83136  borough       West Hazleton borough           1820     195
+28:  25360     city                Farrell city           1755     278
+29:  84160 township       West Vincent township           1746      81
+30:  03064 township          Armstrong township           1295      55
+31:  81160 township            Warwick township           1204      45
+32:  83968 township      West Sadsbury township           1051      70
+33:  62048  borough             Portage borough           1005     146
+34:  45016 township Lower Mount Bethel township            968      65
+35:  10912  borough   Cambridge Springs borough            816      89
+36:  07992  borough            Braddock borough            799      44
+37:  87224  borough         Youngsville borough            649      81
+38:  34448 township           Highland township            609      60
+39:  39608 township             Kidder township            357      31
+40:  27360  borough            Franklin borough            150       1
+      muni     type                    NAMELSAD mean_residents mean_lw
+
+========== Heterogeneity: city vs non_city (borough + township) ==========
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+
+--- type = city ; N = 3,537 ; Inc-bind munis = 8 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.454 0.193 0.0223
+2: Inc-becomes -0.199 0.149 0.1872
+3:  Inc-nobind -0.058 0.220 0.7931
+NOTE: 1,049/0 fixed-effect singletons were removed (1,049 observations).
+
+--- type = non_city ; N = 270,736 ; Inc-bind munis = 32 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.194 0.148 0.1893
+2: Inc-becomes -0.013 0.206 0.9514
+3:  Inc-nobind  0.352 0.262 0.1792
+
+========== Three-way split (kept for comparison): ==========
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+
+--- type = city ; N = 3,537 ; Inc-bind munis = 8 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.454 0.193 0.0223
+2: Inc-becomes -0.199 0.149 0.1872
+3:  Inc-nobind -0.058 0.220 0.7931
+NOTE: 523/0 fixed-effect singletons were removed (523 observations).
+The variable 'treat_cell::Inc-nobind:dose_stack' has been removed because of
+collinearity (see $collin.var).
+
+--- type = borough ; N = 97,335 ; Inc-bind munis = 10 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.213 0.156 0.1732
+2: Inc-becomes -0.041 0.032 0.2063
+NOTE: 526/0 fixed-effect singletons were removed (526 observations).
+
+--- type = township ; N = 172,993 ; Inc-bind munis = 22 ---
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.161 0.208 0.4388
+2: Inc-becomes -0.029 0.371 0.9381
+3:  Inc-nobind  0.220 0.286 0.4418
+
+========== City subset: full estimator suite + ES ==========
+City subset: 918 muni-years, 51 unique munis, Inc-bind = 8
+
+>> Q2 TWFE pooled (city)
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.353 0.078 0.0000
+2: Inc-becomes -0.158 0.068 0.0240
+3:  Inc-nobind -0.002 0.088 0.9792
+
+>> Single-event TWFE (city)
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind  0.162 0.295 0.5861
+2: Inc-becomes -0.240 0.111 0.0378
+3:  Inc-nobind  0.012 0.218 0.9570
+
+>> Stacked binary (city)
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.182 0.084 0.0343
+2: Inc-becomes -0.180 0.113 0.1176
+3:  Inc-nobind -0.018 0.079 0.8231
+
+>> Stacked continuous (city)
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+          cell    est    se      p
+        <char>  <num> <num>  <num>
+1:    Inc-bind -0.434 0.177 0.0182
+2: Inc-becomes -0.185 0.137 0.1823
+3:  Inc-nobind -0.037 0.202 0.8566
+
+>> DCDH (city, Inc-bind cell)
+       cell         est        se     n
+     <char>       <num>     <num> <num>
+1: Inc-bind 0.008791786 0.1444753   322
+
+========== City Inc-bind: STACKED CONTINUOUS event study ==========
+NOTE: 1/0 fixed-effect singleton was removed (1 observation).
+   rel_year    est    se      p
+      <int>  <num> <num>  <num>
+1:       -1  0.000 0.000     NA
+2:        0 -0.307 0.124 0.0191
+3:        1 -0.431 0.191 0.0307
+4:        2 -0.546 0.280 0.0596
+5:        3 -0.451 0.163 0.0092
+6:        4 -0.421 0.259 0.1137
+7:        5 -0.477 0.183 0.0139
+Saved figures/unified_es_city_inc_bind_lw_stackcont.png
+
+========== City Inc-bind: Sun-Abraham (binary cohort, reference) ==========
+NOTE: 1 observation removed because of NA values (RHS: 1).
+    rel_year    est    se      p
+       <int>  <num> <num>  <num>
+ 1:       -5  0.194 0.047 0.0003
+ 2:       -4  0.105 0.046 0.0283
+ 3:       -3  0.119 0.049 0.0203
+ 4:       -2  0.099 0.036 0.0103
+ 5:       -1  0.000 0.000     NA
+ 6:        0 -0.053 0.045 0.2507
+ 7:        1  0.021 0.061 0.7396
+ 8:        2 -0.061 0.034 0.0834
+ 9:        3 -0.150 0.073 0.0480
+10:        4 -0.181 0.097 0.0704
+11:        5 -0.146 0.082 0.0855
+Saved figures/unified_es_city_inc_bind_lw.png
+
+========== Inc-bind magnitudes in absolute jobs ==========
+     rel mean_lw median_lw mean_res
+   <int>   <num>     <num>    <num>
+1:    -1   592.1     229.0   3927.6
+2:     0   566.9     234.5   3878.6
+3:     1   555.6     238.0   3988.0
+4:     2   547.4     197.0   3859.5
+5:     3   534.0     208.5   4029.8
+6:     4   496.8     201.0   3904.7
+7:     5   513.2     204.5   3996.1
+
+  Implied: a -39% effect on a mean Inc-bind muni with 592 live_and_work workers = -231 workers
+
+Done.
+Warning messages:
+1: In rgl.init(initValue, onlyNULL) : X11 error: GLXBadContext
+2: 'rgl.init' failed, will use the null device.
+See '?rgl.useNULL' for ways to avoid this warning. 
+3: The VCOV matrix is not positive semi-definite and was 'fixed' (see ?vcov). 
+
+[4a] Pre-trend test: realized-dose event study (all 3 levels)
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+Building stacked panel (headline structure)...
+Stack: 240,197 rows; 77 munis (treated); 1,687 munis (NC)
+
+[log_live_and_work]
+NOTE: 498/0 fixed-effect singletons were removed (498 observations).
+  Inc-bind         post=-0.762 (SE 0.095)  pre=-0.072 (SE 0.068)  N=163,014
+NOTE: 499/0 fixed-effect singletons were removed (499 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'cell_nr::Inc-nobind:dose_nr'
+have been removed because of collinearity (see $collin.var).
+  Inc-becomes      post=-0.171 (SE 0.037)  pre= 0.075 (SE 0.028)  N=163,064
+NOTE: 500/0 fixed-effect singletons were removed (500 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post= 0.044 (SE 0.080)  pre= 0.053 (SE 0.151)  N=162,895
+  Dec-bind skip (no treated rows)
+  Dec-becomes-non skip (no treated rows)
+  Dec-nobind skip (no treated rows)
+
+[log_in_commuters]
+NOTE: 118/0 fixed-effect singletons were removed (118 observations).
+  Inc-bind         post=-0.498 (SE 0.080)  pre= 0.119 (SE 0.088)  N=178,042
+NOTE: 118/0 fixed-effect singletons were removed (118 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'cell_nr::Inc-nobind:dose_nr'
+have been removed because of collinearity (see $collin.var).
+  Inc-becomes      post=-0.194 (SE 0.039)  pre= 0.081 (SE 0.057)  N=178,105
+NOTE: 118/0 fixed-effect singletons were removed (118 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post=-0.057 (SE 0.077)  pre=-0.782 (SE 0.244)  N=177,934
+  Dec-bind skip (no treated rows)
+  Dec-becomes-non skip (no treated rows)
+  Dec-nobind skip (no treated rows)
+
+[log_total_residents]
+NOTE: 20/0 fixed-effect singletons were removed (20 observations).
+  Inc-bind         post=-0.186 (SE 0.044)  pre=-0.160 (SE 0.066)  N=180,763
+NOTE: 20/0 fixed-effect singletons were removed (20 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'cell_nr::Inc-nobind:dose_nr'
+have been removed because of collinearity (see $collin.var).
+  Inc-becomes      post=-0.021 (SE 0.020)  pre= 0.027 (SE 0.025)  N=180,826
+NOTE: 20/0 fixed-effect singletons were removed (20 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post=-0.041 (SE 0.039)  pre=-0.241 (SE 0.017)  N=180,656
+  Dec-bind skip (no treated rows)
+  Dec-becomes-non skip (no treated rows)
+  Dec-nobind skip (no treated rows)
+
+[share_live_in]
+NOTE: 118/0 fixed-effect singletons were removed (118 observations).
+  Inc-bind         post=-0.069 (SE 0.015)  pre=-0.020 (SE 0.012)  N=178,050
+NOTE: 118/0 fixed-effect singletons were removed (118 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'cell_nr::Inc-nobind:dose_nr'
+have been removed because of collinearity (see $collin.var).
+  Inc-becomes      post=-0.012 (SE 0.004)  pre=-0.002 (SE 0.008)  N=178,113
+NOTE: 118/0 fixed-effect singletons were removed (118 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post=-0.012 (SE 0.007)  pre= 0.069 (SE 0.027)  N=177,942
+  Dec-bind skip (no treated rows)
+  Dec-becomes-non skip (no treated rows)
+  Dec-nobind skip (no treated rows)
+
+[share_work_outside]
+NOTE: 20/0 fixed-effect singletons were removed (20 observations).
+  Inc-bind         post= 0.086 (SE 0.014)  pre=-0.020 (SE 0.012)  N=180,763
+NOTE: 20/0 fixed-effect singletons were removed (20 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd' and 'cell_nr::Inc-nobind:dose_nr'
+have been removed because of collinearity (see $collin.var).
+  Inc-becomes      post= 0.012 (SE 0.003)  pre=-0.008 (SE 0.004)  N=180,826
+NOTE: 20/0 fixed-effect singletons were removed (20 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post= 0.009 (SE 0.009)  pre=-0.007 (SE 0.010)  N=180,656
+  Dec-bind skip (no treated rows)
+  Dec-becomes-non skip (no treated rows)
+  Dec-nobind skip (no treated rows)
+
+--- Headline-spec ES summary (muni side) ---
+                outcome        cell att_post_per_pp att_post_se att_pre_per_pp
+                 <char>      <char>           <num>       <num>          <num>
+ 1:   log_live_and_work    Inc-bind          -0.762       0.095         -0.072
+ 2:   log_live_and_work Inc-becomes          -0.171       0.037          0.075
+ 3:   log_live_and_work  Inc-nobind           0.044       0.080          0.053
+ 4:    log_in_commuters    Inc-bind          -0.498       0.080          0.119
+ 5:    log_in_commuters Inc-becomes          -0.194       0.039          0.081
+ 6:    log_in_commuters  Inc-nobind          -0.057       0.077         -0.782
+ 7: log_total_residents    Inc-bind          -0.186       0.044         -0.160
+ 8: log_total_residents Inc-becomes          -0.021       0.020          0.027
+ 9: log_total_residents  Inc-nobind          -0.041       0.039         -0.241
+10:       share_live_in    Inc-bind          -0.069       0.015         -0.020
+11:       share_live_in Inc-becomes          -0.012       0.004         -0.002
+12:       share_live_in  Inc-nobind          -0.012       0.007          0.069
+13:  share_work_outside    Inc-bind           0.086       0.014         -0.020
+14:  share_work_outside Inc-becomes           0.012       0.003         -0.008
+15:  share_work_outside  Inc-nobind           0.009       0.009         -0.007
+    att_pre_se wald_pre_stat wald_pre_df wald_pre_p      n
+         <num>         <num>       <int>      <num>  <int>
+ 1:      0.068         4.592           4     0.3318 163014
+ 2:      0.028        22.829           4     0.0001 163064
+ 3:      0.151        31.535           4     0.0000 162895
+ 4:      0.088         2.211           4     0.6970 178042
+ 5:      0.057        27.008           4     0.0000 178105
+ 6:      0.244       230.807           4     0.0000 177934
+ 7:      0.066        15.029           4     0.0046 180763
+ 8:      0.025        19.102           4     0.0008 180826
+ 9:      0.017       437.654           4     0.0000 180656
+10:      0.012        15.752           4     0.0034 178050
+11:      0.008         6.158           4     0.1877 178113
+12:      0.027       154.208           4     0.0000 177942
+13:      0.012         3.207           4     0.5238 180763
+14:      0.004        10.386           4     0.0344 180826
+15:      0.010       221.091           4     0.0000 180656
+Cousub-year-SD assignments: 49,117
+Unique SDs: 488, unique munis: 2472
+
+SD panel: 8,698 SD-years, 488 unique SDs
+Mean munis per SD: 5.1
+Merged SD fiscal controls: 8939 / 8949 SD-years matched
+
+Dropping 0 uncertain SDs
+Dropping 4 Dec SDs (paper excludes Dec cells)
+
+SD cell composition (unique SDs):
+       cell_sd     N
+        <fctr> <int>
+1:          NC   432
+2:    Inc-bind    25
+3: Inc-becomes    23
+4:  Inc-nobind     4
+
+Stacked panel: 43,552 SD-stack-year obs, 484 unique SDs
+
+--- SD-level stacked-continuous DiD (control: mean muni rate) ---
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+
+--- SD-level Inc cells, all outcomes ---
+                outcome        cell    est    se      p     n    sig
+                 <char>      <char>  <num> <num>  <num> <int> <char>
+ 1:   log_live_and_work    Inc-bind  0.029 0.038 0.4557 43434       
+ 2:   log_live_and_work Inc-becomes  0.271 0.154 0.0793 43434      *
+ 3:   log_live_and_work  Inc-nobind  0.797 0.505 0.1153 43434       
+ 4:    log_in_commuters    Inc-bind  0.058 0.046 0.2061 43463       
+ 5:    log_in_commuters Inc-becomes  0.185 0.137 0.1794 43463       
+ 6:    log_in_commuters  Inc-nobind  1.152 0.632 0.0690 43463      *
+ 7:   log_out_commuters    Inc-bind  0.106 0.032 0.0011 43463    ***
+ 8:   log_out_commuters Inc-becomes  0.334 0.131 0.0112 43463     **
+ 9:   log_out_commuters  Inc-nobind  0.404 0.124 0.0012 43463    ***
+10:      log_total_jobs    Inc-bind  0.064 0.043 0.1418 43463       
+11:      log_total_jobs Inc-becomes  0.190 0.138 0.1701 43463       
+12:      log_total_jobs  Inc-nobind  1.114 0.610 0.0686 43463      *
+13: log_total_residents    Inc-bind  0.107 0.030 0.0004 43463    ***
+14: log_total_residents Inc-becomes  0.318 0.131 0.0158 43463     **
+15: log_total_residents  Inc-nobind  0.423 0.147 0.0041 43463    ***
+16:       share_live_in    Inc-bind  0.003 0.004 0.4449 43463       
+17:       share_live_in Inc-becomes  0.004 0.006 0.5739 43463       
+18:       share_live_in  Inc-nobind -0.035 0.023 0.1285 43463       
+19:  share_work_outside    Inc-bind  0.000 0.004 0.9523 43463       
+20:  share_work_outside Inc-becomes  0.012 0.010 0.2120 43463       
+21:  share_work_outside  Inc-nobind -0.016 0.021 0.4508 43463       
+22:        share_nonres    Inc-bind -0.003 0.004 0.4449 43463       
+23:        share_nonres Inc-becomes -0.004 0.006 0.5739 43463       
+24:        share_nonres  Inc-nobind  0.035 0.023 0.1285 43463       
+                outcome        cell    est    se      p     n    sig
+
+--- Diagnostics ---
+               outcome     n     R2 Within_R2 dep_mean dep_sd
+                <char> <int>  <num>     <num>    <num>  <num>
+1:   log_live_and_work 43434 0.9848    0.0046   6.2665 1.3036
+2:    log_in_commuters 43463 0.9862    0.0041   8.3281 1.2027
+3:   log_out_commuters 43463 0.9845    0.0053   8.6515 0.8758
+4:      log_total_jobs 43463 0.9873    0.0047   8.4665 1.2041
+5: log_total_residents 43463 0.9861    0.0055   8.7633 0.9099
+6:       share_live_in 43463 0.9510    0.0040   0.1261 0.0688
+7:  share_work_outside 43463 0.9758    0.0043   0.8984 0.0771
+8:        share_nonres 43463 0.9510    0.0040   0.8739 0.0688
+
+Saved data/q3_unified/sd_level_results.csv
+Saved data/q3_unified/sd_level_diagnostics.csv
+
+[log_live_and_work]
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.040 (SE 0.028)  pre= 0.012 (SE 0.039)  N=43,195
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.470 (SE 0.121)  pre= 0.371 (SE 0.139)  N=43,181
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.461 (SE 0.202)  pre=-0.382 (SE 0.322)  N=43,010
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[log_in_commuters]
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.067 (SE 0.022)  pre= 0.014 (SE 0.031)  N=43,224
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.311 (SE 0.105)  pre= 0.222 (SE 0.119)  N=43,210
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.937 (SE 0.239)  pre=-0.225 (SE 0.290)  N=43,039
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[log_total_residents]
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.100 (SE 0.019)  pre=-0.016 (SE 0.025)  N=43,224
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.426 (SE 0.093)  pre= 0.193 (SE 0.105)  N=43,210
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.303 (SE 0.060)  pre=-0.172 (SE 0.143)  N=43,039
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[share_live_in]
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post=-0.001 (SE 0.002)  pre=-0.008 (SE 0.005)  N=43,224
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.010 (SE 0.003)  pre= 0.014 (SE 0.009)  N=43,210
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.059 (SE 0.015)  pre=-0.036 (SE 0.016)  N=43,039
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[share_work_outside]
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.000 (SE 0.002)  pre= 0.001 (SE 0.002)  N=43,224
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.002 (SE 0.004)  pre=-0.027 (SE 0.009)  N=43,210
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.015 (SE 0.011)  pre=-0.008 (SE 0.007)  N=43,039
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+--- SD-level ATT summary ---
+                outcome        cell att_post_per_pp att_post_se att_pre_per_pp
+                 <char>      <char>           <num>       <num>          <num>
+ 1:   log_live_and_work    Inc-bind           0.040       0.028          0.012
+ 2:   log_live_and_work Inc-becomes           0.470       0.121          0.371
+ 3:   log_live_and_work  Inc-nobind           0.461       0.202         -0.382
+ 4:    log_in_commuters    Inc-bind           0.067       0.022          0.014
+ 5:    log_in_commuters Inc-becomes           0.311       0.105          0.222
+ 6:    log_in_commuters  Inc-nobind           0.937       0.239         -0.225
+ 7: log_total_residents    Inc-bind           0.100       0.019         -0.016
+ 8: log_total_residents Inc-becomes           0.426       0.093          0.193
+ 9: log_total_residents  Inc-nobind           0.303       0.060         -0.172
+10:       share_live_in    Inc-bind          -0.001       0.002         -0.008
+11:       share_live_in Inc-becomes           0.010       0.003          0.014
+12:       share_live_in  Inc-nobind          -0.059       0.015         -0.036
+13:  share_work_outside    Inc-bind           0.000       0.002          0.001
+14:  share_work_outside Inc-becomes          -0.002       0.004         -0.027
+15:  share_work_outside  Inc-nobind          -0.015       0.011         -0.008
+    att_pre_se wald_pre_stat wald_pre_df wald_pre_p     n
+         <num>         <num>       <int>      <num> <int>
+ 1:      0.039         0.652           4     0.9571 43195
+ 2:      0.139         5.097           4     0.2775 43181
+ 3:      0.322         7.288           3     0.0633 43010
+ 4:      0.031         5.778           4     0.2164 43224
+ 5:      0.119         4.904           4     0.2973 43210
+ 6:      0.290         2.138           3     0.5443 43039
+ 7:      0.025         3.260           4     0.5152 43224
+ 8:      0.105         1.165           4     0.8838 43210
+ 9:      0.143         4.539           3     0.2089 43039
+10:      0.005         2.942           4     0.5676 43224
+11:      0.009         1.485           4     0.8293 43210
+12:      0.016        84.473           3     0.0000 43039
+13:      0.002         1.702           4     0.7904 43224
+14:      0.009         5.286           4     0.2592 43210
+15:      0.007        32.274           3     0.0000 43039
+Sourcing cousub-level full table prep for SD/nonres cells...
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+Loading block panel...
+
+Merged SD fiscal controls: 4778508 / 5030958 block-years matched
+
+Muni cell distribution (block-year):
+Key: <cell_muni>
+     cell_muni       N
+        <fctr>   <int>
+1:        <NA> 1713599
+2:          NC 2982677
+3:    Inc-bind  108760
+4: Inc-becomes  141744
+5:  Inc-nobind   84178
+
+Building block-level stacked panel (this is large)...
+Stack: 23,699,623 rows; treated blocks: 19,352; NC blocks: 184,103
+
+[log_home_count]
+NOTE: 73,258/0 fixed-effect singletons were removed (73,258 observations).
+  Inc-bind         post=-0.449 (SE 0.046)  pre=-0.213 (SE 0.059)  N=16,970,487
+NOTE: 73,272/0 fixed-effect singletons were removed (73,272 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd', 'cell_nr::Inc-nobind:dose_nr' and
+'share_federal_rev_sd' have been removed because of collinearity (see
+$collin.var).
+  Inc-becomes      post= 0.009 (SE 0.024)  pre= 0.052 (SE 0.020)  N=16,972,603
+NOTE: 73,212/0 fixed-effect singletons were removed (73,212 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post= 0.398 (SE 0.052)  pre=-0.015 (SE 0.049)  N=16,938,764
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[log_work_count]
+NOTE: 182,699/0 fixed-effect singletons were removed (182,699 observations).
+  Inc-bind         post=-0.125 (SE 0.058)  pre= 0.002 (SE 0.043)  N=6,307,857
+NOTE: 182,773/0 fixed-effect singletons were removed (182,773 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd', 'cell_nr::Inc-nobind:dose_nr' and
+'share_federal_rev_sd' have been removed because of collinearity (see
+$collin.var).
+  Inc-becomes      post=-0.026 (SE 0.016)  pre= 0.041 (SE 0.015)  N=6,311,041
+NOTE: 182,451/0 fixed-effect singletons were removed (182,451 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post= 0.201 (SE 0.044)  pre=-0.408 (SE 0.041)  N=6,296,475
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[home_in_muni_share]
+NOTE: 73,258/0 fixed-effect singletons were removed (73,258 observations).
+  Inc-bind         post=-0.071 (SE 0.023)  pre= 0.022 (SE 0.012)  N=16,970,487
+NOTE: 73,272/0 fixed-effect singletons were removed (73,272 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd', 'cell_nr::Inc-nobind:dose_nr' and
+'share_federal_rev_sd' have been removed because of collinearity (see
+$collin.var).
+  Inc-becomes      post=-0.024 (SE 0.006)  pre= 0.012 (SE 0.003)  N=16,972,603
+NOTE: 73,212/0 fixed-effect singletons were removed (73,212 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post= 0.035 (SE 0.010)  pre= 0.003 (SE 0.015)  N=16,938,764
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+[share_work_outside]
+NOTE: 73,258/0 fixed-effect singletons were removed (73,258 observations).
+  Inc-bind         post= 0.071 (SE 0.023)  pre=-0.022 (SE 0.012)  N=16,970,487
+NOTE: 73,272/0 fixed-effect singletons were removed (73,272 observations).
+The variables 'cell_sd::Inc-nobind:dose_sd', 'cell_nr::Inc-nobind:dose_nr' and
+'share_federal_rev_sd' have been removed because of collinearity (see
+$collin.var).
+  Inc-becomes      post= 0.024 (SE 0.006)  pre=-0.012 (SE 0.003)  N=16,972,603
+NOTE: 73,212/0 fixed-effect singletons were removed (73,212 observations).
+The variable 'cell_nr::Inc-nobind:dose_nr' has been removed because of
+collinearity (see $collin.var).
+  Inc-nobind       post=-0.035 (SE 0.010)  pre=-0.003 (SE 0.015)  N=16,938,764
+  Dec-bind skip
+  Dec-becomes-non skip
+  Dec-nobind skip
+
+--- Block-level fully-parameterized ES summary (muni side) ---
+               outcome        cell att_post_per_pp att_post_se att_pre_per_pp
+                <char>      <char>           <num>       <num>          <num>
+ 1:     log_home_count    Inc-bind          -0.449       0.046         -0.213
+ 2:     log_home_count Inc-becomes           0.009       0.024          0.052
+ 3:     log_home_count  Inc-nobind           0.398       0.052         -0.015
+ 4:     log_work_count    Inc-bind          -0.125       0.058          0.002
+ 5:     log_work_count Inc-becomes          -0.026       0.016          0.041
+ 6:     log_work_count  Inc-nobind           0.201       0.044         -0.408
+ 7: home_in_muni_share    Inc-bind          -0.071       0.023          0.022
+ 8: home_in_muni_share Inc-becomes          -0.024       0.006          0.012
+ 9: home_in_muni_share  Inc-nobind           0.035       0.010          0.003
+10: share_work_outside    Inc-bind           0.071       0.023         -0.022
+11: share_work_outside Inc-becomes           0.024       0.006         -0.012
+12: share_work_outside  Inc-nobind          -0.035       0.010         -0.003
+    att_pre_se wald_pre_stat wald_pre_df wald_pre_p        n
+         <num>         <num>       <int>      <num>    <int>
+ 1:      0.059        15.496           4     0.0038 16970487
+ 2:      0.020        17.093           4     0.0019 16972603
+ 3:      0.049        53.155           4     0.0000 16938764
+ 4:      0.043         6.685           4     0.1535  6307857
+ 5:      0.015         7.983           4     0.0922  6311041
+ 6:      0.041       883.428           4     0.0000  6296475
+ 7:      0.012        26.217           4     0.0000 16970487
+ 8:      0.003        36.960           4     0.0000 16972603
+ 9:      0.015       350.741           4     0.0000 16938764
+10:      0.012        26.217           4     0.0000 16970487
+11:      0.003        36.960           4     0.0000 16972603
+12:      0.015       350.741           4     0.0000 16938764
+There were 50 or more warnings (use warnings() to see the first 50)
+
+[4b] Binary Sun-Abraham IW ES (cousub + SD; block-level IW unstable)
+
+========================================================
+Cousub-level binary Sun-Abraham IW event study
+========================================================
+Dropping 72 Dec munis (3.9% of panel).
+
+Running headline regressions for each outcome...
+   log_live_and_work ...
+NOTE: 562/0 fixed-effect singletons were removed (562 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_in_commuters ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_out_commuters ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_jobs ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   log_total_residents ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_live_in ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_work_outside ...
+NOTE: 21/0 fixed-effect singletons were removed (21 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+   share_nonres ...
+NOTE: 131/0 fixed-effect singletons were removed (131 observations).
+The variable 'cell_sd::Inc-nobind:dose_sd' has been removed because of
+collinearity (see $collin.var).
+
+--- Headline regression diagnostics ---
+               outcome      n     R2 Within_R2 dep_mean dep_sd cluster_n
+                <char>  <int>  <num>     <num>    <num>  <num>     <int>
+1:   log_live_and_work 174929 0.9634    0.0009   3.6593 1.9256    175491
+2:    log_in_commuters 191405 0.9594    0.0013   5.8361 1.8825    191536
+3:   log_out_commuters 194533 0.9789    0.0012   6.6260 1.2617    194554
+4:      log_total_jobs 191413 0.9614    0.0014   5.9367 1.8968    191544
+5: log_total_residents 194533 0.9804    0.0013   6.6865 1.2963    194554
+6:       share_live_in 191413 0.8251    0.0010   0.0925 0.0755    191544
+7:  share_work_outside 194533 0.9432    0.0011   0.9438 0.0639    194554
+8:        share_nonres 191413 0.8251    0.0010   0.9075 0.0755    191544
+                        fe       se_type
+                    <char>        <char>
+1: stack_muni + stack_year cluster: muni
+2: stack_muni + stack_year cluster: muni
+3: stack_muni + stack_year cluster: muni
+4: stack_muni + stack_year cluster: muni
+5: stack_muni + stack_year cluster: muni
+6: stack_muni + stack_year cluster: muni
+7: stack_muni + stack_year cluster: muni
+8: stack_muni + stack_year cluster: muni
+
+--- Inc-bind coefficient with SE per outcome ---
+               outcome                            term    est    se      p
+                <char>                          <char>  <num> <num>  <num>
+1:   log_live_and_work treat_cell::Inc-bind:dose_stack -0.573 0.162 0.0004
+2:    log_in_commuters treat_cell::Inc-bind:dose_stack -0.412 0.126 0.0011
+3:   log_out_commuters treat_cell::Inc-bind:dose_stack -0.015 0.064 0.8189
+4:      log_total_jobs treat_cell::Inc-bind:dose_stack -0.490 0.133 0.0002
+5: log_total_residents treat_cell::Inc-bind:dose_stack -0.104 0.043 0.0146
+6:       share_live_in treat_cell::Inc-bind:dose_stack -0.058 0.020 0.0031
+7:  share_work_outside treat_cell::Inc-bind:dose_stack  0.074 0.035 0.0353
+8:        share_nonres treat_cell::Inc-bind:dose_stack  0.058 0.020 0.0031
+        n
+    <int>
+1: 174929
+2: 191405
+3: 194533
+4: 191413
+5: 194533
+6: 191413
+7: 194533
+8: 191413
+
+--- Control coefficients on log_live_and_work ---
+             term     est     se      p    sig
+           <char>   <num>  <num>  <num> <char>
+1:   share_police  0.1110 0.1041 0.2867       
+2:  share_streets  0.0501 0.0414 0.2265       
+3: share_debt_svc -0.0652 0.0539 0.2271       
+4:      share_eit -0.0356 0.0881 0.6859       
+5:       share_re -0.1890 0.0899 0.0357     **
+6: share_intergov  0.0182 0.0457 0.6896       
+
+Saved data/q3_unified/headline_full_table.csv (all coefficients)
+Saved data/q3_unified/headline_diagnostics.csv (one row per outcome)
+
+[cousub | log_live_and_work]
+NOTE: 27,489 observations removed because of NA values (RHS: 27,489).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 10 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.004 (SE 0.021)  pre=-0.191 (SE 0.044)
+NOTES: 27,542 observations removed because of NA values (RHS: 27,542).
+       1/0 fixed-effect singleton was removed (1 observation).
+The variables 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003', 'year::9:cohort::2003', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.092 (SE 0.024)  pre=-0.048 (SE 0.043)
+NOTES: 27,442 observations removed because of NA values (RHS: 27,442).
+       1/0 fixed-effect singleton was removed (1 observation).
+The variables 'year::3:cohort::2003', 'year::4:cohort::2003',
+'year::5:cohort::2003', 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003' and 10 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.181 (SE 0.069)  pre= 0.018 (SE 0.040)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[cousub | log_in_commuters]
+NOTE: 30,022 observations removed because of NA values (RHS: 30,022).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 10 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.029 (SE 0.024)  pre=-0.032 (SE 0.051)
+NOTE: 30,082 observations removed because of NA values (RHS: 30,082).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.028 (SE 0.022)  pre= 0.167 (SE 0.039)
+NOTE: 29,989 observations removed because of NA values (RHS: 29,989).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.283 (SE 0.148)  pre=-0.660 (SE 0.210)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[cousub | log_total_residents]
+NOTE: 30,454 observations removed because of NA values (RHS: 30,454).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 10 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.011 (SE 0.014)  pre=-0.021 (SE 0.034)
+NOTE: 30,514 observations removed because of NA values (RHS: 30,514).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.018 (SE 0.010)  pre= 0.059 (SE 0.011)
+NOTE: 30,425 observations removed because of NA values (RHS: 30,425).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.048 (SE 0.042)  pre=-0.128 (SE 0.024)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[cousub | share_live_in]
+NOTE: 30,024 observations removed because of NA values (RHS: 30,024).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 10 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post=-0.007 (SE 0.004)  pre=-0.017 (SE 0.004)
+NOTE: 30,084 observations removed because of NA values (RHS: 30,084).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.011 (SE 0.003)  pre=-0.019 (SE 0.004)
+NOTE: 29,991 observations removed because of NA values (RHS: 29,991).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.018 (SE 0.008)  pre= 0.001 (SE 0.006)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[cousub | share_work_outside]
+NOTE: 30,454 observations removed because of NA values (RHS: 30,454).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 10 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.004 (SE 0.002)  pre= 0.003 (SE 0.004)
+NOTE: 30,514 observations removed because of NA values (RHS: 30,514).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.007 (SE 0.002)  pre=-0.001 (SE 0.004)
+NOTE: 30,425 observations removed because of NA values (RHS: 30,425).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.015 (SE 0.006)  pre=-0.006 (SE 0.003)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+========================================================
+SD-level binary Sun-Abraham IW event study
+========================================================
+Cousub-year-SD assignments: 49,117
+Unique SDs: 488, unique munis: 2472
+
+SD panel: 8,698 SD-years, 488 unique SDs
+Mean munis per SD: 5.1
+Merged SD fiscal controls: 8939 / 8949 SD-years matched
+
+Dropping 0 uncertain SDs
+Dropping 4 Dec SDs (paper excludes Dec cells)
+
+SD cell composition (unique SDs):
+       cell_sd     N
+        <fctr> <int>
+1:          NC   432
+2:    Inc-bind    25
+3: Inc-becomes    23
+4:  Inc-nobind     4
+
+Stacked panel: 43,552 SD-stack-year obs, 484 unique SDs
+
+--- SD-level stacked-continuous DiD (control: mean muni rate) ---
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+NOTE: 4/0 fixed-effect singletons were removed (4 observations).
+The variable 'share_federal_rev_sd' has been removed because of collinearity
+(see $collin.var).
+
+--- SD-level Inc cells, all outcomes ---
+                outcome        cell    est    se      p     n    sig
+                 <char>      <char>  <num> <num>  <num> <int> <char>
+ 1:   log_live_and_work    Inc-bind  0.029 0.038 0.4557 43434       
+ 2:   log_live_and_work Inc-becomes  0.271 0.154 0.0793 43434      *
+ 3:   log_live_and_work  Inc-nobind  0.797 0.505 0.1153 43434       
+ 4:    log_in_commuters    Inc-bind  0.058 0.046 0.2061 43463       
+ 5:    log_in_commuters Inc-becomes  0.185 0.137 0.1794 43463       
+ 6:    log_in_commuters  Inc-nobind  1.152 0.632 0.0690 43463      *
+ 7:   log_out_commuters    Inc-bind  0.106 0.032 0.0011 43463    ***
+ 8:   log_out_commuters Inc-becomes  0.334 0.131 0.0112 43463     **
+ 9:   log_out_commuters  Inc-nobind  0.404 0.124 0.0012 43463    ***
+10:      log_total_jobs    Inc-bind  0.064 0.043 0.1418 43463       
+11:      log_total_jobs Inc-becomes  0.190 0.138 0.1701 43463       
+12:      log_total_jobs  Inc-nobind  1.114 0.610 0.0686 43463      *
+13: log_total_residents    Inc-bind  0.107 0.030 0.0004 43463    ***
+14: log_total_residents Inc-becomes  0.318 0.131 0.0158 43463     **
+15: log_total_residents  Inc-nobind  0.423 0.147 0.0041 43463    ***
+16:       share_live_in    Inc-bind  0.003 0.004 0.4449 43463       
+17:       share_live_in Inc-becomes  0.004 0.006 0.5739 43463       
+18:       share_live_in  Inc-nobind -0.035 0.023 0.1285 43463       
+19:  share_work_outside    Inc-bind  0.000 0.004 0.9523 43463       
+20:  share_work_outside Inc-becomes  0.012 0.010 0.2120 43463       
+21:  share_work_outside  Inc-nobind -0.016 0.021 0.4508 43463       
+22:        share_nonres    Inc-bind -0.003 0.004 0.4449 43463       
+23:        share_nonres Inc-becomes -0.004 0.006 0.5739 43463       
+24:        share_nonres  Inc-nobind  0.035 0.023 0.1285 43463       
+                outcome        cell    est    se      p     n    sig
+
+--- Diagnostics ---
+               outcome     n     R2 Within_R2 dep_mean dep_sd
+                <char> <int>  <num>     <num>    <num>  <num>
+1:   log_live_and_work 43434 0.9848    0.0046   6.2665 1.3036
+2:    log_in_commuters 43463 0.9862    0.0041   8.3281 1.2027
+3:   log_out_commuters 43463 0.9845    0.0053   8.6515 0.8758
+4:      log_total_jobs 43463 0.9873    0.0047   8.4665 1.2041
+5: log_total_residents 43463 0.9861    0.0055   8.7633 0.9099
+6:       share_live_in 43463 0.9510    0.0040   0.1261 0.0688
+7:  share_work_outside 43463 0.9758    0.0043   0.8984 0.0771
+8:        share_nonres 43463 0.9510    0.0040   0.8739 0.0688
+
+Saved data/q3_unified/sd_level_results.csv
+Saved data/q3_unified/sd_level_diagnostics.csv
+
+[sd | log_live_and_work]
+NOTE: 7,920 observations removed because of NA values (RHS: 7,920).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post=-0.015 (SE 0.039)  pre=-0.166 (SE 0.046)
+NOTE: 7,920 observations removed because of NA values (RHS: 7,920).
+The variables 'year::4:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003', 'year::9:cohort::2003', 'year::9:cohort::2010',
+'year::10:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.204 (SE 0.031)  pre= 0.464 (SE 0.056)
+NOTE: 7,920 observations removed because of NA values (RHS: 7,920).
+The variables 'year::3:cohort::2003', 'year::4:cohort::2003',
+'year::5:cohort::2003', 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003' and 20 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.149 (SE NaN)  pre= 0.073 (SE NaN)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[sd | log_in_commuters]
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.004 (SE 0.018)  pre=-0.113 (SE 0.026)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::4:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003', 'year::9:cohort::2003', 'year::9:cohort::2010',
+'year::10:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.088 (SE 0.031)  pre= 0.385 (SE 0.060)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::3:cohort::2003', 'year::4:cohort::2003',
+'year::5:cohort::2003', 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003' and 20 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.092 (SE NaN)  pre= 0.373 (SE NaN)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[sd | log_total_residents]
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.049 (SE 0.012)  pre=-0.008 (SE 0.016)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::4:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003', 'year::9:cohort::2003', 'year::9:cohort::2010',
+'year::10:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.177 (SE 0.025)  pre= 0.306 (SE 0.046)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::3:cohort::2003', 'year::4:cohort::2003',
+'year::5:cohort::2003', 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003' and 20 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.041 (SE NaN)  pre=-0.033 (SE NaN)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[sd | share_live_in]
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.001 (SE 0.003)  pre=-0.003 (SE 0.004)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::4:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003', 'year::9:cohort::2003', 'year::9:cohort::2010',
+'year::10:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.002 (SE 0.002)  pre= 0.003 (SE 0.002)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::3:cohort::2003', 'year::4:cohort::2003',
+'year::5:cohort::2003', 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003' and 20 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post=-0.004 (SE NaN)  pre=-0.050 (SE NaN)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[sd | share_work_outside]
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post=-0.002 (SE 0.003)  pre= 0.008 (SE 0.004)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::4:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003', 'year::9:cohort::2003', 'year::9:cohort::2010',
+'year::10:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post= 0.006 (SE 0.003)  pre=-0.027 (SE 0.003)
+NOTE: 7,925 observations removed because of NA values (RHS: 7,925).
+The variables 'year::3:cohort::2003', 'year::4:cohort::2003',
+'year::5:cohort::2003', 'year::6:cohort::2003', 'year::7:cohort::2003',
+'year::8:cohort::2003' and 20 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.007 (SE NaN)  pre=-0.011 (SE NaN)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+========================================================
+Block-level binary Sun-Abraham IW event study (muni-side cells)
+========================================================
+
+[block | log_home_count]
+NOTES: 2,883,167 observations removed because of NA values (RHS: 2,883,167, vcov: 35,376).
+       69/0 fixed-effect singletons were removed (69 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::10:cohort::2003', 'year::10:cohort::2009',
+'year::11:cohort::2003' and 9 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post=-0.074 (SE 13.800)  pre=-0.102 (SE 33.594)
+NOTES: 2,889,869 observations removed because of NA values (RHS: 2,889,869, vcov: 35,760).
+       86/0 fixed-effect singletons were removed (86 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2010', 'year::10:cohort::2003', 'year::10:cohort::2009',
+'year::11:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.005 (SE 9.355)  pre= 0.095 (SE 9.490)
+NOTES: 2,878,026 observations removed because of NA values (RHS: 2,878,026, vcov: 35,989).
+       36/0 fixed-effect singletons were removed (36 observations).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.116 (SE 0.016)  pre= 0.044 (SE 0.014)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[block | log_work_count]
+NOTES: 1,092,325 observations removed because of NA values (RHS: 1,092,325, vcov: 16,876).
+       409/0 fixed-effect singletons were removed (409 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.006 (SE 0.011)  pre=-0.202 (SE 0.025)
+NOTES: 1,096,253 observations removed because of NA values (RHS: 1,096,253, vcov: 17,121).
+       474/0 fixed-effect singletons were removed (474 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::9:cohort::2010', 'year::10:cohort::2003',
+'year::10:cohort::2009' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.034 (SE 0.009)  pre= 0.043 (SE 0.017)
+NOTES: 1,091,280 observations removed because of NA values (RHS: 1,091,280, vcov: 17,241).
+       247/0 fixed-effect singletons were removed (247 observations).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.092 (SE 0.022)  pre= 0.041 (SE 0.019)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[block | home_in_muni_share]
+NOTES: 2,883,167 observations removed because of NA values (RHS: 2,883,167, vcov: 35,376).
+       69/0 fixed-effect singletons were removed (69 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::10:cohort::2003', 'year::10:cohort::2009',
+'year::11:cohort::2003' and 9 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post= 0.006 (SE 4.920)  pre=-0.004 (SE 11.976)
+NOTES: 2,889,869 observations removed because of NA values (RHS: 2,889,869, vcov: 35,760).
+       86/0 fixed-effect singletons were removed (86 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2010', 'year::10:cohort::2003', 'year::10:cohort::2009',
+'year::11:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).
+  Inc-becomes      post=-0.005 (SE 2.027)  pre=-0.000 (SE 2.055)
+NOTES: 2,878,026 observations removed because of NA values (RHS: 2,878,026, vcov: 35,989).
+       36/0 fixed-effect singletons were removed (36 observations).
+The variables 'year::3:cohort::2003', 'year::3:cohort::2006',
+'year::4:cohort::2003', 'year::5:cohort::2003', 'year::6:cohort::2003',
+'year::7:cohort::2003' and 12 others have been removed because of collinearity
+(see $collin.var).
+  Inc-nobind       post= 0.026 (SE 0.007)  pre= 0.007 (SE 0.008)
+  Dec-bind skip (no treated)
+  Dec-becomes-non skip (no treated)
+  Dec-nobind skip (no treated)
+
+[block | share_work_outside]
+NOTES: 2,883,167 observations removed because of NA values (RHS: 2,883,167, vcov: 35,376).
+       69/0 fixed-effect singletons were removed (69 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2003', 'year::10:cohort::2003', 'year::10:cohort::2009',
+'year::11:cohort::2003' and 9 others have been removed because of collinearity
+(see $collin.var).
+  Inc-bind         post=-0.006 (SE 4.920)  pre= 0.004 (SE 11.975)
+NOTES: 2,889,869 observations removed because of NA values (RHS: 2,889,869, vcov: 35,760).
+       86/0 fixed-effect singletons were removed (86 observations).
+The variables 'year::7:cohort::2003', 'year::8:cohort::2003',
+'year::9:cohort::2010', 'year::10:cohort::2003', 'year::10:cohort::2009',
+'year::11:cohort::2003' and 11 others have been removed because of collinearity
+(see $collin.var).

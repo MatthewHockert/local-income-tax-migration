@@ -190,7 +190,7 @@ cd paper && pdflatex main.tex && biber main && pdflatex main.tex && pdflatex mai
 | `q3_unified_tercile_3level.R` | Dose-magnitude tercile, all 3 levels |
 | `q3_unified_altctrl_3level.R` | Alt-control (Cengiz clean-in-window), all 3 levels |
 | `q3_unified_honestdid.R` | Rambachan-Roth (2023) sensitivity bounds on Inc-bind ES, all 3 levels x 4 outcomes |
-| `build_summary_stats.R` | Summary tables (muni/block/SD) + rate ECDF + Act 32 CDF + rate-changes-by-year |
+| `build_summary_stats.R` | Summary tables (muni/block/SD) + rate ECDF + Act 32 CDF + rate-changes-by-year + aggregate home-stack-vs-work-rate levels figure (overlaid bars by year: home stack behind, work rate in front, EIT rates in pp) |
 | `build_paper_tables.R` | LaTeX tables for paper |
 | `build_industry_figure.R` | Industry bar chart |
 | `build_industry_table.R` | Industry-decomposition LaTeX table fragment |
