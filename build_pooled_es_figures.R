@@ -132,7 +132,7 @@ if (!is.null(cousub_dt) && !is.null(sd_dt)) {
   muni_sd[, direction := factor(direction, levels = c("Inc"))]
   muni_sd[, level := factor(level, levels = c("Municipality","School district"))]
   muni_outcomes <- c("log_live_and_work","log_in_commuters",
-                     "log_total_residents",
+                     "log_total_jobs",
                      "share_live_in","share_work_outside")
   muni_sd[, outcome := factor(outcome, levels = muni_outcomes,
                                labels = outcome_label(muni_outcomes))]

@@ -163,12 +163,12 @@ plot_one_level <- function(dt, level_label, color_pos, out_path) {
   dt[, hi := est + 1.96 * se]
   dt[, direction := factor(direction, levels = c("Inc","Dec"))]
   muni_outcomes <- c("log_live_and_work","log_in_commuters",
-                      "log_total_residents", "share_live_in")
+                      "log_total_jobs", "share_live_in")
   dt <- dt[outcome %in% muni_outcomes]
   outcome_pretty <- c(
     log_live_and_work = "log(live-and-work)",
     log_in_commuters  = "log(in-commuters)",
-    log_total_residents = "log(total residents)",
+    log_total_jobs    = "log(total jobs)",
     share_live_in     = "Share live-in-muni"
   )
   dt[, outcome := factor(outcome, levels = names(outcome_pretty),

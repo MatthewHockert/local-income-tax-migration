@@ -59,7 +59,6 @@ write_summary_table <- function(rows, caption, label_id, out_name, notes = chara
     sprintf("  \\caption{%s}", caption),
     sprintf("  \\label{%s}", label_id),
     "  \\small",
-    "  \\resizebox{\\textwidth}{!}{",
     "  \\begin{tabular}{lrrrrr}",
     "    \\toprule",
     "    Variable & N & Mean & SD & Min & Max \\\\",
@@ -72,7 +71,7 @@ write_summary_table <- function(rows, caption, label_id, out_name, notes = chara
       format(as.integer(r$N), big.mark = ","),
       r$mean, r$sd, r$min, r$max))
   }
-  body <- c(body, "    \\bottomrule", "  \\end{tabular}", "  }",
+  body <- c(body, "    \\bottomrule", "  \\end{tabular}",
             "  \\vspace{0.3em}",
             "  \\begin{minipage}{0.95\\textwidth}",
             sprintf("    \\footnotesize \\textit{Notes:} %s",

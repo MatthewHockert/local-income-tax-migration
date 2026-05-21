@@ -96,7 +96,7 @@ build_stack <- function(p, cell_col, K = K_stack) {
                                       share_debt_svc, share_eit,
                                       share_re, share_intergov,
                                       log_live_and_work, log_in_commuters,
-                                      log_total_residents, share_live_in)]
+                                      log_total_jobs, share_live_in)]
   }), fill = TRUE)
 }
 
@@ -140,7 +140,7 @@ run_one <- function(stk, outcome) {
 }
 
 outcomes <- c("log_live_and_work","log_in_commuters",
-              "log_total_residents","share_live_in")
+              "log_total_jobs","share_live_in")
 n_inc_bind_total <- nrow(treated_incbind)
 cat(sprintf("\n=== Cousub headline (all %d Inc-bind munis) ===\n", n_inc_bind_total))
 res_full <- rbindlist(lapply(outcomes, function(o) run_one(stk_full, o)))
@@ -171,13 +171,13 @@ tex <- sprintf("\\begin{table}[H]
   \\small
   \\begin{tabular}{lcc}
     \\toprule
-    Outcome & All %d Inc-bind & Drop $k$ Act~47 \\\\
+    Outcome & All %d Inc-bind & Drop %d Act~47 \\\\
     \\midrule
-", n_inc_bind_total)
+", n_inc_bind_total, length(act47_munis_in_panel))
 pretty_outcome <- function(o) switch(o,
   log_live_and_work   = "log live-and-work",
   log_in_commuters    = "log in-commuters",
-  log_total_residents = "log total residents",
+  log_total_jobs      = "log total jobs",
   share_live_in       = "live-in-muni share",
   gsub("_", " ", o))
 for (i in seq_along(outcomes)) {

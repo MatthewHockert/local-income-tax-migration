@@ -1,45 +1,53 @@
 \begin{table}[!htbp]
   \centering
-  \caption{Municipality-level dose-response: muni resident-rate cells with fiscal controls (full spec)}
+  \caption{Municipality-level dose-response: muni and SD resident-rate cells with fiscal controls (full spec)}
   \label{tab:app_full_muni_cell_results}
   \footnotesize
   \renewcommand{\arraystretch}{0.9}
   \resizebox{\textwidth}{!}{
   \begin{tabular}{lcccc}
     \toprule
-    Outcome & Log(work in own muni) & Log(in-commuters) & Log(employed residents) & Share live in muni \\
+    Cell & Log(work in own muni) & Log(in-commuters) & Log(total jobs) & Share live in muni \\
     \midrule
-    \textbf{Inc-bind} & -0.573\sym{***} & -0.412\sym{***} & -0.104\sym{**} & -0.058\sym{***} \\
-                      & (0.162) & (0.126) & (0.043) & (0.020) \\
-    \textbf{Inc-becomes} & -0.250\sym{***} & -0.247\sym{***} & -0.042 & -0.014 \\
-                      & (0.056) & (0.055) & (0.027) & (0.011) \\
-    \textbf{Inc-nobind} & -0.073 & 0.233 & 0.382\sym{**} & -0.037 \\
-                      & (0.143) & (0.302) & (0.188) & (0.032) \\
+    \multicolumn{5}{l}{\textit{Muni resident rate ($\tau^M$)}} \\
+    \textbf{Inc-bind} & -0.573\sym{***} & -0.412\sym{***} & -0.490\sym{***} & -0.058\sym{***} \\
+                      & (0.162) & (0.126) & (0.133) & (0.020) \\
+    \textbf{Inc-becomes} & -0.250\sym{***} & -0.247\sym{***} & -0.266\sym{***} & -0.014 \\
+                      & (0.056) & (0.055) & (0.056) & (0.011) \\
+    \textbf{Inc-nobind} & -0.073 & 0.233 & 0.193 & -0.037 \\
+                      & (0.143) & (0.302) & (0.268) & (0.032) \\
+    \midrule
+    \multicolumn{5}{l}{\textit{School district rate ($\tau^{SD}$)}} \\
+    \textbf{Inc-bind} & 0.165 & 0.159 & 0.165\sym{*} & 0.005 \\
+                      & (0.109) & (0.096) & (0.093) & (0.007) \\
+    \textbf{Inc-becomes} & 0.084 & 0.086 & 0.096 & 0.007 \\
+                      & (0.095) & (0.089) & (0.089) & (0.007) \\
     \midrule
     \multicolumn{5}{l}{\textit{Fiscal controls}} \\
-    police-services share & 0.111 & -0.041 & -0.001 & 0.009 \\
-                      & (0.104) & (0.107) & (0.058) & (0.007) \\
-    streets share & 0.050 & 0.011 & 0.001 & 0.002 \\
-                      & (0.041) & (0.041) & (0.019) & (0.003) \\
-    debt-service share & -0.065 & -0.029 & 0.018 & 0.004 \\
-                      & (0.054) & (0.060) & (0.030) & (0.005) \\
-    EIT-revenue share & -0.036 & 0.236\sym{***} & 0.017 & -0.013\sym{*} \\
-                      & (0.088) & (0.083) & (0.042) & (0.007) \\
-    real-estate-tax share & -0.189\sym{**} & -0.274\sym{***} & -0.042 & -0.007 \\
-                      & (0.090) & (0.096) & (0.043) & (0.007) \\
-    intergovernmental-revenue share & 0.018 & 0.033 & 0.075\sym{***} & 0.005 \\
-                      & (0.046) & (0.050) & (0.024) & (0.004) \\
+    police-services share & 0.111 & -0.041 & -0.031 & 0.009 \\
+                      & (0.104) & (0.107) & (0.103) & (0.007) \\
+    streets share & 0.050 & 0.011 & 0.014 & 0.002 \\
+                      & (0.041) & (0.041) & (0.040) & (0.003) \\
+    debt-service share & -0.065 & -0.029 & -0.022 & 0.004 \\
+                      & (0.054) & (0.060) & (0.058) & (0.005) \\
+    EIT-revenue share & -0.036 & 0.236\sym{***} & 0.220\sym{***} & -0.013\sym{*} \\
+                      & (0.088) & (0.083) & (0.082) & (0.007) \\
+    real-estate-tax share & -0.189\sym{**} & -0.274\sym{***} & -0.282\sym{***} & -0.007 \\
+                      & (0.090) & (0.096) & (0.095) & (0.007) \\
+    intergovernmental-revenue share & 0.018 & 0.033 & 0.038 & 0.005 \\
+                      & (0.046) & (0.050) & (0.050) & (0.004) \\
     \midrule
-    $N$ & 174,929 & 191,405 & 194,533 & 191,413 \\
-    $R^2$ & 0.963 & 0.959 & 0.980 & 0.825 \\
-    Within $R^2$ & 0.001 & 0.001 & 0.001 & 0.001 \\
-    Dep.\ mean & 3.659 & 5.836 & 6.686 & 0.092 \\
-    Dep.\ SD & 1.926 & 1.883 & 1.296 & 0.075 \\
+    \multicolumn{5}{l}{\textit{Diagnostics}} \\
+    $N$           & 174,929 & 191,405 & 191,413 & 191,413 \\
+    $R^2$         & 0.963 & 0.959 & 0.961 & 0.825 \\
+    Within $R^2$  & 0.001 & 0.001 & 0.001 & 0.001 \\
+    Dep.\ mean    & 3.659 & 5.836 & 5.937 & 0.092 \\
+    Dep.\ SD      & 1.926 & 1.883 & 1.897 & 0.075 \\
     \bottomrule
   \end{tabular}
   }
   \vspace{0.3em}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Stacked-DiD; muni$\times$stack and year$\times$stack FE; SE clustered at muni. SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+    \footnotesize \textit{Notes:} Stacked-DiD; muni$\times$stack and year$\times$stack FE; SE clustered at muni. Both rate-setters enter the same joint regression; the table reports both sets of cell$\times$dose coefficients with the shared fiscal controls. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
   \end{minipage}
 \end{table}

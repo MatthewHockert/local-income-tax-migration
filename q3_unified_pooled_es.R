@@ -30,7 +30,7 @@ sd_ctrls   <- c("share_state_rev_sd","share_local_rev_sd",
                 "share_capital_sd","share_debt_int_sd")
 
 muni_outcomes  <- c("log_live_and_work","log_in_commuters",
-                    "log_total_residents",
+                    "log_total_jobs",
                     "share_live_in","share_work_outside")
 block_outcomes <- c("log_home_count","log_work_count",
                     "home_in_muni_share","share_work_outside")

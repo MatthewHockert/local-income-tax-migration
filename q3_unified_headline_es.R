@@ -35,7 +35,7 @@ panel    <- e$panel
 ctrls    <- e$ctrls
 ctrls_str <- paste(ctrls, collapse = " + ")
 
-outcomes <- c("log_live_and_work","log_in_commuters","log_total_residents",
+outcomes <- c("log_live_and_work","log_in_commuters","log_total_jobs",
               "share_live_in","share_work_outside")
 
 cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",

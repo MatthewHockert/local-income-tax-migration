@@ -22,7 +22,7 @@ dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 # Outcome and cell sets per level
 # ---------------------------------------------------------------------------
 muni_outcomes  <- c("log_live_and_work","log_in_commuters",
-                    "log_total_residents","share_live_in")
+                    "log_total_jobs","share_live_in")
 block_outcomes        <- c("log_home_count","log_work_count",
                            "home_in_muni_share")
 block_outcomes_main   <- c("log_home_count","log_work_count")
@@ -282,6 +282,109 @@ write_merged_cell_table <- function(coef_csv, diag_csv,
   cat(sprintf("Wrote %s\n", out_name))
 }
 
+# write_merged_full_spec_table: one table with the muni-side and SD-side cells
+# as two panels (both from the same joint regression), the shared fiscal
+# controls, and diagnostics. Used for the combined Appendix A cousub table.
+write_merged_full_spec_table <- function(coef_csv, diag_csv, ctrl_csv, ctrl_labels,
+                                          outcomes, cells, caption, label_id, out_name,
+                                          short = TRUE, notes = character(0)) {
+  coefs_muni <- read_coefs(coef_csv, side = "muni")
+  coefs_sd   <- read_coefs(coef_csv, side = "sd")
+  if (is.null(coefs_muni) || nrow(coefs_muni) == 0) {
+    cat(sprintf("Skipping %s: source CSV missing\n", out_name)); return(invisible())
+  }
+  diag     <- read_diag(diag_csv)
+  controls <- read_controls_long(ctrl_csv, term_filter = names(ctrl_labels))
+  ncols <- length(outcomes)
+  hdr <- paste0("Cell & ", paste(outcome_label(outcomes, short = short), collapse = " & "), " \\\\")
+  mc  <- paste0("\\multicolumn{", ncols + 1, "}{l}")
+
+  fmt_cells <- function(side_coefs) {
+    body <- character(0)
+    for (cl in cells) {
+      est_row <- character(ncols); se_row <- character(ncols); any_present <- FALSE
+      for (j in seq_along(outcomes)) {
+        r <- side_coefs[cell == cl & outcome == outcomes[j]]
+        if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
+        stars <- sig_stars(r$p[1])
+        est_str <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+        est_row[j] <- est_str; se_row[j] <- fmt_se(r$se[1]); if (est_str != "---") any_present <- TRUE
+      }
+      if (!any_present) next
+      body <- c(body,
+                paste0("\\textbf{", cl, "} & ", paste(est_row, collapse = " & "), " \\\\"),
+                paste0("                  & ", paste(se_row,  collapse = " & "), " \\\\"))
+    }
+    body
+  }
+
+  controls_block <- character(0)
+  if (!is.null(controls) && nrow(controls) > 0) {
+    controls_block <- c("\\midrule", paste0(mc, "{\\textit{Fiscal controls}} \\\\"))
+    for (tm in unique(controls$term)) {
+      est_vec <- character(ncols); se_vec <- character(ncols); any_present <- FALSE
+      for (j in seq_along(outcomes)) {
+        r <- controls[outcome == outcomes[j] & term == tm]
+        if (nrow(r) == 0 || is.na(r$est[1])) { est_vec[j] <- "---"; se_vec[j] <- ""; next }
+        any_present <- TRUE; stars <- sig_stars(r$p[1])
+        est_vec[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+        se_vec[j] <- fmt_se(r$se[1])
+      }
+      if (!any_present) next
+      pretty <- if (tm %in% names(ctrl_labels)) ctrl_labels[[tm]] else gsub("_", "\\\\_", tm)
+      controls_block <- c(controls_block,
+                          paste0(pretty, " & ", paste(est_vec, collapse = " & "), " \\\\"),
+                          paste0("                  & ", paste(se_vec, collapse = " & "), " \\\\"))
+    }
+  }
+
+  diag_block <- character(0)
+  if (nrow(diag) > 0) {
+    pick <- function(field) {
+      out <- character(ncols)
+      for (j in seq_along(outcomes)) {
+        r <- diag[outcome == outcomes[j]]
+        if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
+        v <- r[[field]][1]; if (is.na(v)) { out[j] <- "---"; next }
+        out[j] <- if (field == "n") format(as.integer(v), big.mark = ",") else formatC(v, format = "f", digits = 3)
+      }
+      out
+    }
+    diag_block <- c("\\midrule", paste0(mc, "{\\textit{Diagnostics}} \\\\"),
+      paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
+      paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
+      paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\"),
+      paste0("Dep.\\ mean    & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
+      paste0("Dep.\\ SD      & ", paste(pick("dep_sd"),   collapse = " & "), " \\\\"))
+  }
+
+  body <- c(
+    paste0(mc, "{\\textit{Muni resident rate ($\\tau^M$)}} \\\\"),
+    fmt_cells(coefs_muni),
+    "\\midrule",
+    paste0(mc, "{\\textit{School district rate ($\\tau^{SD}$)}} \\\\"),
+    fmt_cells(coefs_sd),
+    controls_block, diag_block)
+
+  col_spec <- paste0("l", strrep("c", ncols))
+  notes_all <- paste(c(notes,
+    "Both rate-setters enter the same joint regression; the table reports both sets of cell$\\times$dose coefficients with the shared fiscal controls.",
+    "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."), collapse = " ")
+  tabular <- c(
+    paste0("  \\begin{tabular}{", col_spec, "}"),
+    "    \\toprule", paste0("    ", hdr), "    \\midrule",
+    paste0("    ", body), "    \\bottomrule", "  \\end{tabular}")
+  if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+  out <- c("\\begin{table}[!htbp]", "  \\centering",
+    paste0("  \\caption{", caption, "}"), paste0("  \\label{", label_id, "}"),
+    "  \\footnotesize", "  \\renewcommand{\\arraystretch}{0.9}", tabular,
+    "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+    paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
+    "  \\end{minipage}", "\\end{table}")
+  writeLines(out, file.path(out_dir, out_name))
+  cat(sprintf("Wrote %s\n", out_name))
+}
+
 # ---------------------------------------------------------------------------
 # 1. Headline tables (municipality + SD + block)
 # ---------------------------------------------------------------------------
@@ -437,11 +540,9 @@ write_es_att_table <- function(att_csv, outcomes, cells, caption, label_id,
   cat(sprintf("Wrote %s\n", out_name))
 }
 
-write_es_att_table(file.path(in_dir, "headline_es_att.csv"),
-                    muni_outcomes, cells_main,
-                    "Realized-dose ES --- municipality level",
-                    "tab:es_realized_cousub",
-                    "es_realized_cousub.tex")
+# Cousub per-cell realized-dose ES (tab:es_realized_cousub) is built below via
+# write_es_summary so it carries the joint pre-trend Wald p row; it backs the
+# decomposition-diagnostic prose in section 5.
 write_es_att_table(file.path(in_dir, "sd_es_att.csv"),
                     muni_outcomes, cells_main,
                     "Realized-dose ES --- school district level",
@@ -979,13 +1080,20 @@ write_es_summary <- function(att_csv, row_var, row_levels, outcomes,
       }
       out
     }
+    # Only emit a diagnostic row when the field has at least one real value;
+    # ES att CSVs carry N but not R^2/dep stats, so those rows are dropped.
+    diag_line <- function(field, label_text) {
+      vals <- pick(field)
+      if (all(vals == "---")) return(character(0))
+      paste0(label_text, " & ", paste(vals, collapse = " & "), " \\\\")
+    }
     diag_rows <- c(
       paste0("\\multicolumn{", ncols + 1, "}{l}{\\textit{Diagnostics}} \\\\"),
-      paste0("$N$              & ", paste(pick("n"),       collapse = " & "), " \\\\"),
-      paste0("$R^2$            & ", paste(pick("r2"),      collapse = " & "), " \\\\"),
-      paste0("Within $R^2$     & ", paste(pick("wr2"),     collapse = " & "), " \\\\"),
-      paste0("Dep.\\ mean       & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
-      paste0("Dep.\\ SD         & ", paste(pick("dep_sd"),   collapse = " & "), " \\\\")
+      diag_line("n",        "$N$             "),
+      diag_line("r2",       "$R^2$           "),
+      diag_line("wr2",      "Within $R^2$    "),
+      diag_line("dep_mean", "Dep.\\ mean      "),
+      diag_line("dep_sd",   "Dep.\\ SD        ")
     )
   }
   body <- c(body, "\\midrule", diag_rows)
@@ -1073,37 +1181,34 @@ write_es_summary(
   out_name = "es_block_by_cell_summary.tex",
   extra_notes = c("Per-cell decomposition of the pooled block-level ES; each cell is run as a separate regression on \\{NC, cell\\}."))
 
+# Cousub per-cell ES summary -- backs the decomposition-diagnostic prose; the
+# joint pre-trend Wald p row is the source of the numbers cited in section 5.2.
+write_es_summary(
+  att_csv = file.path(in_dir, "headline_es_att.csv"),
+  row_var = cell_row, row_levels = cells_main,
+  outcomes = muni_outcomes,
+  caption  = "Realized-dose event study by binding-state cell --- municipality level.",
+  label_id = "tab:es_realized_cousub",
+  out_name = "es_realized_cousub.tex",
+  extra_notes = c("Per-cell decomposition of the muni-level realized-dose ES; each cell is run as a separate regression on \\{NC, cell\\}. Inc-bind is the load-bearing cell, with clean pre-trends on the three count outcomes."))
+
 # ===========================================================================
 # Appendix A: full-spec tables (cells + fiscal controls, same regression)
 # ===========================================================================
 cat("\n--- Building Appendix A full-spec tables (cells + controls) ---\n")
 
-## A.1 Municipality-level (cousub): muni cells with muni-AFR controls
-write_full_spec_table(
+## A.1 Municipality-level (cousub): muni + SD resident-rate cells in ONE table,
+## sharing the muni-AFR fiscal controls (both sides from the same joint regression).
+write_merged_full_spec_table(
   coef_csv = file.path(in_dir, "headline_full_table.csv"),
   diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
   ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
-  side     = "treat_cell",
+  ctrl_labels = muni_ctrl_labels,
   outcomes = muni_outcomes, cells = cells_main,
-  caption  = "Municipality-level dose-response: muni resident-rate cells with fiscal controls (full spec)",
+  caption  = "Municipality-level dose-response: muni and SD resident-rate cells with fiscal controls (full spec)",
   label_id = "tab:app_full_muni_cell_results",
   out_name = "app_full_muni_cell_results.tex",
-  ctrl_labels = muni_ctrl_labels,
   notes    = muni_notes
-)
-## A.1b cousub SD-side cells with muni-AFR controls (same regression)
-write_full_spec_table(
-  coef_csv = file.path(in_dir, "headline_full_table.csv"),
-  diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
-  ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
-  side     = "cell_sd",
-  outcomes = muni_outcomes, cells = cells_main,
-  caption  = "Municipality-level dose-response: SD resident-rate cells with fiscal controls (full spec)",
-  label_id = "tab:app_full_muni_sd_side_results",
-  out_name = "app_full_muni_sd_side_results.tex",
-  ctrl_labels = muni_ctrl_labels,
-  notes    = c(muni_notes[1],
-               "SD-side cell$\\times$dose coefficients from the same regression as the muni-side full-spec table.")
 )
 
 ## A.2 School-district level: SD cells with F-33 controls

@@ -91,7 +91,7 @@ stk_muni <- as.data.table(e_c$stk_muni)
 ctrls_c  <- e_c$ctrls
 run_act32_split(stk_muni, "c_muni", "treat_cell", "dose_stack",
                 c("log_live_and_work","log_in_commuters",
-                  "log_total_residents","share_live_in","share_work_outside"),
+                  "log_total_jobs","share_live_in","share_work_outside"),
                 ctrls_c, "stack_muni + stack_year", ~muni, "cousub")
 
 # ---------------------------------------------------------------------------

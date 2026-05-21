@@ -84,7 +84,7 @@
       <file>UEA_draft.bcf</file>
     </requires>
     <requires type="editable">
-      <file>../references/local_income_taxes.bib</file>
+      <file>../references/local_income_taxes_2.bib</file>
     </requires>
   </external>
 </requests>

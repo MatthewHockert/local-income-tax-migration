@@ -2808,7 +2808,7 @@
   <!-- CITATION DATA -->
   <!-- SECTION 0 -->
   <bcf:bibdata section="0">
-    <bcf:datasource type="file" datatype="bibtex" glob="false">../references/local_income_taxes.bib</bcf:datasource>
+    <bcf:datasource type="file" datatype="bibtex" glob="false">../references/local_income_taxes_2.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
     <bcf:citekey order="1">tiebout1956</bcf:citekey>
@@ -2843,24 +2843,17 @@
     <bcf:citekey order="26">padcedAFR</bcf:citekey>
     <bcf:citekey order="27">censusF33</bcf:citekey>
     <bcf:citekey order="28">grahamDESIGNCOMPARISONLODES</bcf:citekey>
-    <bcf:citekey order="29">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
-    <bcf:citekey order="30">goodman-baconDifferenceindifferencesVariationTreatment2021</bcf:citekey>
+    <bcf:citekey order="29">bakerDifferenceinDifferencesDesignsPractitioners2025</bcf:citekey>
+    <bcf:citekey order="30">bakerDifferenceinDifferencesDesignsPractitioners2025</bcf:citekey>
     <bcf:citekey order="31">callaway2021</bcf:citekey>
     <bcf:citekey order="32">callaway2021</bcf:citekey>
     <bcf:citekey order="33">dechaisemartin2024</bcf:citekey>
     <bcf:citekey order="34">dechaisemartin2024</bcf:citekey>
     <bcf:citekey order="35">paAct47_1987</bcf:citekey>
-    <bcf:citekey order="36">blackBetterSchoolsTaxes1999</bcf:citekey>
-    <bcf:citekey order="36">bayerFerreiraMcMillan2007</bcf:citekey>
+    <bcf:citekey order="36">buttsDifferenceinDifferencesEstimationSpatial2023</bcf:citekey>
     <bcf:citekey order="37">buttsDifferenceinDifferencesEstimationSpatial2023</bcf:citekey>
-    <bcf:citekey order="38">buttsDifferenceinDifferencesEstimationSpatial2023</bcf:citekey>
-    <bcf:citekey order="39">dechaisemartinDifferenceinDifferencesEstimatorsTreatments2022</bcf:citekey>
-    <bcf:citekey order="40">dechaisemartinDifferenceinDifferencesEstimatorsTreatments2022</bcf:citekey>
-    <bcf:citekey order="41">dechaisemartinTwoWayFixedEffects2020</bcf:citekey>
-    <bcf:citekey order="41">dechaisemartinTwoWayFixedEffects2023</bcf:citekey>
-    <bcf:citekey order="42">chaisemartinUsingDid_multiplegt_dynEstimate2025</bcf:citekey>
-    <bcf:citekey order="43">agrawalLessonsStateLocal</bcf:citekey>
-    <bcf:citekey order="44">agrawalLessonsStateLocal</bcf:citekey>
+    <bcf:citekey order="38">agrawalLessonsStateLocal</bcf:citekey>
+    <bcf:citekey order="39">agrawalLessonsStateLocal</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="apa">
