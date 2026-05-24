@@ -51,19 +51,21 @@ a within-design placebo: rate hikes whose post-event home stack
 stays below the nonresident rate (Inc-nobind) do not change the bill
 and should not move residents.
 
-The preferred causal estimate is at the census block, where both
-rate-setting jurisdictions enter at their native geography. A 1
-percentage-point municipal resident-rate increase in the binding
-cell reduces the log count of workers living in the block by
-$-0.21$ log points (approximately $19\%$), with a clean realized-dose
-pre-trend ($\beta_{\text{pre}} = -0.213$, Wald $p=0.003$). The Inc-nobind
-within-design placebo is statistically null on the same count
-outcome.
+The preferred causal estimate is at the municipality, the only
+level whose realized-dose pre-trend on the binding cell does not
+reject parallel trends ($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$).
+A 1 percentage-point municipal resident-rate increase in the binding
+cell reduces the log count of residents working in their own
+municipality by $-0.57$ log points. The census-block analogue, where
+both rate-setting jurisdictions enter at their native geography,
+gives a same-signed but smaller estimate ($-0.21$ log points,
+approximately $19\%$, on the block home count) but a non-zero
+realized-dose pre-trend ($\beta_{\text{pre}} = -0.213$, Wald
+$p=0.003$); I treat it as a direction-confirming companion rather
+than the causal headline. The Inc-nobind within-design placebo is
+statistically null on the same count outcome.
 
-The municipality-level Inc-bind coefficient is larger ($-0.57$ log
-points on residents working in their own municipality) but
-pre-trended; I report it as policy-jurisdiction magnitude calibration
-rather than as the causal headline. School-district rate changes do
+School-district rate changes do
 not produce robust evidence of sorting and are treated as an
 aggregation diagnostic. The industry decomposition cannot identify
 a sectoral mechanism with the small Inc-bind sample and is
@@ -148,13 +150,16 @@ statutory rate event by direction (Increase/Decrease) and by the
 home-stack-vs-nonresident-rate binding transition---and lays out the
 worker-bill differencing function each cell implies.
 
-At the block level, the preferred causal estimate, a 1 percentage-point
-municipal resident-rate increase in the Inc-bind cell reduces the
-log count of workers living in the block by $-0.21$ log points
-(approximately $19\%$); the Inc-nobind within-design placebo is
-null. The municipality-level analogue is larger ($-0.57$ log points
-on live-and-work residents, $\approx 33\%$ per pp) and is reported
-as policy-jurisdiction magnitude calibration. School-district rate
+The preferred causal estimate is at the municipality, the only level
+whose Inc-bind realized-dose pre-trend does not reject parallel trends:
+a 1 percentage-point municipal resident-rate increase in the Inc-bind
+cell reduces the log count of residents working in their own
+municipality by $-0.57$ log points ($\approx 33\%$ per pp); the
+Inc-nobind within-design placebo has a null post-event effect. The
+block-level analogue, where both rate-setting jurisdictions enter at
+their native geography, is smaller ($-0.21$ log points, approximately
+$19\%$, on the block home count) but carries a non-zero pre-trend, so
+I report it as a direction-confirming companion rather than the headline. School-district rate
 changes do not produce robust evidence of sorting and are treated as
 an aggregation diagnostic. An industry decomposition cannot identify
 a sectoral mechanism with the small Inc-bind sample (24
@@ -1326,15 +1331,17 @@ is reported at the municipality and SD levels only.
 
 I do not impose a uniform pre-trend standard across every outcome
 in the paper, because not every outcome carries the causal claim.
-The primary residential-sorting outcome is the block-level log
-count of workers living in the block, and the realized-dose
-pre-trend on the Inc-bind cell must be clean here for the headline
-to go through; this is the outcome the paper asks the reader to
-believe. Municipality-level resident counts---log residents working
-in their own municipality, log employed residents---are retained as
-policy-jurisdiction magnitude calibration. I acknowledge and
-caveat imperfect pre-trends at the municipality scale, but these
-outcomes do not carry the causal claim. Secondary equilibrium
+The primary residential-sorting outcome is the municipality-level log
+count of residents working in their own municipality, and the
+realized-dose pre-trend on the Inc-bind cell must be clean here for the
+headline to go through; this is the outcome the paper asks the reader to
+believe, and the municipality is the one level where it is clean
+($\beta_{\text{pre}} = -0.073$, Wald $p=0.33$). The block-level home
+count---where both rate-setting jurisdictions enter at their native
+geography---is retained as a direction-confirming companion. I
+acknowledge and caveat its non-zero pre-trend at the finer block scale
+($\beta_{\text{pre}} = -0.213$, Wald $p=0.003$), but it does not carry
+the causal claim. Secondary equilibrium
 outcomes such as log in-commuters, log total jobs, and the industry
 decomposition are reported as suggestive evidence of a
 null sectoral pattern; imperfect pre-trends are acceptable
@@ -1366,11 +1373,13 @@ I report results in two layers. Section~\ref{subsec:results-pooled}
 presents the pooled Inc/Dec benchmark---what a conventional local-tax
 design would recover if it ignored the Pennsylvania max-rule.
 Section~\ref{subsec:results-decomp} reports the binding
-decomposition at three levels of aggregation. The block-level
-decomposition is the preferred causal estimate because both
-rate-setting jurisdictions enter at their native geography; the
-municipality-level decomposition is reported as policy-jurisdiction
-magnitude calibration; the school-district aggregation is a
+decomposition at three levels of aggregation. The municipality-level
+decomposition is the preferred causal estimate because it is the only
+level whose Inc-bind realized-dose pre-trend does not reject parallel
+trends; the block-level decomposition, where both rate-setting
+jurisdictions enter at their native geography, is reported as a
+direction-confirming companion whose pre-trend---despite that finer
+geography---is non-zero; the school-district aggregation is a
 diagnostic non-result. The central empirical comparison throughout
 is between the Inc-bind cell (where the statutory rate change moves
 the worker's bill) and the Inc-nobind cell (where it does not), with
@@ -1580,18 +1589,18 @@ only as a robustness column at the headline outcome.
 \subsection{Binding Decomposition}
 \label{subsec:results-decomp}
 
-\subsubsection{Block level (main causal evidence)}
+\subsubsection{Block level (direction-confirming companion)}
 \label{subsec:results-block}
 
-The preferred causal estimate is the block-level municipal Inc-bind
-coefficient on the log count of workers living in the block. This is
-the cleanest test of the EIT mechanism for two reasons. First, both
-rate-setting jurisdictions enter the regression at their native
-geography---each block is exposed to a single municipality and a
-single school district, so no within-jurisdiction aggregation is
-required to assign policy variation. The block-level identification
-also has a cost. The realized-dose pre-trend on the Inc-bind cell
-is non-zero
+The block-level municipal Inc-bind coefficient on the log count of
+workers living in the block is the paper's direction-confirming
+companion to the preferred municipality-level estimate. It is an
+appealing specification for one reason: both rate-setting jurisdictions
+enter the regression at their native geography---each block is exposed
+to a single municipality and a single school district, so no
+within-jurisdiction aggregation is required to assign policy variation.
+But the block-level identification carries a cost. The realized-dose
+pre-trend on the Inc-bind cell is non-zero
 (Table~\ref{tab:es_pooled_block}; $\beta_{\text{pre}} = -0.213$,
 Wald $p=0.003$), so there is selection at finer geography that the
 muni-level aggregation washes out. I therefore lean on the
@@ -1651,12 +1660,12 @@ headline regression; its cell coefficients are imprecise because the
 municipality nonresident rate almost never exceeds the municipality's own home stack
 at the municipality-self-pair level in PA.
 
-\subsubsection{Municipality level (calibration)}
+\subsubsection{Municipality level (preferred causal estimate)}
 \label{subsec:results-headline}
 
-The municipality-level estimates are useful for interpreting
-magnitudes at the policy-jurisdiction level, but they are not the
-preferred causal estimates. Both rate-setter cells enter the same
+The municipality-level estimates are the preferred causal estimates,
+because the municipality is the only level whose Inc-bind realized-dose
+pre-trend does not reject parallel trends. Both rate-setter cells enter the same
 unified regression as in the block-level model, with one
 within-municipality aggregation step: each municipality-year is assigned
 $\max(\tau^{SD})$ across the school districts the municipality reports to
@@ -1673,19 +1682,20 @@ cells from the same regression.
 The municipality-level Inc-bind coefficient on the log count of
 residents working in their own municipality is $-0.573^{***}$,
 larger in absolute value than the block-level coefficient on the
-log count of workers living in the block ($-0.340^{***}$). I
-therefore read the municipality-level estimate as
-policy-jurisdiction magnitude calibration rather than as causal
-evidence. As calibration, the dependent-variable mean of the log
+log count of workers living in the block ($-0.340^{***}$). The
+municipality-level estimate is the preferred causal estimate---its
+Inc-bind pre-trend is clean---and the larger magnitude reflects the
+policy-jurisdiction scale at which the rate actually varies. For
+magnitude intuition, the dependent-variable mean of the log
 count of residents working in their own municipality is $3.68$, so
 the typical municipality has $e^{3.68} \approx 40$ live-and-work
 workers. A 1 pp Inc-bind hike implies
 $24\cdot (e^{-0.573} - 1) \approx -10$ workers at the municipality-level
 coefficient and $24\cdot (e^{-0.340} - 1) \approx -7$ workers at
-the cleaner block-level coefficient. Actual Inc-bind hikes average
-0.27 pp. The municipality-level estimate is a coarser calibration
-of the magnitude implied by the block-level estimate, and the two
-directionally agree.
+the block-level companion coefficient. Actual Inc-bind hikes average
+0.27 pp. The block-level estimate is a finer-geography companion to
+the preferred municipality-level estimate, and the two directionally
+agree.
 
 % Full municipality-level Inc/Dec coefficient tables, per-outcome
 % diagnostics, and the full main-spec control-coefficient table are
@@ -1850,7 +1860,8 @@ school-district-level and binary Sun--Abraham interaction-weighted
 analogues at all three estimating units. The patterns mirror the
 live-and-work panel: Inc-bind has visible pre-event drift consistent
 with high-dose post-industrial selection, while the within-design
-Inc-nobind placebo is approximately flat.
+Inc-nobind placebo has a null post-event effect (its own pre-event
+leads are not themselves perfectly clean).
 
 \subsubsection{Binary ES decomposition diagnostics (appendix)}
 \label{subsubsec:decomp-binary-es}
@@ -1940,14 +1951,15 @@ The results follow a benchmark--decomposition--mechanism narrative.
 Section~\ref{subsec:results-pooled} reports the pooled Inc/Dec
 benchmark, which approximates a conventional local-tax design but
 mixes binding and non-binding events.
-Section~\ref{subsec:results-block} reports the preferred causal
-estimate: at the block level, a 1 pp municipal resident-rate
-increase that binds reduces the log count of workers living in the
-block by $-0.340^{***}$ ($\approx 19\%$), with a clean realized-dose
-pre-trend and a null Inc-nobind within-design placebo on the same
-count outcome. Section~\ref{subsec:results-headline} reports the
-municipality-level estimates as policy-jurisdiction calibration; the
-municipality Inc-bind coefficient is larger but pre-trended, so it is not
+Section~\ref{subsec:results-headline} reports the preferred causal
+estimate: at the municipality, a 1 pp municipal resident-rate
+increase that binds reduces the log count of residents working in
+their own municipality by $-0.573^{***}$ ($\approx 33\%$)---the only
+level whose realized-dose pre-trend does not reject parallel trends,
+with a null Inc-nobind within-design placebo post-effect on the same
+count outcome. Section~\ref{subsec:results-block} reports the
+block-level estimate as a direction-confirming companion at native geography;
+its coefficient is smaller and its Inc-bind pre-trend non-zero, so it is not
 the causal headline. Section~\ref{subsec:het-industry} documents the
 binding-cell employment composition shift---consumer-facing services
 contract while tradeables are insulated---as suggestive evidence of
@@ -2021,9 +2033,9 @@ Appendix~\ref{app:rob-honestdid}}).
 %==========================================================
 
 The continuous stacked DiD design produces four substantive
-findings. The block-level model is the preferred causal estimate;
-the municipality-level model is the policy-jurisdiction magnitude
-calibration; the school-district-level aggregation is an
+findings. The municipality-level model is the preferred causal estimate;
+the block-level model is a direction-confirming companion at finer
+(native) geography; the school-district-level aggregation is an
 aggregation diagnostic and is reported in the Companion Appendix.
 
 The central finding is that sorting is identified through the binding channel.
@@ -2243,10 +2255,11 @@ response is therefore tied to tax liability rather than to the
 statutory rate change itself, and the binding decomposition
 is what distinguishes the two.
 
-Municipality-level estimates are larger ($-0.57$ log points on the
-log count of residents working in their own municipality) but
-pre-trended, and they enter the paper as policy-jurisdiction
-magnitude calibration rather than as a second causal headline.
+The municipality-level estimate ($-0.57$ log points on the
+log count of residents working in their own municipality) is the
+preferred causal estimate---the one level whose Inc-bind realized-dose
+pre-trend is clean---and the block-level estimate enters as a
+direction-confirming companion at native geography.
 School-district aggregations do not robustly detect a sorting
 response and are reported as a diagnostic non-result. The industry
 decomposition does not identify a sectoral mechanism with the
@@ -2363,8 +2376,8 @@ Section~\ref{sec:theory}.
 \subsection{Block-level decomposition}
 \label{app:decomp-block}
 
-The block-level binding decomposition is the preferred causal
-estimate of the paper. The main-text reports
+The block-level binding decomposition is the direction-confirming
+companion to the paper's preferred municipality-level estimate. The main-text reports
 Table~\ref{tab:headline_block_muni_results} (municipality-rate cells) and
 Table~\ref{tab:headline_block_sd_results} (SD-rate cells) on the
 count outcomes log home count and log work count
@@ -3004,7 +3017,7 @@ cells, re-estimated separately on the pre-2012 and
 post-2012 cohort subsamples. The municipality and SD splits use
 municipality-by-stack and SD-by-stack fixed effects respectively, matching
 their pooled headlines; the block split uses block-by-stack and
-year-by-stack fixed effects, matching the block headline.
+year-by-stack fixed effects, matching the block-level companion specification.
 
 
 The binding-cell effect strengthens after enforcement consolidation.

@@ -72,23 +72,26 @@ the paper).
 
 | Outcome | Cousub | SD | Block (stacked) |
 |---|---|---|---|
-| log_LW / log_home_count | **−0.401\*\*\*** | +0.066\* (sign reversed) | **−0.208\*\*\*** |
-| share_live_in / home_in_muni_share | **−0.045\*\*\*** | +0.003 (null) | −0.035 (null) |
-| log_total_residents | **−0.100\*\*\*** | +0.147\*\*\* (reversed) | n/a |
+| log_LW / log_home_count | **−0.573\*\*\*** | +0.066\* (sign reversed) | **−0.208\*\*\*** |
+| share_live_in / home_in_muni_share | **−0.058\*\*\*** | +0.003 (null) | −0.035 (null) |
+| log_total_residents | **−0.104\*\*\*** | +0.147\*\*\* (reversed) | n/a |
 
-**Realized-dose ES pre-trend on Inc-bind:**
-- Cousub log_LW: pre = +0.149 (|t|=2.66) ⚠ FAILS
-- SD log_LW: pre = +0.061 (|t|=1.74) marginal (and post is wrong sign)
-- Block log_home_count: **pre = −0.027 (|t|=0.51) ✅ CLEAN**
+**Realized-dose ES pre-trend on Inc-bind** (canonical
+`data/q3_unified/headline_es_att.csv`, regen 2026-05-21; the story FLIPPED
+from an earlier block-clean state — abstract corrected 2026-05-24):
+- Municipality (cousub) log_LW: **pre = −0.073, Wald p = 0.33 ✅ CLEAN**
+  (the only level that does not reject parallel trends)
+- Block log_home_count: pre = −0.213, Wald p = 0.003 ⚠ FAILS
+- SD: direction-mixed, does not survive
 
-**Block-level identification has the cleanest pre-trends** and is the
-defensible per-pp causal estimate. Cousub headline is overstated by
-selection (high-eventual-dose munis on declining trajectories); credible
-block-level estimate (stacked DiD; block^stack + year^stack FE) is
-about half the size of the cousub headline on log counts (−0.21 vs
-−0.40), but the block-level `home_in_muni_share` is null once the
-stack-interacted FE absorbs the within-stack composition. SD-level
-identification doesn't recover the causal direction reliably.
+**Municipality-level identification has the cleanest pre-trend** and is the
+defensible causal headline (cousub Inc-bind log_LW = −0.573). The
+block-level estimate (−0.21 log points on block home count) is a
+direction-confirming companion with a non-zero pre-trend — read as
+selection at finer geography that muni aggregation washes out. SD-level
+identification doesn't recover the causal direction reliably. CAVEAT:
+cousub `share_live_in` Inc-bind itself fails (Wald p=0.003), and the
+Inc-nobind placebo's post effect is null but its pre-trend is not clean.
 
 **Industry decomposition (cousub Inc-bind, log jobs by sector):**
 - Total: −0.258\*\*\*; Consumer-facing: −0.297\*\*; Tradeable: +0.236 (null);
