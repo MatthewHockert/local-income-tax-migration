@@ -1,0 +1,512 @@
+county,category,mean_pct,min_pct
+ALLEGHENY,Business privilege/mercantile,41.5,37.7
+ARMSTRONG,Business privilege/mercantile,1.5,0.0
+BEAVER,Business privilege/mercantile,39.9,38.9
+BERKS,Business privilege/mercantile,15.4,15.1
+BLAIR,Business privilege/mercantile,12.0,12.0
+BUCKS,Business privilege/mercantile,22.3,22.2
+BUTLER,Business privilege/mercantile,8.5,7.0
+CAMBRIA,Business privilege/mercantile,14.3,14.3
+CENTRE,Business privilege/mercantile,0.6,0.0
+CHESTER,Business privilege/mercantile,4.1,4.1
+CLINTON,Business privilege/mercantile,37.9,37.9
+COLUMBIA,Business privilege/mercantile,3.2,3.0
+CRAWFORD,Business privilege/mercantile,0.9,0.0
+DAUPHIN,Business privilege/mercantile,10.7,10.0
+DELAWARE,Business privilege/mercantile,42.3,40.8
+ERIE,Business privilege/mercantile,2.0,0.0
+FAYETTE,Business privilege/mercantile,14.3,14.3
+GREENE,Business privilege/mercantile,7.7,7.7
+INDIANA,Business privilege/mercantile,0.0,0.0
+LACKAWANNA,Business privilege/mercantile,8.2,5.0
+LAWRENCE,Business privilege/mercantile,3.7,3.7
+LEHIGH,Business privilege/mercantile,30.2,28.0
+LUZERNE,Business privilege/mercantile,26.2,23.7
+LYCOMING,Business privilege/mercantile,5.8,5.8
+MCKEAN,Business privilege/mercantile,4.5,4.5
+MERCER,Business privilege/mercantile,2.1,2.1
+MONTGOMERY,Business privilege/mercantile,31.5,30.6
+NORTHAMPTON,Business privilege/mercantile,26.3,26.3
+NORTHUMBERLAND,Business privilege/mercantile,11.1,11.1
+PHILADELPHIA,Business privilege/mercantile,83.3,0.0
+POTTER,Business privilege/mercantile,0.0,0.0
+SCHUYLKILL,Business privilege/mercantile,14.9,14.9
+SNYDER,Business privilege/mercantile,4.8,4.8
+SOMERSET,Business privilege/mercantile,2.0,2.0
+SUSQUEHANNA,Business privilege/mercantile,0.0,0.0
+UNION,Business privilege/mercantile,7.1,7.1
+VENANGO,Business privilege/mercantile,1.1,0.0
+WASHINGTON,Business privilege/mercantile,14.8,13.4
+WESTMORELAND,Business privilege/mercantile,15.8,15.4
+YORK,Business privilege/mercantile,15.3,15.3
+ADAMS,EIT,100.0,100.0
+ALLEGHENY,EIT,99.9,99.2
+ARMSTRONG,EIT,99.9,97.8
+BEAVER,EIT,99.7,98.1
+BEDFORD,EIT,98.5,97.4
+BERKS,EIT,99.9,98.6
+BLAIR,EIT,100.0,100.0
+BRADFORD,EIT,98.8,98.0
+BUCKS,EIT,78.5,74.1
+BUTLER,EIT,100.0,100.0
+CAMBRIA,EIT,99.9,98.4
+CAMERON,EIT,100.0,100.0
+CARBON,EIT,99.8,95.7
+CENTRE,EIT,100.0,100.0
+CHESTER,EIT,90.9,83.6
+CLARION,EIT,100.0,100.0
+CLEARFIELD,EIT,99.0,98.0
+CLINTON,EIT,96.6,96.6
+COLUMBIA,EIT,100.0,100.0
+CRAWFORD,EIT,100.0,100.0
+CUMBERLAND,EIT,100.0,100.0
+DAUPHIN,EIT,100.0,100.0
+DELAWARE,EIT,34.8,26.5
+ELK,EIT,94.4,91.7
+ERIE,EIT,100.0,100.0
+FAYETTE,EIT,100.0,100.0
+FOREST,EIT,88.9,88.9
+FRANKLIN,EIT,100.0,100.0
+FULTON,EIT,100.0,100.0
+GREENE,EIT,100.0,100.0
+HUNTINGDON,EIT,100.0,100.0
+INDIANA,EIT,100.0,100.0
+JEFFERSON,EIT,99.5,97.1
+JUNIATA,EIT,100.0,100.0
+LACKAWANNA,EIT,99.9,97.5
+LANCASTER,EIT,100.0,100.0
+LAWRENCE,EIT,100.0,100.0
+LEBANON,EIT,96.2,96.2
+LEHIGH,EIT,100.0,100.0
+LUZERNE,EIT,99.8,98.7
+LYCOMING,EIT,99.9,98.1
+MCKEAN,EIT,100.0,100.0
+MERCER,EIT,100.0,100.0
+MIFFLIN,EIT,100.0,100.0
+MONROE,EIT,100.0,100.0
+MONTGOMERY,EIT,93.5,83.9
+MONTOUR,EIT,100.0,100.0
+NORTHAMPTON,EIT,100.0,100.0
+NORTHUMBERLAND,EIT,100.0,100.0
+PERRY,EIT,100.0,100.0
+PHILADELPHIA,EIT,83.3,0.0
+PIKE,EIT,19.7,15.4
+POTTER,EIT,96.2,83.9
+SCHUYLKILL,EIT,100.0,100.0
+SNYDER,EIT,100.0,100.0
+SOMERSET,EIT,95.9,94.0
+SULLIVAN,EIT,100.0,100.0
+SUSQUEHANNA,EIT,44.9,37.5
+TIOGA,EIT,97.9,97.4
+UNION,EIT,100.0,100.0
+VENANGO,EIT,99.8,96.8
+WARREN,EIT,94.9,88.9
+WASHINGTON,EIT,99.7,98.5
+WAYNE,EIT,19.0,10.7
+WESTMORELAND,EIT,99.8,98.5
+WYOMING,EIT,100.0,100.0
+YORK,EIT,100.0,100.0
+ADAMS,LST/EMST/OPT,49.3,41.2
+ALLEGHENY,LST/EMST/OPT,92.0,86.9
+ARMSTRONG,LST/EMST/OPT,50.9,42.2
+BEAVER,LST/EMST/OPT,77.2,72.2
+BEDFORD,LST/EMST/OPT,11.0,7.9
+BERKS,LST/EMST/OPT,69.5,60.8
+BLAIR,LST/EMST/OPT,63.3,48.0
+BRADFORD,LST/EMST/OPT,11.5,9.8
+BUCKS,LST/EMST/OPT,62.6,40.7
+BUTLER,LST/EMST/OPT,56.7,43.9
+CAMBRIA,LST/EMST/OPT,80.0,76.2
+CAMERON,LST/EMST/OPT,42.9,42.9
+CARBON,LST/EMST/OPT,84.1,78.3
+CENTRE,LST/EMST/OPT,38.9,36.1
+CHESTER,LST/EMST/OPT,48.7,28.8
+CLARION,LST/EMST/OPT,43.5,35.3
+CLEARFIELD,LST/EMST/OPT,61.2,56.9
+CLINTON,LST/EMST/OPT,72.4,72.4
+COLUMBIA,LST/EMST/OPT,48.7,45.5
+CRAWFORD,LST/EMST/OPT,36.5,31.4
+CUMBERLAND,LST/EMST/OPT,65.7,60.6
+DAUPHIN,LST/EMST/OPT,62.5,55.0
+DELAWARE,LST/EMST/OPT,74.9,57.1
+ELK,LST/EMST/OPT,63.4,58.3
+ERIE,LST/EMST/OPT,75.9,68.4
+FAYETTE,LST/EMST/OPT,77.4,73.8
+FOREST,LST/EMST/OPT,60.5,22.2
+FRANKLIN,LST/EMST/OPT,38.9,27.3
+FULTON,LST/EMST/OPT,0.4,0.0
+GREENE,LST/EMST/OPT,74.8,69.2
+HUNTINGDON,LST/EMST/OPT,39.1,37.5
+INDIANA,LST/EMST/OPT,55.6,50.0
+JEFFERSON,LST/EMST/OPT,49.2,38.2
+JUNIATA,LST/EMST/OPT,8.5,5.9
+LACKAWANNA,LST/EMST/OPT,65.6,57.5
+LANCASTER,LST/EMST/OPT,46.6,26.7
+LAWRENCE,LST/EMST/OPT,49.4,40.7
+LEBANON,LST/EMST/OPT,53.8,38.5
+LEHIGH,LST/EMST/OPT,76.2,52.0
+LUZERNE,LST/EMST/OPT,90.6,84.2
+LYCOMING,LST/EMST/OPT,30.7,28.8
+MCKEAN,LST/EMST/OPT,44.7,40.9
+MERCER,LST/EMST/OPT,69.1,64.6
+MIFFLIN,LST/EMST/OPT,75.7,68.8
+MONROE,LST/EMST/OPT,62.5,45.0
+MONTGOMERY,LST/EMST/OPT,73.8,50.0
+MONTOUR,LST/EMST/OPT,43.4,36.4
+NORTHAMPTON,LST/EMST/OPT,93.7,89.5
+NORTHUMBERLAND,LST/EMST/OPT,57.3,55.6
+PERRY,LST/EMST/OPT,18.9,10.0
+PIKE,LST/EMST/OPT,14.1,7.7
+POTTER,LST/EMST/OPT,15.7,12.9
+SCHUYLKILL,LST/EMST/OPT,84.2,80.6
+SNYDER,LST/EMST/OPT,57.9,52.4
+SOMERSET,LST/EMST/OPT,29.1,24.0
+SULLIVAN,LST/EMST/OPT,9.8,7.7
+SUSQUEHANNA,LST/EMST/OPT,2.5,2.5
+TIOGA,LST/EMST/OPT,60.7,59.0
+UNION,LST/EMST/OPT,61.9,57.1
+VENANGO,LST/EMST/OPT,45.7,38.7
+WARREN,LST/EMST/OPT,15.6,7.4
+WASHINGTON,LST/EMST/OPT,76.8,65.7
+WAYNE,LST/EMST/OPT,16.9,14.3
+WESTMORELAND,LST/EMST/OPT,83.2,75.4
+WYOMING,LST/EMST/OPT,54.6,43.5
+YORK,LST/EMST/OPT,44.4,30.6
+ADAMS,Occupation,23.4,20.6
+ALLEGHENY,Occupation,3.2,1.5
+ARMSTRONG,Occupation,10.1,4.4
+BEAVER,Occupation,2.9,0.0
+BEDFORD,Occupation,15.8,13.2
+BERKS,Occupation,4.9,4.1
+BLAIR,Occupation,11.8,8.0
+BRADFORD,Occupation,19.5,13.7
+BUCKS,Occupation,6.7,5.6
+BUTLER,Occupation,8.7,7.0
+CAMBRIA,Occupation,23.4,22.2
+CAMERON,Occupation,66.7,57.1
+CARBON,Occupation,39.4,34.8
+CENTRE,Occupation,0.2,0.0
+CHESTER,Occupation,2.7,1.4
+CLARION,Occupation,9.5,8.8
+CLEARFIELD,Occupation,9.5,8.0
+CLINTON,Occupation,6.1,3.4
+COLUMBIA,Occupation,14.5,12.1
+CRAWFORD,Occupation,3.9,3.9
+CUMBERLAND,Occupation,13.0,3.0
+DAUPHIN,Occupation,33.1,32.5
+DELAWARE,Occupation,0.3,0.0
+ELK,Occupation,48.1,41.7
+ERIE,Occupation,2.5,0.0
+FAYETTE,Occupation,0.0,0.0
+FRANKLIN,Occupation,2.5,0.0
+FULTON,Occupation,15.4,15.4
+GREENE,Occupation,3.8,0.0
+HUNTINGDON,Occupation,18.8,14.6
+INDIANA,Occupation,29.4,23.7
+JEFFERSON,Occupation,17.8,17.6
+JUNIATA,Occupation,0.0,0.0
+LACKAWANNA,Occupation,1.5,0.0
+LANCASTER,Occupation,1.7,0.0
+LAWRENCE,Occupation,7.8,7.4
+LEBANON,Occupation,0.0,0.0
+LEHIGH,Occupation,1.8,0.0
+LUZERNE,Occupation,3.1,1.3
+LYCOMING,Occupation,7.9,5.8
+MCKEAN,Occupation,5.1,4.5
+MERCER,Occupation,4.5,4.2
+MIFFLIN,Occupation,19.4,18.8
+MONTGOMERY,Occupation,0.3,0.0
+MONTOUR,Occupation,0.0,0.0
+NORTHAMPTON,Occupation,3.9,2.6
+NORTHUMBERLAND,Occupation,42.1,41.7
+PERRY,Occupation,21.7,20.0
+POTTER,Occupation,4.2,3.3
+SCHUYLKILL,Occupation,38.1,37.3
+SNYDER,Occupation,4.8,4.8
+SOMERSET,Occupation,27.1,24.0
+SUSQUEHANNA,Occupation,43.3,25.0
+TIOGA,Occupation,3.6,2.6
+UNION,Occupation,0.0,0.0
+VENANGO,Occupation,5.9,3.2
+WARREN,Occupation,11.5,7.4
+WASHINGTON,Occupation,11.3,10.4
+WAYNE,Occupation,17.5,14.3
+WESTMORELAND,Occupation,17.8,15.4
+WYOMING,Occupation,7.2,0.0
+YORK,Occupation,12.0,8.3
+ADAMS,Other (minor),45.3,44.1
+ALLEGHENY,Other (minor),75.0,57.7
+ARMSTRONG,Other (minor),14.8,11.1
+BEAVER,Other (minor),51.0,42.6
+BEDFORD,Other (minor),7.9,7.9
+BERKS,Other (minor),32.3,31.5
+BLAIR,Other (minor),16.0,16.0
+BRADFORD,Other (minor),2.0,2.0
+BUCKS,Other (minor),40.2,38.9
+BUTLER,Other (minor),16.5,12.3
+CAMBRIA,Other (minor),32.1,30.2
+CARBON,Other (minor),32.6,30.4
+CENTRE,Other (minor),12.4,11.1
+CHESTER,Other (minor),22.3,20.5
+CLARION,Other (minor),14.7,14.7
+CLEARFIELD,Other (minor),9.4,7.8
+CLINTON,Other (minor),9.6,6.9
+COLUMBIA,Other (minor),13.5,12.1
+CRAWFORD,Other (minor),7.5,5.9
+CUMBERLAND,Other (minor),16.5,15.2
+DAUPHIN,Other (minor),21.8,20.0
+DELAWARE,Other (minor),47.6,44.9
+ELK,Other (minor),25.0,25.0
+ERIE,Other (minor),26.8,26.3
+FAYETTE,Other (minor),41.0,40.5
+FRANKLIN,Other (minor),12.1,9.1
+GREENE,Other (minor),18.6,15.4
+HUNTINGDON,Other (minor),7.9,6.2
+INDIANA,Other (minor),15.8,15.8
+JEFFERSON,Other (minor),16.7,14.7
+JUNIATA,Other (minor),5.9,5.9
+LACKAWANNA,Other (minor),32.2,30.0
+LANCASTER,Other (minor),11.2,8.3
+LAWRENCE,Other (minor),26.7,25.9
+LEBANON,Other (minor),9.6,7.7
+LEHIGH,Other (minor),28.9,24.0
+LUZERNE,Other (minor),34.4,31.6
+LYCOMING,Other (minor),4.8,3.8
+MCKEAN,Other (minor),1.8,0.0
+MERCER,Other (minor),16.2,14.6
+MIFFLIN,Other (minor),13.9,12.5
+MONROE,Other (minor),5.6,5.0
+MONTGOMERY,Other (minor),27.5,25.8
+MONTOUR,Other (minor),25.8,18.2
+NORTHAMPTON,Other (minor),27.9,23.7
+NORTHUMBERLAND,Other (minor),22.7,22.2
+PERRY,Other (minor),3.3,3.3
+PHILADELPHIA,Other (minor),83.3,0.0
+PIKE,Other (minor),0.9,0.0
+SCHUYLKILL,Other (minor),24.3,19.4
+SNYDER,Other (minor),9.5,9.5
+SOMERSET,Other (minor),16.9,16.0
+SUSQUEHANNA,Other (minor),3.1,2.5
+TIOGA,Other (minor),5.4,5.1
+VENANGO,Other (minor),0.2,0.0
+WARREN,Other (minor),0.0,0.0
+WASHINGTON,Other (minor),58.0,53.7
+WAYNE,Other (minor),10.7,10.7
+WESTMORELAND,Other (minor),57.0,55.4
+WYOMING,Other (minor),0.0,0.0
+YORK,Other (minor),14.5,12.5
+ADAMS,Per capita,92.5,91.2
+ALLEGHENY,Per capita,15.9,14.6
+ARMSTRONG,Per capita,51.2,17.8
+BEAVER,Per capita,59.0,51.9
+BEDFORD,Per capita,77.5,73.7
+BERKS,Per capita,74.6,63.9
+BLAIR,Per capita,74.0,72.0
+BRADFORD,Per capita,44.6,21.6
+BUCKS,Per capita,27.7,24.1
+BUTLER,Per capita,66.7,64.9
+CAMBRIA,Per capita,79.2,76.2
+CAMERON,Per capita,100.0,100.0
+CARBON,Per capita,89.1,87.0
+CENTRE,Per capita,44.6,37.1
+CHESTER,Per capita,21.6,16.4
+CLARION,Per capita,73.4,70.6
+CLEARFIELD,Per capita,37.6,31.4
+CLINTON,Per capita,14.8,3.4
+COLUMBIA,Per capita,77.8,9.1
+CRAWFORD,Per capita,90.5,90.2
+CUMBERLAND,Per capita,55.9,18.2
+DAUPHIN,Per capita,70.4,67.5
+DELAWARE,Per capita,21.4,14.3
+ELK,Per capita,83.3,83.3
+ERIE,Per capita,44.9,34.2
+FAYETTE,Per capita,61.9,61.9
+FOREST,Per capita,25.3,22.2
+FRANKLIN,Per capita,57.3,40.9
+FULTON,Per capita,91.5,84.6
+GREENE,Per capita,16.5,15.4
+HUNTINGDON,Per capita,78.9,77.1
+INDIANA,Per capita,65.2,63.2
+JEFFERSON,Per capita,51.5,50.0
+JUNIATA,Per capita,94.1,94.1
+LACKAWANNA,Per capita,0.0,0.0
+LANCASTER,Per capita,10.6,5.0
+LAWRENCE,Per capita,52.9,48.1
+LEBANON,Per capita,40.2,15.4
+LEHIGH,Per capita,42.2,36.0
+LUZERNE,Per capita,51.0,28.9
+LYCOMING,Per capita,39.0,19.2
+MCKEAN,Per capita,69.2,68.2
+MERCER,Per capita,95.7,93.8
+MIFFLIN,Per capita,100.0,100.0
+MONROE,Per capita,1.9,0.0
+MONTGOMERY,Per capita,37.4,30.6
+MONTOUR,Per capita,82.8,18.2
+NORTHAMPTON,Per capita,36.1,26.3
+NORTHUMBERLAND,Per capita,70.4,69.4
+PERRY,Per capita,92.0,90.0
+POTTER,Per capita,48.5,40.0
+SCHUYLKILL,Per capita,87.8,86.6
+SNYDER,Per capita,94.7,90.5
+SOMERSET,Per capita,65.1,58.0
+SULLIVAN,Per capita,7.7,7.7
+SUSQUEHANNA,Per capita,54.6,35.0
+TIOGA,Per capita,14.1,5.1
+UNION,Per capita,22.6,7.1
+VENANGO,Per capita,82.3,80.6
+WARREN,Per capita,45.3,18.5
+WASHINGTON,Per capita,71.7,65.7
+WAYNE,Per capita,44.6,35.7
+WESTMORELAND,Per capita,76.1,73.8
+WYOMING,Per capita,63.5,34.8
+YORK,Per capita,64.4,38.9
+ADAMS,Property millage (RE),96.6,91.2
+ALLEGHENY,Property millage (RE),98.2,86.9
+ARMSTRONG,Property millage (RE),98.4,88.9
+BEAVER,Property millage (RE),96.6,81.5
+BEDFORD,Property millage (RE),94.3,81.6
+BERKS,Property millage (RE),97.6,91.9
+BLAIR,Property millage (RE),94.0,84.0
+BRADFORD,Property millage (RE),97.5,92.2
+BUCKS,Property millage (RE),98.0,85.2
+BUTLER,Property millage (RE),98.9,93.0
+CAMBRIA,Property millage (RE),98.2,88.9
+CAMERON,Property millage (RE),95.2,71.4
+CARBON,Property millage (RE),96.9,95.7
+CENTRE,Property millage (RE),93.3,88.9
+CHESTER,Property millage (RE),87.7,69.9
+CLARION,Property millage (RE),97.9,88.2
+CLEARFIELD,Property millage (RE),94.7,84.3
+CLINTON,Property millage (RE),93.1,86.2
+COLUMBIA,Property millage (RE),98.8,90.9
+CRAWFORD,Property millage (RE),95.0,88.2
+CUMBERLAND,Property millage (RE),84.5,75.8
+DAUPHIN,Property millage (RE),94.4,77.5
+DELAWARE,Property millage (RE),94.7,77.6
+ELK,Property millage (RE),99.5,91.7
+ERIE,Property millage (RE),98.5,94.7
+FAYETTE,Property millage (RE),97.6,90.5
+FOREST,Property millage (RE),99.4,88.9
+FRANKLIN,Property millage (RE),79.5,72.7
+FULTON,Property millage (RE),82.1,69.2
+GREENE,Property millage (RE),98.5,92.3
+HUNTINGDON,Property millage (RE),92.2,83.3
+INDIANA,Property millage (RE),96.1,89.5
+JEFFERSON,Property millage (RE),97.9,94.1
+JUNIATA,Property millage (RE),95.8,76.5
+LACKAWANNA,Property millage (RE),94.6,87.5
+LANCASTER,Property millage (RE),92.7,85.0
+LAWRENCE,Property millage (RE),94.7,85.2
+LEBANON,Property millage (RE),90.0,76.9
+LEHIGH,Property millage (RE),97.3,92.0
+LUZERNE,Property millage (RE),95.7,86.8
+LYCOMING,Property millage (RE),94.9,90.4
+MCKEAN,Property millage (RE),98.7,90.9
+MERCER,Property millage (RE),97.3,93.8
+MIFFLIN,Property millage (RE),97.9,81.2
+MONROE,Property millage (RE),98.1,95.0
+MONTGOMERY,Property millage (RE),96.4,82.3
+MONTOUR,Property millage (RE),98.5,90.9
+NORTHAMPTON,Property millage (RE),99.3,94.7
+NORTHUMBERLAND,Property millage (RE),98.0,91.7
+PERRY,Property millage (RE),96.1,90.0
+PHILADELPHIA,Property millage (RE),77.8,0.0
+PIKE,Property millage (RE),99.6,92.3
+POTTER,Property millage (RE),96.5,93.3
+SCHUYLKILL,Property millage (RE),95.4,86.6
+SNYDER,Property millage (RE),94.7,90.5
+SOMERSET,Property millage (RE),97.9,90.0
+SULLIVAN,Property millage (RE),98.3,84.6
+SUSQUEHANNA,Property millage (RE),98.8,90.0
+TIOGA,Property millage (RE),99.0,92.3
+UNION,Property millage (RE),87.7,78.6
+VENANGO,Property millage (RE),98.9,93.5
+WARREN,Property millage (RE),95.5,88.9
+WASHINGTON,Property millage (RE),98.2,91.0
+WAYNE,Property millage (RE),98.8,92.9
+WESTMORELAND,Property millage (RE),98.2,89.2
+WYOMING,Property millage (RE),97.1,78.3
+YORK,Property millage (RE),98.1,90.3
+ADAMS,Realty transfer,100.0,100.0
+ALLEGHENY,Realty transfer,99.7,98.5
+ARMSTRONG,Realty transfer,98.8,97.8
+BEAVER,Realty transfer,97.4,92.6
+BEDFORD,Realty transfer,84.1,81.6
+BERKS,Realty transfer,98.9,97.3
+BLAIR,Realty transfer,95.3,92.0
+BRADFORD,Realty transfer,91.9,90.2
+BUCKS,Realty transfer,98.4,98.1
+BUTLER,Realty transfer,92.9,91.2
+CAMBRIA,Realty transfer,94.4,88.7
+CAMERON,Realty transfer,100.0,100.0
+CARBON,Realty transfer,99.8,95.7
+CENTRE,Realty transfer,99.7,97.2
+CHESTER,Realty transfer,99.8,98.6
+CLARION,Realty transfer,93.0,85.3
+CLEARFIELD,Realty transfer,90.5,78.4
+CLINTON,Realty transfer,92.0,89.7
+COLUMBIA,Realty transfer,100.0,100.0
+CRAWFORD,Realty transfer,98.9,94.1
+CUMBERLAND,Realty transfer,100.0,100.0
+DAUPHIN,Realty transfer,100.0,100.0
+DELAWARE,Realty transfer,95.9,95.9
+ELK,Realty transfer,100.0,100.0
+ERIE,Realty transfer,96.9,94.7
+FAYETTE,Realty transfer,93.7,88.1
+FOREST,Realty transfer,65.4,55.6
+FRANKLIN,Realty transfer,100.0,100.0
+FULTON,Realty transfer,100.0,100.0
+GREENE,Realty transfer,97.9,92.3
+HUNTINGDON,Realty transfer,97.3,95.8
+INDIANA,Realty transfer,90.9,86.8
+JEFFERSON,Realty transfer,87.7,85.3
+JUNIATA,Realty transfer,96.1,94.1
+LACKAWANNA,Realty transfer,99.4,95.0
+LANCASTER,Realty transfer,100.0,100.0
+LAWRENCE,Realty transfer,100.0,100.0
+LEBANON,Realty transfer,92.3,80.8
+LEHIGH,Realty transfer,100.0,100.0
+LUZERNE,Realty transfer,99.8,98.7
+LYCOMING,Realty transfer,90.2,88.5
+MCKEAN,Realty transfer,92.2,86.4
+MERCER,Realty transfer,95.8,95.8
+MIFFLIN,Realty transfer,100.0,100.0
+MONROE,Realty transfer,100.0,100.0
+MONTGOMERY,Realty transfer,99.9,98.4
+MONTOUR,Realty transfer,90.9,90.9
+NORTHAMPTON,Realty transfer,100.0,100.0
+NORTHUMBERLAND,Realty transfer,87.7,83.3
+PERRY,Realty transfer,96.5,80.0
+PHILADELPHIA,Realty transfer,83.3,0.0
+PIKE,Realty transfer,99.6,92.3
+POTTER,Realty transfer,98.0,87.1
+SCHUYLKILL,Realty transfer,99.8,98.5
+SNYDER,Realty transfer,100.0,100.0
+SOMERSET,Realty transfer,95.8,90.0
+SULLIVAN,Realty transfer,100.0,100.0
+SUSQUEHANNA,Realty transfer,100.0,100.0
+TIOGA,Realty transfer,100.0,100.0
+UNION,Realty transfer,100.0,100.0
+VENANGO,Realty transfer,88.4,77.4
+WARREN,Realty transfer,82.3,77.8
+WASHINGTON,Realty transfer,98.3,97.0
+WAYNE,Realty transfer,100.0,100.0
+WESTMORELAND,Realty transfer,96.9,95.4
+WYOMING,Realty transfer,100.0,100.0
+YORK,Realty transfer,98.0,88.9
+BEAVER,Residence,1.9,1.9
+BUTLER,Residence,1.8,1.8
+CAMBRIA,Residence,0.3,0.0
+CLEARFIELD,Residence,2.0,2.0
+CRAWFORD,Residence,0.7,0.0
+CUMBERLAND,Residence,0.0,0.0
+FAYETTE,Residence,4.0,2.4
+LANCASTER,Residence,0.6,0.0
+LEHIGH,Residence,3.3,0.0
+LUZERNE,Residence,2.9,2.6
+NORTHAMPTON,Residence,0.9,0.0
+NORTHUMBERLAND,Residence,2.6,0.0
+SCHUYLKILL,Residence,1.5,1.5
+VENANGO,Residence,3.2,3.2
+WASHINGTON,Residence,1.5,1.5
+WESTMORELAND,Residence,2.7,0.0

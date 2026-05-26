@@ -41,3 +41,10 @@ paper/*.toc
 paper/*.synctex.gz
 paper/*.bbl
 paper/*.blg
+
+# Multi-tax pipeline raw downloads (regenerable via scripts: download_pde_retax.py,
+# scrape_pa_dced_county_tax.py, parse_clr_history.py)
+data/pde_retax_raw/
+data/clr_raw/
+data/pa_county_raw/
+__pycache__/

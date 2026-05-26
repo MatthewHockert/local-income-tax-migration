@@ -1,0 +1,7 @@
+outcome,att_post,att_post_se,att_pre,att_pre_se,pre_t,wald_pre_p,n
+log_live_and_work,-3.954,0.991,2.977,1.285,2.32,0.0462,10515
+log_total_residents,-2.265,0.369,-0.678,0.609,-1.11,0.0096,11862
+log_total_jobs,-1.017,1.068,1.472,1.458,1.01,0.9731,11631
+log_in_commuters,-0.852,1.078,1.523,1.462,1.04,0.9697,11631
+share_live_in,-0.204,0.062,-0.073,0.072,-1.02,0.3501,11631
+share_work_outside,0.125,0.028,-0.048,0.032,-1.48,0.4772,11862
