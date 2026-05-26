@@ -2,12 +2,18 @@
 # Pooled increase/decrease headline: collapses the six binding-state cells
 # into two aggregate treatments ("any Inc event", "any Dec event") to
 # produce a literature-comparable per-pp dose-response and a binary
-# event-indicator analog. Run at the municipality and block estimating
-# units; SD-side cell × dose interactions retained from the headline
-# spec; controls and fixed effects identical to the headline.
+# event-indicator analog. SD-side cell × dose interactions retained from
+# the headline spec; controls and fixed effects identical to the headline.
+#
+# COUSUB-ONLY (repo-cleanup, 2026-05): the SD-unit and block-unit pooled
+# regressions were trimmed out when those estimators were retired. The kept
+# papers (UEA_draft.tex, muni_tax_sorting.tex) report only the cousub
+# pooled benchmark. The cousub block is unchanged and produces
+# byte-identical cousub rows in pooled_results.csv. Prior 3-level version
+# is in git history.
 #
 # Outputs:
-#   data/q3_unified/pooled_results.csv          per-pp + binary, both levels
+#   data/q3_unified/pooled_results.csv          per-pp + binary, cousub
 #   data/q3_unified/pooled_diagnostics.csv      per-outcome N, R², dep mean
 #
 # Notation:
@@ -145,136 +151,6 @@ run_muni_pooled <- function(outcome) {
 }
 for (o in muni_outcomes) run_muni_pooled(o)
 
-# ---------------------------------------------------------------------------
-# 2. SCHOOL DISTRICT LEVEL
-# ---------------------------------------------------------------------------
-cat("\n================================================================\n")
-cat("School-district-level pooled Inc/Dec\n")
-cat("================================================================\n")
-e_sd <- new.env()
-sys.source(file.path(project_dir, "q3_unified_sd_level.R"), envir = e_sd)
-stk_sd <- as.data.table(e_sd$stk_sd)
-ctrls_sd <- intersect(c("mean_muni_rate", e_sd$sd_share_ctrls), names(stk_sd))
-# stk_sd uses cell_sd as its treat_cell field; create direction tag
-sd_cell_col <- if ("treat_cell" %in% names(stk_sd)) "treat_cell" else "cell_sd"
-stk_sd[, direction := fcase(
-  as.character(get(sd_cell_col)) %in% inc_cells, "Inc",
-  as.character(get(sd_cell_col)) %in% dec_cells, "Dec",
-  as.character(get(sd_cell_col)) == "NC", "NC",
-  default = NA_character_)]
-stk_sd[, direction := factor(direction, levels = direction_levels)]
-stk_sd[, rel := year - stack]
-stk_sd[, ever_inc_post := as.integer(direction == "Inc" & rel >= 0)]
-stk_sd[, ever_dec_post := as.integer(direction == "Dec" & rel >= 0)]
-
-run_sd_pooled <- function(outcome) {
-  cols <- c("sd_id","year","direction","dose_stack",
-             "ever_inc_post","ever_dec_post","stack_sd","stack_year",
-             outcome, ctrls_sd)
-  cols <- intersect(cols, names(stk_sd))
-  d <- stk_sd[, ..cols]
-  d <- d[complete.cases(d)]
-  if (nrow(d) == 0) return(invisible())
-  # per-pp pooled
-  f_pp <- as.formula(paste0(outcome,
-       " ~ i(direction, dose_stack, ref='NC') + ",
-       paste(ctrls_sd, collapse = " + "),
-       " | stack_sd + stack_year"))
-  m_pp <- tryCatch(feols(f_pp, data = d, cluster = ~sd_id),
-                    error = function(e) { cat("SD",outcome,"err pp:",conditionMessage(e),"\n"); NULL })
-  if (!is.null(m_pp))
-    save_result("sd", "per_pp", outcome, m_pp, term_filter = "direction::")
-  # binary pooled
-  f_bin <- as.formula(paste0(outcome,
-       " ~ ever_inc_post + ever_dec_post + ",
-       paste(ctrls_sd, collapse = " + "),
-       " | stack_sd + stack_year"))
-  m_bin <- tryCatch(feols(f_bin, data = d, cluster = ~sd_id),
-                     error = function(e) { cat("SD",outcome,"err bin:",conditionMessage(e),"\n"); NULL })
-  if (!is.null(m_bin))
-    save_result("sd", "binary", outcome, m_bin, term_filter = "ever_inc_post|ever_dec_post")
-  if (!is.null(m_pp) && !is.null(m_bin))
-    cat(sprintf("[sd %s] N=%s pp:Inc=%.3f Dec=%.3f bin:Inc=%.3f Dec=%.3f\n",
-                outcome, format(nrow(d), big.mark=","),
-                coef(m_pp)["direction::Inc:dose_stack"],
-                coef(m_pp)["direction::Dec:dose_stack"],
-                coef(m_bin)["ever_inc_post"],
-                coef(m_bin)["ever_dec_post"]))
-}
-for (o in muni_outcomes) run_sd_pooled(o)
-
-# ---------------------------------------------------------------------------
-# 3. BLOCK LEVEL
-# ---------------------------------------------------------------------------
-cat("\n================================================================\n")
-cat("Block-level pooled Inc/Dec\n")
-cat("================================================================\n")
-e_b <- new.env()
-sys.source(file.path(project_dir, "q3_unified_block_joint.R"), envir = e_b)
-stk_block <- as.data.table(e_b$stk)
-ctrls_block <- e_b$ctrls
-
-# Both rate-setter sides pooled to {NC, Inc, Dec}. Block panel inherits
-# treat_cell_muni (muni side) and cell_sd (SD side).
-stk_block[, direction_muni := fcase(
-  as.character(treat_cell_muni) %in% inc_cells, "Inc",
-  as.character(treat_cell_muni) %in% dec_cells, "Dec",
-  as.character(treat_cell_muni) == "NC", "NC",
-  default = NA_character_)]
-stk_block[, direction_sd := fcase(
-  as.character(cell_sd) %in% inc_cells, "Inc",
-  as.character(cell_sd) %in% dec_cells, "Dec",
-  as.character(cell_sd) == "NC", "NC",
-  default = NA_character_)]
-stk_block[, direction_muni := factor(direction_muni, levels = direction_levels)]
-stk_block[, direction_sd   := factor(direction_sd,   levels = direction_levels)]
-stk_block[, rel := year - stack]
-stk_block[, ever_muni_inc_post := as.integer(direction_muni == "Inc" & rel >= 0)]
-stk_block[, ever_muni_dec_post := as.integer(direction_muni == "Dec" & rel >= 0)]
-stk_block[, ever_sd_inc_post   := as.integer(direction_sd   == "Inc" & rel >= 0)]
-stk_block[, ever_sd_dec_post   := as.integer(direction_sd   == "Dec" & rel >= 0)]
-stk_block[is.na(dose_sd), dose_sd := 0]
-
-run_block_pooled <- function(outcome) {
-  cols <- c("block_geoid","year","muni","sd_id","stack",
-             "direction_muni","dose_stack","direction_sd","dose_sd",
-             "ever_muni_inc_post","ever_muni_dec_post",
-             "ever_sd_inc_post","ever_sd_dec_post",
-             outcome, ctrls_block)
-  cols <- intersect(cols, names(stk_block))
-  d <- stk_block[, ..cols]
-  d <- d[complete.cases(d)]
-  if (nrow(d) == 0) return(invisible())
-  cat(sprintf("[block %s] N=%s ... ", outcome, format(nrow(d), big.mark=",")))
-  # per-pp pooled, both sides pooled to Inc/Dec
-  f_pp <- as.formula(paste0(outcome,
-       " ~ i(direction_muni, dose_stack, ref='NC')",
-       " + i(direction_sd,   dose_sd,    ref='NC') + ",
-       paste(ctrls_block, collapse = " + "),
-       " | block_geoid^stack + year^stack"))
-  m_pp <- feols(f_pp, data = d, cluster = ~muni + sd_id)
-  save_result("block", "per_pp", outcome, m_pp,
-              term_filter = "direction_(muni|sd)::")
-  # binary pooled: 4 post-treatment indicators (muni Inc/Dec + SD Inc/Dec)
-  f_bin <- as.formula(paste0(outcome,
-       " ~ ever_muni_inc_post + ever_muni_dec_post",
-       " + ever_sd_inc_post + ever_sd_dec_post + ",
-       paste(ctrls_block, collapse = " + "),
-       " | block_geoid^stack + year^stack"))
-  m_bin <- feols(f_bin, data = d, cluster = ~muni + sd_id)
-  save_result("block", "binary", outcome, m_bin,
-              term_filter = "ever_(muni|sd)_(inc|dec)_post")
-  cat(sprintf("done.\n  pp: M-Inc=%.3f M-Dec=%.3f SD-Inc=%.3f SD-Dec=%.3f\n  bin: M-Inc=%.3f M-Dec=%.3f SD-Inc=%.3f SD-Dec=%.3f\n",
-              coef(m_pp)["direction_muni::Inc:dose_stack"],
-              coef(m_pp)["direction_muni::Dec:dose_stack"],
-              coef(m_pp)["direction_sd::Inc:dose_sd"],
-              coef(m_pp)["direction_sd::Dec:dose_sd"],
-              coef(m_bin)["ever_muni_inc_post"],
-              coef(m_bin)["ever_muni_dec_post"],
-              coef(m_bin)["ever_sd_inc_post"],
-              coef(m_bin)["ever_sd_dec_post"]))
-}
-for (o in block_outcomes) run_block_pooled(o)
 
 # ---------------------------------------------------------------------------
 # Save

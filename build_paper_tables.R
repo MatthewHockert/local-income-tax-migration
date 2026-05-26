@@ -1,6 +1,18 @@
 # build_paper_tables.R
 # Build publication-style LaTeX table fragments from q3_unified output
-# CSVs for direct \input{} into paper/main.tex and paper/appendix.tex.
+# CSVs for direct \input{} into the paper.
+#
+# COUSUB-ONLY (repo-cleanup, 2026-05): builders for the retired SD-unit,
+# block-unit, industry, Sun-Abraham binary, tercile, alt-control, and the
+# block/SD pooled & ES & appendix-full tables were removed, together with
+# the helper functions only those builders used (write_es_att_table,
+# write_sa_table, write_tercile_table, write_full_spec_table). What remains
+# builds only the cousub/municipality fragments the kept papers \input
+# (headline_muni_combined, act32_cousub, pooled_per_pp_cousub,
+# es_pooled_cousub_summary, es_realized_cousub, app_full_muni_cell_results)
+# plus a few muni-level supporting tables that read kept inputs. All consumed
+# fragments are byte-identical to the pre-trim build. Prior version with the
+# full 3-level table set is in git history.
 #
 # Each table reports coefficient (with sig stars) and SE (in parens
 # below) per cell-by-outcome cell, plus a per-column diagnostic block
@@ -143,36 +155,6 @@ sd_ctrl_labels <- c(
   mean_muni_rate           = "mean municipality rate"
 )
 block_ctrl_labels <- c(muni_ctrl_labels, sd_ctrl_labels)
-
-# write_full_spec_table: same shape as write_cell_table but adds a
-# fiscal-controls block below the cell coefficients.
-write_full_spec_table <- function(coef_csv, diag_csv, ctrl_csv,
-                                    side, outcomes, cells,
-                                    caption, label_id, out_name,
-                                    ctrl_labels,
-                                    short = TRUE, notes = character(0)) {
-  coefs <- read_coefs(coef_csv, side = side)
-  if (is.null(coefs) || nrow(coefs) == 0) {
-    cat(sprintf("Skipping %s: source CSV missing or empty\n", out_name))
-    return(invisible())
-  }
-  diag <- read_diag(diag_csv)
-  controls <- read_controls_long(ctrl_csv, term_filter = names(ctrl_labels))
-  body <- build_pub_table(
-    coefs_dt  = coefs,
-    diag_dt   = diag,
-    outcomes  = outcomes,
-    cells     = cells,
-    caption   = caption,
-    label     = label_id,
-    short_labels = short,
-    notes     = notes,
-    controls_dt = controls,
-    control_labels = ctrl_labels
-  )
-  writeLines(body, file.path(out_dir, out_name))
-  cat(sprintf("Wrote %s\n", out_name))
-}
 
 write_merged_cell_table <- function(coef_csv, diag_csv,
                                       outcomes, cells,
@@ -426,190 +408,12 @@ write_merged_cell_table(
   notes    = muni_notes
 )
 
-sd_notes <- c(
-  paste("Stacked-DiD; SD$\\times$stack and year$\\times$stack FE; SE clustered at SD.")
-)
-write_cell_table(
-  coef_csv = file.path(in_dir, "sd_level_results.csv"),
-  diag_csv = file.path(in_dir, "sd_level_diagnostics.csv"),
-  side     = "treat_cell",
-  outcomes = muni_outcomes, cells = cells_main,
-  caption  = "School-district-level dose-response by binding-state cell",
-  label_id = "tab:headline_sd_cell_results",
-  out_name = "headline_sd_cell_results.tex",
-  notes    = sd_notes
-)
 
-block_notes <- c(
-  paste("Stacked-DiD; block$\\times$stack and year$\\times$stack FE; SE two-way clustered at muni $+$ SD.")
-)
-## Main (count outcomes only)
-write_cell_table(
-  coef_csv = file.path(in_dir, "block_joint_results.csv"),
-  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  side     = "muni",
-  outcomes = block_outcomes_main, cells = cells_main,
-  caption  = "Block-level dose-response: muni resident-rate cells (count outcomes)",
-  label_id = "tab:headline_block_muni_results",
-  out_name = "headline_block_muni_results.tex",
-  notes    = c(block_notes,
-               "Share outcomes are reported in the appendix; sparse block-level denominators make share estimates mechanically fragile.")
-)
-write_cell_table(
-  coef_csv = file.path(in_dir, "block_joint_results.csv"),
-  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  side     = "sd",
-  outcomes = block_outcomes_main, cells = cells_main,
-  caption  = "Block-level dose-response: SD resident-rate cells (count outcomes)",
-  label_id = "tab:headline_block_sd_results",
-  out_name = "headline_block_sd_results.tex",
-  notes    = c(block_notes,
-               "Share outcomes are reported in the appendix.")
-)
-
-## Appendix (share outcomes only) -- merged muni + SD into one table
-write_merged_cell_table(
-  coef_csv = file.path(in_dir, "block_joint_results.csv"),
-  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  outcomes = block_outcomes_shares, cells = cells_main,
-  caption  = "Block-level dose-response: share outcomes, both rate-setters (supporting)",
-  label_id = "tab:headline_block_shares",
-  out_name = "headline_block_shares.tex",
-  notes    = c(block_notes,
-               "Block-level share outcomes are reported for completeness. Sparse denominators and endogenous denominator dynamics make these estimates mechanically fragile at block geography; they are not used to identify the headline causal effect.")
-)
-# Keep the old two-table outputs as empty stubs to preserve any \ref{} resolution
-writeLines("% Superseded by tab:headline_block_shares (merged)", file.path(out_dir, "headline_block_muni_shares.tex"))
-writeLines("% Superseded by tab:headline_block_shares (merged)", file.path(out_dir, "headline_block_sd_shares.tex"))
-
-# ---------------------------------------------------------------------------
-# 2. Realized-dose ES (pre/post ATT)
-# ---------------------------------------------------------------------------
-write_es_att_table <- function(att_csv, outcomes, cells, caption, label_id,
-                                 out_name, short = TRUE, notes = character(0)) {
-  if (!file.exists(att_csv) || file.size(att_csv) == 0) {
-    cat(sprintf("Skipping ES %s\n", out_name)); return(invisible())
-  }
-  a <- fread(att_csv)
-  if ("att_post_per_pp" %in% names(a)) {
-    setnames(a, c("att_post_per_pp","att_pre_per_pp"), c("att_post","att_pre"),
-             skip_absent = TRUE)
-  }
-  safe_p <- function(est, se) {
-    if (length(se) != 1 || is.na(se) || !is.finite(se) || se <= 0) return(NA_real_)
-    if (length(est) != 1 || is.na(est) || !is.finite(est)) return(NA_real_)
-    2 * pnorm(-abs(est / se))
-  }
-  rows <- list()
-  for (cl in cells) {
-    for (o in outcomes) {
-      r <- a[outcome == o & cell == cl]
-      if (nrow(r) == 0) next
-      rows[[length(rows)+1L]] <- data.table(
-        outcome = o, cell = paste0(cl, " (post)"),
-        est = r$att_post, se = r$att_post_se,
-        p = safe_p(r$att_post, r$att_post_se))
-      rows[[length(rows)+1L]] <- data.table(
-        outcome = o, cell = paste0(cl, " (pre)"),
-        est = r$att_pre, se = r$att_pre_se,
-        p = safe_p(r$att_pre, r$att_pre_se))
-    }
-  }
-  coefs <- rbindlist(rows, fill = TRUE)
-  row_labels <- as.character(unlist(lapply(cells,
-                                            function(c) c(paste0(c, " (post)"),
-                                                          paste0(c, " (pre)")))))
-  diag <- data.table(outcome = outcomes,
-                     n = NA_integer_, r2 = NA_real_, wr2 = NA_real_,
-                     dep_mean = NA_real_, dep_sd = NA_real_)
-  for (o in outcomes) {
-    n_row <- a[outcome == o, max(n, na.rm = TRUE)]
-    if (is.finite(n_row)) diag[outcome == o, n := as.integer(n_row)]
-  }
-  body <- build_pub_table(
-    coefs_dt = coefs, diag_dt = diag,
-    outcomes = outcomes, cells = row_labels,
-    caption = caption, label = label_id,
-    short_labels = short,
-    diag_fields = "n",
-    notes = c(notes,
-              paste("Each cell reports two rows: post-event ATT (mean of",
-                    "$\\beta_k$ for $k = 0..5$) and pre-event lead (mean of",
-                    "$\\beta_k$ for $k \\leq -2$).")))
-  writeLines(body, file.path(out_dir, out_name))
-  cat(sprintf("Wrote %s\n", out_name))
-}
 
 # Cousub per-cell realized-dose ES (tab:es_realized_cousub) is built below via
 # write_es_summary so it carries the joint pre-trend Wald p row; it backs the
 # decomposition-diagnostic prose in section 5.
-write_es_att_table(file.path(in_dir, "sd_es_att.csv"),
-                    muni_outcomes, cells_main,
-                    "Realized-dose ES --- school district level",
-                    "tab:es_realized_sd",
-                    "es_realized_sd.tex")
-write_es_att_table(file.path(in_dir, "block_es_full_att.csv"),
-                    block_outcomes, cells_main,
-                    "Realized-dose ES --- block level (muni cohort)",
-                    "tab:es_realized_block",
-                    "es_realized_block.tex")
 
-# ---------------------------------------------------------------------------
-# 3. Binary Sun-Abraham IW ES (mirror of realized-dose)
-# ---------------------------------------------------------------------------
-write_sa_table <- function(att_csv, outcomes, cells, caption, label_id, out_name) {
-  if (!file.exists(att_csv) || file.size(att_csv) == 0) {
-    cat(sprintf("Skipping SA %s\n", out_name)); return(invisible())
-  }
-  a <- fread(att_csv)
-  if (!"att_post" %in% names(a) || !"att_pre" %in% names(a)) {
-    cat(sprintf("Skipping SA %s: malformed\n", out_name)); return(invisible())
-  }
-  safe_p <- function(est, se) {
-    if (length(se) != 1 || is.na(se) || !is.finite(se) || se <= 0) return(NA_real_)
-    if (length(est) != 1 || is.na(est) || !is.finite(est)) return(NA_real_)
-    2 * pnorm(-abs(est / se))
-  }
-  rows <- list()
-  for (cl in cells) for (o in outcomes) {
-    r <- a[outcome == o & cell == cl]
-    if (nrow(r) == 0) next
-    rows[[length(rows)+1L]] <- data.table(
-      outcome = o, cell = paste0(cl, " (post)"),
-      est = r$att_post, se = r$att_post_se,
-      p = safe_p(r$att_post, r$att_post_se))
-    rows[[length(rows)+1L]] <- data.table(
-      outcome = o, cell = paste0(cl, " (pre)"),
-      est = r$att_pre, se = r$att_pre_se,
-      p = safe_p(r$att_pre, r$att_pre_se))
-  }
-  coefs <- rbindlist(rows, fill = TRUE)
-  row_labels <- as.character(unlist(lapply(cells,
-                                            function(c) c(paste0(c, " (post)"),
-                                                          paste0(c, " (pre)")))))
-  diag <- data.table(outcome = outcomes,
-                     n = NA_integer_, r2 = NA_real_, wr2 = NA_real_,
-                     dep_mean = NA_real_, dep_sd = NA_real_)
-  body <- build_pub_table(coefs, diag, outcomes, row_labels,
-                            caption, label_id, short_labels = TRUE,
-                            diag_fields = character(0),
-                            notes = c("Binary Sun--Abraham interaction-weighted ES.",
-                                       "Post = mean of $\\beta_k$ for $k=0..5$; pre = mean for $k\\leq-2$."))
-  writeLines(body, file.path(out_dir, out_name))
-  cat(sprintf("Wrote %s\n", out_name))
-}
-write_sa_table(file.path(in_dir, "sa_binary_cousub_att.csv"),
-               muni_outcomes, cells_main,
-               "Binary Sun--Abraham IW ES --- municipality level",
-               "tab:sa_binary_cousub", "sa_binary_cousub.tex")
-write_sa_table(file.path(in_dir, "sa_binary_sd_att.csv"),
-               muni_outcomes, cells_main,
-               "Binary Sun--Abraham IW ES --- school district level",
-               "tab:sa_binary_sd", "sa_binary_sd.tex")
-write_sa_table(file.path(in_dir, "sa_binary_block_att.csv"),
-               block_outcomes, cells_main,
-               "Binary Sun--Abraham IW ES --- block level",
-               "tab:sa_binary_block", "sa_binary_block.tex")
 
 # ---------------------------------------------------------------------------
 # 4. Pre/Post Act 32
@@ -742,119 +546,9 @@ write_act32_table(file.path(in_dir, "act32_split_cousub.csv"),
                    muni_outcomes, cells_main,
                    "Pre-/post-Act-32 split --- municipality level",
                    "tab:act32_cousub", "act32_cousub.tex")
-write_act32_table(file.path(in_dir, "act32_split_sd.csv"),
-                   file.path(in_dir, "act32_split_sd_diag.csv"),
-                   muni_outcomes, cells_main,
-                   "Pre-/post-Act-32 split --- school district level",
-                   "tab:act32_sd", "act32_sd.tex")
-write_act32_table(file.path(in_dir, "act32_split_block.csv"),
-                   file.path(in_dir, "act32_split_block_diag.csv"),
-                   block_outcomes, cells_main,
-                   "Pre-/post-Act-32 split --- block level",
-                   "tab:act32_block", "act32_block.tex")
 
-# ---------------------------------------------------------------------------
-# 5. Industry decomposition (SD aggregate)
-# ---------------------------------------------------------------------------
-if (file.exists(file.path(in_dir, "industry_sd.csv")) &&
-    file.size(file.path(in_dir, "industry_sd.csv")) > 0) {
-  ind_outcomes <- c("log_jobs_total","log_jobs_consumer","log_jobs_tradeable",
-                     "share_consumer","share_tradeable")
-  write_cell_table(
-    coef_csv = file.path(in_dir, "industry_sd.csv"),
-    diag_csv = file.path(in_dir, "industry_sd_diag.csv"),
-    side     = "treat_cell",
-    outcomes = ind_outcomes, cells = cells_main,
-    caption  = "Industry decomposition --- school district level",
-    label_id = "tab:industry_sd",
-    out_name = "industry_sd.tex",
-    notes    = c("Cousub-level industry job counts aggregated to SD via the muni--SD assignment."))
-}
 
-# ---------------------------------------------------------------------------
-# 6. Tercile dose-magnitude
-# ---------------------------------------------------------------------------
-write_tercile_table <- function(coef_csv, caption, label_id, out_name) {
-  if (!file.exists(coef_csv) || file.size(coef_csv) == 0) {
-    cat(sprintf("Skipping tercile %s\n", out_name)); return(invisible())
-  }
-  a <- fread(coef_csv)
-  outcomes <- unique(a$outcome)
-  rows <- list()
-  for (terc in c("small","medium","large")) for (o in outcomes) {
-    r <- a[tercile == terc & outcome == o]
-    if (nrow(r) == 0) next
-    rows[[length(rows)+1L]] <- data.table(
-      outcome = o, cell = terc, est = r$est, se = r$se, p = r$p)
-  }
-  coefs <- rbindlist(rows, fill = TRUE)
-  row_labels <- c("small","medium","large")
-  diag_csv <- sub("\\.csv$", "_diag.csv", coef_csv)
-  if (file.exists(diag_csv) && file.size(diag_csv) > 0) {
-    dd <- fread(diag_csv)
-    diag <- dd[, .(n        = max(n, na.rm = TRUE),
-                   r2       = mean(R2, na.rm = TRUE),
-                   wr2      = mean(Within_R2, na.rm = TRUE),
-                   dep_mean = mean(dep_mean, na.rm = TRUE),
-                   dep_sd   = mean(dep_sd, na.rm = TRUE)),
-                by = outcome]
-    diag_fields <- c("n","r2","wr2","dep_mean","dep_sd")
-  } else {
-    diag <- data.table(outcome = outcomes,
-                       n = NA_integer_, r2 = NA_real_, wr2 = NA_real_,
-                       dep_mean = NA_real_, dep_sd = NA_real_)
-    diag_fields <- character(0)
-  }
-  body <- build_pub_table(coefs, diag, outcomes, row_labels, caption, label_id,
-                            short_labels = TRUE,
-                            diag_fields = diag_fields,
-                            notes = c(paste("Inc-bind units split by tercile of cumulative",
-                                            "$\\Delta\\tau$ at $+5$. Per-pp dose-response",
-                                            "should be approximately constant under linearity."),
-                                      "Diagnostics ($N$, $R^2$, Dep.\\ mean/SD) are averaged across terciles within each outcome (FE structure is identical across terciles)."))
-  writeLines(body, file.path(out_dir, out_name))
-  cat(sprintf("Wrote %s\n", out_name))
-}
-write_tercile_table(file.path(in_dir, "tercile_cousub.csv"),
-                     "Dose-magnitude linearity --- municipality level",
-                     "tab:tercile_cousub", "tercile_cousub.tex")
-write_tercile_table(file.path(in_dir, "tercile_sd.csv"),
-                     "Dose-magnitude linearity --- school district level",
-                     "tab:tercile_sd", "tercile_sd.tex")
-write_tercile_table(file.path(in_dir, "tercile_block.csv"),
-                     "Dose-magnitude linearity --- block level",
-                     "tab:tercile_block", "tercile_block.tex")
 
-# ---------------------------------------------------------------------------
-# 7. Alt-control (Cengiz clean-in-window)
-# ---------------------------------------------------------------------------
-write_cell_table(
-  coef_csv = file.path(in_dir, "altctrl_cousub.csv"),
-  diag_csv = file.path(in_dir, "altctrl_cousub_diag.csv"),
-  side     = "treat_cell",
-  outcomes = muni_outcomes, cells = cells_main,
-  caption  = "Alternative control (clean-in-window) --- municipality level",
-  label_id = "tab:altctrl_cousub",
-  out_name = "altctrl_cousub.tex",
-  notes    = c("Control pool restricted to munis with no rate change anywhere in the event window."))
-write_cell_table(
-  coef_csv = file.path(in_dir, "altctrl_sd.csv"),
-  diag_csv = file.path(in_dir, "altctrl_sd_diag.csv"),
-  side     = "treat_cell",
-  outcomes = muni_outcomes, cells = cells_main,
-  caption  = "Alternative control (clean-in-window) --- school district level",
-  label_id = "tab:altctrl_sd",
-  out_name = "altctrl_sd.tex",
-  notes    = c("Control pool restricted to SDs with no rate change anywhere in the event window."))
-write_cell_table(
-  coef_csv = file.path(in_dir, "altctrl_block.csv"),
-  diag_csv = file.path(in_dir, "altctrl_block_diag.csv"),
-  side     = "treat_cell",
-  outcomes = block_outcomes, cells = cells_main,
-  caption  = "Alternative control (clean-in-window) --- block level",
-  label_id = "tab:altctrl_block",
-  out_name = "altctrl_block.tex",
-  notes    = c("Control pool restricted to blocks whose muni has no rate change in the event window."))
 
 # ---------------------------------------------------------------------------
 # 8. Pooled Inc/Dec headline tables
@@ -971,31 +665,14 @@ write_pooled_table <- function(level_tag, spec_mode, outcomes, caption, label_id
 }
 
 # Per-pp pooled tables
-write_pooled_table("block",  "per_pp", block_outcomes,
-                   "Pooled Inc/Dec headline --- block level (per pp)",
-                   "tab:pooled_per_pp_block", "pooled_per_pp_block.tex")
 write_pooled_table("cousub", "per_pp", muni_outcomes,
                    "Pooled Inc/Dec headline --- municipality level (per pp)",
                    "tab:pooled_per_pp_cousub", "pooled_per_pp_cousub.tex")
-write_pooled_table("sd",     "per_pp", muni_outcomes,
-                   "Pooled Inc/Dec headline --- school district level (per pp)",
-                   "tab:pooled_per_pp_sd", "pooled_per_pp_sd.tex",
-                   has_two_sides = TRUE,
-                   notes = c("SD-level regression: $\\tau^{SD}$ is the school-district's own rate; the muni-rate row uses the within-SD mean of constituent muni resident rates as an aggregated treatment."))
 
 # Binary pooled tables
-write_pooled_table("block",  "binary", block_outcomes,
-                   "Pooled Inc/Dec headline --- block level (binary event)",
-                   "tab:pooled_binary_block", "pooled_binary_block.tex",
-                   notes = c("Binary post-treatment indicator: 1 in the event year and after."))
 write_pooled_table("cousub", "binary", muni_outcomes,
                    "Pooled Inc/Dec headline --- municipality level (binary event)",
                    "tab:pooled_binary_cousub", "pooled_binary_cousub.tex",
-                   notes = c("Binary post-treatment indicator: 1 in the event year and after."))
-write_pooled_table("sd",     "binary", muni_outcomes,
-                   "Pooled Inc/Dec headline --- school district level (binary event)",
-                   "tab:pooled_binary_sd", "pooled_binary_sd.tex",
-                   has_two_sides = FALSE,
                    notes = c("Binary post-treatment indicator: 1 in the event year and after."))
 
 # ---------------------------------------------------------------------------
@@ -1136,23 +813,7 @@ write_es_summary <- function(att_csv, row_var, row_levels, outcomes,
 # Pooled ES summary tables: rows = direction (Inc, Dec)
 direction_row <- list(col = "direction", label = "Direction")
 
-write_es_summary(
-  att_csv = file.path(in_dir, "pooled_es_block_att.csv"),
-  row_var = direction_row, row_levels = c("Inc"),
-  outcomes = block_outcomes,
-  caption  = "Pooled realized-dose event study --- block level (muni-cohort).",
-  label_id = "tab:es_pooled_block",
-  out_name = "es_pooled_block_summary.tex",
-  extra_notes = c("Stack built on muni-cohort years; event time defined against each block's muni-rate event."))
 
-write_es_summary(
-  att_csv = file.path(in_dir, "pooled_es_block_sd_att.csv"),
-  row_var = direction_row, row_levels = c("Inc"),
-  outcomes = block_outcomes,
-  caption  = "Pooled realized-dose event study --- block level (SD-cohort).",
-  label_id = "tab:es_pooled_block_sd",
-  out_name = "es_pooled_block_sd_summary.tex",
-  extra_notes = c("Stack built on SD-cohort years; event time defined against each block's SD-rate event."))
 
 write_es_summary(
   att_csv = file.path(in_dir, "pooled_es_cousub_att.csv"),
@@ -1162,24 +823,9 @@ write_es_summary(
   label_id = "tab:es_pooled_cousub",
   out_name = "es_pooled_cousub_summary.tex")
 
-write_es_summary(
-  att_csv = file.path(in_dir, "pooled_es_sd_att.csv"),
-  row_var = direction_row, row_levels = c("Inc"),
-  outcomes = muni_outcomes,
-  caption  = "Pooled realized-dose event study --- school district level.",
-  label_id = "tab:es_pooled_sd",
-  out_name = "es_pooled_sd_summary.tex")
 
 # Block per-cell ES summary
 cell_row <- list(col = "cell", label = "Cell")
-write_es_summary(
-  att_csv = file.path(in_dir, "block_es_full_att.csv"),
-  row_var = cell_row, row_levels = cells_main,
-  outcomes = block_outcomes,
-  caption  = "Realized-dose event study by binding-state cell --- block level (muni cohort).",
-  label_id = "tab:es_block_by_cell",
-  out_name = "es_block_by_cell_summary.tex",
-  extra_notes = c("Per-cell decomposition of the pooled block-level ES; each cell is run as a separate regression on \\{NC, cell\\}."))
 
 # Cousub per-cell ES summary -- backs the decomposition-diagnostic prose; the
 # joint pre-trend Wald p row is the source of the numbers cited in section 5.2.
@@ -1211,45 +857,6 @@ write_merged_full_spec_table(
   notes    = muni_notes
 )
 
-## A.2 School-district level: SD cells with F-33 controls
-write_full_spec_table(
-  coef_csv = file.path(in_dir, "sd_level_results.csv"),
-  diag_csv = file.path(in_dir, "sd_level_diagnostics.csv"),
-  ctrl_csv = file.path(in_dir, "sd_level_controls.csv"),
-  side     = "treat_cell",
-  outcomes = muni_outcomes, cells = cells_main,
-  caption  = "School-district-level dose-response: SD resident-rate cells with F-33 controls (full spec)",
-  label_id = "tab:app_full_sd_cell_results",
-  out_name = "app_full_sd_cell_results.tex",
-  ctrl_labels = sd_ctrl_labels,
-  notes    = sd_notes
-)
 
-## A.3 Block-level: muni cells with all controls (muni + SD)
-write_full_spec_table(
-  coef_csv = file.path(in_dir, "block_joint_results.csv"),
-  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  ctrl_csv = file.path(in_dir, "block_joint_controls.csv"),
-  side     = "muni",
-  outcomes = block_outcomes_main, cells = cells_main,
-  caption  = "Block-level dose-response: muni resident-rate cells with fiscal controls (full spec)",
-  label_id = "tab:app_full_block_muni_results",
-  out_name = "app_full_block_muni_results.tex",
-  ctrl_labels = block_ctrl_labels,
-  notes    = block_notes
-)
-write_full_spec_table(
-  coef_csv = file.path(in_dir, "block_joint_results.csv"),
-  diag_csv = file.path(in_dir, "block_joint_diagnostics.csv"),
-  ctrl_csv = file.path(in_dir, "block_joint_controls.csv"),
-  side     = "sd",
-  outcomes = block_outcomes_main, cells = cells_main,
-  caption  = "Block-level dose-response: SD resident-rate cells with fiscal controls (full spec)",
-  label_id = "tab:app_full_block_sd_results",
-  out_name = "app_full_block_sd_results.tex",
-  ctrl_labels = block_ctrl_labels,
-  notes    = c(block_notes,
-               "SD-side cell$\\times$dose coefficients from the same regression as the muni-side full-spec block table.")
-)
 
 cat("\nDone. Tables written to paper/tables/.\n")
