@@ -86,10 +86,12 @@ if (RUN_HET_ACT32) {
 if (RUN_ROB_PRETREND) {
   cat("\n[4a] Pre-trend test: realized-dose event study (cousub)\n")
   source("q3_unified_headline_es.R")     # cousub realized-dose ES
+  cat("\n[4b] Act 47 distressed-municipality robustness\n")
+  source("q3_unified_act47_robustness.R")  # -> paper/tables/act47_robustness.tex
 }
 
 if (RUN_ROB_HONESTDID) {
-  cat("\n[4b] Rambachan-Roth honest-DiD sensitivity (cousub; SD self-skips)\n")
+  cat("\n[4c] Rambachan-Roth honest-DiD sensitivity (cousub; SD self-skips)\n")
   source("q3_unified_honestdid.R")
 }
 
@@ -100,8 +102,10 @@ if (RUN_PAPER_BUILD) {
   cat("\n[5a] Building paper tables\n")
   source("build_paper_tables.R")
 
-  cat("\n[5b] Building paper figures (realized-dose ES)\n")
-  source("build_appendix_es_figures.R")   # unified ribbon-style cousub ES figs
+  cat("\n[5b] Building paper figures (realized-dose ES + aggregate + dose trajectories)\n")
+  source("build_appendix_es_figures.R")        # figures/es_realized_*.png
+  source("build_uea_aggregate_figures.R")      # pooled_es_muni_only + dose_trajectory_muni_vs_sd
+  source("build_dose_trajectory_inc_becomes.R")# support_dose_trajectory_inc_becomes.png
 }
 
 cat("\n================================================================\n")
