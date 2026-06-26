@@ -1,0 +1,43 @@
+# LaTeX build artifacts
+manuscript/*.aux
+manuscript/*.bbl
+manuscript/*.bcf
+manuscript/*.blg
+manuscript/*.log
+manuscript/*.out
+manuscript/*.run.xml
+manuscript/*.synctex*
+manuscript/*.fdb_latexmk
+manuscript/*.fls
+
+# Large vendored inputs — included in the data deposit (Zenodo/openICPSR),
+# not in git. See README §4.
+data/pa_block_panel.rds
+data/pa_eit_rate_panel.csv
+data/pa_afr_panel.csv
+data/pa_cousub.rds
+data/pa_sd_finance_raw.csv
+
+# Heavy raw inputs — regenerate the panels; see README §4.
+data/lodes_block/
+data/pa_dced_raw/
+
+# R / macOS cruft
+.Rhistory
+.RData
+.DS_Store
+
+# reproduction run artifacts
+run_repro.log
+
+# Property burden panels (22 MB) — deposit-only, like the big panels above
+data/multitax/
+
+# ---------------------------------------------------------------------------
+# This package is tracked in git as SCRIPTS ONLY. Data, regenerated outputs
+# (tables/figures), and the compiled manuscript are NOT version-controlled —
+# regenerate them with the scripts; large inputs come from the data deposit.
+data/
+figures/
+tables/
+manuscript/
