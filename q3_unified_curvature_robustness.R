@@ -34,7 +34,7 @@ dmax <- quantile(stk[inc == 1 & dose > 0, dose], 0.95, na.rm = TRUE)   # plot ra
 dgrid <- seq(0, dmax, length.out = 60)
 
 ## PART A: feols ACRT(d) curve -----------------------------------------------
-acrt <- list(); qsig <- list()
+acrt <- list(); qsig <- list(); att <- list()
 for (o in outcomes) {
   cols <- c("muni","dose","dose2","stack_muni","stack_year", o, ctrls)
   d <- stk[, ..cols][complete.cases(stk[, ..cols])]
@@ -46,6 +46,12 @@ for (o in outcomes) {
   se_d   <- sqrt(pmax(var_d, 0))
   acrt[[o]] <- data.table(outcome = o, dose = dgrid, acrt = acrt_d,
                           lo = acrt_d - 1.96*se_d, hi = acrt_d + 1.96*se_d)
+  att_d  <- b["dose"]*dgrid + b["dose2"]*dgrid^2                    # ATT(d) parabola
+  vart_d <- dgrid^2*V["dose","dose"] + dgrid^4*V["dose2","dose2"] + 2*dgrid^3*V["dose","dose2"]
+  set_d  <- sqrt(pmax(vart_d, 0))
+  att[[o]] <- data.table(outcome = o, dose = dgrid, att = att_d,
+                         lo = att_d - 1.96*set_d, hi = att_d + 1.96*set_d,
+                         d2_p = m$coeftable["dose2","Pr(>|t|)"])
   qsig[[o]] <- data.table(outcome = o, b1 = b["dose"], b2 = b["dose2"],
                           b2_p = m$coeftable["dose2","Pr(>|t|)"],
                           bends = m$coeftable["dose2","Pr(>|t|)"] < 0.05)
@@ -62,6 +68,21 @@ gA <- ggplot(acrt_dt, aes(dose, acrt)) +
        x = "dose (cumulative rate change, pp)", y = "ACRT(d) = marginal effect at dose d") +
   theme_bw(base_size = 10)
 ggsave(file.path(fig_dir, "curvature_acrt_feols.png"), gA, width = 9, height = 6, dpi = 300)
+
+## PART A2: ATT(d) dose-response CURVE (the parabola b1*d + b2*d^2) -----------
+# The *function* (height vs never-treated), not its slope. Curves when b2 != 0
+# (significant: log_live_and_work p=.007, share_live_in p=.024; the other two flat).
+att_dt <- rbindlist(att); fwrite(att_dt, file.path(out_dir, "curvature_att_curve.csv"))
+att_dt[, ol := sprintf("%s  (d^2 p=%.3f)", lab[outcome], d2_p)]
+gA2 <- ggplot(att_dt, aes(dose, att)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+  geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.15, fill = "#1b7837") +
+  geom_line(color = "#1b7837") + facet_wrap(~ ol, scales = "free_y") +
+  labs(title = "ATT(d) dose-response: total effect at each dose (pooled Inc, headline sample)",
+       subtitle = "quadratic b1*d + b2*d^2, effect vs never-treated; curvature where the dose^2 term is significant",
+       x = "dose (cumulative rate change, pp)", y = "ATT(d) = total effect vs never-treated") +
+  theme_bw(base_size = 10)
+ggsave(file.path(fig_dir, "curvature_att_curve.png"), gA2, width = 9, height = 6, dpi = 300)
 cat("--- feols quadratic curvature (b2 = dose^2) ---\n"); print(qsig_dt)
 
 ## PART C: ACRT(d) MATRIX -- outcome x decomposition group, quadratic vs cubic

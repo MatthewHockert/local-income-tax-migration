@@ -9,8 +9,7 @@
 # cousub here via a block→cousub crosswalk built from TIGER 2020 blocks. This
 # recovers all 2,561 PA cousubs; the prior tract-level pipeline (with centroid
 # join) silently dropped 42% of cousubs (those that didn't host a tract
-# centroid) and mis-attributed jobs for the rest. OH legacy path still uses
-# tract-level data; OH was dropped from the paper.
+# centroid) and mis-attributed jobs for the rest..
 
 library(sf)
 library(dplyr)
@@ -30,66 +29,7 @@ options(tigris_use_cache = TRUE)
 source(file.path(.cfg_dir, "config.R"))
 project_dir <- ROOT
 data_dir <- file.path(project_dir, "data")
-lodes_dir       <- file.path(data_dir, "lodes")        # legacy tract-level (OH)
 lodes_block_dir <- file.path(data_dir, "lodes_block")  # block-level (PA)
-
-
-# 1. Ohio Rate Panel ----
-# Source: OH Dept of Taxation "The Finder"
-# muni_fips = Census PLACEFP (5-digit)
-
-oh_rate_file <- file.path(data_dir, "oh_muni_rate_table.csv")
-if (!file.exists(oh_rate_file)) {
-  download.file(
-    "https://thefinder.tax.ohio.gov/streamlinesalestaxweb/download/BoundaryData/Muni/OHMuniRateTable.csv",
-    oh_rate_file, method = "curl", extra = "-k"
-  )
-}
-
-oh_rates_raw <- fread(oh_rate_file, header = FALSE,
-  col.names = c("start_date", "end_date", "muni_fips", "muni_name", "rate"))
-oh_rates_raw[, muni_fips := sprintf("%05d", as.integer(muni_fips))]
-oh_rates_raw[, `:=`(
-  start_date = as.Date(as.character(start_date), format = "%Y%m%d"),
-  end_date = as.Date(as.character(end_date), format = "%Y%m%d")
-)]
-
-# Expand to municipality x year; rate applies if active on April 1 (LODES ref date)
-expand_oh_rates <- function(dt) {
-  rows <- list()
-  for (i in seq_len(nrow(dt))) {
-    start_yr <- as.integer(format(dt$start_date[i], "%Y"))
-    end_yr <- min(as.integer(format(dt$end_date[i], "%Y")), 2023L)
-    if (end_yr < start_yr) next
-    years <- start_yr:end_yr
-    april1 <- as.Date(paste0(years, "-04-01"))
-    active <- april1 >= dt$start_date[i] & april1 <= dt$end_date[i]
-    if (sum(active) == 0) next
-    rows[[i]] <- data.table(
-      muni_fips = dt$muni_fips[i], muni_name = dt$muni_name[i],
-      year = years[active], rate = dt$rate[i]
-    )
-  }
-  rbindlist(rows)
-}
-
-oh_rate_panel <- expand_oh_rates(oh_rates_raw)
-oh_rate_panel <- oh_rate_panel[order(muni_fips, year)]
-oh_rate_panel[, rate_lag := shift(rate, 1), by = muni_fips]
-oh_rate_panel[, rate_change := rate - rate_lag]
-oh_rate_panel[, event_type := fcase(
-  is.na(rate_change), NA_character_,
-  rate_change > 0, "increase",
-  rate_change < 0, "decrease",
-  default = "no_change"
-)]
-first_inc <- oh_rate_panel[event_type == "increase",
-  .(first_increase_year = min(year)), by = muni_fips]
-oh_rate_panel <- merge(oh_rate_panel, first_inc, by = "muni_fips", all.x = TRUE)
-
-saveRDS(oh_rate_panel, file.path(data_dir, "oh_rate_panel.rds"))
-print(paste("OH rate panel:", nrow(oh_rate_panel), "rows,",
-  oh_rate_panel[event_type == "increase", .N], "increases"))
 
 
 # 2. Pennsylvania Rate Panel ----
@@ -184,7 +124,8 @@ pa_first_inc <- pa_rate_panel[event_type == "increase",
 pa_rate_panel <- merge(pa_rate_panel, pa_first_inc, by = "municipality_id", all.x = TRUE)
 
 ## Crosswalk DCED -> Census COUSUBFP via name + county
-pa_cousub <- county_subdivisions(state = "PA", year = 2020) %>% st_transform(4326)
+pa_cousub_file <- file.path(data_dir, "pa_cousub.rds")
+pa_cousub <- if (file.exists(pa_cousub_file)) readRDS(pa_cousub_file) else st_transform(county_subdivisions(state = "PA", year = 2020), 4326)
 
 pa_rate_panel[, dced_name := tolower(municipality)]
 pa_rate_panel[, dced_name := gsub(" boro$", " borough", dced_name)]
@@ -244,38 +185,9 @@ print(paste("PA rate panel:", nrow(pa_rate_panel), "rows,",
   round(100 * n_matched / n_total, 1), "%)"))
 
 
-# 3. Tax Foundation Cross-Section ----
-
-tf_file <- file.path(data_dir, "tax_foundation_local_income_tax_rates.xlsx")
-if (!file.exists(tf_file)) {
-  download.file(
-    "https://taxfoundation.org/wp-content/uploads/2023/02/Local_Income_Tax_Rates_2021_JW-1.xlsx",
-    tf_file, mode = "wb")
-}
-tf_rates <- read_excel(tf_file) %>%
-  fill(State, .direction = "down") %>%
-  clean_names() %>%
-  mutate(
-    resident_rate = as.numeric(resident_rate),
-    nonresident_rate = as.numeric(nonresident_rate),
-    rate_wedge = resident_rate - nonresident_rate)
-saveRDS(tf_rates, file.path(data_dir, "tf_rates.rds"))
-
-
 # 4. TIGER Boundaries + Tract Crosswalks ----
 
-oh_places <- places(state = "OH", year = 2020) %>% st_transform(4326)
-oh_tracts <- tracts(state = "OH", year = 2020) %>% st_transform(4326)
 pa_tracts <- tracts(state = "PA", year = 2020) %>% st_transform(4326)
-
-## OH: tract -> place
-oh_tract_xwalk <- st_join(
-  oh_tracts %>% mutate(centroid = st_centroid(geometry)) %>% st_set_geometry("centroid"),
-  oh_places %>% select(place_fips = PLACEFP, place_name = NAME),
-  left = TRUE) %>%
-  st_drop_geometry() %>%
-  select(tract_geoid = GEOID, place_fips, place_name)
-saveRDS(oh_tract_xwalk, file.path(data_dir, "oh_tract_xwalk.rds"))
 
 ## PA: tract -> cousub
 pa_tract_xwalk <- st_join(
@@ -310,30 +222,10 @@ if (!file.exists(pa_block_xwalk_file)) {
 }
 
 # Save place/cousub geometries for maps
-saveRDS(oh_places, file.path(data_dir, "oh_places.rds"))
 saveRDS(pa_cousub, file.path(data_dir, "pa_cousub.rds"))
 
 
 # 5. City-to-City Neighbor Pairs ----
-
-## OH: 20km radius
-oh_places_proj <- st_transform(oh_places, 32617)
-oh_dist_mat <- st_distance(st_centroid(oh_places_proj))
-oh_fips_vec <- oh_places$PLACEFP
-
-oh_nbr_list <- list()
-for (i in seq_len(nrow(oh_dist_mat))) {
-  dists <- as.numeric(oh_dist_mat[i, ])
-  nbrs <- which(dists > 0 & dists <= 80000)
-  if (length(nbrs) > 0) {
-    oh_nbr_list[[i]] <- data.table(
-      city_fips = oh_fips_vec[i], neighbor_fips = oh_fips_vec[nbrs],
-      dist_km = dists[nbrs] / 1000)
-  }
-}
-oh_neighbors <- rbindlist(oh_nbr_list)
-saveRDS(oh_neighbors, file.path(data_dir, "oh_neighbors.rds"))
-rm(oh_dist_mat)
 
 ## PA: 15km radius
 pa_cousub_proj <- st_transform(pa_cousub, 32618)
@@ -354,7 +246,6 @@ pa_neighbors <- rbindlist(pa_nbr_list)
 saveRDS(pa_neighbors, file.path(data_dir, "pa_neighbors.rds"))
 rm(pa_dist_mat)
 
-print(paste("OH neighbors:", nrow(oh_neighbors), "pairs"))
 print(paste("PA neighbors:", nrow(pa_neighbors), "pairs"))
 
 
@@ -409,7 +300,6 @@ build_city_od <- function(main_rds, aux_rds = NULL, tract_xwalk, id_col, state_f
   city_od
 }
 
-oh_tract_dt <- as.data.table(oh_tract_xwalk)
 pa_tract_dt <- as.data.table(pa_tract_xwalk)
 
 # Block-level OD aggregator for PA. Mirrors build_city_od but consumes
@@ -459,15 +349,6 @@ build_city_od_block <- function(main_rds, aux_rds = NULL, block_xwalk,
   city_od
 }
 
-oh_city_od <- build_city_od(
-  file.path(lodes_dir, "oh_od_S000_main.rds"),
-  file.path(lodes_dir, "oh_od_S000_aux.rds"),
-  oh_tract_dt, "place_fips", "39")
-
-oh_city_od_high <- build_city_od(
-  file.path(lodes_dir, "oh_od_SE03_main.rds"),
-  NULL, oh_tract_dt, "place_fips", "39")
-
 pa_city_od <- build_city_od_block(
   file.path(lodes_block_dir, "pa_od_S000_main.rds"),
   file.path(lodes_block_dir, "pa_od_S000_aux.rds"),
@@ -477,30 +358,13 @@ pa_city_od_high <- build_city_od_block(
   file.path(lodes_block_dir, "pa_od_SE03_main.rds"),
   NULL, pa_block_xwalk, "42")
 
-saveRDS(oh_city_od, file.path(data_dir, "oh_city_od.rds"))
-saveRDS(oh_city_od_high, file.path(data_dir, "oh_city_od_high.rds"))
 saveRDS(pa_city_od, file.path(data_dir, "pa_city_od.rds"))
 saveRDS(pa_city_od_high, file.path(data_dir, "pa_city_od_high.rds"))
 
-print(paste("OH city OD:", nrow(oh_city_od), "rows"))
 print(paste("PA city OD:", nrow(pa_city_od), "rows"))
 
 
 # 7. Analysis-Ready Panels (OD + Rates) ----
-
-## OH
-oh_rate_merge <- oh_rate_panel[, .(muni_fips, year, rate, rate_change,
-  event_type, first_increase_year)]
-oh_panel <- merge(oh_city_od, oh_rate_merge,
-  by.x = c("work_city", "year"), by.y = c("muni_fips", "year"), all.x = TRUE)
-oh_panel[is.na(rate), rate := 0]
-
-oh_panel_high <- merge(oh_city_od_high, oh_rate_merge,
-  by.x = c("work_city", "year"), by.y = c("muni_fips", "year"), all.x = TRUE)
-oh_panel_high[is.na(rate), rate := 0]
-
-saveRDS(oh_panel, file.path(data_dir, "oh_panel.rds"))
-saveRDS(oh_panel_high, file.path(data_dir, "oh_panel_high.rds"))
 
 ## PA
 pa_rate_merge <- pa_rate_panel[!is.na(cousub_fips),
@@ -516,7 +380,6 @@ pa_panel_high <- merge(pa_city_od_high, pa_rate_merge,
 saveRDS(pa_panel, file.path(data_dir, "pa_panel.rds"))
 saveRDS(pa_panel_high, file.path(data_dir, "pa_panel_high.rds"))
 
-print(paste("OH panel:", nrow(oh_panel), "rows"))
 print(paste("PA panel:", nrow(pa_panel), "rows, with rate:", sum(!is.na(pa_panel$resident_eit))))
 
 print("All data built.")

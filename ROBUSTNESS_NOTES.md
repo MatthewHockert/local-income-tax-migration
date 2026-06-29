@@ -47,7 +47,49 @@ Several scripts also read `../data/multitax/` (the property-tax burden panels, v
   `proptax_eit_comparison.csv`. (This is the engine behind the retired two-tax-comparison
   version of the paper.)
 
+## ACR aggregation: non-negative weights + dose linearity (backs `subsec:rob-acr`)
+The headline β is an **average causal response (ACR)**: the dose-weighted average per-pp
+effect. These scripts check that the *linear* aggregation isn't distorted by negative weights
+or by curvature in the dose-response.
+- **`q3_unified_dcdh_robustness.R`** — de Chaisemartin–D'Haultfœuille `did_multiplegt_dyn`
+  (continuous treatment, non-negative weights) vs the linear feols ACR. **Finding:** the ES
+  path is nearly identical in sign and magnitude → the linear ACR is not flipped by negative
+  weights. Output: `dcdh_robustness.csv`, `../figures/dcdh_vs_feols_es.png`.
+- **`q3_unified_curvature_robustness.R`** — does the marginal effect (ACRT) bend with dose?
+  Part A: feols quadratic ACRT(d) curve. Part C: ACRT(d) matrix (outcome × cell, deg 2 vs 3).
+  Part B: dCDH `continuous=1` vs `=2`. **Finding:** the *aggregate* bends slightly (a
+  composition effect across cells), but within the headline **Inc-bind** cell curvature is not
+  identified and BIC selects the linear model → report and plot the **linear** ACR; the
+  quadratic stays a robustness check, never the headline equation. Output:
+  `curvature_acrt_feols.csv`, `curvature_att_curve.csv`, `curvature_acrt_cells.csv`,
+  `curvature_dcdh_lin_vs_quad.csv` + 4 figs (incl. `curvature_att_curve.png`, the ATT(d)
+  parabola = total effect vs never-treated). The pooled $d^2$ is significant at 5% for the two
+  *residence* outcomes (work-in-own-muni $p=.007$, share $p=.024$) — a mild **concave**
+  dose-response (diminishing marginal response) — but below BIC's large-$N$ bar
+  ($|t|>\sqrt{\ln N}\approx3.5$), which is why BIC still picks linear.
+- **`build_acr_acrt_att_explainer.R`** — pedagogical figure putting **ATT(d)** (the parabola),
+  **ACRT(d)** (its slope), and **ACR** (the flat one-number average of ACRT) side by side per
+  outcome. Output: `../figures/acr_acrt_att_explainer.png`. Not a result — an intuition aid for
+  the ACR/ACRT/ATT distinction.
+- **`q3_unified_contdid_robustness.R`** — attempt at the Callaway–Goodman-Bacon–Sant'Anna
+  nonparametric ATT(d|d) via `contdid::cont_did`. **INFEASIBLE here:** contdid needs a balanced
+  panel with enough within-cohort dose variation; our cohorts are thin (~5 treated/cohort, 18
+  distinct doses), so `cont_did` errors (boundary-knot / non-conformable). Kept as a documented
+  dead-end; **not** wired into `run_repro.sh`. The feasible curvature answer is the parametric
+  `q3_unified_curvature_robustness.R` + dCDH above.
+
+## Multi-test pre-trend battery + results workbook
+- **`q3_unified_pretrend_battery.R`** — four pre-trend tests per cell × outcome: joint Wald,
+  individual leads, linear pre-trend slope, and HonestDiD breakdown.
+  `robust_clean := no individual lead significant at 5% AND linear pre-slope p > 0.10`.
+  **Finding:** Inc-bind is `robust_clean` on all four outcomes even where the joint Wald
+  over-rejects. Output: `pretrend_battery.csv`.
+- **`build_results_workbook.R`** — collects every result CSV into `../results/all_results.xlsx`
+  (one sheet per table + an INDEX sheet). Run after the battery so its sheet is current.
+
 ## Bottom line we landed on
 - **Headline:** levels decomposition + property-tax controls (Inc-bind −0.435).
 - **Main event study:** realized-**dose** ES (the only one where the placebo is null).
+- **ACR is linear:** dCDH ≈ feols and BIC selects the linear dose model, so the headline
+  reports the linear ACR; the quadratic/curvature work is a check, not part of the main spec.
 - Everything else above is robustness/diagnostic — kept here, not wired into the manuscript.
