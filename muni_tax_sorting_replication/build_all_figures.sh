@@ -29,7 +29,8 @@
 #     eit_levels_ptax_es                                 q3_unified_eit_levels_ptax_es.R
 #     proptax_es_scale_vs_comp                           q3_proptax_es.R
 #     dcdh_vs_feols_es                                   q3_unified_dcdh_robustness.R
-#     curvature_acrt_feols, curvature_dcdh_lin_vs_quad   q3_unified_curvature_robustness.R
+#     curvature_acrt_feols, curvature_acrt_matrix,
+#     curvature_dcdh_lin_vs_quad                         q3_unified_curvature_robustness.R
 #   DESCRIPTIVE RATE-CHANGE FIGURES (from the rate panel)
 #     scatter_level_vs_change_{inc,dec}                  build_extra_figures.R
 #     trajectories_spaghetti_{inc,dec}                   build_extra_figures.R

@@ -69,49 +69,53 @@ gA <- ggplot(acrt_dt, aes(dose, acrt)) +
 ggsave(file.path(fig_dir, "curvature_acrt_feols.png"), gA, width = 9, height = 6, dpi = 300)
 cat("--- feols quadratic curvature (b2 = dose^2) ---\n"); print(qsig_dt)
 
-## PART C: ACRT(d) by group -- aggregate AND decomposition cells --------------
-# Cell-interacted quadratic: ACRT_cell(d) = b1_cell + 2*b2_cell*d. Shows the
-# aggregate curvature is largely a composition effect across cells; the
-# load-bearing Inc-bind cell's curvature is NOT identified (wide CIs, ns dose^2).
-stk[, idose := fifelse(inc == 1, dose, 0)]; stk[, idose2 := idose^2]
-acrt_curve <- function(b1, b2, V11, V22, V12, d) {
-  est <- b1 + 2*b2*d; se <- sqrt(pmax(V11 + 4*d^2*V22 + 4*d*V12, 0))
-  data.table(dose = d, acrt = est, lo = est - 1.96*se, hi = est + 1.96*se)
+## PART C: ACRT(d) MATRIX -- outcome x decomposition group, quadratic vs cubic
+# Cell-interacted polynomial: ACRT_group(d) = sum_k k*b_k*d^(k-1). Two findings:
+#  (1) the AGGREGATE curvature is robust to polynomial order (deg2 ~ deg3);
+#  (2) within the thin cells the CUBIC overfits wildly, so curvature is NOT
+#      identified per-cell -- the linear ACR is fine for the headline Inc-bind.
+# Dose capped at 0.5 pp (the data-dense range; beyond it cubics explode).
+stk[, id1 := fifelse(inc == 1, dose, 0)]
+dg <- seq(0, 0.5, length.out = 50); pgroups <- c("Aggregate","Inc-bind","Inc-becomes")
+acrt_poly <- function(bb, V, deg, d) {            # ACRT(d) and delta-method CI
+  est <- rep(0, length(d)); for (k in 1:deg) est <- est + k*bb[k]*d^(k-1)
+  se <- sapply(d, function(x){ g <- sapply(1:deg, function(k) k*x^(k-1))
+                               sqrt(max(as.numeric(t(g) %*% V %*% g), 0)) })
+  data.table(dose = d, acrt = est, lo = est-1.96*se, hi = est+1.96*se)
 }
-cells <- c("Inc-bind","Inc-becomes","Inc-nobind"); cell_out <- list()
-for (o in outcomes) {
-  cols <- c("muni","idose","idose2","stack_muni","stack_year", o, ctrls)
+mat <- list()
+for (o in outcomes) for (deg in c(2, 3)) {
+  for (k in 1:deg) stk[[paste0("ia",k)]] <- stk$id1^k
+  tn <- paste0("ia",1:deg); cols <- c("muni",tn,"stack_muni","stack_year", o, ctrls)
   da <- stk[, ..cols][complete.cases(stk[, ..cols])]
-  ma <- feols(as.formula(paste0(o," ~ idose + idose2 + ",cs," | stack_muni + stack_year")), da, cluster=~muni)
-  Va <- vcov(ma)[c("idose","idose2"), c("idose","idose2")]
-  cag <- acrt_curve(coef(ma)["idose"], coef(ma)["idose2"], Va[1,1], Va[2,2], Va[1,2], dgrid)
-  cag[, `:=`(outcome=o, group="Aggregate")]; cell_out[[length(cell_out)+1L]] <- cag
-  cols <- c("muni","treat_cell","dose","dose2","stack_muni","stack_year", o, ctrls)
+  ma <- feols(as.formula(paste0(o," ~ ",paste(tn,collapse=" + ")," + ",cs," | stack_muni + stack_year")), da, cluster=~muni)
+  ca <- acrt_poly(coef(ma)[tn], vcov(ma)[tn,tn], deg, dg)
+  ca[, `:=`(outcome=o, group="Aggregate", degree=paste0("deg ",deg))]; mat[[length(mat)+1L]] <- ca
+  for (k in 1:deg) stk[[paste0("cc",k)]] <- stk$dose^k
+  tn2 <- paste0("cc",1:deg); cols <- c("muni","treat_cell",tn2,"stack_muni","stack_year", o, ctrls)
   dc <- stk[, ..cols][complete.cases(stk[, ..cols])]
-  mc <- feols(as.formula(paste0(o," ~ i(treat_cell,dose,ref='NC') + i(treat_cell,dose2,ref='NC') + ",cs," | stack_muni + stack_year")), dc, cluster=~muni)
-  Vc <- vcov(mc); cn <- names(coef(mc))
-  for (c in cells) {
-    b1n <- paste0("treat_cell::",c,":dose"); b2n <- paste0("treat_cell::",c,":dose2")
-    if (!(b1n %in% cn & b2n %in% cn)) next
-    cc <- acrt_curve(coef(mc)[b1n], coef(mc)[b2n], Vc[b1n,b1n], Vc[b2n,b2n], Vc[b1n,b2n], dgrid)
-    cc[, `:=`(outcome=o, group=c)]; cell_out[[length(cell_out)+1L]] <- cc
+  fc <- paste0(o," ~ ",paste(sprintf("i(treat_cell,%s,ref='NC')",tn2),collapse=" + ")," + ",cs," | stack_muni + stack_year")
+  mc <- feols(as.formula(fc), dc, cluster=~muni); V <- vcov(mc); cn <- names(coef(mc))
+  for (g in c("Inc-bind","Inc-becomes")) {
+    nm <- paste0("treat_cell::",g,":",tn2); if (!all(nm %in% cn)) next
+    cc <- acrt_poly(coef(mc)[nm], V[nm,nm], deg, dg)
+    cc[, `:=`(outcome=o, group=g, degree=paste0("deg ",deg))]; mat[[length(mat)+1L]] <- cc
   }
 }
-cell_dt <- rbindlist(cell_out, fill=TRUE)
-fwrite(cell_dt, file.path(out_dir, "curvature_acrt_cells.csv"))
-plc <- cell_dt[group != "Inc-nobind"]; plc[, ol := lab[outcome]]  # Inc-nobind (14 munis) unstable
-gC <- ggplot(plc, aes(dose, acrt, color=group, fill=group)) +
-  geom_hline(yintercept = 0, linetype="dashed", color="grey50") +
+mat_dt <- rbindlist(mat, fill=TRUE); fwrite(mat_dt, file.path(out_dir, "curvature_acrt_cells.csv"))
+mat_dt[, ol := lab[outcome]]; mat_dt[, group := factor(group, levels=pgroups)]
+gC <- ggplot(mat_dt, aes(dose, acrt, color=degree, fill=degree)) +
+  geom_hline(yintercept=0, linetype="dashed", color="grey50") +
   geom_ribbon(aes(ymin=lo, ymax=hi), alpha=0.08, color=NA) + geom_line() +
-  facet_wrap(~ ol, scales="free_y") +
-  scale_color_manual(values=c(Aggregate="#1b7837","Inc-bind"="#b2182b","Inc-becomes"="#762a83")) +
-  scale_fill_manual(values=c(Aggregate="#1b7837","Inc-bind"="#b2182b","Inc-becomes"="#762a83")) +
-  labs(title="ACRT(d) by group: aggregate increase vs binding-decomposition cells",
-       subtitle="feols quadratic. Inc-nobind (14 munis) omitted (unstable). Inc-bind curvature not identified -> linear ACR fine for the headline cell.",
+  facet_grid(ol ~ group, scales="free_y") +
+  scale_color_manual(values=c("deg 2"="#1b7837","deg 3"="#b35806")) +
+  scale_fill_manual(values=c("deg 2"="#1b7837","deg 3"="#b35806")) +
+  labs(title="ACRT(d) matrix: outcome x decomposition group, quadratic vs cubic dose",
+       subtitle="feols polynomial; dose capped at 0.5 pp (data-dense range). Aggregate robust to order; cubic overfits the thin cells. Inc-nobind omitted (14 munis).",
        x="dose (cumulative rate change, pp)", y="ACRT(d): marginal effect at dose d",
-       color="group", fill="group") +
-  theme_bw(base_size=10) + theme(legend.position="bottom")
-ggsave(file.path(fig_dir, "curvature_acrt_cells.png"), gC, width=9.5, height=6, dpi=300)
+       color="poly degree", fill="poly degree") +
+  theme_bw(base_size=9) + theme(legend.position="bottom")
+ggsave(file.path(fig_dir, "curvature_acrt_matrix.png"), gC, width=10, height=8.5, dpi=300)
 
 ## PART B: dCDH continuous=1 vs continuous=2 ----------------------------------
 # Diagnostic is about the dose model, not the controls; fiscal controls make
