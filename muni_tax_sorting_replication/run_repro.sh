@@ -28,6 +28,11 @@ say ""; say "=== STAGE B: tables + figures ==="
 for s in build_summary_stats.R build_paper_tables.R build_appendix_es_figures.R \
          build_uea_aggregate_figures.R build_dose_trajectory_inc_becomes.R; do run "$s"; done
 
+say ""; say "=== STAGE B2: pre-trend battery + results workbook ==="
+# multi-test pre-trend battery (joint Wald / leads / linear slope / HonestDiD),
+# then collect every result CSV into results/all_results.xlsx
+for s in q3_unified_pretrend_battery.R build_results_workbook.R; do run "$s"; done
+
 say ""; say "=== STAGE C: compile manuscript ==="
 ( cd manuscript && pdflatex -interaction=nonstopmode muni_tax_sorting.tex >/dev/null 2>&1 \
   && biber muni_tax_sorting >/dev/null 2>&1 \

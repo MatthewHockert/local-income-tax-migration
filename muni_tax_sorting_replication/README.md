@@ -20,7 +20,8 @@ run the scripts in `scripts/` in the order in §3; outputs are written to `table
   ```r
   install.packages(c("data.table","fixest","dplyr","tidyr","stringr","sf",
                      "ggplot2","readxl","janitor","tigris","lehdr",
-                     "tidycensus","stringdist","beepr"))
+                     "tidycensus","stringdist","beepr",
+                     "openxlsx","HonestDiD"))   # openxlsx: results workbook; HonestDiD: pre-trend battery
   ```
 - **Python** ≥ 3.9 — only for the one-time raw scrapers in §3 step 1:
   ```bash
