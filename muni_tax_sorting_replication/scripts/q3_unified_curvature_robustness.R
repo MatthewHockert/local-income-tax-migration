@@ -69,6 +69,50 @@ gA <- ggplot(acrt_dt, aes(dose, acrt)) +
 ggsave(file.path(fig_dir, "curvature_acrt_feols.png"), gA, width = 9, height = 6, dpi = 300)
 cat("--- feols quadratic curvature (b2 = dose^2) ---\n"); print(qsig_dt)
 
+## PART C: ACRT(d) by group -- aggregate AND decomposition cells --------------
+# Cell-interacted quadratic: ACRT_cell(d) = b1_cell + 2*b2_cell*d. Shows the
+# aggregate curvature is largely a composition effect across cells; the
+# load-bearing Inc-bind cell's curvature is NOT identified (wide CIs, ns dose^2).
+stk[, idose := fifelse(inc == 1, dose, 0)]; stk[, idose2 := idose^2]
+acrt_curve <- function(b1, b2, V11, V22, V12, d) {
+  est <- b1 + 2*b2*d; se <- sqrt(pmax(V11 + 4*d^2*V22 + 4*d*V12, 0))
+  data.table(dose = d, acrt = est, lo = est - 1.96*se, hi = est + 1.96*se)
+}
+cells <- c("Inc-bind","Inc-becomes","Inc-nobind"); cell_out <- list()
+for (o in outcomes) {
+  cols <- c("muni","idose","idose2","stack_muni","stack_year", o, ctrls)
+  da <- stk[, ..cols][complete.cases(stk[, ..cols])]
+  ma <- feols(as.formula(paste0(o," ~ idose + idose2 + ",cs," | stack_muni + stack_year")), da, cluster=~muni)
+  Va <- vcov(ma)[c("idose","idose2"), c("idose","idose2")]
+  cag <- acrt_curve(coef(ma)["idose"], coef(ma)["idose2"], Va[1,1], Va[2,2], Va[1,2], dgrid)
+  cag[, `:=`(outcome=o, group="Aggregate")]; cell_out[[length(cell_out)+1L]] <- cag
+  cols <- c("muni","treat_cell","dose","dose2","stack_muni","stack_year", o, ctrls)
+  dc <- stk[, ..cols][complete.cases(stk[, ..cols])]
+  mc <- feols(as.formula(paste0(o," ~ i(treat_cell,dose,ref='NC') + i(treat_cell,dose2,ref='NC') + ",cs," | stack_muni + stack_year")), dc, cluster=~muni)
+  Vc <- vcov(mc); cn <- names(coef(mc))
+  for (c in cells) {
+    b1n <- paste0("treat_cell::",c,":dose"); b2n <- paste0("treat_cell::",c,":dose2")
+    if (!(b1n %in% cn & b2n %in% cn)) next
+    cc <- acrt_curve(coef(mc)[b1n], coef(mc)[b2n], Vc[b1n,b1n], Vc[b2n,b2n], Vc[b1n,b2n], dgrid)
+    cc[, `:=`(outcome=o, group=c)]; cell_out[[length(cell_out)+1L]] <- cc
+  }
+}
+cell_dt <- rbindlist(cell_out, fill=TRUE)
+fwrite(cell_dt, file.path(out_dir, "curvature_acrt_cells.csv"))
+plc <- cell_dt[group != "Inc-nobind"]; plc[, ol := lab[outcome]]  # Inc-nobind (14 munis) unstable
+gC <- ggplot(plc, aes(dose, acrt, color=group, fill=group)) +
+  geom_hline(yintercept = 0, linetype="dashed", color="grey50") +
+  geom_ribbon(aes(ymin=lo, ymax=hi), alpha=0.08, color=NA) + geom_line() +
+  facet_wrap(~ ol, scales="free_y") +
+  scale_color_manual(values=c(Aggregate="#1b7837","Inc-bind"="#b2182b","Inc-becomes"="#762a83")) +
+  scale_fill_manual(values=c(Aggregate="#1b7837","Inc-bind"="#b2182b","Inc-becomes"="#762a83")) +
+  labs(title="ACRT(d) by group: aggregate increase vs binding-decomposition cells",
+       subtitle="feols quadratic. Inc-nobind (14 munis) omitted (unstable). Inc-bind curvature not identified -> linear ACR fine for the headline cell.",
+       x="dose (cumulative rate change, pp)", y="ACRT(d): marginal effect at dose d",
+       color="group", fill="group") +
+  theme_bw(base_size=10) + theme(legend.position="bottom")
+ggsave(file.path(fig_dir, "curvature_acrt_cells.png"), gC, width=9.5, height=6, dpi=300)
+
 ## PART B: dCDH continuous=1 vs continuous=2 ----------------------------------
 # Diagnostic is about the dose model, not the controls; fiscal controls make
 # did_multiplegt_dyn(continuous=2) ~5x slower, so we drop them here (the linear-
