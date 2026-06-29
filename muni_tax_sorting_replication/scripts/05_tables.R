@@ -6,6 +6,7 @@
 .dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
 source(file.path(.dir, "_run_stage.R"))
 scripts <- c(
-  "build_paper_tables.R"                      # all LaTeX table fragments -> tables/
+  "build_paper_tables.R",                     # all LaTeX table fragments -> tables/
+  "build_results_workbook.R"                  # paper result CSVs (incl. ES) -> results/all_results.xlsx
 )
 run_stage("Tables", scripts, .dir)

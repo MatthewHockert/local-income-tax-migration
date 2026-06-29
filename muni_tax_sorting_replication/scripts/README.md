@@ -70,6 +70,7 @@ levels/property-tax/contdid/workbook — live in the main project repo, not this
 | Script | What it does |
 |---|---|
 | `build_paper_tables.R` | all LaTeX table fragments → `tables/` |
+| `build_results_workbook.R` | paper result CSVs incl. **event-study** sheets → `results/all_results.xlsx` |
 
 ## Infrastructure (not a stage; sourced by the above)
 | File | Role |

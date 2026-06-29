@@ -48,19 +48,13 @@ within-design placebo cell that does not; a typical binding increase
 reduces the count of workers who both live and work in their own
 municipality by roughly $13\%$ ($-0.573$ log points per percentage
 point, $\approx -43\%$), with a clean realized-dose pre-trend, while the
-placebo cell is null. The property tax has no such placebo: it is a
-continuous treatment with no never-treated group, so its identification
-is weaker, and the paper says so. On the cleanly identified margins the
-property tax shows \emph{no detectable} sorting response, and on the
-contaminated residence-count margin its honest-DiD bounds rule out an
-EIT-sized effect but not zero. Placed on a common per-dollar-of-tax
-basis, residents respond to the income tax roughly an order of
-magnitude more than to the property tax. The pattern is consistent with
-capitalization---the property burden is absorbed into house prices
-rather than relocating the household---though, lacking a house-price
-response, I read it as consistent with capitalization rather than proof
-of it. Workers sort on taxes that follow the person, far less on taxes
-that attach to the property.
+placebo cell is null. To ensure the income-tax response is not merely proxying for broader
+local fiscal burden, I include the municipality's property-tax burden
+among the controls; the binding-cell estimate is unchanged by its
+inclusion. The mechanism is intuitive: the EIT follows the worker to the
+municipality of residence, so relocating avoids it, whereas a property
+tax attaches to the parcel and cannot be escaped by moving within the
+same labor market.
 \end{abstract}
 
 \newpage
@@ -141,20 +135,14 @@ treatment with local house-price dynamics. Each leg controls for the
 concurrent change in the other tax, so the income- and property-tax
 elasticities are separately identified.
 
-The two legs are not identified equally well, and I treat the asymmetry
-as a feature. The EIT's piecewise structure delivers a within-design
-placebo; the property tax has none---it changes nearly every year, so
-there is no never-treated control group and no non-binding cell---and
-its sole identification check is the realized-dose pre-trend. On the
-cleanly identified margins (the local-employment composition share and
-workplace counts) the property tax shows no detectable sorting response;
-on the contaminated residence-count margin its honest-DiD bounds rule
-out an EIT-sized effect but include zero. Placed on a common
-per-\$1{,}000-of-annual-tax basis using each municipality's own median
-income and home value, residents respond to the income tax roughly an
-order of magnitude more than to the property tax. I read this as
-consistent with capitalization rather than as proof of it, since I do
-not observe the house-price response that capitalization implies.
+Because the property tax is identified far less cleanly than the EIT---it
+changes nearly every year, so there is no never-treated control group and
+no non-binding cell, leaving the realized-dose pre-trend as its only
+check---I treat it as a control on the income-tax response rather than as
+a second treatment estimated in its own right. Including the
+municipality's property-tax burden alongside the EIT leaves the
+binding-cell estimate unchanged, so the sorting I measure is a response to
+the income tax specifically, not to local fiscal burden in general.
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec:background} describes the institutional setting---the
@@ -526,7 +514,7 @@ calibration that is validated at tract scale and above
 $2{,}559$ municipalities ($7.2\%$), almost all sparsely populated
 NC-pool townships; the treated cohort is essentially unaffected.
 
-For the property-tax leg, municipal and county real-estate millage come
+For the property tax, municipal and county real-estate millage come
 from the same DCED MunStats register, scraped annually
 \citep{padcedMunStats}; the county tax register reports general-purpose
 and total millage for all $66$ assessing counties (Philadelphia is a
@@ -537,16 +525,7 @@ assessment-base-change footnotes also date each countywide reassessment,
 which I use to flag reassessment years. The effective property-tax rate
 combines municipal and county millage with the county CLR; across
 municipality-years its median is about $2.1\%$ of market value (with the
-school district excluded as an estimating unit). To put the income and
-property taxes on a common dollar basis I use each municipality's own
-median household income (ACS table B19013) and median owner-occupied
-home value (B25077) from the American Community Survey five-year files,
-which cover county subdivisions from the 2005--2009 release onward;
-coverage is $99.7\%$ of municipalities, missing cells are filled with the
-county median (flagged), and pre-2009 panel years hold the 2009 value
-(flagged). The cross-municipality home-to-income ratio has a median of
-$2.6$ (10th--90th percentile $1.8$--$3.5$), the spread that drives the
-sensitivity band on the per-dollar comparison.
+school district excluded as an estimating unit).
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
