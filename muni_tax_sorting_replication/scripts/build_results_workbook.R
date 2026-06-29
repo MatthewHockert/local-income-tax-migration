@@ -23,6 +23,7 @@ manifest <- list(
   c("headline_es_coefs.csv",              "ES_dose_coefs",     "Realized-dose event study: coefficients by event-time (MAIN ES)"),
   c("headline_es_att.csv",                "ES_dose_ATT",       "Realized-dose ES: post/pre ATT + joint-Wald pre-trend"),
   c("pretrend_battery.csv",               "pretrend_battery",  "MULTIPLE pre-trend tests: joint Wald, individual leads, linear slope, HonestDiD breakdown"),
+  c("dcdh_robustness.csv",                "dcdh_robustness",   "Robustness: de Chaisemartin-D'Haultfoeuille (non-negative weights) ES vs linear feols"),
   c("act32_split_cousub.csv",             "act32_split",       "Robustness: pre/post Act-32 enforcement split"),
   c("levels_robustness_decomp.csv",       "rob_levels_decomp", "Robustness: levels vs dose -- decomposition (identical coefs)"),
   c("levels_robustness_pooled.csv",       "rob_levels_pooled", "Robustness: levels vs dose -- aggregate"),

@@ -28,6 +28,7 @@
 #     eit_levels_es                                      q3_unified_eit_levels_es.R
 #     eit_levels_ptax_es                                 q3_unified_eit_levels_ptax_es.R
 #     proptax_es_scale_vs_comp                           q3_proptax_es.R
+#     dcdh_vs_feols_es                                   q3_unified_dcdh_robustness.R
 #   DESCRIPTIVE RATE-CHANGE FIGURES (from the rate panel)
 #     scatter_level_vs_change_{inc,dec}                  build_extra_figures.R
 #     trajectories_spaghetti_{inc,dec}                   build_extra_figures.R
@@ -52,7 +53,8 @@ for s in build_summary_stats.R build_uea_aggregate_figures.R \
          build_dose_trajectory_inc_becomes.R build_appendix_es_figures.R; do run "$s"; done
 
 say ""; say "=== 3. robustness-spec figures (self-estimating) ==="
-for s in q3_unified_eit_levels_es.R q3_unified_eit_levels_ptax_es.R q3_proptax_es.R; do run "$s"; done
+for s in q3_unified_eit_levels_es.R q3_unified_eit_levels_ptax_es.R q3_proptax_es.R \
+         q3_unified_dcdh_robustness.R; do run "$s"; done
 
 say ""; say "=== 4. descriptive rate-change figures (from rate panel) ==="
 run "build_extra_figures.R"
