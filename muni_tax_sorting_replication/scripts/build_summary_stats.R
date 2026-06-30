@@ -84,6 +84,7 @@ write_summary_table <- function(rows, caption, label_id, out_name, notes = chara
             "  \\end{minipage}",
             "\\end{table}")
   writeLines(body, file.path(tab_dir, out_name))
+  fwrite(rows_dt, file.path(data_dir, "q3_unified", sub("\\.tex$", ".csv", out_name)))
   cat(sprintf("Wrote %s\n", out_name))
 }
 
@@ -248,6 +249,7 @@ body <- c(body, "    \\bottomrule", "  \\end{tabular}",
           "    \\footnotesize \\textit{Notes:} Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\\Delta\\tau$ within the 5-year event window. The Extreme dose column reports the max cumulative dose for Inc cells and the min (most negative) cumulative dose for Dec cells, since cell assignment is determined by the first event but subsequent reversals can pull the signed cumulative path back across zero.",
           "  \\end{minipage}", "\\end{table}")
 writeLines(body, file.path(tab_dir, "cell_counts_summary.tex"))
+fwrite(cell_tab, file.path(data_dir, "q3_unified", "cell_counts_summary.csv"))
 cat("Wrote cell_counts_summary.tex\n")
 
 # ---------------------------------------------------------------------------

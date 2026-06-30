@@ -21,14 +21,21 @@ manifest <- list(
   c("headline_full_table.csv",  "headline_decomp",  "Binding decomposition: per-pp dose coefficients, all cells x outcomes (HEADLINE)"),
   c("headline_diagnostics.csv", "headline_diag",    "Headline regression diagnostics (R2, within-R2, N, dep mean)"),
   c("pooled_results.csv",       "pooled_benchmark", "Pooled-Increase benchmark (per-pp dose + binary event)"),
+  c("pooled_diagnostics.csv",   "pooled_diag",      "Pooled benchmark regression diagnostics (R2, N, dep mean)"),
   c("headline_es_coefs.csv",    "ES_dose_coefs",    "Realized-dose event study: coefficients by event-time (MAIN ES -- for paper)"),
   c("headline_es_att.csv",      "ES_dose_ATT",      "Realized-dose ES: post/pre ATT + joint-Wald pre-trend (for paper)"),
   c("pooled_es_cousub_att.csv", "ES_pooled_ATT",    "Pooled-Increase event study: post/pre ATT (for paper)"),
   c("act32_split_cousub.csv",   "act32_split",      "Robustness: pre/post Act-32 enforcement split"),
+  c("act32_split_cousub_diag.csv","act32_diag",     "Act-32 split regression diagnostics (R2, N, dep mean)"),
   c("dcdh_robustness.csv",      "dcdh_robustness",  "Robustness: de Chaisemartin-D'Haultfoeuille (non-negative weights) ES vs linear feols"),
   c("curvature_acrt_feols.csv", "curvature_acrt",   "Curvature: parametric ACRT(d) dose-response (marginal effect)"),
   c("curvature_att_curve.csv",  "curvature_att",    "Curvature: ATT(d) dose-response (the paper figure fig:curvature_att)"),
-  c("pretrend_battery.csv",     "pretrend_battery", "MULTIPLE pre-trend tests: joint Wald, individual leads, linear slope, HonestDiD breakdown")
+  c("pretrend_battery.csv",     "pretrend_battery", "MULTIPLE pre-trend tests: joint Wald, individual leads, linear slope, HonestDiD breakdown"),
+  c("act47_robustness_cousub.csv","act47_robustness","Robustness: Act 47 distressed-municipality exclusion (paper table)"),
+  c("summary_muni.csv",         "summary_muni",     "Summary statistics: muni-year level (paper table)"),
+  c("summary_block.csv",        "summary_block",    "Summary statistics: block-year level (paper table)"),
+  c("summary_sd.csv",           "summary_sd",       "Summary statistics: school-district level (paper table)"),
+  c("cell_counts_summary.csv",  "cell_counts",      "Binding-cell counts + dose ranges (paper table)")
 )
 
 wb <- createWorkbook()
