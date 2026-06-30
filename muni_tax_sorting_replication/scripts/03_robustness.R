@@ -9,7 +9,8 @@ scripts <- c(
   "q3_unified_pretrend_battery.R",            # multi-test pre-trend battery (Wald/leads/slope/HonestDiD)
   "q3_unified_act32_3level.R",                # pre/post Act 32 enforcement split
   "q3_unified_act47_robustness.R",            # Act 47 distressed-municipality exclusion
-  "q3_unified_dcdh_robustness.R",             # de Chaisemartin-D'Haultfoeuille (non-negative weights)
+  "q3_unified_dcdh_robustness.R",             # de Chaisemartin-D'Haultfoeuille (non-negative weights), pooled
+  "q3_unified_dcdh_bycell.R",                 # dCDH separately for pooled / Inc-bind / Inc-becomes x 4 outcomes
   "q3_unified_curvature_robustness.R"         # ACRT/ATT curvature + dCDH linear-vs-quadratic
 )
 run_stage("Robustness", scripts, .dir)

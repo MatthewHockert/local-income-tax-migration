@@ -1,0 +1,117 @@
+---
+title: "Do Local Taxes Cause Residential Sorting? — Paper Outline"
+author: "Matthew Hockert"
+date: today
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    keep-tex: true
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+bibliography: references.bib
+---
+
+<!--
+The current paper mapped onto the generalized applied-micro outline. Reorders to
+match: estimand introduced first, the binding-decomposition "conceptual framework"
+folded into the Empirical Framework, full-table sections moved back under Appendix.
+Sections flagged [TO WRITE] do not yet exist in the manuscript.
+-->
+
+\pagebreak
+
+# Introduction
+
+- **Question.** Do local income taxes cause workers to relocate their residence? D = a municipality's EIT resident-rate change; Y = whether workers live where they work.
+- **Setting.** The PA Earned Income Tax (EIT) — a tax that follows the worker to the municipality of residence — using LEHD/LODES block-level origin–destination data, 2002–2019.
+- **Identification hook.** The EIT's piecewise max-rule, $T=\max(\tau^M+\tau^{SD},\,\tau^{nr})$, splits otherwise-identical rate increases into a **binding** cell that moves the worker's bill and a **non-binding placebo** cell that does not.
+- **Headline finding.** A typical binding increase cuts the count of workers who live-and-work in their own municipality by ~13% ($\beta=-0.573$ log points per pp), with a clean realized-dose pre-trend; the placebo cell is null.
+- **Credibility.** Within-design placebo (Inc-nobind) + a realized-dose pre-trend that passes at the municipality level.
+- **Property tax** enters as a competing-burden control, not a second treatment.
+- **Contribution + roadmap.**
+
+# Background
+
+*[Consolidate all institutions here — pull Act 32 in from the old §3, promote Act 47 + the cap out of Robustness.]*
+
+- **Enabling laws.**
+  - **Act 511 — Local Tax Enabling Act (1965).** Authorizes the local EIT; the **0.5% municipal / 0.5% SD** standard cap (1% combined).
+  - **Sterling Act (1932).** Philadelphia's separate wage tax.
+  - **Act 1 — Taxpayer Relief Act (2006).** Lets school districts shift property-tax burden onto the EIT; a source of SD-rate variation.
+  - **Act 32 (2008, effective 2012).** Consolidated employer withholding through county **Tax Collection Districts (TCDs)**; made the EIT *binding* — the natural experiment.
+  - **Act 47 — Municipalities Financial Recovery Act (1987)** and **Home Rule.** The only municipalities that may **exceed the 0.5% cap** — the "high-baseline" munis behind the revenue-offset split.
+- **The max-rule (institutional fact).** $T=\max(\tau^M+\tau^{SD},\,\tau^{nr})$: the home stack vs the work-side nonresident rate; whichever binds sets the bill. *(The decomposition that exploits it lives in the Empirical Framework, not here.)*
+- **Organizations / data producers.** DCED Municipal Statistics (rate register + AFR fiscal lines); the Act 32 TCDs; STEB (State Tax Equalization Board) common-level ratios for the property tax; Census F-33 / NCES for school-district finance.
+- **Property tax.**
+  - Muni + county **millage** on **assessed value** (a county-set fraction of market value).
+  - **STEB** certifies that fraction — the **CLR** — per county, annually.
+  - Both millages in the **same DCED register** as the EIT (muni × year panel); SD millage reported but not an estimating unit.
+  - **Infrequent reassessment** (24/67 counties, 2002–2019) → CLR drifts down.
+  - **Act 1 anti-windfall** → millage rolled back to revenue-neutral at reassessment.
+  - ⇒ statutory millage ≠ effective burden → use the **effective rate (millage × CLR)**, not raw millage.
+  - Falls on the **dwelling, not the worker** → a **control**, not a treatment.
+
+# Data and Descriptive Statistics
+
+- **Sources.** LODES block-level OD (PA, 2002–2019); DCED EIT rate register; Census F-33 school-district finance; municipal AFR shares; block→cousub crosswalk (TIGER 2020).
+- **Sample.** 2002–2019 (drops COVID/ARPA-distorted years), `total_jobs > 50`, non-missing fiscal controls.
+- **Summary statistics** (in **levels**, every variable used): municipality / block / school-district — rates, worker counts, shares.
+- **Figures.** PA map; rate changes by year; Act 32 enforcement CDF.
+
+# Empirical Framework
+
+## The causal parameter
+
+- **Estimand: the ACR** — the dose-weighted average per-pp effect, i.e.\ the regression coefficient $\beta$. $\mathrm{ACRT}(d)$ is its marginal-effect curve; $\mathrm{ATT}(d)$ is the total/level effect.
+- **Identifying assumption: strong parallel trends** (parallel *across dose magnitudes*; Callaway–Goodman-Bacon–Sant'Anna).
+- **Testable** via the realized-dose event study; passes at the muni level (Inc-bind pre $\approx-0.07$, Wald $p\approx0.33$) — see Robustness.
+- **Geometric content (Concern 1).** A fitted $\mathrm{ATT}(d)$ traced across doses is a *cross-group* locus; its slope $=\mathrm{ACRT}$ only under strong parallel trends (else a cross-group selection term contaminates it — CGS). Evidence it holds: the realized-dose pre-trend passes for **pooled, Inc-bind, and Inc-becomes**, and the **dCDH** (non-negative-weight) joint-placebo test is insignificant for **all three groups $\times$ four outcomes** with negative post-paths throughout — so parallel trends survive *per-cell*, not just on the aggregate. (dCDH's continuous coefficient is a *level effect at the typical dose*, not a per-pp slope; rescaling the feols ACR by the $\approx0.33$ pp mean dose reconciles **pooled and Inc-becomes** to the dCDH magnitudes. **Inc-bind** alone stays attenuated under the continuous estimator — the binding cell is a discrete rule, not a smooth dose — which is also why dCDH appears to reverse the Inc-bind $>$ Inc-becomes ordering.) ⇒ highly confident — not certain — that we ride a single $\mathrm{ACRT}$ curve.
+
+## The identification strategy
+
+*[Absorbs the former standalone §3 Conceptual Framework — reference the max-rule established in Background instead of re-deriving it. This removes the §2.1/§3 redundancy.]*
+
+- **Source of variation: the binding decomposition.** The max-rule classifies each rate change into six cells per rate-setter — Inc-bind / Inc-becomes / Inc-nobind — with the **Dec mirrors not estimated** (cohort too thin: 5/3/11 munis, and fails parallel trends). **Inc-nobind is the within-design placebo.**
+- **Design.** Continuous stacked difference-in-differences; never-changers (NC) as the control; dose $\Delta\tau$ enters linearly.
+- **FE / clustering.** $\text{muni}^{\text{stack}} + \text{year}^{\text{stack}}$; clustered by municipality.
+- **Estimating equation.** $Y_{it}=\alpha_i+\gamma_t+\sum_s\sum_k \beta^s_k\,\Delta\tau^s_{it}+X_{it}+\varepsilon_{it}$.
+- **Threats.** Pre-trends (tested); cross-cell composition (curvature robustness).
+
+# Results
+
+- **Aggregate (pooled-Increase) ACR** — benchmark: log live-and-work $-0.287^{***}$ (attenuated vs the binding cell).
+- **Binding decomposition** — headline: Inc-bind $-0.573^{***}$, Inc-becomes $-0.250^{***}$, Inc-nobind $-0.073$ (null placebo); $N\approx175{,}000$.
+- **EIT revenue response.** Net per-pp $+1.06$; behavioral offset $\approx36\%$ for standard-structure (low-baseline) municipalities.
+- Full per-cell tables with control coefficients → Appendix.
+
+# Robustness
+
+1. **ACR aggregation.** dCDH (non-negative weights) corroborates the linear-feols *sign and clean pre-trends* on the aggregate **and per-cell** (pooled / Inc-bind / Inc-becomes $\times$ 4 outcomes; all joint-placebo tests insignificant). Magnitudes reconcile once the feols per-pp ACR is rescaled to the dCDH level-at-mean-dose units (pooled, Inc-becomes); Inc-bind is attenuated under the continuous estimator because the binding cell is a discrete rule, not a smooth dose. Quadratic/curvature checks (BIC selects linear).
+2. **Pre/post Act 32 split.** Effect strengthens after consolidated withholding takes effect.
+3. **Act 47 distressed-municipality exclusion.**
+4. **Within-design placebo.** Inc-nobind (null).
+5. **Dose-response shape (Concern 2 — spline).** Natural-spline `ns(dose)` (pooled, Inc-bind, Inc-becomes) reproduces the concave $\mathrm{ATT}$ / diminishing $\mathrm{ACRT}$ — the bend is *not* a quadratic artifact, and effects are clean across the dense dose range; bands fan at high dose (thin switchers) so the tail is unidentified. ⇒ report the linear ACR, plot the spline dose-response.
+
+# Discussion  *[TO WRITE — not in current draft]*
+
+1. Compare magnitudes and signs to the residential-sorting and local-tax literature.
+2. Connect to the real world: the mechanism (the EIT follows the worker, so relocating avoids it; the property tax attaches to the parcel and capitalizes rather than relocating households); policy / welfare implication; limits of external validity.
+
+# Conclusion  *[TO WRITE — not in current draft]*
+
+- Restate the question and the headline finding, and the one thing it changes about how we think about local income taxes and sorting. No new results.
+
+# References
+
+::: {#refs}
+:::
+
+# Appendix {.appendix}
+
+- **Full results with control coefficients** (currently §8 in the draft).
+- **Realized-dose event studies, full set** (currently §9).
+- **Robustness: full tables**, incl.\ pre/post Act 32 (currently §10).
+- *Note:* these are presently numbered main sections — `\appendix` was removed — and should be restored under an appendix per the outline.

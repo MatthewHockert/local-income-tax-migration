@@ -1,0 +1,102 @@
+---
+title: "Paper Title: A Short Descriptive Subtitle"
+author: "Matthew Hockert"
+date: today
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    keep-tex: true
+  html:
+    toc: true
+    number-sections: true
+    theme: cosmo
+bibliography: references.bib
+---
+
+<!--
+GENERALIZED OUTLINE / TEMPLATE FOR APPLIED MICRO PAPERS.
+Reusable scaffold — copy this file, replace the prompts under each heading, delete
+the guidance comments. Render in VS Code with the Quarto extension, or `quarto render`.
+Order of writing, not order of reading: Data → Empirical Framework → Results first;
+write the Introduction last, once you know your headline number.
+-->
+
+\pagebreak
+
+# Introduction
+
+- **Hook / motivation.** The real-world question and why anyone should care.
+- **The research question**, stated as one sentence: *does D affect Y, for whom, by how much?*
+- **Why it's hard / unsettled** — the identification challenge prior work couldn't clear, or the gap in the evidence.
+- **What you do**, in one sentence: the setting, the source of variation, the data, the design.
+- **What you find** — the headline number, in the units a reader remembers (a %, an elasticity, a per-unit effect). State the sign, the size, and the precision.
+- **Why it's credible** — the one design feature that makes the estimate causal (the within-design placebo, the discontinuity, the never-treated control).
+- **Contribution** — what this adds to the literature, in 2–3 concrete sentences (not "I am the first to…").
+- **Roadmap.** One sentence pointing to the sections.
+
+# Background
+
+- The **laws, rule changes, or institutional features** that motivate the question and **generate the treatment**.
+- Define the **treatment institutionally**: what changed, when, for whom, by how much, and why that timing/assignment is plausibly exogenous to the outcome.
+- Anything a reader must know to interpret the descriptive figures and the design (eligibility rules, enforcement dates, caps, mechanical formulas).
+
+# Data and Descriptive Statistics
+
+- **Sources**: each dataset, coverage (unit, geography, years), how they're linked, and the analysis sample (with the filters and why).
+- **Summary-statistics tables:**
+  - Across **time and across groups** (treated vs control).
+  - **Pre- vs post-treatment.**
+  - **Always in levels** (not logs), and **include *every* variable used in the analysis** — outcomes, treatment, and controls.
+- **Figures**: trends **over time and across groups** — the raw patterns that motivate the design (and foreshadow the result without claiming causality yet).
+- Everything here should **tell the story** the Background motivated. Describe what you see; save the causal claims for Results.
+
+# Empirical Framework
+
+## The causal parameter
+
+- **What parameter are you estimating?** Name it precisely — ACR, ATT, ATC, ACRT, LATE — and write it down. Different designs identify different objects; be explicit about which.
+- **How is it defined**, and how does it **map to your estimating equation**? (e.g., the regression coefficient *is* the dose-weighted ACR.)
+- **Identifying assumptions** for *that* parameter:
+  - State each assumption (e.g., ACR needs **strong** parallel trends; ATT needs parallel trends in levels; RD needs continuity at the cutoff).
+  - **Untestable assumptions** — argue why they're *plausible in this setting* (institutional detail, design features).
+  - **Testable assumptions** — provide the evidence (pre-trend tests, density/McCrary, balance), and **point to the Robustness section** for the formal versions.
+
+## The identification strategy
+
+- **State it plainly:** *I estimate the effect of D on Y, using [source of variation] for identification.*
+- **What is the source of exogenous variation** that licenses a causal reading? (a reform, a discontinuity, a staggered rollout, a within-design placebo cell).
+- The **estimating equation**, the unit of observation, fixed effects, and **clustering** (and why those levels).
+- Name the **threats** to identification and how the design addresses each.
+
+# Results
+
+- Lead with the **main result** — the table/figure that answers the question — then mechanisms / decomposition / heterogeneity in order of importance.
+- **Is the table TMI?** If a table is dense with nuisance coefficients, show the headline rows and **move the full table to the Appendix**.
+- Same for figures — the one or two that carry the argument stay; the rest go to the Appendix.
+- Report effects in **interpretable units** and tie each number back to the question.
+
+# Robustness
+
+1. **Alternative specifications** — controls in/out, alternative functional forms, alternative estimators (e.g., a non-negative-weight estimator vs the linear one).
+2. **Placebo tests** — a treatment that shouldn't move the outcome, a pre-period "effect," an unaffected group.
+3. **Heterogeneity** — by group, dose, or timing; does the pattern match the mechanism?
+4. **Other checks** — sample restrictions, sensitivity bounds (Honest-DiD / Rambachan–Roth), leave-one-out, alternative samples.
+
+# Discussion
+
+1. **How do the results compare to the existing literature** — magnitudes, signs, and where you agree or differ (and why).
+2. **Connect it to the real world** — the policy or welfare implication, the back-of-envelope magnitude, the limits of external validity.
+
+# Conclusion
+
+- Restate the question, the headline finding, and the one thing it changes about how we should think about the problem. No new results.
+
+# References
+
+::: {#refs}
+:::
+
+# Appendix {.appendix}
+
+- Full regression tables, additional figures, data-construction detail, derivations, and the robustness exhibits referenced above.
