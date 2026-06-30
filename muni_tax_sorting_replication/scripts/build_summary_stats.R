@@ -123,8 +123,8 @@ muni_rows <- list(
   mk_row("Nonresident rate $\\tau^{nr,M}$ (\\%)",  m$muni_nonres_eit),
   mk_row("SD rate $\\tau^{SD}$ (\\%)",             m$sd_eit),
   mk_row("Home stack $\\tau^{M}+\\tau^{SD}$ (\\%)", m$home_stack),
-  mk_row("$\\log$ live-and-work",                   m$log_live_in),
-  mk_row("$\\log$ total jobs",                      m$log_total_jobs),
+  mk_row("Live-and-work workers",                   m$live_and_work),
+  mk_row("Total jobs",                              m$total_jobs),
   mk_row("Share live-and-work in muni",             m$share_live_in)
 )
 write_summary_table(muni_rows,
@@ -153,9 +153,7 @@ block_rows <- list(
   mk_row("Nonresident rate $\\tau^{nr,M}$ (\\%)", block$muni_nonres_eit),
   mk_row("SD rate $\\tau^{SD}$ (\\%)",       block$sd_eit),
   mk_row("Home count (workers living)",   block$home_count),
-  mk_row("$\\log$ home count",            block$log_home_count),
   mk_row("Work count (jobs in block)",    block$work_count),
-  mk_row("$\\log$ work count",            block$log_work_count),
   mk_row("Share live-and-work in muni",   block$home_in_muni_share),
   mk_row("Share work outside muni",       block$share_work_outside)
 )
