@@ -20,6 +20,7 @@ out_xlsx <- file.path(out_dir, "all_results.xlsx")
 manifest <- list(
   c("headline_full_table.csv",  "headline_decomp",  "Binding decomposition: per-pp dose coefficients, all cells x outcomes (HEADLINE)"),
   c("headline_diagnostics.csv", "headline_diag",    "Headline regression diagnostics (R2, within-R2, N, dep mean)"),
+  c("intext_numbers.csv",       "in_text_numbers",  "Reconciliation of the headline IN-TEXT prose numbers -> value + source (gate-checked)"),
   c("pooled_results.csv",       "pooled_benchmark", "Pooled-Increase benchmark (per-pp dose + binary event)"),
   c("pooled_diagnostics.csv",   "pooled_diag",      "Pooled benchmark regression diagnostics (R2, N, dep mean)"),
   c("headline_es_coefs.csv",    "ES_dose_coefs",    "Realized-dose event study: coefficients by event-time (MAIN ES -- for paper)"),
@@ -31,6 +32,9 @@ manifest <- list(
   c("curvature_acrt_feols.csv", "curvature_acrt",   "Curvature: parametric ACRT(d) dose-response (marginal effect)"),
   c("curvature_att_curve.csv",  "curvature_att",    "Curvature: ATT(d) dose-response (the paper figure fig:curvature_att)"),
   c("pretrend_battery.csv",     "pretrend_battery", "MULTIPLE pre-trend tests: joint Wald, individual leads, linear slope, HonestDiD breakdown"),
+  c("eit_revenue_offset.csv",   "rev_offset",       "EIT revenue: net response + Laffer offset at mean/median rate (in-text numbers)"),
+  c("eit_revenue_decomp.csv",   "rev_decomp",       "EIT revenue: gross vs net decomposition"),
+  c("eit_revenue_split.csv",    "rev_split",        "EIT revenue: pre/post Act-32 split"),
   c("act47_robustness_cousub.csv","act47_robustness","Robustness: Act 47 distressed-municipality exclusion (paper table)"),
   c("summary_muni.csv",         "summary_muni",     "Summary statistics: muni-year level (paper table)"),
   c("summary_block.csv",        "summary_block",    "Summary statistics: block-year level (paper table)"),

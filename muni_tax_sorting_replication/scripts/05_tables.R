@@ -7,6 +7,7 @@
 source(file.path(.dir, "_run_stage.R"))
 scripts <- c(
   "build_paper_tables.R",                     # all LaTeX table fragments -> tables/
-  "build_results_workbook.R"                  # paper result CSVs (incl. ES) -> results/all_results.xlsx
+  "build_intext_numbers.R",                   # reconcile headline IN-TEXT prose numbers -> value+source (gate-checked)
+  "build_results_workbook.R"                  # all result CSVs (tables + ES + in-text) -> results/all_results.xlsx
 )
 run_stage("Tables", scripts, .dir)
