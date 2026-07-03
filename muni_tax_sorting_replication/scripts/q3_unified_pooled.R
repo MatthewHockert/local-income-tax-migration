@@ -39,12 +39,10 @@ dec_cells <- c("Dec-bind","Dec-becomes-non","Dec-nobind")
 
 direction_levels <- c("NC","Inc","Dec")
 
-muni_ctrls <- c("share_police","share_streets","share_debt_svc",
-                "share_eit","share_re","share_intergov")
-sd_ctrls   <- c("share_state_rev_sd","share_local_rev_sd",
-                "share_federal_rev_sd","share_property_tax_sd",
-                "share_instructional_sd","share_support_sd",
-                "share_capital_sd","share_debt_int_sd")
+# NOTE: controls are NOT defined here — they are inherited from the headline
+# script via `ctrls_muni <- e_c$ctrls` below, so any control-set change in
+# q3_unified_full_table.R (e.g. the property effective rates) propagates
+# automatically. (Stale local copies deleted 2026-07-02.)
 
 muni_outcomes  <- c("log_live_and_work","log_in_commuters",
                     "log_out_commuters","log_total_jobs",

@@ -94,6 +94,25 @@ fc <- fc[!is.na(muni) & !is.na(year)]
 fc <- fc[, lapply(.SD, function(x) if (is.numeric(x)) mean(x, na.rm = TRUE) else first(x)),
          by = .(muni, year)]
 panel <- merge(panel, fc, by = c("muni", "year"), all.x = TRUE)
+
+# Property-tax effective rates (statutory millage x STEB common-level ratio),
+# kept SEPARATE per rate-setter: muni_eff_rate, sd_eff_rate, county_eff_rate.
+# Key: burden muni_id == DCED municipality_id -> cousub_fips via `xw` (line above).
+# Provenance: built in the parent repo
+#   scrape_pa_dced_county_tax.py -> build_pde_sd_millage.py ->
+#   multitax_gapfill_sd.py -> multitax_effective_rate.py
+# vendored here as data/multitax/pa_property_burden_panel.csv (regenerate via those).
+burden <- fread(file.path(data_dir, "multitax", "pa_property_burden_panel.csv"))
+burden <- merge(burden[, .(municipality_id = muni_id, year,
+                           muni_eff_rate, sd_eff_rate, county_eff_rate)],
+                xw, by = "municipality_id", all.x = TRUE)
+burden <- burden[!is.na(cousub_fips),
+                 .(muni_eff_rate   = mean(muni_eff_rate,   na.rm = TRUE),
+                   sd_eff_rate     = mean(sd_eff_rate,     na.rm = TRUE),
+                   county_eff_rate = mean(county_eff_rate, na.rm = TRUE)),
+                 by = .(muni = cousub_fips, year)]
+panel <- merge(panel, burden, by = c("muni", "year"), all.x = TRUE)
+
 panel <- panel[, lapply(.SD, function(x) {
   if (is.numeric(x)) mean(x, na.rm = TRUE) else first(x)
 }), by = .(muni, year)]
@@ -103,24 +122,42 @@ for (col in names(panel)) {
   }
 }
 
-ctrls <- c("share_police", "share_streets", "share_debt_svc",
-           "share_eit", "share_re", "share_intergov")
+# Controls: keep the spending-composition shares; DROP the two tax-revenue shares
+# (share_re is subsumed by the property effective rates; share_eit is downstream of
+# the EIT rate = treatment, a bad control) and ADD the three property effective rates.
+ctrls <- c("share_police", "share_streets", "share_debt_svc", "share_intergov",
+           "muni_eff_rate", "sd_eff_rate", "county_eff_rate")
 ctrls_str <- paste(ctrls, collapse = " + ")
 
-# Cell classification (NC fix applied)
+# Cell classification ----
+# The heart of the design (NC fix applied). For ONE rate-setter at a time
+# (muni / SD / nonres), find each muni's FIRST rate-change event and classify
+# it into a binding cell using the max-rule T = max(home_stack, nonres_rate):
+#   direction (Inc/Dec) x binds BEFORE (prebind) x binds AFTER (postbind)
+#   -> Inc-bind / Inc-becomes / Inc-nobind (+ Dec mirrors + 2 rare edge cells).
+# Munis that never change any rate -> "NC" (the control group).
+# Munis with changes in BOTH directions (flip-floppers) -> "Uncertain" (dropped).
 classify_treatment <- function(p, rate_var, bind_ref, tag) {
   setorder(p, muni, year)
+  # home_binds: 1 if the residence-side stack exceeds the work-side rate,
+  # i.e. the worker's bill is set by the HOME rates (the stack "binds").
   p[, home_binds := as.integer(home_stack > muni_nonres_eit)]
   lag_col <- paste0("lag_", tag)
   p[, (lag_col) := shift(get(rate_var)), by = muni]
+  # Year-over-year change in this setter's rate -> Inc/Dec event flags.
+  # 1e-6 tolerance guards float noise; NA = no change that year.
   ev_col <- paste0("ev_", tag)
   p[, (ev_col) := fifelse(is.na(get(lag_col)), NA_character_,
                   fifelse(get(rate_var) > get(lag_col) + 1e-6, "Inc",
                   fifelse(get(rate_var) < get(lag_col) - 1e-6, "Dec", NA_character_)))]
+  # .SD[1] = the FIRST event per muni; its year becomes the cohort year c_<tag>.
   ev <- p[!is.na(get(ev_col)), .SD[1], by = muni,
           .SDcols = c("year", ev_col, lag_col, rate_var, "home_binds")]
   setnames(ev, c("year", ev_col, lag_col, rate_var, "home_binds"),
            c("c_var","ev_dir","baseline_var","first_post","postbind"))
+  # prebind = binding state in the year BEFORE the event (lag of home_binds
+  # evaluated at the event year); postbind = state in the event year itself.
+  # The (prebind, postbind) pair is what splits Inc into bind/becomes/nobind.
   pbind <- p[, .(muni, year, lag_home_binds = shift(home_binds)), by = muni]
   ev <- merge(ev, pbind[, .(muni, year, lag_home_binds)],
               by.x = c("muni","c_var"), by.y = c("muni","year"), all.x = TRUE)
@@ -147,6 +184,10 @@ classify_treatment <- function(p, rate_var, bind_ref, tag) {
   c_v    <- paste0("c_", tag)
   base_v <- paste0("baseline_", tag)
   dose_v <- paste0("dose_", tag)
+  # THE "NC FIX": a muni is NC only if this setter's rate NEVER changes over
+  # the whole sample. Munis with changes that produced no classifiable first
+  # event (e.g. missing lag year) are "Uncertain", NOT silently NC — an
+  # earlier version leaked them into the control group.
   rate_changes <- p2[!is.na(get(rate_var)), .(
     n = sum(abs(diff(get(rate_var))) > 1e-6, na.rm = TRUE)
   ), by = muni]
@@ -162,6 +203,9 @@ classify_treatment <- function(p, rate_var, bind_ref, tag) {
     n_inc = sum(d > 0), n_dec = sum(d < 0)), by = muni]
   flip <- ff_summary[n_inc > 0 & n_dec > 0, muni]
   p2[muni %in% flip, (cell_v) := "Uncertain"]
+  # Dose = cumulative rate change since the pre-event baseline, 0 before the
+  # event and 0 for NC. Accumulates if the muni keeps raising after the first
+  # event (flip-floppers are already excluded, so it is monotone).
   p2[, (dose_v) := fifelse(!is.na(get(c_v)) & year >= get(c_v),
                            get(rate_var) - get(base_v), 0)]
   cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
@@ -194,7 +238,13 @@ panel[, cell_muni := droplevels(cell_muni)]
 panel[, cell_sd   := droplevels(cell_sd)]
 panel[, cell_nr   := droplevels(cell_nr)]
 
-# Build stack for muni side (Mode B)
+# Stack builder ----
+# Cengiz-style ("Mode B"). One sub-experiment ("stack") per cohort year: the
+# cohort's treated munis in a +-K window around the event, plus a FRESH COPY
+# of every NC muni. NC munis therefore appear once per overlapping cohort —
+# this is why the FE must be stack-interacted (muni^stack, year^stack): each
+# copy gets its own intercept, keeping comparisons within-cohort and avoiding
+# treated-vs-treated contrasts.
 build_stack <- function(p, side_tag, dose_col, K = K_stack) {
   cell_v <- paste0("cell_", side_tag)
   c_v    <- paste0("c_", side_tag)
@@ -218,6 +268,10 @@ build_stack <- function(p, side_tag, dose_col, K = K_stack) {
   stk <- rbindlist(lapply(cohort_years, build_one), fill = TRUE)
   stk[, stack_muni := paste0(stack, "_", muni)]
   stk[, stack_year := paste0(stack, "_", year)]
+  # Re-baseline the dose WITHIN each stack window: subtract the muni's mean
+  # pre-event dose so dose_stack is exactly 0 pre-event inside every stack
+  # (a treated muni's global dose can be non-zero pre-window if its event
+  # window is clipped by the sample edge).
   stk[, base_rate := mean(get(dose_col)[rel < 0], na.rm = TRUE),
       by = .(stack, muni)]
   stk[!is.finite(base_rate), base_rate := 0]
@@ -302,19 +356,22 @@ coefs[, sig := fifelse(p < 0.01, "***",
 fwrite(coefs, file.path(out_dir, "headline_full_table.csv"))
 
 # --- VALIDATION GATE: headline Inc-bind coefficients must match the paper ----
-# Halts loudly if a future change makes the headline drift from the published
+# Halts loudly if a future change makes the headline drift from the current
 # values (Table: headline_muni_combined; Inc-bind row, muni resident rate).
+# Values updated 2026-07 for the property-tax-controlled spec (muni/sd/county
+# effective rates added; share_re + share_eit dropped). Pre-property values were
+# log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058.
 .chk <- coefs[grepl("Inc-bind:dose_stack", term)]
-.exp <- c(log_live_and_work = -0.573, log_in_commuters = -0.412,
-          log_total_jobs = -0.490, share_live_in = -0.058)
+.exp <- c(log_live_and_work = -0.437, log_in_commuters = -0.317,
+          log_total_jobs = -0.391, share_live_in = -0.054)
 for (.o in names(.exp)) {
   .got <- .chk[outcome == .o, est]
   if (length(.got) != 1 || abs(.got - .exp[.o]) > 0.005)
     stop(sprintf("VALIDATION FAIL: Inc-bind %s = %s, expected %.3f (tol 0.005)",
                  .o, ifelse(length(.got)==1, sprintf("%.3f", .got), "NA"), .exp[.o]))
 }
-cat("[validation] headline Inc-bind matches paper: ",
-    "log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058\n")
+cat("[validation] headline Inc-bind matches spec: ",
+    "log_LW=-0.437 log_IC=-0.317 log_TJ=-0.391 share=-0.054\n")
 
 diag_dt <- rbindlist(diagnostics, fill = TRUE)
 fwrite(diag_dt, file.path(out_dir, "headline_diagnostics.csv"))

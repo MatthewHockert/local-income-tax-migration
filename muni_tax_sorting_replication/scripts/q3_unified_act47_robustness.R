@@ -93,17 +93,28 @@ build_stack <- function(p, cell_col, K = K_stack) {
     d_t[, treat_cell := get(cell_col)]
     d_c <- p[muni %in% nc_munis & year %in% win]
     d_c[, treat_cell := "NC"]
-    rbind(d_t, d_c, fill = TRUE)[, .(muni, year, treat_cell,
+    # Carry the CURRENT headline control columns (e$ctrls) through the stack
+    # dynamically, so control-set changes in q3_unified_full_table.R propagate
+    # here without editing this script (the old hard-coded share list silently
+    # kept Act 47 on the retired controls).
+    rbind(d_t, d_c, fill = TRUE)[, c(list(muni = muni, year = year,
+                                      treat_cell = treat_cell,
                                       stack = cy, rel = year - cy,
-                                      dose_muni, dose_sd, dose_nr,
-                                      cell_sd, cell_nr,
-                                      share_police, share_streets,
-                                      share_debt_svc, share_eit,
-                                      share_re, share_intergov,
-                                      log_live_and_work, log_in_commuters,
-                                      log_total_jobs, share_live_in)]
+                                      dose_muni = dose_muni, dose_sd = dose_sd,
+                                      dose_nr = dose_nr,
+                                      cell_sd = cell_sd, cell_nr = cell_nr,
+                                      log_live_and_work = log_live_and_work,
+                                      log_in_commuters = log_in_commuters,
+                                      log_total_jobs = log_total_jobs,
+                                      share_live_in = share_live_in),
+                                      mget(muni_ctrls))]
   }), fill = TRUE)
 }
+
+# Inherit the headline control set (must be defined BEFORE build_stack runs —
+# the stack selection above references muni_ctrls via closure).
+muni_ctrls <- e$ctrls
+ctrls_str <- paste(muni_ctrls, collapse = " + ")
 
 cat("\nBuilding stacks (full headline + Act 47 excluded)...\n")
 stk_full <- build_stack(panel, "cell_muni")
@@ -117,10 +128,6 @@ for (s in list(stk_full, stk_a47drop)) {
   s[is.na(dose_sd), dose_sd := 0]
   s[is.na(dose_nr), dose_nr := 0]
 }
-
-muni_ctrls <- c("share_police","share_streets","share_debt_svc",
-                "share_eit","share_re","share_intergov")
-ctrls_str <- paste(muni_ctrls, collapse = " + ")
 
 run_one <- function(stk, outcome) {
   f <- as.formula(paste0(outcome,

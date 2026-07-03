@@ -139,14 +139,20 @@ read_controls_long <- function(csv_path, term_filter = NULL) {
   d[, .(outcome, term, est, se, p)]
 }
 
-# Pretty labels for controls used in appendix full-spec tables
+# Pretty labels for controls used in appendix full-spec tables.
+# share_eit / share_re labels kept for legacy CSVs, but the active control set
+# (q3_unified_full_table.R ctrls) replaced them with the three property
+# effective rates (millage x CLR) on 2026-07-02.
 muni_ctrl_labels <- c(
-  share_police   = "police-services share",
-  share_streets  = "streets share",
-  share_debt_svc = "debt-service share",
-  share_eit      = "EIT-revenue share",
-  share_re       = "real-estate-tax share",
-  share_intergov = "intergovernmental-revenue share"
+  share_police    = "police-services share",
+  share_streets   = "streets share",
+  share_debt_svc  = "debt-service share",
+  share_eit       = "EIT-revenue share",
+  share_re        = "real-estate-tax share",
+  share_intergov  = "intergovernmental-revenue share",
+  muni_eff_rate   = "muni property eff.\\ rate",
+  sd_eff_rate     = "SD property eff.\\ rate",
+  county_eff_rate = "county property eff.\\ rate"
 )
 sd_ctrl_labels <- c(
   share_state_rev_sd       = "state-revenue share",

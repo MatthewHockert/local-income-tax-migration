@@ -930,25 +930,8 @@ analogue $\beta^{SD}_{\text{Inc}}$.
 
 \input{../tables/pooled_per_pp_cousub.tex}
 
-The muni-rate Inc coefficient on log live-and-work is
-$-0.287^{***}$, and the count outcomes move together. Log
-in-commuters is $-0.256^{***}$ and log total jobs $-0.283^{***}$,
-and the share of workers who both live and work in their own
-municipality is a small $-0.020^{*}$. The cell decomposition in
-Section~\ref{subsec:results-decomp} shows this aggregate is driven
-by Inc-bind ($-0.573^{***}$ on log live-and-work) with Inc-becomes
-and Inc-nobind averaged in. The pooled-Inc ES on log live-and-work
-fails parallel trends (Wald $p=0.002$, Table~\ref{tab:es_pooled_cousub}),
-because the Inc-becomes and Inc-nobind munis enter with non-zero
-pre-event trajectories. The Inc-bind cell on its own passes
-pre-trends cleanly ($p=0.33$, Section~\ref{subsubsec:decomp-es}),
-which is why the decomposition rather than the pooled coefficient
-carries the causal claim. The SD-rate Inc coefficients are positive
-and weak ($+0.128^{*}$ on log live-and-work), sign-reversed relative
-to the muni-rate finding. Aggregating across a school district mixes
-the rate-changing municipality (where residents may move out) with
-non-changing munis in the same SD (which may gain residents from
-within-SD movers).
+% [Results prose removed 2026-07-02 pending property-controls re-run;
+%  regenerate numbers from data/q3_unified CSVs before rewriting.]
 
 \subsubsection{Realized-dose ES benchmark diagnostic}
 \label{subsubsec:pooled-es}
@@ -961,38 +944,7 @@ Figure~\ref{fig:pooled_es_muni_only} plots the event-time path.
 
 \input{../tables/es_pooled_cousub_summary.tex}
 
-The pooled-Inc post-event coefficient on log live-and-work is
-$-0.257$, with a small but non-zero pre-event lead, and the joint
-Wald $p=0.002$ rejects strong parallel trends. As above, the rejection
-reflects Inc-becomes and Inc-nobind selection rather than a problem
-with Inc-bind on its own, which the decomposition isolates.
-
-The other three pooled outcomes in Table~\ref{tab:es_pooled_cousub}
-and Figure~\ref{fig:pooled_es_muni_only} move with the live-and-work
-result. The pooled-Inc post on log in-commuters is $-0.247$
-($p=0.016$) and on log total jobs $-0.271$ ($p=0.039$). The three
-count measures contract together by roughly a quarter of a log point
-per pp ($0.247$--$0.271$), which points to a single workplace-side
-margin rather than an outcome-specific artifact. The share of workers
-who both live and work in the municipality is small and negative
-($-0.019$, $p=0.14$) and is the only pooled outcome whose joint
-pre-trend test does not reject. Muni-level share outcomes mix
-denominator dynamics with binding-channel sorting, and enter as
-supporting evidence rather than as primary identification.
-
-These pooled magnitudes average over municipalities whose rate
-changes do and do not move the worker's bill, and three of the four
-reject the joint pre-trend test. The realized-dose decomposition in
-Section~\ref{subsec:results-decomp} addresses both problems at once.
-It isolates the Inc-bind cell, where the rate increase actually
-pushes the home stack above the work rate, from the Inc-becomes and
-Inc-nobind municipalities that contribute the non-zero leads. There
-the live-and-work effect sharpens to $-0.573^{***}$ on a cell with
-clean realized-dose pre-trends (joint Wald $p=0.33$), while the
-within-design placebo (Inc-nobind) is null. A large
-pre-trend-clean effect in the binding cell beside a null placebo is
-why the decomposition rather than the pooled coefficient carries the
-causal claim.
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \begin{figure}[H]
   \centering
@@ -1021,57 +973,9 @@ the identical specification.
 
 \input{../tables/headline_muni_combined.tex}
 
-The Inc-bind cell has clean realized-dose pre-trends on the three
-count outcomes (table~\ref{tab:es_realized_cousub}). To understand the results, I translate them using the mean cumulative resident-rate increase at
-$k=+5$ for the 24 Inc-bind municipalities which is $0.24$ pp
-(Figure~\ref{fig:dose_trajectory}). At that typical dose, the
-Inc-bind coefficient on log live-and-work implies a
-$0.24\times(-0.573)=-0.14$ log-point change, or $13\%$ reduction in
-residents who both live and work in their own municipality. The
-dependent-variable mean of $3.66$ corresponds to about $39$ workers ($e^{3.66}$) in the typical muni, so a $13\%$ drop is
-roughly $5$ fewer live-and-work workers per Inc-bind muni over
-five years. The same scaling on log in-commuters
-($\beta=-0.412$) implies $10\%$ reduction in-commuters, or about 34 fewer
-in-commuters relative to a typical baseline of
-$343$. The same scaling on log total jobs ($\beta=-0.490$) implies
-about $-11\%$ in jobs located in the municipality; the fact that the estimate for the
-live-and-work count falls by more than the workplace as a whole
-($-13\%$ vs $-11\%$) is residential displacement net of the general
-labor-market contraction.
-
-The share of workers who both live and work in their own
-municipality is the most direct read on the binding-rule mechanism,
-and it moves in the predicted direction. The Inc-bind coefficient is
-$-0.058^{***}$ (Wald $p=0.003$), so residents' share of local
-employment falls even net of the labor-market contraction. At the
-typical Inc-bind event the $0.24$ pp cumulative increase implies a
-$0.24\times(-0.058)$ approximately a $-0.014$ change in the share, a drop of
-about $1.4$ percentage points from a baseline mean of $9.2\%$ which is about a
-$15\%$ relative decline. Against the $380$ ($e^{5.94}$) jobs
-located in a typical municipality that is roughly $5$ fewer of those
-jobs held by residents, and is also the same residential displacement the count
-outcomes show, now measured net of the overall decline in jobs. I read this effect as causal even though it fails the pre-trends test. This is due to swings in the pre-period that for the most part not statistically significant. 
-
-The Inc-becomes cell produces significant coefficients on the
-same two log count outcomes ($-0.250^{***}$ on log live-and-work;
-$-0.247^{***}$ on log in-commuters) but the realized-dose
-pre-trend on both fails the parallel-trends test (Wald $p=0.0001$
-and $p<0.0001$), though the joint rejection is driven almost
-entirely by a single anomalous pre-event lead ($k=-4$) rather than
-a sustained differential trend. I therefore read
-Inc-becomes as suggestive rather than purely causal.
-
-The Inc-nobind cell is the within-design placebo and has 14 municipalities
-whose home stack stays below the work rate after
-the rate hike, so the mechanism predicts that there should not be any movers given the worker's
-bill never moves. The placebo passes on all three count outcomes: Inc-nobind on log live-and-work is $-0.073$,
-on log in-commuters $+0.233$, and on log total jobs
-$+0.193$, all statistically indistinguishable from
-zero, so the within-design placebo holds across the count outcomes.
-
-The SD-rate cells in the same regression produce postive effects that are not statistically signficant. The results
-are thus sign-reversed relative to the muni-rate finding and loses power relative to the aggregate results in table~\ref{tab:es_pooled_cousub}. The estimates suggest that in general tax increases from school districts produce positive sorting into the city but cannot decompose that effect for whether it is binding or not. This may partly be due to the SD-rate entering the regression as a co-treatment
-but does not by itself identify the residential sorting response.
+% [Results prose removed 2026-07-02 pending property-controls re-run.
+%  Structure to restore: typical-dose translation (Inc-bind), share outcome,
+%  Inc-becomes read, Inc-nobind placebo, SD-side cells.]
 
 \subsubsection{Realized-dose ES decomposition diagnostics}
 \label{subsubsec:decomp-es}
@@ -1079,16 +983,8 @@ but does not by itself identify the residential sorting response.
 The realized-dose event study disaggregates the pooled pre-trend
 by cell. Table~\ref{tab:es_realized_cousub} reports each cell's
 post-event ATT, pre-event lead, and the joint pre-trend Wald $p$
-across the four muni outcomes, and the pre-trend numbers quoted in
-Section~\ref{subsec:results-decomp} are drawn from it. Inc-bind on
-log live-and-work passes the strong parallel-trends standard.
-Pre-event coefficients are individually not statistically significant. The post-event path is
-uniformly negative and deepens through $k=4$. Inc-becomes and Inc-nobind
-fail pre-trends ($p<0.001$ on both). This is what the
-mechanism predicts. Cohorts selected into rate changes
-that flip the binding state or stay non-binding are munis on
-differentially sloped pre-event trajectories. Inc-bind is the
-only cell that survives the strong parallel-trends standard.
+across the four muni outcomes.
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \input{../tables/es_realized_cousub.tex}
 
@@ -1098,7 +994,7 @@ only cell that survives the strong parallel-trends standard.
   \label{fig:es_realized_muni_live_work}
   \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_live_and_work.png}
   \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Per-pp coefficient at each event-time, faceted by cell. Inc-bind pre-event Wald $p=0.33$; post path uniformly negative, deepening through $k=4$.
+    \footnotesize \textit{Notes:} Per-pp coefficient at each event-time, faceted by cell.
   \end{minipage}
 \end{figure}
 
@@ -1107,40 +1003,14 @@ only cell that survives the strong parallel-trends standard.
 \label{subsec:results-revenue}
 
 Sorting erodes the tax base, so the revenue raised by a rate increase is
-less than the mechanical projection. Estimating the same binding
-decomposition with log EIT revenue as the outcome, a binding (Inc-bind)
-increase raises EIT revenue with a net per-pp coefficient of $1.06$
-($p<0.001$): revenue rises, but by less than a naive base-times-rate
-projection. Splitting the cell by pre-event rate level, the
-standard-structure (low-baseline) municipalities show a behavioral offset
-of about $36\%$---roughly a third of the mechanically projected revenue
-gain is offset by the base response---while the five high-baseline,
-Home-Rule-heavy municipalities are not separately identified
-($\beta=0.10$, $p=0.12$). This is a within-PA local-displacement offset on
-the $24$-municipality Inc-bind cohort, not a state-level fiscal multiplier,
-and it is the revenue counterpart of the sorting estimate: the same
-movement of workers that shows up as the $-13\%$ live-and-work response
-shows up here as a third of the projected revenue not materializing.
+less than the mechanical projection.
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 %==========================================================
 \subsection{Summary}
 \label{subsec:results-summary}
 
-The headline finding is from the muni-level binding decomposition:
-a 1 pp Inc-bind resident-rate increase reduces log live-and-work
-by $-0.573^{***}$ with a clean realized-dose pre-trend
-($p=0.33$) and a null Inc-nobind within-design placebo
-($-0.073$). The same scaling on log in-commuters
-gives $-0.412^{***}$. The pooled Inc benchmark in
-Section~\ref{subsec:results-pooled} averages binding and
-non-binding events, attenuating the Inc-bind effect to
-$-0.287^{***}$, and the decomposition recovers the binding-channel
-response. Full
-coefficient tables with fiscal controls are in the appendix.
-
-The revenue counterpart of the Inc-bind sorting response is a behavioral
-offset of about a third of the mechanically projected revenue gain for
-standard-structure municipalities.
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \section{Robustness}
 \label{sec:robustness}
@@ -1158,25 +1028,11 @@ robustness summaries are in Appendix~\ref{app:robustness}.
 Each headline $\beta^M_k$ is an ACR, and a linear-in-dose stacked
 specification recovers it cleanly only if the implicit weights are
 non-negative and the dose-response is not strongly curved
-\citep{dechaisemartin2024}. I test both concerns jointly by re-estimating the
+\citep{dechaisemartin2024}. I test both concerns by re-estimating the
 muni-side increase response on the same sample with the non-negative-weight
 continuous-treatment estimator of
-\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}. Its event-study path
-is nearly identical in sign and magnitude to the linear stacked ACR, so the
-linear aggregation neither reverses sign through negative weights nor masks
-material curvature. On the curvature concern specifically, a quadratic dose term
-is statistically significant at conventional levels for the two residence
-outcomes (work in own municipality, $p=0.007$; resident share, $p=0.024$) but
-not for the job-flow outcomes: the pooled dose-response is mildly \emph{concave},
-consistent with a diminishing marginal response as the cumulative rate change
-grows (Figure~\ref{fig:curvature_att}). The curvature is nonetheless modest. At
-the estimation sample size ($N\approx 240{,}000$) the Bayesian information
-criterion---whose complexity penalty requires $|t|>\sqrt{\ln N}\approx 3.5$---selects
-the linear specification for \emph{every} outcome, and within the load-bearing
-Inc-bind cell curvature is not separately identified given the thin treated
-cohort. I therefore report the linear ACR as the headline summary and present
-the quadratic dose-response only as a descriptive exhibit; higher-degree
-polynomials are neither BIC-selected nor stably estimable per cell.
+\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}.
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \begin{figure}[htbp]
 \centering
@@ -1196,10 +1052,10 @@ where the response is effectively linear.}
 
 Splitting the headline cell-$\times$-dose specification at the Act-32
 enforcement break (cohort first event year $<2012$ vs $\geq 2012$)
-shows the municipality-level binding-cell effect strengthens after
-consolidated employer withholding takes effect ($-0.593^{**}$ pre vs
-$-0.546^{***}$ post on log residents working in own municipality)
+tests whether the binding-cell effect strengthens under consolidated
+employer withholding
 (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \subsection{Act 47 Distressed-Municipality Exclusion}
 \label{subsec:rob-act47}
@@ -1222,15 +1078,7 @@ non-Act-47 Inc-bind municipalities.
 
 \input{../tables/act47_robustness.tex}
 
-The point estimates are direction-preserving and modestly smaller
-when the two Act~47 munis are dropped. The live-and-work
-coefficient moves from $-0.72$ to $-0.48$, in-commuters from
-$-0.54$ to $-0.42$, total jobs from $-0.62$ to $-0.46$, and the
-live-in-muni share from $-0.059$ to $-0.034$. All four coefficients
-remain statistically significant at $5\%$ or better on the trimmed
-sample, so the headline is not purely driven by Act~47 selection. The
-attenuation when Act~47 cities are removed is consistent with those
-two cities having larger doses.
+% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 % \section*{Acknowledgments}
 % TODO: fill in before submission

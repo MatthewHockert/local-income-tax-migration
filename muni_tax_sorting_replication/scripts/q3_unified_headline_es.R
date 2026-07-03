@@ -46,7 +46,13 @@ outcomes <- c("log_live_and_work","log_in_commuters","log_total_jobs",
 cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
                  "Dec-bind","Dec-becomes-non","Dec-nobind")
 
-# Realized muni dose: cumulative Delta tau between c_muni-1 and c_muni+5
+# Realized dose ----
+# The D-tilde_i in eq. realized-dose-es: each treated muni's cumulative rate
+# change from the year BEFORE its event (c-1) to c+5 — a CONSTANT per-muni
+# magnitude tag, not time-varying. The ES interacts event-time dummies with
+# this constant, so beta_k reads "per-pp effect at event time k" and the
+# leads test STRONG parallel trends: before the event, eventual-dose size
+# should not predict outcome trajectories.
 mu_year <- unique(panel[, .(muni, year, resident_eit, c_muni)])
 setorder(mu_year, muni, year)
 rd <- mu_year[!is.na(c_muni), {

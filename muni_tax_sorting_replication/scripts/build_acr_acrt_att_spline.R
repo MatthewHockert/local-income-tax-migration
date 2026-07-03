@@ -25,6 +25,13 @@ dmax <- quantile(stk[inc == 1 & dose > 0, dose], 0.95, na.rm = TRUE)
 dg   <- seq(0, dmax, length.out = 80)
 SDT  <- "i(cell_sd, dose_sd, ref='NC')"     # SD-side control (net out SD changes, per headline)
 
+# Spline fit per group ----
+# Key design choice: subset to {this group's treated cells + NC} and fit a
+# CONTINUOUS-dose spline — NOT a cell-interacted spline. i(treat_cell,
+# ns_basis) absorbs the level and pinned Inc-bind ATT near zero (bug found
+# 2026-07-01); the subset approach is the working equivalent. Knots at the
+# group's own dose terciles; boundary at [0, max dose] so the basis is
+# linear beyond the observed range (ns property).
 fit_group <- function(treated_cells) {
   ATT <- list(); ACRT <- list(); keep <- c(treated_cells, "NC")
   for (o in outs) {
@@ -37,8 +44,11 @@ fit_group <- function(treated_cells) {
     fS <- feols(as.formula(paste0(o," ~ ",paste(bn,collapse=" + ")," + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
     fL <- feols(as.formula(paste0(o," ~ dose + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
     csp <- coef(fS)[bn]; Vsp <- vcov(fS)[bn, bn]; acr <- as.numeric(coef(fL)["dose"])
+    # ATT(d) = B(d)'b - B(0)'b  (effect of dose d relative to dose 0); the
+    # G %*% Vsp %*% G' diagonal gives delta-method variances for the curve.
     Bg <- predict(B, dg); B0 <- as.numeric(predict(B, 0)); G <- sweep(Bg, 2, B0)
     att_s <- as.numeric(G %*% csp); se_s <- sqrt(pmax(rowSums((G %*% Vsp) * G), 0))
+    # ACRT(d) = dATT/dd via numerical derivative of the basis (central diff).
     h <- 1e-4; Bp <- (predict(B, dg + h) - predict(B, dg - h)) / (2*h)
     acrt_s <- as.numeric(Bp %*% csp); se_a <- sqrt(pmax(rowSums((Bp %*% Vsp) * Bp), 0))
     ATT[[o]]  <- data.table(outcome=lab[o], dose=dg, y=att_s,  lo=att_s-1.96*se_s,  hi=att_s+1.96*se_s)

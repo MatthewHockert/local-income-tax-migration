@@ -29,6 +29,12 @@ panel <- as.data.table(e$panel); ctrls <- e$ctrls
 panel <- panel[as.character(cell_muni) %in% c("NC","Inc-bind","Inc-becomes","Inc-nobind") &
                  !is.na(resident_eit)]
 
+# Pull the estimates out of the did_multiplegt_dyn object into a tidy table:
+# Effects = post-event rows (rel 1..K), Placebos = pre-event rows (rel -1..-K,
+# these are the pre-trend test), plus a rel=0 reference row at exactly 0.
+# NOTE the scale: these are per-event LEVEL effects at the realized dose,
+# NOT per-pp slopes — compare to feols only after multiplying the feols ACR
+# by the group's mean dose (~0.33 pp).
 extract_dcdh <- function(m) {
   res <- m$results
   eff <- as.data.table(res$Effects)[, .(rel = seq_len(.N), est = Estimate, se = SE,
