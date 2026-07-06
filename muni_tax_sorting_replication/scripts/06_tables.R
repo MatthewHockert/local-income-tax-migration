@@ -36,7 +36,7 @@ RUN_WORKBOOK       <- TRUE    # all result CSVs -> results/all_results.xlsx
 #
 # Each table reports coefficient (with sig stars) and SE (in parens below)
 # per cell-by-outcome cell, plus a per-column diagnostic block (N, R^2,
-# within R^2, dep mean, dep SD). Uses paper_helpers.R (via _helpers.R) for
+# within R^2, dep mean, dep SD). Uses the formatting helpers in _helpers.R for
 # the label map, formatters, and table builder.
 if (RUN_PAPER_TABLES) local({
   out_dir <- TABLE_DIR
