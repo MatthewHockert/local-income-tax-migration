@@ -175,6 +175,8 @@ workers choose to live and work.
 \subsection{Pennsylvania Earned Income Tax}
 \label{subsec:pennsylvania}
 
+
+
 Pennsylvania's EIT is mandatory for all municipalities under the
 Local Tax Enabling Act of 1965 \citep[Act 511;][]{paAct511_1965} and applies to all earned income. The standard combined cap is 1\%, typically split as
 0.5\% municipal and 0.5\% school district. Home Rule municipalities
@@ -185,6 +187,8 @@ require a 2002--2019 municipality-level millage panel that is not currently
 available from DCED, and I leave the comparison to property-tax
 sorting as a separate exercise. Out of caution that property taxes may impact sorting I control for the share of revenue that a municipality collects from property taxes, EIT, and transfers within a given year.
 
+
+
 Each Pennsylvania municipality has three EIT rates relevant to a
 worker:
 %
@@ -194,6 +198,15 @@ Each address is associated with a six-digit Political Subdivision (PSD)
 code identifying its (municipality, school district) pair. Workers report this
 code on the Residency Certification Form, and employers use it to
 determine withholding obligations.
+
+%==========================================================
+\begin{figure}[H]
+  \centering
+  \caption{Timeline of Pennsylvania local-tax statutes; the shaded band is the 2002--2019 estimation window.}
+  \label{fig:law_timeline}
+  \includegraphics[width=0.95\textwidth]{../figures/law_timeline.png}
+\end{figure}
+%==========================================================
 
 Under Act 32 (effective January 1, 2012), a worker's total EIT bill
 is determined by the maximum of the home-side rate stack and the
@@ -318,7 +331,7 @@ district components.
 
 The same municipalities, together with their counties, levy a real-estate
 property tax. Each taxing body sets a millage rate applied to the
-\emph{assessed} value of a parcel; the assessed value is a county-set
+assessed value of a parcel; the assessed value is a county-set
 fraction of market value, and the State Tax Equalization Board (STEB)
 certifies that fraction---the common-level ratio (CLR)---for each county
 annually. The municipal and county millage are reported in the same DCED
@@ -338,126 +351,8 @@ rate (millage $\times$ CLR) and its policy-driven component rather than
 raw millage. Unlike the EIT, the property tax falls on the dwelling
 rather than the worker.
 
-%==========================================================
-\section{Conceptual Framework: Binding Decomposition}
-\label{sec:theory}
-%==========================================================
 
-The piecewise tax allocation in Equation~(\ref{eq:piecewise}) is the causal
-identification backbone of my empirical design. A worker's bill is
-$T = \max(\tau^{\text{home}}, \tau^{\text{work,muni}})$. A rate change
-only moves the bill when its side of the max binds. The
-implied change in the worker's bill from a single rate event is
-\[
-  \Delta T \;=\; \max(\tau^{\text{home}}_{\text{post}}, \tau^{\text{work,muni}})
-              - \max(\tau^{\text{home}}_{\text{pre}},  \tau^{\text{work,muni}}),
-\]
-which depends jointly on the direction of the rate change and on
-which side of the max is binding pre- and post-event. This tax difference from pre and post rate changes can
-produce a strong sorting response, a moderate response, or no
-response at all depending on the binding transition.
 
-\subsection{Six Cells per Rate-Setter}
-\label{subsec:cells}
-
-Two definitions structure the decomposition. First, the piecewise
-rule $T = \max(\tau^{\text{home}}, \tau^{\text{work,muni}})$ has two
-sides: the home side
-$\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$,
-set at the worker's residence, and the work side
-$\tau^{\text{work,muni}}$, the work rate set by the worker's workplace municipality.
-Whichever side is larger is the binding side and determines
-the bill. Second, three rate-setters adjust statutory rates
-independently across municipality-years: the municipality resident
-rate $\tau^{\text{res,muni}}$, the school-district rate
-$\tau^{\text{SD}}$, and the municipality work rate
-$\tau^{\text{work,muni}}$. The decomposition is built one rate-setter
-at a time.
-
-For each rate-setter $\tau$, a cell classifies a municipality
-by the direction of its first rate event in $\tau$ (Increase or
-Decrease) and then the binding transition of its home stack
-across that event: stayed-binding, flipped, or stayed-non-binding.
-The cross gives six cells plus a seventh never-changed control pool,
-of which only the three Increase cells and the NC control are used in
-this paper (Table~\ref{tab:cells}). Each municipality therefore carries three
-cell labels (one for each of $\tau^{\text{res,muni}}$,
-$\tau^{\text{SD}}$, and $\tau^{\text{work,muni}}$) and the binding
-state for each is determined by where its home stack sits relative
-to its work rate at the time of that event.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{lcccl}
-\toprule
-Cell & Direction & Pre-binding? & Post-binding? & Bill effect \\
-\midrule
-Inc-bind         & $\uparrow$  & yes & yes & rises by full $\Delta\tau$ \\
-Inc-becomes      & $\uparrow$  & no  & yes & rises by part of $\Delta\tau$ \\
-Inc-nobind       & $\uparrow$  & no  & no  & no change (placebo) \\
-NC               & none & --- & --- & control pool \\
-\bottomrule
-\end{tabular}
-\caption{Binding cells per rate-setter on the increase side. For Inc-becomes the bill rises only by the portion of $\Delta\tau$ above the work rate. Three mirror decrease cells exist by construction but are not estimated in this paper because the decrease cohort is too thin to support causal inference ($5$ Dec-bind, $3$ Dec-becomes-non, $11$ Dec-nobind) and the realized-dose pre-trend rejects parallel trends on every Dec outcome.}
-\label{tab:cells}
-\end{table}
-
-The cell labels describe the state of the home stack at the
-rate event and not necessarily which rate-setter is caused the cell to be that state.
-The home stack $\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$ is
-additive in its two home-side components where either component can put
-the stack above or below the work floor. A municipality
-therefore carries two independent cell labels, one for each
-rate-setter (municipality and school district), and the two are not mutually exclusive such as when a muni
-classified as Inc-bind on the muni side may be Inc-becomes on the
-SD side (or any other combination). The interaction terms in the
-estimating equation (Section~\ref{sec:strategy}) separate the
-per-pp effect of a muni-rate change from the per-pp effect of an
-SD-rate change, each conditional on its own cell label.
-
-What the labels imply for an individual worker depends on where
-that worker is employed. Under Act~32 the employer withholds at
-$\max(\tau^{\text{home}}, \tau^{\text{work,muni}})$, where
-$\tau^{\text{work,muni}}$ is the work rate of the
-worker's workplace \citep{paAct32_2008, bagchiEffectsIntroducingWithholding2022}. For a worker who lives and works in
-municipality $i$ the workplace rate is exactly $i$'s
-own $\tau^{\text{work,muni}}_i$, which is the comparison floor the cell
-classification uses. For a resident of $i$ who works in a different
-municipality $j$, the relevant floor is $\tau^{\text{work,muni}}_j$,
-which the LODES origin--destination data does not let us recover at
-the worker level and therefore the label using $i$'s own
-work rate is an aggregate proxy that is reasonable on
-average across Pennsylvania's local commute shed but not verifiable
-individually. This distinction motivates the outcome ordering in
-Section~\ref{sec:results}: the count of workers who live and work
-in their own municipality, $\log(\text{live-and-work})$, is the
-cleanest binding-rule test because the classification matches each
-worker's actual workplace and the model directly estimates the response of those who face either $\tau^{\text{home}}$ or $\tau^{\text{work,muni}}$. The other count outcomes are noisier tests: $\log(\text{total jobs})$ and the share of workers living in their own municipality both fold in in-commuters, and $\log(\text{in-commuters})$
-does not test the muni resident-rate binding rule at all because
-in-commuters' bills do not depend on the resident rate of the
-municipality where they work.
-
-The fundamental testable prediction is an
-ordered ranking of cell magnitudes where Inc-bind effects exceed
-Inc-becomes effects, which in turn exceed Inc-nobind effects, with
-the last close to zero and serving as the
-within-design placebo. A tax salience argument would state that workers in the Inc-becomes cell
-experience a discrete switch from paying zero home-side tax to
-paying a positive amount, which should trigger a large behavioral response. The
-central empirical comparison of the paper is between Inc-bind and
-Inc-nobind where if statutory rates matter mechanically through tax
-liability, the residential response should appear in Inc-bind and
-not in Inc-nobind. If Inc-nobind moves, the mechanism
-interpretation fails and the response is something other than the
-binding rule because Inc-nobind events do not change the worker's
-bill. This makes the design self-falsifying in a way that a
-conventional pooled-Increase specification is not. In the pooled
-specification, every increase is a treated event, while here the
-institutional rule predicts that only a subset of statutory
-increases should generate a response.
-
-%==========================================================
 \section{Data}
 \label{sec:data}
 %==========================================================
@@ -598,7 +493,38 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
     \label{fig:pa_map}
 \end{figure}
 
+% ---- Design schematics parked here for assessment (2026-07-07) ----
+\begin{figure}[H]
+  \centering
+  \caption{The max-rule: when does a rate increase move the bill?}
+  \label{fig:binding_schematic}
+  \includegraphics[width=0.95\textwidth]{../figures/schematic_binding_mechanism.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{Stacked construction: one sub-experiment per cohort; never-changers replicated as controls.}
+  \label{fig:stacking_schematic}
+  \includegraphics[width=0.95\textwidth]{../figures/schematic_stacking.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \caption{Dose versus realized-dose tag: why the event study can test pre-trends.}
+  \label{fig:dose_vs_tag}
+  \includegraphics[width=0.95\textwidth]{../figures/schematic_dose_vs_tag.png}
+\end{figure}
+
 %==========================================================
+
+
+\begin{figure}[H]
+  \centering
+  \caption{Baseline rate level versus cumulative increase, municipal (squares) and school-district (triangles) rates.}
+  \label{fig:scatter_level_change}
+  \includegraphics[width=0.95\textwidth]{../figures/scatter_level_vs_change_inc_cumulative.png}
+\end{figure}
+
 \section{Empirical Strategy}
 \label{sec:strategy}
 %==========================================================
@@ -625,6 +551,158 @@ separately by a realized-dose Sun--Abraham event study
 estimating equations, identification, and diagnostics.
 
 
+\subsection{Causal Parameters: ACR, ACRT, and ATT}
+\label{subsec:causal-params}
+%==========================================================
+
+The headline specification (Equation~\ref{eq:headline}) returns one
+coefficient per cell, measured per percentage point. With a binary
+treatment that coefficient would be the ATT. With a continuous treatment
+the total effect depends on the size of the rate change, so one number
+becomes three related objects. Writing the response with a quadratic dose,
+$Y_{it} = \alpha_i + \gamma_t + b_1\,\Delta\tau_{it} + b_2\,\Delta\tau_{it}^2 + X_{it}$,
+makes them concrete:
+
+\begin{itemize}
+  \item $\mathrm{ATT}(d) = b_1 d + b_2 d^2$ is the total effect. A
+  municipality that raised its rate by $d$ percentage points ends up
+  $\mathrm{ATT}(d)$ log points below a never-changer. 
+  \item $\mathrm{ACRT}(d) = b_1 + 2 b_2 d$ is the marginal effect, the
+  derivative of $\mathrm{ATT}(d)$. It answers what one more percentage
+  point does to a municipality that has already raised its rate by $d$. A
+  negative $b_2$ means each additional point matters less than the last.
+  \item The ACR is the average of $\mathrm{ACRT}(d)$ over the rate changes
+  municipalities actually chose, weighted by how common each dose is. The
+  linear specification returns exactly this number
+  \citep{bakerDifferenceinDifferencesDesignsPractitioners2025, dechaisemartin2024}.
+  It is the headline estimand, and it plays the role for a continuous
+  treatment that the ATT plays for a binary one.
+\end{itemize}
+
+\noindent The three fit together simply. $\mathrm{ATT}(d)$ accumulates the
+marginal effects from $0$ to $d$, $\mathrm{ACRT}(d)$ is its slope, and the
+ACR averages that slope over the data.
+
+%==========================================================
+\subsection{The Binding Decomposition}
+\label{sec:theory}
+%==========================================================
+
+The piecewise tax allocation in Equation~(\ref{eq:piecewise}) is the causal
+identification backbone of my empirical design. A worker's bill is
+$T = \max(\tau^{\text{home}}, \tau^{\text{work,muni}})$. A rate change
+only moves the bill when its side of the max binds. The
+implied change in the worker's bill from a single rate event is
+\[
+  \Delta T \;=\; \max(\tau^{\text{home}}_{\text{post}}, \tau^{\text{work,muni}})
+              - \max(\tau^{\text{home}}_{\text{pre}},  \tau^{\text{work,muni}}),
+\]
+which depends jointly on the direction of the rate change and on
+which side of the max is binding pre- and post-event. This tax difference from pre and post rate changes can
+produce a strong sorting response, a moderate response, or no
+response at all depending on the binding transition.
+
+\subsubsection{Six Cells per Rate-Setter}
+\label{subsec:cells}
+
+Two definitions structure the decomposition. First, the piecewise
+rule $T = \max(\tau^{\text{home}}, \tau^{\text{work,muni}})$ has two
+sides: the home side
+$\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$,
+set at the worker's residence, and the work side
+$\tau^{\text{work,muni}}$, the work rate set by the worker's workplace municipality.
+Whichever side is larger is the binding side and determines
+the bill. Second, three rate-setters adjust statutory rates
+independently across municipality-years: the municipality resident
+rate $\tau^{\text{res,muni}}$, the school-district rate
+$\tau^{\text{SD}}$, and the municipality work rate
+$\tau^{\text{work,muni}}$. The decomposition is built one rate-setter
+at a time.
+
+For each rate-setter $\tau$, a cell classifies a municipality
+by the direction of its first rate event in $\tau$ (Increase or
+Decrease) and then the binding transition of its home stack
+across that event: stayed-binding, flipped, or stayed-non-binding.
+The cross gives six cells plus a seventh never-changed control pool,
+of which only the three Increase cells and the NC control are used in
+this paper (Table~\ref{tab:cells}). Each municipality therefore carries three
+cell labels (one for each of $\tau^{\text{res,muni}}$,
+$\tau^{\text{SD}}$, and $\tau^{\text{work,muni}}$) and the binding
+state for each is determined by where its home stack sits relative
+to its work rate at the time of that event.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcccl}
+\toprule
+Cell & Direction & Pre-binding? & Post-binding? & Bill effect \\
+\midrule
+Inc-bind         & $\uparrow$  & yes & yes & rises by full $\Delta\tau$ \\
+Inc-becomes      & $\uparrow$  & no  & yes & rises by part of $\Delta\tau$ \\
+Inc-nobind       & $\uparrow$  & no  & no  & no change (placebo) \\
+NC               & none & --- & --- & control pool \\
+\bottomrule
+\end{tabular}
+\caption{Binding cells per rate-setter on the increase side. For Inc-becomes the bill rises only by the portion of $\Delta\tau$ above the work rate. Three mirror decrease cells exist by construction but are not estimated in this paper because the decrease cohort is too thin to support causal inference ($5$ Dec-bind, $3$ Dec-becomes-non, $11$ Dec-nobind) and the realized-dose pre-trend rejects parallel trends on every Dec outcome.}
+\label{tab:cells}
+\end{table}
+
+The cell labels describe the state of the home stack at the
+rate event and not necessarily which rate-setter is caused the cell to be that state.
+The home stack $\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$ is
+additive in its two home-side components where either component can put
+the stack above or below the work floor. A municipality
+therefore carries two independent cell labels, one for each
+rate-setter (municipality and school district), and the two are not mutually exclusive such as when a muni
+classified as Inc-bind on the muni side may be Inc-becomes on the
+SD side (or any other combination). The interaction terms in the
+estimating equation (Section~\ref{sec:strategy}) separate the
+per-pp effect of a muni-rate change from the per-pp effect of an
+SD-rate change, each conditional on its own cell label.
+
+What the labels imply for an individual worker depends on where
+that worker is employed. Under Act~32 the employer withholds at
+$\max(\tau^{\text{home}}, \tau^{\text{work,muni}})$, where
+$\tau^{\text{work,muni}}$ is the work rate of the
+worker's workplace \citep{paAct32_2008, bagchiEffectsIntroducingWithholding2022}. For a worker who lives and works in
+municipality $i$ the workplace rate is exactly $i$'s
+own $\tau^{\text{work,muni}}_i$, which is the comparison floor the cell
+classification uses. For a resident of $i$ who works in a different
+municipality $j$, the relevant floor is $\tau^{\text{work,muni}}_j$,
+which the LODES origin--destination data does not let us recover at
+the worker level and therefore the label using $i$'s own
+work rate is an aggregate proxy that is reasonable on
+average across Pennsylvania's local commute shed but not verifiable
+individually. This distinction motivates the outcome ordering in
+Section~\ref{sec:results}: the count of workers who live and work
+in their own municipality, $\log(\text{live-and-work})$, is the
+cleanest binding-rule test because the classification matches each
+worker's actual workplace and the model directly estimates the response of those who face either $\tau^{\text{home}}$ or $\tau^{\text{work,muni}}$. The other count outcomes are noisier tests: $\log(\text{total jobs})$ and the share of workers living in their own municipality both fold in in-commuters, and $\log(\text{in-commuters})$
+does not test the muni resident-rate binding rule at all because
+in-commuters' bills do not depend on the resident rate of the
+municipality where they work.
+
+The fundamental testable prediction is an
+ordered ranking of cell magnitudes where Inc-bind effects exceed
+Inc-becomes effects, which in turn exceed Inc-nobind effects, with
+the last close to zero and serving as the
+within-design placebo. A tax salience argument would state that workers in the Inc-becomes cell
+experience a discrete switch from paying zero home-side tax to
+paying a positive amount, which should trigger a large behavioral response. The
+central empirical comparison of the paper is between Inc-bind and
+Inc-nobind where if statutory rates matter mechanically through tax
+liability, the residential response should appear in Inc-bind and
+not in Inc-nobind. If Inc-nobind moves, the mechanism
+interpretation fails and the response is something other than the
+binding rule because Inc-nobind events do not change the worker's
+bill. This makes the design self-falsifying in a way that a
+conventional pooled-Increase specification is not. In the pooled
+specification, every increase is a treated event, while here the
+institutional rule predicts that only a subset of statutory
+increases should generate a response.
+
+%==========================================================
 \subsection{Pooled Aggregate Specification}
 \label{subsec:pooled-spec}
 
@@ -720,7 +798,7 @@ $\mathcal{C}_{-\text{NC}} = \{\text{Inc-bind, Inc-becomes, Inc-nobind}\}$
 collects the three estimated treated cells; $\text{cell}^s_i$ is the cell label
 on rate-setter $s$ and the unit level being modeled $i$. The regression returns three $\beta^s_k$
 coefficients per rate-setter. Because the dose $\Delta\tau^s_{it}$ enters
-linearly, each $\beta^s_k$ is an \emph{average causal response} (ACR): the
+linearly, each $\beta^s_k$ is an average causal response (ACR): the
 dose-weighted average per-percentage-point effect of rate $s$ on $Y$ within
 cell $k$, not the marginal effect at any single dose
 \citep{bakerDifferenceinDifferencesDesignsPractitioners2025,dechaisemartin2024}.
@@ -853,43 +931,6 @@ benchmark. Additional diagnostics (pre/post Act~32 split, Act~47
 exclusion) are in Section~\ref{sec:robustness}.
 
 %==========================================================
-\subsection{Causal Parameters: ACR, ACRT, and ATT}
-\label{subsec:causal-params}
-%==========================================================
-
-The headline specification (Equation~\ref{eq:headline}) returns one
-per-percentage-point coefficient per cell. That coefficient is an
-\emph{average causal response} (ACR), but it is one of three ways to read the
-same dose-response. Writing the increase response with a quadratic dose,
-$Y_{it} = \alpha_i + \gamma_t + b_1\,\Delta\tau_{it} + b_2\,\Delta\tau_{it}^2 + X_{it}$,
-makes the distinction concrete:
-
-\begin{itemize}
-  \item \textbf{ATT$(d)$ --- the total effect.} $\mathrm{ATT}(d) = b_1 d + b_2 d^2$:
-  the cumulative effect on $Y$ of a dose-$d$ rate change relative to never-changers.
-  A \emph{level} (log points) tied to a specific dose---the object quoted in prose as
-  ``a $d$-pp hike moves $Y$ by $\mathrm{ATT}(d)$.'' It is a curve whenever $b_2 \neq 0$.
-  \item \textbf{ACRT$(d)$ --- the marginal effect.} $\mathrm{ACRT}(d) = b_1 + 2 b_2 d$:
-  the slope of $\mathrm{ATT}(d)$, i.e.\ the response to one additional pp at dose $d$.
-  A \emph{rate} (per pp) that varies with the dose, so a non-zero $b_2$ says whether the
-  per-pp effect attenuates or intensifies as the cumulative change grows.
-  \item \textbf{ACR --- the average causal response.} The dose-weighted average of
-  $\mathrm{ACRT}(d)$ across realized doses: a \emph{single number} (per pp), and exactly
-  the slope the linear specification returns
-  \citep{bakerDifferenceinDifferencesDesignsPractitioners2025, dechaisemartin2024}. This
-  is the headline estimand.
-\end{itemize}
-
-\noindent The three are one object viewed three ways: $\mathrm{ACRT}(d)$ is the slope of
-$\mathrm{ATT}(d)$, $\mathrm{ATT}(d)$ is the running integral of $\mathrm{ACRT}(d)$ from
-$0$ to $d$, and the ACR is the average of $\mathrm{ACRT}(d)$. I report the ACR throughout
-because it summarizes the response in a single interpretable number; where the quadratic
-term is significant I additionally display the $\mathrm{ATT}(d)$ curve
-(Figure~\ref{fig:curvature_att}, Section~\ref{subsec:rob-acr}) so the averaging is
-transparent. The realized-dose event study (Section~\ref{subsec:pretrend-diagnostics}) is
-the dynamic counterpart, tracing the ACR across event time.
-
-%==========================================================
 \section{Results}
 \label{sec:results}
 %==========================================================
@@ -911,7 +952,7 @@ outcome (Wald $p<0.001$), so the Dec coefficients cannot be
 interpreted as causal. The pre-/post-Act-32 enforcement-break split
 appears in the Robustness section.
 
-\subsection{Pooled-Increase Benchmark}
+\subsection{Pooled Results}
 \label{subsec:results-pooled}
 
 I first report the pooled-Increase specification from
@@ -933,30 +974,14 @@ analogue $\beta^{SD}_{\text{Inc}}$.
 % [Results prose removed 2026-07-02 pending property-controls re-run;
 %  regenerate numbers from data/q3_unified CSVs before rewriting.]
 
-\subsubsection{Realized-dose ES benchmark diagnostic}
-\label{subsubsec:pooled-es}
-
-Table~\ref{tab:es_pooled_cousub} reports the ATT summary of the
-muni-level pooled realized-dose event study, with the
-cluster-robust Wald pre-trend $p$-value for the joint null
-$\beta_k = 0$ at $k \leq -2$.
-Figure~\ref{fig:pooled_es_muni_only} plots the event-time path.
-
-\input{../tables/es_pooled_cousub_summary.tex}
-
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
-
 \begin{figure}[H]
   \centering
-  \caption{Municipality-level pooled realized-dose event study.}
-  \label{fig:pooled_es_muni_only}
-  \includegraphics[width=0.95\textwidth]{../figures/pooled_es_muni_only.png}
-  \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Per-pp realized-dose coefficient at each event-time for the pooled Inc cohort. Ribbon is the 95\% CI; $k=-1$ omitted as the reference period.
-  \end{minipage}
+  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (pooled Increase).}
+  \label{fig:spline_pooled}
+  \includegraphics[width=0.95\textwidth]{../figures/acr_acrt_att_spline_pooled.png}
 \end{figure}
 
-\subsection{Binding Decomposition}
+\subsection{Decomposition Results}
 \label{subsec:results-decomp}
 \label{subsec:results-headline}
 
@@ -977,41 +1002,93 @@ the identical specification.
 %  Structure to restore: typical-dose translation (Inc-bind), share outcome,
 %  Inc-becomes read, Inc-nobind placebo, SD-side cells.]
 
-\subsubsection{Realized-dose ES decomposition diagnostics}
-\label{subsubsec:decomp-es}
-
-The realized-dose event study disaggregates the pooled pre-trend
-by cell. Table~\ref{tab:es_realized_cousub} reports each cell's
-post-event ATT, pre-event lead, and the joint pre-trend Wald $p$
-across the four muni outcomes.
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
-
-\input{../tables/es_realized_cousub.tex}
+\begin{figure}[H]
+  \centering
+  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-bind cell).}
+  \label{fig:spline_incbind}
+  \includegraphics[width=0.95\textwidth]{../figures/acr_acrt_att_spline_incbind.png}
+\end{figure}
 
 \begin{figure}[H]
   \centering
-  \caption{Municipality-level realized-dose event study on log live-and-work, by cell.}
-  \label{fig:es_realized_muni_live_work}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_live_and_work.png}
-  \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Per-pp coefficient at each event-time, faceted by cell.
-  \end{minipage}
+  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-becomes cell).}
+  \label{fig:spline_incbecomes}
+  \includegraphics[width=0.95\textwidth]{../figures/acr_acrt_att_spline_incbecomes.png}
 \end{figure}
 
-%==========================================================
-\subsection{EIT Revenue Response}
-\label{subsec:results-revenue}
+\subsection{Event-Study Results}
+\label{subsec:results-es}
 
-Sorting erodes the tax base, so the revenue raised by a rate increase is
-less than the mechanical projection.
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
+% ---- ES diagnostic tables moved out of main text (full lead/lag tables in the
+% ---- Event-Study appendix; the overlay figure below is the main-text exhibit):
+% \subsubsection{Realized-dose ES benchmark diagnostic}
+% \label{subsubsec:pooled-es}
+%
+% Table~\ref{tab:es_pooled_cousub} reports the ATT summary of the
+% muni-level pooled realized-dose event study, with the
+% cluster-robust Wald pre-trend $p$-value for the joint null
+% $\beta_k = 0$ at $k \leq -2$.
+% Figure~\ref{fig:pooled_es_muni_only} plots the event-time path.
+%
+% \input{../tables/es_pooled_cousub_summary.tex}
+%
+% % [Results prose removed 2026-07-02 pending property-controls re-run.]
+%
+% \begin{figure}[H]
+%   \centering
+%   \caption{Municipality-level pooled realized-dose event study.}
+%   \label{fig:pooled_es_muni_only}
+%   \includegraphics[width=0.95\textwidth]{../figures/pooled_es_muni_only.png}
+%   \begin{minipage}{0.95\textwidth}
+%     \footnotesize \textit{Notes:} Per-pp realized-dose coefficient at each event-time for the pooled Inc cohort. Ribbon is the 95\% CI; $k=-1$ omitted as the reference period.
+%   \end{minipage}
+% \end{figure}
+%
+% \subsubsection{Realized-dose ES decomposition diagnostics}
+% \label{subsubsec:decomp-es}
+%
+% The realized-dose event study disaggregates the pooled pre-trend
+% by cell. Table~\ref{tab:es_realized_cousub} reports each cell's
+% post-event ATT, pre-event lead, and the joint pre-trend Wald $p$
+% across the four muni outcomes.
+% % [Results prose removed 2026-07-02 pending property-controls re-run.]
+%
+% \input{../tables/es_realized_cousub.tex}
+%
+% \begin{figure}[H]
+%   \centering
+%   \caption{Municipality-level realized-dose event study on log live-and-work, by cell.}
+%   \label{fig:es_realized_muni_live_work}
+%   \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_live_and_work.png}
+%   \begin{minipage}{0.95\textwidth}
+%     \footnotesize \textit{Notes:} Per-pp coefficient at each event-time, faceted by cell.
+%   \end{minipage}
+% \end{figure}
+%
+% %==========================================================
+%
+\begin{figure}[H]
+  \centering
+  \caption{Realized-dose event study by group (pooled / Inc-bind / Inc-becomes), level-at-mean-dose scale.}
+  \label{fig:feols_es_bycell}
+  \includegraphics[width=0.95\textwidth]{../figures/feols_es_bycell.png}
+\end{figure}
 
-%==========================================================
-\subsection{Summary}
-\label{subsec:results-summary}
-
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
-
+% ---- EIT Revenue Response + Summary subsections commented out
+% ---- per outline restructure 2026-07-06 (models still run in stage 02):
+% \subsection{EIT Revenue Response}
+% \label{subsec:results-revenue}
+% 
+% Sorting erodes the tax base, so the revenue raised by a rate increase is
+% less than the mechanical projection.
+% % [Results prose removed 2026-07-02 pending property-controls re-run.]
+% 
+% %==========================================================
+% \subsection{Summary}
+% \label{subsec:results-summary}
+% 
+% % [Results prose removed 2026-07-02 pending property-controls re-run.]
+% 
 \section{Robustness}
 \label{sec:robustness}
 %==========================================================
@@ -1022,7 +1099,7 @@ diagnostic was discussed alongside the headline in
 Section~\ref{subsubsec:decomp-es}. Full tables behind the
 robustness summaries are in Appendix~\ref{app:robustness}.
 
-\subsection{ACR Aggregation: Non-Negative Weights and Dose Linearity}
+\subsection{de Chaisemartin and D'Haultfœuille Estimator}
 \label{subsec:rob-acr}
 
 Each headline $\beta^M_k$ is an ACR, and a linear-in-dose stacked
@@ -1034,18 +1111,37 @@ continuous-treatment estimator of
 \citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}.
 % [Results prose removed 2026-07-02 pending property-controls re-run.]
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{../figures/curvature_att_curve.png}
-\caption{Quadratic ATT$(d)$ dose-response by outcome (pooled Increase, headline
-sample). Each panel plots $\widehat{\mathrm{ATT}}(d)=b_1 d + b_2 d^2$, the total
-effect on $Y$ of a cumulative dose-$d$ rate increase relative to never-changers,
-with a delta-method 95\% confidence band. The $d^2$ term is significant for the
-two residence outcomes (panel headers report its $p$-value), producing a concave,
-diminishing-marginal dose-response; it is insignificant for the job-flow outcomes,
-where the response is effectively linear.}
-\label{fig:curvature_att}
+\input{../tables/dcdh_results.tex}
+
+\noindent Reading Table~\ref{tab:dcdh_results}, per group:
+\begin{itemize}
+  \item The first two rows are the estimated effect at $k=+5$ and its
+  standard error: the total change in the outcome five years after the
+  rate change, at the doses municipalities actually took. These are level
+  effects, so compare them to the linear ACR times the group's mean dose.
+  \item Dep.\ mean is the average outcome level in that group's
+  estimation sample, and it converts effects into head counts. A log
+  live-and-work mean of $3.7$ is roughly $41$ workers, so an effect of
+  $-0.07$ log points (about a $7\%$ decline) is roughly three fewer
+  live-and-work workers in the typical municipality.
+  \item Avg total effect per pp is the estimator's dose-normalized
+  average. It sits on the same per-pp scale as the headline ACR, so the
+  two numbers can be compared directly.
+  \item Joint placebo $p$ tests for pre-trends. Values above conventional
+  levels mean treated and control municipalities were on similar paths
+  before the change, so larger is better.
+  \item $N$ and Switchers count the observations and treated
+  municipalities identifying the $k=+5$ effect.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \caption{dCDH event study by group (non-negative weights): pooled, Inc-bind, Inc-becomes.}
+  \label{fig:dcdh_bycell}
+  \includegraphics[width=0.95\textwidth]{../figures/dcdh_bycell_es.png}
 \end{figure}
+
+
 
 \subsection{Pre/Post Act 32 Decomposition}
 \label{subsec:rob-act32}
@@ -1055,6 +1151,10 @@ enforcement break (cohort first event year $<2012$ vs $\geq 2012$)
 tests whether the binding-cell effect strengthens under consolidated
 employer withholding
 (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
+
+% \input{../tables/act32_cousub.tex}  % concise version
+\input{../tables/act32_full_pre.tex}
+\input{../tables/act32_full_post.tex}
 % [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \subsection{Act 47 Distressed-Municipality Exclusion}
@@ -1076,9 +1176,52 @@ Table~\ref{tab:act47_robustness} re-estimates the
 municipality-level Inc-bind coefficient on the remaining $22$
 non-Act-47 Inc-bind municipalities.
 
-\input{../tables/act47_robustness.tex}
+% \input{../tables/act47_robustness.tex}  % concise 2-col version
+\input{../tables/act47_full_results.tex}
 
 % [Results prose removed 2026-07-02 pending property-controls re-run.]
+
+\subsection{Pre-Trend Battery}
+\label{subsec:rob-battery}
+
+The joint Wald test over-rejects on cohorts of 14--24 treated
+municipalities, so Table~\ref{tab:pretrend_battery} reports four
+pre-trend tests per cell: the joint Wald on the realized-dose leads,
+the count of individually significant leads, a one-degree-of-freedom
+linear pre-slope, and the HonestDiD breakdown bound.
+% [Prose TO WRITE after reviewing the table.]
+
+\input{../tables/pretrend_battery.tex}
+
+\subsection{Dose-Permutation Randomization Inference}
+\label{subsec:rob-permutation}
+
+Strong parallel trends is a statement about dose selection. This test
+shuffles the realized dose magnitudes across treated municipalities,
+holding each municipality's event timing and binding cell fixed, and
+re-estimates the decomposition on each shuffle.
+% [Prose TO WRITE after reviewing the table and figure.]
+
+\IfFileExists{../tables/perm_inference.tex}{\input{../tables/perm_inference.tex}}{\textit{[Permutation run in progress.]}}
+
+\IfFileExists{../figures/perm_inference_hist.png}{%
+\begin{figure}[H]
+  \centering
+  \caption{Dose-permutation distributions with the true estimates.}
+  \label{fig:perm_inference}
+  \includegraphics[width=0.95\textwidth]{../figures/perm_inference_hist.png}
+\end{figure}}{}
+
+\subsection{Fake-Timing Placebo}
+\label{subsec:rob-faketiming}
+
+Each treated municipality is assigned a placebo event four years before
+its real one, and only data from before the real event enter the
+estimation. Nothing happened at the placebo dates, so the coefficients
+should be null.
+% [Prose TO WRITE after reviewing the table.]
+
+\IfFileExists{../tables/fake_timing.tex}{\input{../tables/fake_timing.tex}}{\textit{[Fake-timing run in progress.]}}
 
 % \section*{Acknowledgments}
 % TODO: fill in before submission
@@ -1086,11 +1229,53 @@ non-Act-47 Inc-bind municipalities.
 %==========================================================
 % BIBLIOGRAPHY
 %==========================================================
+%==========================================================
+\section{Discussion}
+\label{sec:discussion}
+% [TO WRITE -- lit comparison, follows-the-worker vs capitalizes mechanism,
+%  binding cell isolates the bill, policy, limits]
+
+\section{Conclusion}
+\label{sec:conclusion}
+% [TO WRITE -- restate question + headline; no new results]
+
 \newpage
 \printbibliography
 
 
 %==========================================================
+%==========================================================
+\appendix
+
+\section{Spline Specification for the Dose-Response Figures}
+\label{app:spline-spec}
+
+\begin{figure}[H]
+  \centering
+  \caption{Treated doses and knot placement, by estimation group.}
+  \label{fig:knot_placement}
+  \includegraphics[width=0.95\textwidth]{../figures/spline_knot_placement.png}
+\end{figure}
+% [Spec equations from outline to add at write time: pooled + per-cell
+%  muni and SD splines; knots at dose terciles; ATT(d), ACRT(d) formulas;
+%  BIC selects linear; spline is for visuals.]
+
+\section{Curvature Diagnostics}
+\label{app:curvature}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{../figures/curvature_att_curve.png}
+\caption{Quadratic ATT$(d)$ dose-response by outcome (pooled Increase, headline
+sample). Each panel plots $\widehat{\mathrm{ATT}}(d)=b_1 d + b_2 d^2$, the total
+effect on $Y$ of a cumulative dose-$d$ rate increase relative to never-changers,
+with a delta-method 95\% confidence band. The $d^2$ term is significant for the
+two residence outcomes (panel headers report its $p$-value), producing a concave,
+diminishing-marginal dose-response; it is insignificant for the job-flow outcomes,
+where the response is effectively linear.}
+\label{fig:curvature_att}
+\end{figure}
+
 \section{Full Results with Control Coefficients}
 \label{app:full-results}
 %==========================================================
@@ -1105,6 +1290,16 @@ the same joint regression.
 
 %==========================================================
 \section{Realized-Dose Event Studies, Full Set}
+\label{app:es-full}
+
+\input{../tables/es_full_pooled.tex}
+\input{../tables/es_full_incbind.tex}
+\input{../tables/es_full_incbecomes.tex}
+\input{../tables/es_full_incnobind.tex}
+
+\input{../tables/es_pooled_cousub_summary.tex}
+\input{../tables/es_realized_cousub.tex}
+
 \label{app:es-realized}
 %==========================================================
 
@@ -1149,7 +1344,7 @@ Headline cell $\times$ dose specification re-estimated on pre-Act-32
 ($c<2012$) and post-Act-32 ($c\geq 2012$) cohort subsamples at the
 municipality level.
 
-\input{../tables/act32_cousub.tex}
+\input{../tables/act32_cousub.tex}  % concise pre/post summary (full versions in Robustness)
 
 %==========================================================
 \end{document}

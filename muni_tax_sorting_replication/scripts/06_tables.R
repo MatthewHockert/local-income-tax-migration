@@ -43,8 +43,9 @@ if (RUN_PAPER_TABLES) local({
   in_dir  <- RESULTS_DIR
 
   # Outcome and cell sets per level
-  muni_outcomes  <- c("log_live_and_work","log_in_commuters",
-                      "log_total_jobs","share_live_in")
+  # Column order per user (2026-07-06): share first, then log live-and-work.
+  muni_outcomes  <- c("share_live_in","log_live_and_work",
+                      "log_in_commuters","log_total_jobs")
   block_outcomes        <- c("log_home_count","log_work_count",
                              "home_in_muni_share")
   block_outcomes_main   <- c("log_home_count","log_work_count")
@@ -61,10 +62,17 @@ if (RUN_PAPER_TABLES) local({
         d[, cell := sub(".*::([^:]+):.*", "\\1", term)]
       }
     }
+    # Lay explanation: the headline model estimates the muni-rate and the
+    # school-rate effects together in one regression, so its output file
+    # mixes both. Each coefficient's name is prefixed with the rate-setter
+    # it belongs to; this pulls out just the rows for the side we need.
     # Filter by side. Rename the parameter to avoid data.table column masking:
     # if `side` is also a column name, `d[d$side == side]` evaluates RHS in
     # the data.table's column scope, becoming `column == column` (always TRUE).
     if (!is.null(side)) {
+      # Lay explanation: without the rename, R would find a column named
+      # "side" inside the table and compare it to itself -- every row would
+      # match. Copying the argument to a fresh name avoids that mix-up.
       .side_arg <- side
       # Aliases: cousub headline CSV uses term prefixes `treat_cell::` (muni)
       # and `cell_sd::` (SD); block CSV uses a literal `side` column.
@@ -152,9 +160,9 @@ if (RUN_PAPER_TABLES) local({
     share_eit       = "EIT-revenue share",
     share_re        = "real-estate-tax share",
     share_intergov  = "intergovernmental-revenue share",
-    muni_eff_rate   = "muni property eff.\\ rate",
-    sd_eff_rate     = "SD property eff.\\ rate",
-    county_eff_rate = "county property eff.\\ rate"
+    muni_eff_rate   = "muni property eff.\\ rate (pp)",
+    sd_eff_rate     = "SD property eff.\\ rate (pp)",
+    county_eff_rate = "county property eff.\\ rate (pp)"
   )
   sd_ctrl_labels <- c(
     share_state_rev_sd       = "state-revenue share",
@@ -281,13 +289,14 @@ if (RUN_PAPER_TABLES) local({
   # controls, and diagnostics. Used for the combined Appendix A cousub table.
   write_merged_full_spec_table <- function(coef_csv, diag_csv, ctrl_csv, ctrl_labels,
                                             outcomes, cells, caption, label_id, out_name,
-                                            short = TRUE, notes = character(0)) {
+                                            short = TRUE, notes = character(0),
+                                            wald_dt = NULL, diag_dt_override = NULL) {
     coefs_muni <- read_coefs(coef_csv, side = "muni")
     coefs_sd   <- read_coefs(coef_csv, side = "sd")
     if (is.null(coefs_muni) || nrow(coefs_muni) == 0) {
       print(sprintf("Skipping %s: source CSV missing", out_name)); return(invisible())
     }
-    diag     <- read_diag(diag_csv)
+    diag     <- if (!is.null(diag_dt_override)) diag_dt_override else read_diag(diag_csv)
     controls <- read_controls_long(ctrl_csv, term_filter = names(ctrl_labels))
     ncols <- length(outcomes)
     hdr <- paste0("Cell & ", paste(outcome_label(outcomes, short = short), collapse = " & "), " \\\\")
@@ -344,12 +353,22 @@ if (RUN_PAPER_TABLES) local({
         }
         out
       }
+      wald_row <- character(0)
+      if (!is.null(wald_dt) && nrow(wald_dt) > 0) {
+        wv <- character(ncols)
+        for (j in seq_along(outcomes)) {
+          r <- wald_dt[outcome == outcomes[j]]
+          wv[j] <- if (nrow(r) == 0 || is.na(r$wald_p[1])) "---"
+                   else formatC(r$wald_p[1], format = "f", digits = 3)
+        }
+        wald_row <- paste0("Joint Wald $p$ (leads) & ", paste(wv, collapse = " & "), " \\\\")
+      }
       diag_block <- c("\\midrule", paste0(mc, "{\\textit{Diagnostics}} \\\\"),
         paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
         paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
         paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\"),
         paste0("Dep.\\ mean    & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
-        paste0("Dep.\\ SD      & ", paste(pick("dep_sd"),   collapse = " & "), " \\\\"))
+        wald_row)
     }
 
     body <- c(
@@ -406,16 +425,73 @@ if (RUN_PAPER_TABLES) local({
                  "SD-side cells from the same regression as the muni-side table.")
   )
 
-  # Combined muni + SD coefficients from the same joint regression in one table
-  write_merged_cell_table(
+  # Combined muni + SD coefficients from the same joint regression in one FULL
+  # table: cells + fiscal controls + diagnostics (no dep-SD row) + the Inc-bind
+  # realized-dose joint-Wald p per outcome.
+  wald_headline <- {
+    ea_path <- file.path(in_dir, "headline_es_att.csv")
+    if (file.exists(ea_path)) {
+      ea <- fread(ea_path)
+      ea[cell == "Inc-bind", .(outcome, wald_p = wald_pre_p)]
+    } else NULL
+  }
+  write_merged_full_spec_table(
     coef_csv = file.path(in_dir, "headline_full_table.csv"),
     diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
+    ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
+    ctrl_labels = muni_ctrl_labels,
     outcomes = muni_outcomes, cells = cells_main,
     caption  = "Municipality-level dose-response: muni and SD resident-rate cells (joint regression)",
     label_id = "tab:headline_muni_combined",
     out_name = "headline_muni_combined.tex",
-    notes    = muni_notes
+    notes    = c(muni_notes,
+                 "Joint Wald $p$ is the realized-dose pre-trend test for the Inc-bind cell."),
+    wald_dt  = wald_headline
   )
+
+  # Act 47 exclusion, main-results format: full coeftable on the sample that
+  # drops the Act 47 Inc-bind munis (built by 04_robustness.R).
+  a47_path <- file.path(in_dir, "act47_full_table.csv")
+  if (file.exists(a47_path)) {
+    a47_diag <- unique(fread(a47_path)[, .(outcome, n, r2, wr2, dep_mean)])
+    write_merged_full_spec_table(
+      coef_csv = a47_path,
+      diag_csv = "",
+      ctrl_csv = a47_path,
+      ctrl_labels = muni_ctrl_labels,
+      outcomes = muni_outcomes, cells = cells_main,
+      caption  = "Act 47 exclusion: full specification on the sample dropping Act 47 Inc-bind municipalities",
+      label_id = "tab:act47_full_results",
+      out_name = "act47_full_results.tex",
+      notes    = c(muni_notes, "Identical specification to the headline table; the two Act 47 Inc-bind municipalities (Carbondale, Hazleton) are dropped."),
+      diag_dt_override = a47_diag
+    )
+  }
+
+  # Act 32 split, full format: one table per period (cells + controls + diag).
+  a32_path <- file.path(in_dir, "act32_full_cousub.csv")
+  if (file.exists(a32_path)) {
+    a32 <- fread(a32_path)
+    for (per in c("pre", "post")) {
+      ap <- a32[period == per]
+      if (nrow(ap) == 0) next
+      cf <- ap[grepl("^treat_cell::", term)]
+      cf[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
+      ctl <- ap[term %in% names(muni_ctrl_labels), .(outcome, term, est, se, p)]
+      dg <- unique(ap[, .(outcome, n, r2, wr2, dep_mean)])
+      body <- build_pub_table(
+        coefs_dt = cf[, .(outcome, cell, est, se, p)],
+        diag_dt  = dg,
+        outcomes = muni_outcomes, cells = cells_main,
+        caption  = sprintf("Act 32 split, %s-enforcement cohorts (first event %s 2012): full specification",
+                           per, ifelse(per == "pre", "before", "in/after")),
+        label    = sprintf("tab:act32_full_%s", per),
+        controls_dt = ctl, control_labels = muni_ctrl_labels,
+        notes    = c(muni_notes,
+                     if (per == "pre") "Inc-nobind is absent pre-2012: 11 municipalities are in the cell, but their dose term is collinear with the stack fixed effects on the thin pre-enforcement subsample and is dropped by the estimator."))
+      writeLines(body, file.path(out_dir, sprintf("act32_full_%s.tex", per)))
+    }
+  }
 
   # Cousub per-cell realized-dose ES (tab:es_realized_cousub) is built below via
   # write_es_summary so it carries the joint pre-trend Wald p row; it backs the
@@ -605,15 +681,40 @@ if (RUN_PAPER_TABLES) local({
                          paste(se_row,  collapse = " & "), " \\\\"))
       }
     }
-    # Diagnostics: per-outcome N, R2, dep mean, dep SD (from pooled_diagnostics.csv)
+    # Fiscal-control coefficients (per-pp table only, from pooled_full_table.csv)
+    ctrl_block <- character(0)
+    if (spec_mode == "per_pp") {
+      pc <- read_controls_long(file.path(in_dir, "pooled_full_table.csv"),
+                               term_filter = names(muni_ctrl_labels))
+      if (!is.null(pc) && nrow(pc) > 0) {
+        mcp <- paste0("\\multicolumn{", ncols + 1, "}{l}")
+        ctrl_block <- c("\\midrule", paste0(mcp, "{\\textit{Fiscal controls}} \\\\"))
+        for (tm in unique(pc$term)) {
+          est_vec <- character(ncols); se_vec <- character(ncols); any_present <- FALSE
+          for (j in seq_along(outcomes)) {
+            r <- pc[outcome == outcomes[j] & term == tm]
+            if (nrow(r) == 0 || is.na(r$est[1])) { est_vec[j] <- "---"; se_vec[j] <- ""; next }
+            any_present <- TRUE; stars <- sig_stars(r$p[1])
+            est_vec[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+            se_vec[j] <- fmt_se(r$se[1])
+          }
+          if (!any_present) next
+          pretty <- if (tm %in% names(muni_ctrl_labels)) muni_ctrl_labels[[tm]] else gsub("_", "\\\\_", tm)
+          ctrl_block <- c(ctrl_block,
+                          paste0(pretty, " & ", paste(est_vec, collapse = " & "), " \\\\"),
+                          paste0("                  & ", paste(se_vec, collapse = " & "), " \\\\"))
+        }
+      }
+    }
+
+    # Diagnostics: per-outcome N, R2, dep mean (+ pooled-ES joint Wald p, per-pp only)
     diag_block <- character(0)
     if (nrow(d) > 0) {
-      for (field in c("n","r2","wr2","dep_mean","dep_sd")) {
+      for (field in c("n","r2","wr2","dep_mean")) {
         label <- switch(field,
                         n = "$N$", r2 = "$R^2$",
                         wr2 = "Within $R^2$",
-                        dep_mean = "Dep.\\ mean",
-                        dep_sd   = "Dep.\\ SD")
+                        dep_mean = "Dep.\\ mean")
         vals <- character(ncols)
         for (j in seq_along(outcomes)) {
           row <- d[outcome == outcomes[j]]
@@ -625,6 +726,20 @@ if (RUN_PAPER_TABLES) local({
         }
         diag_block <- c(diag_block,
                         paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
+      }
+      if (spec_mode == "per_pp") {
+        pw_path <- file.path(in_dir, "pooled_es_cousub_att.csv")
+        if (file.exists(pw_path)) {
+          pw <- fread(pw_path)[direction == "Inc"]
+          wv <- character(ncols)
+          for (j in seq_along(outcomes)) {
+            r <- pw[outcome == outcomes[j]]
+            wv[j] <- if (nrow(r) == 0 || is.na(r$wald_pre_p[1])) "---"
+                     else formatC(r$wald_pre_p[1], format = "f", digits = 3)
+          }
+          diag_block <- c(diag_block,
+            paste0("Joint Wald $p$ (leads) & ", paste(wv, collapse = " & "), " \\\\"))
+        }
       }
     }
 
@@ -640,6 +755,7 @@ if (RUN_PAPER_TABLES) local({
       paste0("    ", hdr),
       "    \\midrule",
       paste0("    ", body),
+      if (length(ctrl_block)) paste0("    ", ctrl_block) else character(0),
       if (length(diag_block)) "    \\midrule" else character(0),
       if (length(diag_block)) paste0("    ", diag_block) else character(0),
       "    \\bottomrule",
@@ -843,6 +959,241 @@ if (RUN_PAPER_TABLES) local({
     out_name = "app_full_muni_cell_results.tex",
     notes    = muni_notes
   )
+
+  ## Pre-trend battery table: four tests per group x outcome.
+  bat_path <- file.path(in_dir, "pretrend_battery.csv")
+  if (file.exists(bat_path)) {
+    bat <- fread(bat_path)
+    bgl <- c("Inc-bind" = "Inc-bind", "Inc-becomes" = "Inc-becomes",
+             "Inc-nobind" = "Inc-nobind", "Pooled-Inc" = "Pooled Increase")
+    ncols <- length(muni_outcomes)
+    fmt3 <- function(x) formatC(x, format = "f", digits = 3)
+    pick_b <- function(cl, field, fmt = fmt3) {
+      out <- character(ncols)
+      for (j in seq_along(muni_outcomes)) {
+        r <- bat[cell == cl & outcome == muni_outcomes[j]]
+        out[j] <- if (nrow(r) == 0 || is.na(r[[field]][1])) "---"
+                  else if (is.logical(r[[field]][1])) ifelse(r[[field]][1], "yes", "no")
+                  else fmt(r[[field]][1])
+      }
+      out
+    }
+    body <- character(0)
+    for (cl in names(bgl)) {
+      if (!nrow(bat[cell == cl])) next
+      nt <- bat[cell == cl, n_treated][1]
+      body <- c(body,
+        paste0("\\textbf{", bgl[[cl]], "} (", nt, " munis) & ",
+               paste(rep("", ncols), collapse = " & "), " \\\\"),
+        paste0("\\quad Joint Wald $p$ (leads) & ", paste(pick_b(cl, "wald_joint_p"), collapse = " & "), " \\\\"),
+        paste0("\\quad Leads significant at 5\\% (of 4) & ",
+               paste(pick_b(cl, "n_leads_sig5", fmt = function(x) sprintf("%d", as.integer(x))), collapse = " & "), " \\\\"),
+        paste0("\\quad Linear pre-slope $p$ & ", paste(pick_b(cl, "lin_slope_p"), collapse = " & "), " \\\\"),
+        paste0("\\quad HonestDiD breakdown $\\bar{M}$ & ",
+               paste(pick_b(cl, "hdid_breakdown_Mbar", fmt = function(x) ifelse(is.infinite(x), "$>$grid", fmt3(x))), collapse = " & "), " \\\\"),
+        paste0("\\quad Robust clean & ", paste(pick_b(cl, "robust_clean"), collapse = " & "), " \\\\"))
+    }
+    hdr <- paste0("Cell & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
+    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
+      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
+      "    \\bottomrule", "  \\end{tabular}")
+    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+    out <- c("\\begin{table}[!htbp]", "  \\centering",
+      "  \\caption{Pre-trend battery: four tests per binding cell}",
+      "  \\label{tab:pretrend_battery}", "  \\footnotesize",
+      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
+      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+      paste0("    \\footnotesize \\textit{Notes:} Joint Wald and linear pre-slope test the realized-dose leads; larger $p$ means no detectable pre-trends. ",
+             "Leads significant counts individually significant pre-event coefficients. ",
+             "HonestDiD breakdown is the Rambachan-Roth bound at which the post effect could be zero (larger is sturdier). ",
+             "Robust clean requires no significant individual leads and a flat linear pre-slope; the joint Wald over-rejects on thin cohorts and does not drive the verdict. ",
+             "The pooled row fails by construction: Inc-becomes and Inc-nobind selection is the reason the decomposition exists."),
+      "  \\end{minipage}", "\\end{table}")
+    writeLines(out, file.path(out_dir, "pretrend_battery.tex"))
+  }
+
+  ## Dose-permutation randomization-inference table.
+  pi_path <- file.path(in_dir, "perm_inference_summary.csv")
+  if (file.exists(pi_path)) {
+    ps <- fread(pi_path)
+    body <- character(0)
+    for (i in seq_len(nrow(ps))) {
+      body <- c(body, paste0(ps$cell[i], " & ",
+        formatC(ps$beta_true[i], format = "f", digits = 3), " & ",
+        formatC(ps$perm_mean[i], format = "f", digits = 3), " & ",
+        formatC(ps$perm_p[i], format = "f", digits = 3), " \\\\"))
+    }
+    out <- c("\\begin{table}[!htbp]", "  \\centering",
+      "  \\caption{Dose-permutation randomization inference (log live-and-work)}",
+      "  \\label{tab:perm_inference}", "  \\footnotesize",
+      "  \\begin{tabular}{lccc}", "    \\toprule",
+      paste0("    Cell & True $\\beta$ & Permutation mean & Permutation $p$ \\\\"),
+      "    \\midrule", paste0("    ", body), "    \\bottomrule", "  \\end{tabular}",
+      "  \\vspace{0.3em}", "  \\begin{minipage}{0.9\\textwidth}",
+      paste0("    \\footnotesize \\textit{Notes:} ", ps$n_perm[1],
+             " permutations of the realized dose magnitudes across treated municipalities, holding each municipality's event timing and binding cell fixed. ",
+             "Permutation $p$ is the share of permuted coefficients at least as large in absolute value as the true one; small values mean the size of the increase, not the identity of the municipality, drives the estimate."),
+      "  \\end{minipage}", "\\end{table}")
+    writeLines(out, file.path(out_dir, "perm_inference.tex"))
+  }
+
+  ## Fake-timing placebo table.
+  ft_path <- file.path(in_dir, "fake_timing_placebo.csv")
+  if (file.exists(ft_path)) {
+    ft <- fread(ft_path)
+    body <- build_pub_table(
+      coefs_dt = ft[, .(outcome, cell, est, se, p)],
+      diag_dt  = unique(ft[, .(outcome, n)]),
+      outcomes = muni_outcomes, cells = cells_main,
+      caption  = "Fake-timing placebo: events shifted four years early, pre-event data only",
+      label    = "tab:fake_timing",
+      diag_fields = c("n"),
+      notes    = c("Each treated municipality is assigned a placebo event four years before its real one and only data from before the real event enter. Nothing happened at the placebo dates, so all coefficients should be null. Underpowered by construction (short pre-windows); read alongside the permutation test."))
+    writeLines(body, file.path(out_dir, "fake_timing.tex"))
+  }
+
+  ## dCDH results table: per-group effect at +5 (level-at-realized-dose scale)
+  ## with the joint placebo p as the per-group diagnostic. Rows = groups,
+  ## columns = outcomes; matches the main-table layout conventions.
+  dcdh_path <- file.path(in_dir, "dcdh_bycell.csv")
+  if (file.exists(dcdh_path)) {
+    dc <- fread(dcdh_path)
+    glab <- c(pooled = "Pooled Increase", incbind = "Inc-bind", incbecomes = "Inc-becomes")
+    # Dep. mean per group x outcome, computed from the same panel subset the
+    # dCDH estimator saw ({group's cells + NC}, complete cases on
+    # outcome + controls). Needs the headline env (adds ~40s to this stage).
+    dcdh_groups <- list(pooled = c("Inc-bind", "Inc-becomes", "Inc-nobind"),
+                        incbind = "Inc-bind", incbecomes = "Inc-becomes")
+    env_dm <- build_headline_env()
+    pan_dm <- env_dm$panel[as.character(cell_muni) %in%
+                             c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind") &
+                             !is.na(resident_eit)]
+    dep_means <- rbindlist(lapply(names(dcdh_groups), function(gn) {
+      pg <- pan_dm[as.character(cell_muni) %in% c("NC", dcdh_groups[[gn]])]
+      rbindlist(lapply(muni_outcomes, function(o) {
+        cols <- c("muni", "year", "resident_eit", o, env_dm$ctrls)
+        d <- pg[, ..cols][complete.cases(pg[, ..cols])]
+        data.table(group = gn, outcome = o, dep_mean = mean(d[[o]], na.rm = TRUE))
+      }))
+    }))
+    ncols <- length(muni_outcomes)
+    body <- character(0)
+    pick_dc <- function(gn, field, fmt) {
+      out <- character(ncols)
+      for (j in seq_along(muni_outcomes)) {
+        r <- dc[group == gn & outcome == muni_outcomes[j] & rel == 5]
+        out[j] <- if (nrow(r) == 0 || !(field %in% names(r)) || is.na(r[[field]][1])) "---"
+                  else fmt(r[[field]][1])
+      }
+      out
+    }
+    fmt3 <- function(x) formatC(x, format = "f", digits = 3)
+    fmtn <- function(x) format(as.integer(x), big.mark = ",")
+    for (gn in names(glab)) {
+      est_row <- character(ncols); se_row <- character(ncols)
+      for (j in seq_along(muni_outcomes)) {
+        r <- dc[group == gn & outcome == muni_outcomes[j] & rel == 5]
+        if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
+        pz <- 2 * pnorm(-abs(r$est[1] / r$se[1]))
+        stars <- sig_stars(pz)
+        est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+        se_row[j]  <- fmt_se(r$se[1])
+      }
+      # Dep. mean row (requested above the avg-total-effect row): the average
+      # outcome level in this group's estimation sample, for effect-size scale.
+      dm_row <- character(ncols)
+      for (j in seq_along(muni_outcomes)) {
+        r <- dep_means[group == gn & outcome == muni_outcomes[j]]
+        dm_row[j] <- if (nrow(r) == 0 || is.na(r$dep_mean[1])) "---"
+                     else formatC(r$dep_mean[1], format = "f", digits = 3)
+      }
+      body <- c(body,
+                paste0("\\textbf{", glab[[gn]], "} & ", paste(est_row, collapse = " & "), " \\\\"),
+                paste0("                  & ", paste(se_row, collapse = " & "), " \\\\"),
+                paste0("\\quad Dep.\\ mean & ", paste(dm_row, collapse = " & "), " \\\\"),
+                # Lay explanation: the rows above give the alternative
+                # estimator's total effect of a typical event; this row is
+                # its dose-normalized version -- effect per percentage point
+                # -- so its answer sits on the same per-pp scale as the
+                # headline ACR and the two can be compared directly.
+                paste0("\\quad Avg total effect per pp ($\\approx$ ACR) & ",
+                       paste(pick_dc(gn, "ate", fmt3), collapse = " & "), " \\\\"),
+                paste0("\\quad Joint placebo $p$ & ",
+                       paste(pick_dc(gn, "joint_placebo_p", fmt3), collapse = " & "), " \\\\"),
+                paste0("\\quad $N$ (at $k=+5$) & ",
+                       paste(pick_dc(gn, "n_obs", fmtn), collapse = " & "), " \\\\"),
+                paste0("\\quad Switchers & ",
+                       paste(pick_dc(gn, "n_switchers", fmtn), collapse = " & "), " \\\\"))
+    }
+    hdr <- paste0("Group & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
+    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
+      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
+      "    \\bottomrule", "  \\end{tabular}")
+    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+    out <- c("\\begin{table}[!htbp]", "  \\centering",
+      "  \\caption{dCDH (non-negative weights): cumulative effect at $k=+5$ by group}",
+      "  \\label{tab:dcdh_results}", "  \\footnotesize",
+      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
+      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+      paste0("    \\footnotesize \\textit{Notes:} Effect rows are per-event level effects at the realized dose, not per-pp slopes; ",
+             "they are comparable to the linear ACR times the group mean dose. ",
+             "The avg total effect per pp row is the estimator's dose-normalized average and is directly comparable to the linear ACR. ",
+             "Dep.\\ mean is computed on the dCDH estimator's own (unstacked) sample, so it differs slightly from the stacked headline table's. Joint placebo $p$ is the dCDH pre-trend test; values above conventional levels mean no detectable pre-trends. ",
+             "The fiscal controls (spending shares and property effective rates) enter the estimator but are partialled out of the outcome first-differences within baseline-dose groups, so no control coefficients exist to report. ",
+             "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$ (normal approximation)."),
+      "  \\end{minipage}", "\\end{table}")
+    writeLines(out, file.path(out_dir, "dcdh_results.tex"))
+  }
+
+  ## Event-study appendix full tables: lead/lag coefficients by event time,
+  ## one table per group (Inc-bind / Inc-becomes / Inc-nobind / Pooled-Inc).
+  write_es_full_table <- function(dt, group_label, label_id, out_name) {
+    if (is.null(dt) || nrow(dt) == 0) return(invisible())
+    rels <- sort(unique(dt$rel))
+    ncols <- length(muni_outcomes)
+    body <- character(0)
+    for (k in rels) {
+      est_row <- character(ncols); se_row <- character(ncols); any_present <- FALSE
+      for (j in seq_along(muni_outcomes)) {
+        r <- dt[rel == k & outcome == muni_outcomes[j]]
+        if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
+        any_present <- TRUE
+        stars <- sig_stars(r$p[1])
+        est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+        se_row[j]  <- fmt_se(r$se[1])
+      }
+      if (!any_present) next
+      body <- c(body,
+                paste0("$k = ", k, "$ & ", paste(est_row, collapse = " & "), " \\\\"),
+                paste0("        & ", paste(se_row, collapse = " & "), " \\\\"))
+    }
+    hdr <- paste0("Event time & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
+    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
+      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
+      "    \\bottomrule", "  \\end{tabular}")
+    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+    out <- c("\\begin{table}[!htbp]", "  \\centering",
+      paste0("  \\caption{Realized-dose event study, full coefficients: ", group_label, "}"),
+      paste0("  \\label{", label_id, "}"), "  \\footnotesize",
+      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
+      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+      "    \\footnotesize \\textit{Notes:} Per-pp realized-dose coefficient at each event time; $k=-1$ omitted as the reference. SE clustered by municipality. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.",
+      "  \\end{minipage}", "\\end{table}")
+    writeLines(out, file.path(out_dir, out_name))
+  }
+  es_coef_path <- file.path(in_dir, "headline_es_coefs.csv")
+  if (file.exists(es_coef_path)) {
+    ec <- fread(es_coef_path)
+    write_es_full_table(ec[cell == "Inc-bind"],    "Inc-bind cell",    "tab:es_full_incbind",    "es_full_incbind.tex")
+    write_es_full_table(ec[cell == "Inc-becomes"], "Inc-becomes cell", "tab:es_full_incbecomes", "es_full_incbecomes.tex")
+    write_es_full_table(ec[cell == "Inc-nobind"],  "Inc-nobind cell (placebo)", "tab:es_full_incnobind", "es_full_incnobind.tex")
+  }
+  pe_coef_path <- file.path(in_dir, "pooled_es_cousub_coefs.csv")
+  if (file.exists(pe_coef_path)) {
+    pe <- fread(pe_coef_path)
+    if ("direction" %in% names(pe)) pe <- pe[direction == "Inc"]
+    write_es_full_table(pe, "Pooled Increase", "tab:es_full_pooled", "es_full_pooled.tex")
+  }
 })
 
 # In-text numbers (build_intext_numbers.R) ----
@@ -855,6 +1206,10 @@ if (RUN_PAPER_TABLES) local({
 # Run after stage 02. Sources every value from a CSV; nothing is hand-entered
 # except the typical event doses, which the abstract itself states (0.24, 0.41 pp,
 # the cumulative dose at +5 from the dose-trajectory figures).
+# Lay explanation: the numbers quoted in the paper's sentences are the
+# easiest ones to let drift when results change. This section re-derives
+# each from its source CSV, compares it to what the prose claims, and stops
+# the whole build with an error if any headline number no longer matches.
 if (RUN_INTEXT_NUMBERS) local({
   in_dir <- RESULTS_DIR
 
@@ -928,6 +1283,10 @@ if (RUN_WORKBOOK) local({
   out_xlsx <- file.path(out_dir, "all_results.xlsx")
 
   # (file in data/results, sheet name <=31 chars, description)
+  # Lay explanation: this list is the workbook's table of contents -- every
+  # result CSV behind the paper becomes its own named sheet in one Excel
+  # file, so a reader can open it and audit any number in the paper without
+  # installing R or rerunning anything.
   manifest <- list(
     c("headline_full_table.csv",  "headline_decomp",  "Binding decomposition: per-pp dose coefficients, all cells x outcomes (HEADLINE)"),
     c("headline_diagnostics.csv", "headline_diag",    "Headline regression diagnostics (R2, within-R2, N, dep mean)"),
@@ -956,7 +1315,9 @@ if (RUN_WORKBOOK) local({
     c("summary_muni.csv",         "summary_muni",     "Summary statistics: muni-year level (paper table)"),
     c("summary_block.csv",        "summary_block",    "Summary statistics: block-year level (paper table)"),
     c("summary_sd.csv",           "summary_sd",       "Summary statistics: school-district level (paper table)"),
-    c("cell_counts_summary.csv",  "cell_counts",      "Binding-cell counts + dose ranges (paper table)")
+    c("cell_counts_summary.csv",  "cell_counts",      "Binding-cell counts + dose ranges (paper table)"),
+    c("perm_inference_summary.csv","perm_inference",  "Robustness: dose-permutation randomization inference (500 draws, log live-and-work)"),
+    c("fake_timing_placebo.csv",  "fake_timing",      "Robustness: fake-timing placebo (events shifted 4 years early, pre-event data only)")
   )
 
   wb <- createWorkbook()

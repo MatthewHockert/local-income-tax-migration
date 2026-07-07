@@ -35,6 +35,7 @@ RUN_EXTRA_FIGS           <- TRUE   # descriptive rate-change scatters, spaghetti
 RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, Inc-bind, Inc-becomes)
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
+RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, stacking, dose vs tag)
 
 # Shared headline environment ----
 # Built once for the sections that need the classified cousub panel / muni
@@ -482,6 +483,10 @@ if (RUN_SUMMARY_STATS) local({
   # Restrict to muni-years reporting a (non-imputed) work rate, with a defined
   # home stack, so the home-vs-work comparison is real.
   bm_wb <- bm_agg[!is.na(home_stack) & !is.na(work_rate) & nonres_imputed == FALSE]
+  # Lay explanation: a worker's bill is whichever is bigger -- the home-side
+  # stack or the workplace rate. This flags the rare muni-years where the
+  # workplace rate strictly wins; exact ties count as home-binding, since
+  # the home stack is then the margin a mover would actually face.
   bm_wb[, work_binds := work_rate > home_stack + 1e-6]
 
   bm_yr <- bm_wb[, .(n           = .N,
@@ -879,8 +884,15 @@ if (RUN_EXTRA_FIGS) local({
     x <- x[, .(rate = mean(rate, na.rm = TRUE)), by = .(muni, year)]
     setorder(x, muni, year)
     x[, d := c(NA_real_, diff(rate)), by = muni]
+    # Lay explanation: munis that both raised and cut this rate in the
+    # window ("flip-floppers") are dropped, matching the estimation sample;
+    # their back-and-forth would blur what a single change looks like.
     flip <- x[abs(d) > 1e-6, .(ni = sum(d > 0), nd = sum(d < 0)), by = muni][ni > 0 & nd > 0, muni]
     x <- x[!muni %in% flip]
+    # Lay explanation: two sizes for each muni's change. "First" is the
+    # initial step alone; "cumulative" is where the rate sits five years
+    # later relative to the year before that step -- so later top-ups or
+    # partial walk-backs count in cumulative but not in first.
     ev <- x[abs(d) > 1e-6, .(c_year = year[1], first_d = d[1]), by = muni]
     ev[, dir := fifelse(first_d > 0, "Increase", "Decrease")]
     x <- merge(x, ev, by = "muni", all.x = TRUE)
@@ -906,23 +918,17 @@ if (RUN_EXTRA_FIGS) local({
   th <- theme_bw(base_size = 11)
   meas_lab <- c(cumulative = "cumulative change at +5 (pp)", first = "first-change (pp)")
 
-  ## 1a. scatter: MUNI + SD overlaid (square / triangle, all black) -------------
+  ## 1a. scatter: MUNI + SD overlaid (square / triangle), ONE pooled trend line --
   s1 <- rbind(sm_muni, sm_sd)
   for (dd in c("Increase","Decrease")) for (m in c("cumulative","first")) {
     d0 <- s1[dir == dd]; d0[, yv := get(m)]
-    ll <- d0[, { f <- lm(yv ~ baseline); xr <- max(baseline, na.rm = TRUE)
-                 .(baseline = xr, yv = as.numeric(predict(f, data.frame(baseline = xr)))) },
-             by = setter]                                  # trend-line end points (for direct labels)
-    g <- ggplot(d0, aes(baseline, yv, shape = setter, linetype = setter)) +
+    g <- ggplot(d0, aes(baseline, yv, shape = setter)) +
       geom_point(alpha = 0.5, color = "black", size = 2) +
-      geom_smooth(method = "lm", se = FALSE, color = "grey40", linewidth = 0.6) +
-      geom_label(data = ll, aes(x = baseline, y = yv, label = setter), inherit.aes = FALSE,
-                 hjust = -0.05, size = 3, color = "grey20", fill = "white", label.size = NA) +
+      geom_smooth(aes(group = 1), method = "lm", se = FALSE,
+                  color = "grey40", linewidth = 0.6) +
       scale_shape_manual(values = c("Muni" = 0, "SD" = 2), name = NULL) +
-      scale_linetype_manual(values = c("Muni" = "solid", "SD" = "dashed"), name = NULL) +
-      scale_x_continuous(expand = expansion(mult = c(0.02, 0.12))) +
       labs(title = sprintf("Baseline level vs %s (%s)", meas_lab[m], tolower(dd)),
-           subtitle = "muni (square) and school-district (triangle) rate changes; trend lines labeled; flip-floppers excluded",
+           subtitle = "muni (square) and school-district (triangle) rate changes; single trend line fit to all points; flip-floppers excluded",
            x = "baseline rate level (%)", y = meas_lab[m]) +
       th + theme(legend.position = "bottom")
     ggsave(file.path(fig_dir, sprintf("scatter_level_vs_change_%s_%s.png",
@@ -999,8 +1005,11 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   lab <- c(log_live_and_work="Work in own muni", share_live_in="Share live in muni",
            log_total_jobs="Total jobs", log_in_commuters="In-commuters")
   outs <- c("log_live_and_work","share_live_in","log_total_jobs","log_in_commuters")
-  dmax <- quantile(stk[inc == 1 & dose > 0, dose], 0.95, na.rm = TRUE)
-  dg   <- seq(0, dmax, length.out = 80)
+  # Lay explanation: each group's curve is only drawn out to doses that
+  # group actually has (its own 95th percentile) -- plotting further would
+  # extrapolate the curve over empty space (caught 2026-07-06: Inc-bind was
+  # being drawn to the POOLED max of ~0.85pp though its own doses end ~0.5).
+  dmax <- quantile(stk[inc == 1 & dose > 0, dose], 0.95, na.rm = TRUE)  # pooled range (labels)
   SDT  <- "i(cell_sd, dose_sd, ref='NC')"     # SD-side control (net out SD changes, per headline)
 
   # Spline fit per group ----
@@ -1012,21 +1021,38 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   # linear beyond the observed range (ns property).
   fit_group <- function(treated_cells) {
     ATT <- list(); ACRT <- list(); keep <- c(treated_cells, "NC")
+    dmax_g <- quantile(stk[as.character(treat_cell) %in% treated_cells & dose > 0, dose],
+                       0.95, na.rm = TRUE)
+    dg <- seq(0, dmax_g, length.out = 80)
     for (o in outs) {
       cols <- c("muni","dose","cell_sd","dose_sd","treat_cell","stack_muni","stack_year", o, ctrls)
       d <- stk[as.character(treat_cell) %in% keep, ..cols]; d <- d[complete.cases(d)]
       kk <- quantile(d[dose > 0, dose], c(1/3, 2/3), na.rm = TRUE)
       bb <- c(0, max(d[dose > 0, dose], na.rm = TRUE))
+      # Lay explanation: ns() turns the single dose column into three fixed
+      # curve-shaped columns -- like a flexible ruler cut at the knots. An
+      # ordinary regression on those three columns can then trace a smooth
+      # curve through the dose-response instead of forcing a straight line.
       B  <- ns(d$dose, knots = kk, Boundary.knots = bb); bn <- paste0("sp", seq_len(ncol(B)))
       d[, (bn) := as.data.table(unclass(B))]
+      # Lay explanation: two fits of the same model. fS lets the effect bend
+      # with dose (the spline columns); fL forces one straight line, and its
+      # single slope is the reported headline number (the ACR). Plotting
+      # both shows how much the straight line smooths over.
       fS <- feols(as.formula(paste0(o," ~ ",paste(bn,collapse=" + ")," + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
       fL <- feols(as.formula(paste0(o," ~ dose + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
       csp <- coef(fS)[bn]; Vsp <- vcov(fS)[bn, bn]; acr <- as.numeric(coef(fL)["dose"])
       # ATT(d) = B(d)'b - B(0)'b  (effect of dose d relative to dose 0); the
       # G %*% Vsp %*% G' diagonal gives delta-method variances for the curve.
+      # Lay explanation: to read the fitted curve at each dose, evaluate the
+      # basis there and subtract its value at dose zero. The gap between
+      # "given this much dose" and "given none" is the total effect ATT(d).
       Bg <- predict(B, dg); B0 <- as.numeric(predict(B, 0)); G <- sweep(Bg, 2, B0)
       att_s <- as.numeric(G %*% csp); se_s <- sqrt(pmax(rowSums((G %*% Vsp) * G), 0))
       # ACRT(d) = dATT/dd via numerical derivative of the basis (central diff).
+      # Lay explanation: the marginal effect ACRT(d) is the curve's slope.
+      # Nudge the dose a hair up and a hair down, see how far the curve
+      # moves, and divide -- a numerical speedometer reading at each dose.
       h <- 1e-4; Bp <- (predict(B, dg + h) - predict(B, dg - h)) / (2*h)
       acrt_s <- as.numeric(Bp %*% csp); se_a <- sqrt(pmax(rowSums((Bp %*% Vsp) * Bp), 0))
       ATT[[o]]  <- data.table(outcome=lab[o], dose=dg, y=att_s,  lo=att_s-1.96*se_s,  hi=att_s+1.96*se_s)
@@ -1059,9 +1085,66 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     ggsave(file.path(fig_dir, outfile), g, width=10, height=11, dpi=300)
   }
 
-  plot_group(fit_group(c("Inc-bind","Inc-becomes","Inc-nobind")), "Muni dose-response (spline) — POOLED Increase",  "acr_acrt_att_spline_pooled.png")
-  plot_group(fit_group("Inc-bind"),    "Muni dose-response (spline) — Inc-bind cell",    "acr_acrt_att_spline_incbind.png")
-  plot_group(fit_group("Inc-becomes"), "Muni dose-response (spline) — Inc-becomes cell", "acr_acrt_att_spline_incbecomes.png")
+  ## Knot-placement diagnostic ----
+  ## Where the spline is ALLOWED to bend, against the data that decide it:
+  ## every treated muni-year dose (points, jittered) with the interior knots
+  ## (tercile rule, solid) and boundary knots (dotted) computed EXACTLY as in
+  ## fit_group() -- same subset, same quantile call, headline-outcome sample.
+  knot_groups <- list("Pooled Increase" = c("Inc-bind", "Inc-becomes", "Inc-nobind"),
+                      "Inc-bind" = "Inc-bind", "Inc-becomes" = "Inc-becomes")
+  kd_pts <- list(); kd_kn <- list()
+  for (gl in names(knot_groups)) {
+    cols <- c("muni", "dose", "cell_sd", "dose_sd", "treat_cell",
+              "stack_muni", "stack_year", "log_live_and_work", ctrls)
+    dk <- stk[as.character(treat_cell) %in% c(knot_groups[[gl]], "NC"), ..cols]
+    dk <- dk[complete.cases(dk)]
+    # Lay explanation: kk = the two dose values where the fitted curve is
+    # ALLOWED to bend. They are placed so a third of the treated observations
+    # sit below the first and two-thirds below the second -- the bends go
+    # where the data actually are, not where we guess.
+    kk <- quantile(dk[dose > 0, dose], c(1/3, 2/3), na.rm = TRUE)
+    # Lay explanation: bb = the ends of the curve's playground. Outside
+    # [0, biggest observed dose] the curve is forced to be a straight line,
+    # so a handful of extreme munis cannot make it swing wildly.
+    bb <- c(0, max(dk[dose > 0, dose], na.rm = TRUE))
+    # Lay explanation: keep every treated dose observation for the plot;
+    # control munis all sit at exactly 0 and would just pile up there.
+    kd_pts[[gl]] <- data.table(grp = gl, dose = dk[dose > 0, dose])
+    kd_kn[[gl]]  <- data.table(grp = gl,
+                               knot = c(kk, bb),
+                               type = c("interior", "interior", "boundary", "boundary"))
+  }
+  kd_pts <- rbindlist(kd_pts); kd_kn <- rbindlist(kd_kn)
+  kd_pts[, grp := factor(grp, levels = names(knot_groups))]
+  kd_kn[, grp := factor(grp, levels = names(knot_groups))]
+  kd_lab <- kd_kn[type == "interior"][, ltxt := sprintf("%.2f", knot)]
+  g_kn <- ggplot(kd_pts, aes(x = dose, y = 0)) +
+    geom_jitter(height = 0.32, alpha = 0.25, size = 1.1, color = "grey30") +
+    geom_vline(data = kd_kn[type == "interior"], aes(xintercept = knot),
+               color = "#2166ac", linewidth = 0.6) +
+    geom_vline(data = kd_kn[type == "boundary"], aes(xintercept = knot),
+               color = "grey55", linetype = "dotted", linewidth = 0.5) +
+    geom_text(data = kd_lab, aes(x = knot, y = 0.48, label = ltxt),
+              color = "#2166ac", size = 3, vjust = 0) +
+    facet_wrap(~ grp, ncol = 1) +
+    scale_y_continuous(limits = c(-0.55, 0.55), breaks = NULL) +
+    labs(title = "Where the spline can bend: treated doses and knot placement",
+         subtitle = "Points: treated muni-year doses (NC zeros excluded). Solid blue: interior knots (dose terciles, per group). Dotted: boundary knots (linear beyond).",
+         x = "dose (cumulative muni rate change, pp)", y = NULL) +
+    theme_bw(base_size = 10) +
+    theme(plot.subtitle = element_text(size = 8))
+  ggsave(file.path(fig_dir, "spline_knot_placement.png"), g_kn,
+         width = 9, height = 5.5, dpi = 300)
+
+  res_pooled     <- fit_group(c("Inc-bind","Inc-becomes","Inc-nobind"))
+  res_incbind    <- fit_group("Inc-bind")
+  res_incbecomes <- fit_group("Inc-becomes")
+  plot_group(res_pooled,     "Muni dose-response (spline) — POOLED Increase",  "acr_acrt_att_spline_pooled.png")
+  plot_group(res_incbind,    "Muni dose-response (spline) — Inc-bind cell",    "acr_acrt_att_spline_incbind.png")
+  plot_group(res_incbecomes, "Muni dose-response (spline) — Inc-becomes cell", "acr_acrt_att_spline_incbecomes.png")
+
+  # (A compact 2-panel per-cell ATT figure was removed 2026-07-06: the paper
+  #  uses the full per-cell plot_group() figures, same layout as the pooled one.)
 })
 
 # feols ES by cell (build_feols_es_bycell.R) ----
@@ -1127,6 +1210,10 @@ if (RUN_FEOLS_ES_BYCELL) local({
   }
   R <- rbindlist(res)
   R <- rbind(R, unique(R[, .(group, outcome, mean_dose)])[, .(group, outcome, rel = -1L, beta = 0, se = 0, mean_dose)], fill = TRUE)
+  # Lay explanation: the regression's beta_k is the effect per percentage
+  # point of tax. Multiplying by the group's typical total rate change
+  # converts it to the effect of a typical event -- the same yardstick the
+  # alternative dCDH estimator reports, so the two figures line up.
   R[, `:=`(est = beta * mean_dose, lo = (beta - 1.96 * se) * mean_dose, hi = (beta + 1.96 * se) * mean_dose)]
   R <- R[rel >= WIN[1] & rel <= WIN[2]]
   fwrite(R, file.path(out_dir, "feols_es_bycell.csv"))
@@ -1203,6 +1290,186 @@ if (RUN_LAW_TIMELINE) local({
           plot.title = element_text(face = "bold"))
 
   ggsave(file.path(fig_dir, "law_timeline.png"), g, width = 10, height = 5, dpi = 300)
+})
+
+# Design schematics ----
+# Three CONCEPTUAL schematic figures explaining the research design. All
+# numbers are hand-made and purely illustrative (no estimation, no data
+# files): (1) the max-rule binding mechanism behind the Inc-bind /
+# Inc-becomes / Inc-nobind cells, (2) the stacked sub-experiment
+# construction with the NC pool replicated into every stack, and (3) why
+# the constant realized-dose tag can test pre-trends when the mechanically
+# zero pre-event dose cannot.
+# Outputs: figures/schematic_binding_mechanism.png,
+#   figures/schematic_stacking.png, figures/schematic_dose_vs_tag.png
+if (RUN_DESIGN_SCHEMATICS) local({
+  fig_dir <- OUT_DIR
+  ACCENT  <- "#C5283D"
+
+  ## 1. The max-rule binding mechanism ----
+  # Lay explanation: a worker pays whichever is bigger -- the home-side
+  # stack (grey bar) or the workplace rate (dashed floor). The red tick
+  # marks the actual bill. The same statutory increase moves the bill
+  # fully, partly, or not at all depending on where the bar sits relative
+  # to the floor -- that is the whole cell taxonomy in one picture.
+  floor_pp <- 1.0
+  cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  bars <- data.table(
+    cell   = factor(rep(cells, each = 2), levels = cells),
+    period = factor(rep(c("Before", "After"), 3), levels = c("Before", "After")),
+    stack  = c(1.4, 1.8, 0.8, 1.3, 0.6, 0.9))
+  bars[, bill := pmax(stack, floor_pp)]
+  ann1 <- data.table(
+    cell = factor(cells, levels = cells),
+    lab  = c("Bill: +0.4 pp\n(full increase)",
+             "Bill: +0.3 pp\n(only the part above the floor)",
+             "Bill: +0.0 pp\n(placebo)"))
+  g1 <- ggplot(bars, aes(x = period)) +
+    geom_col(aes(y = stack), fill = "grey78", color = "grey45",
+             width = 0.55, linewidth = 0.3) +
+    geom_hline(yintercept = floor_pp, linetype = "dashed",
+               color = "grey40", linewidth = 0.5) +
+    geom_errorbar(aes(ymin = bill, ymax = bill), width = 0.7,
+                  color = ACCENT, linewidth = 1.3) +
+    geom_text(data = ann1, aes(x = 1.5, y = 2.12, label = lab),
+              color = ACCENT, size = 2.6, lineheight = 0.95) +
+    annotate("text", x = 1.5, y = floor_pp + 0.08,
+             label = "work-rate floor = 1.0 pp",
+             size = 2.3, color = "grey35") +
+    facet_wrap(~ cell, ncol = 3) +
+    scale_y_continuous(limits = c(0, 2.28),
+                       expand = expansion(mult = c(0, 0.01))) +
+    labs(title = "The max-rule: when does a rate increase move the bill?",
+         subtitle = "Grey bars: home stack (resident + SD rate), before vs after an increase. Red tick: bill = max(home stack, work-rate floor). Illustrative rates, not estimates.",
+         x = NULL, y = "Rate (percentage points)") +
+    theme_bw(base_size = 10) +
+    theme(plot.title = element_text(face = "bold", size = 11),
+          plot.subtitle = element_text(size = 7.5, color = "grey25"),
+          strip.background = element_rect(fill = "grey95", color = NA),
+          strip.text = element_text(face = "bold", size = 9),
+          panel.grid = element_blank())
+  ggsave(file.path(fig_dir, "schematic_binding_mechanism.png"), g1,
+         width = 9, height = 4, dpi = 300)
+
+  ## 2. Stacked construction ----
+  # Lay explanation: the stacked design runs one clean mini-experiment per
+  # cohort year c, each spanning [c-5, c+5]. A treated muni lives ONLY in
+  # its own cohort's band; the never-changer pool is photocopied into
+  # every band as the comparison group. So no treated muni ever serves as
+  # a control for a later-treated one -- the contamination the stacking
+  # exists to prevent.
+  hh <- 0.40                        # band half-height
+  coh <- data.table(cy = c(2006L, 2010L, 2014L), y0 = c(3, 2, 1),
+                    blab = c("Stack: 2006 cohort", "Stack: 2010 cohort",
+                             "Stack: 2014 cohort"),
+                    mgrp = c("A", "B", "C"))
+  bands <- coh[, .(cy, y0, xmin = cy - 5, xmax = cy + 5,
+                   ymin = y0 - hh, ymax = y0 + hh)]
+  tr <- rbindlist(lapply(seq_len(nrow(coh)), function(i) data.table(
+    cy   = coh$cy[i],
+    m    = paste0("treated ", coh$mgrp[i], 1:2),
+    y    = coh$y0[i] + c(0.26, 0.12),
+    xmin = coh$cy[i] - 5, xmax = coh$cy[i] + 5)))
+  ncp <- rbindlist(lapply(seq_len(nrow(coh)), function(i) data.table(
+    x = seq(coh$cy[i] - 5, coh$cy[i] + 5, by = 1),
+    y = coh$y0[i] - 0.16)))
+  # Bottom strip: the dose path for one treated muni (A1, cohort 2006) --
+  # flat at 0 until c-1, stepping up after the event. Drawn in figure
+  # coordinates: strip baseline at y = 0.02, dose in pp added on top.
+  dose_a1 <- data.table(year = 2001:2011,
+                        dose = c(rep(0, 5), rep(0.3, 3), rep(0.4, 3)))
+  g2 <- ggplot() +
+    geom_rect(data = bands,
+              aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+              fill = "grey93", color = "grey70", linewidth = 0.3) +
+    geom_segment(data = coh,
+                 aes(x = cy, xend = cy, y = y0 - hh, yend = y0 + hh),
+                 color = "grey30", linetype = "dashed", linewidth = 0.5) +
+    geom_text(data = coh, aes(x = cy, y = y0 + hh + 0.08, label = "event (c)"),
+              size = 2.3, color = "grey30") +
+    geom_segment(data = tr, aes(x = xmin, xend = xmax, y = y, yend = y),
+                 color = ACCENT, linewidth = 0.9) +
+    geom_text(data = tr, aes(x = xmin + 0.15, y = y + 0.062, label = m),
+              color = ACCENT, size = 2.3, hjust = 0) +
+    geom_point(data = ncp, aes(x = x, y = y), color = "grey55", size = 0.9) +
+    geom_text(data = coh,
+              aes(x = cy - 4.85, y = y0 - 0.30,
+                  label = "NC pool (replicated into every stack)"),
+              color = "grey40", size = 2.2, hjust = 0) +
+    annotate("segment", x = 2001, xend = 2019, y = 0.02, yend = 0.02,
+             color = "grey80", linewidth = 0.3) +
+    annotate("segment", x = 2006, xend = 2006, y = 0.02, yend = 0.46,
+             color = "grey60", linetype = "dashed", linewidth = 0.4) +
+    geom_step(data = dose_a1, aes(x = year, y = 0.02 + dose),
+              color = ACCENT, linewidth = 0.7) +
+    annotate("text", x = 2012, y = 0.24,
+             label = "dose for A1 (pp):\n0 until c-1, accumulates after c",
+             size = 2.3, color = "grey30", hjust = 0, lineheight = 0.95) +
+    annotate("text", x = 2000.8, y = 0.54,
+             label = "Dose (one treated muni, A1)",
+             size = 2.4, color = "grey30", hjust = 0, fontface = "italic") +
+    scale_y_continuous(breaks = coh$y0, labels = coh$blab,
+                       limits = c(-0.08, 3.62)) +
+    scale_x_continuous(breaks = seq(2001, 2019, by = 2),
+                       limits = c(2000.5, 2019.5)) +
+    labs(title = "Stacked construction: one sub-experiment per cohort; never-changers replicated as controls",
+         subtitle = "No treated municipality ever serves as a control for a later-treated one.",
+         x = "Calendar year", y = NULL) +
+    theme_bw(base_size = 10) +
+    theme(plot.title = element_text(face = "bold", size = 10.5),
+          plot.subtitle = element_text(size = 8.5, color = "grey25"),
+          panel.grid = element_blank(),
+          axis.text.y = element_text(size = 8.5))
+  ggsave(file.path(fig_dir, "schematic_stacking.png"), g2,
+         width = 9, height = 5, dpi = 300)
+
+  ## 3. Dose vs realized-dose tag ----
+  # Lay explanation: the headline regressor (the dose) is zero before the
+  # event by construction, so it carries no pre-event information -- it
+  # cannot reveal a pre-trend. The event study instead tags each muni with
+  # its eventual total change (a constant), and interacts that tag with
+  # event-time dummies: if big-dose munis were already drifting before the
+  # event, the pre-event interactions light up.
+  p1 <- "Dose (used by the headline model)"
+  p2 <- "Realized-dose tag (used by the event study)"
+  dose3 <- data.table(k = -5:5)
+  dose3[, y := fifelse(k < 0, 0, fifelse(k < 3, 0.25, 0.35))]
+  dose3[, panel := p1]
+  tag3 <- data.table(k = c(-5, 5), y = 0.35, panel = p2)
+  d3 <- rbind(dose3, tag3)
+  d3[, panel := factor(panel, levels = c(p1, p2))]
+  notes3 <- data.table(
+    panel = factor(c(p1, p2), levels = c(p1, p2)),
+    x = -4.9, y = c(0.42, 0.10),
+    lab = c("Mechanically zero before the event,\nso it cannot test pre-trends.",
+            "A constant magnitude tag:\ninteracted with event-time\ndummies it CAN test whether\nbig-dose munis drifted\nbefore the event."))
+  tagl3 <- data.table(panel = factor(p2, levels = c(p1, p2)), x = 0, y = 0.375,
+                      lab = 'tilde(D)[i]*" = 0.35 pp (constant)"')
+  g3 <- ggplot(d3, aes(x = k, y = y)) +
+    geom_vline(xintercept = -0.5, linetype = "dashed", color = "grey55",
+               linewidth = 0.4) +
+    geom_step(data = d3[panel == p1], color = ACCENT, linewidth = 0.8) +
+    geom_line(data = d3[panel == p2], color = ACCENT, linewidth = 0.8) +
+    geom_text(data = tagl3, aes(x = x, y = y, label = lab), parse = TRUE,
+              color = ACCENT, size = 2.8, inherit.aes = FALSE) +
+    geom_text(data = notes3, aes(x = x, y = y, label = lab), size = 2.4,
+              color = "grey30", hjust = 0, lineheight = 0.95,
+              inherit.aes = FALSE) +
+    facet_wrap(~ panel, ncol = 2) +
+    scale_x_continuous(breaks = -5:5) +
+    scale_y_continuous(limits = c(-0.02, 0.47)) +
+    labs(title = "Why the event study can test pre-trends: dose vs realized-dose tag",
+         subtitle = "One representative municipality; illustrative magnitudes (0.25 pp at k = 0, topped up to 0.35 pp at k = +3).",
+         x = "Event time k (years relative to first event)",
+         y = "Percentage points") +
+    theme_bw(base_size = 10) +
+    theme(plot.title = element_text(face = "bold", size = 11),
+          plot.subtitle = element_text(size = 8, color = "grey25"),
+          strip.background = element_rect(fill = "grey95", color = NA),
+          strip.text = element_text(face = "bold", size = 9),
+          panel.grid.minor = element_blank())
+  ggsave(file.path(fig_dir, "schematic_dose_vs_tag.png"), g3,
+         width = 9, height = 3.5, dpi = 300)
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()

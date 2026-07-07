@@ -50,6 +50,10 @@ if (RUN_DCED_REPARSE) local({
   print(sprintf("XLS files: %d", length(xls_files)))
   clean <- function(s) tolower(str_squish(as.character(s)))
 
+  # Lay explanation: the state publishes one messy Excel workbook per year,
+  # with a separate row for every tax every town levies. This reads each
+  # year's file and stacks them into one tidy table -- one row per town,
+  # tax, and year -- keeping the school-district ID the first pass dropped.
   read_one <- function(f) {
     yr <- as.integer(str_extract(basename(f), "[0-9]{4}"))
     d <- as.data.table(read_excel(f, .name_repair = "minimal"))
@@ -156,6 +160,10 @@ if (RUN_SD_CONTROLS) local({
   print(sprintf("DCED unique SDs: %d", nrow(dced_sd)))
 
   # Normalize SD names for matching (same function used in build_block_panel.R)
+  # Lay explanation: the two agencies spell district names differently --
+  # "MT LEBANON SD" vs "Mount Lebanon School District". This scrubs both
+  # down to the same bare words (drop "school district", expand the
+  # abbreviations) so names that mean the same thing become identical text.
   norm_sd <- function(x) {
     x <- tolower(x)
     # Strip non-alphanumeric BEFORE word-boundary matching to handle
@@ -243,6 +251,10 @@ if (RUN_SD_CONTROLS) local({
 
   # Fuzzy fallback for remaining unmatched DCED SDs.
   # For each unmatched DCED SD, find the closest F-33 SD by string distance.
+  # Lay explanation: for names that still don't line up letter-for-letter,
+  # work like a careful clerk: compare each leftover DCED name against every
+  # leftover Census name, score how alike they look, and accept the best
+  # candidate only when it is nearly identical (Jaro-Winkler distance < 0.15).
   unmatched_dced_now <- dced_sd[!sd_id %in% xwalk$sd_id]
   unmatched_f33_now  <- f33_names[!ncesid %in% xwalk$ncesid]
   if (nrow(unmatched_dced_now) > 0 && nrow(unmatched_f33_now) > 0 &&
@@ -365,6 +377,10 @@ if (RUN_COUSUB_PANELS) local({
   # It reports inconsistently, creating spurious rate changes.
   # Keep in main analysis; exclude in robustness checks.
 
+  # Lay explanation: a town can appear on several rows in a year (one per
+  # reported tax line). Collapsing with max() leaves one rate per town-year;
+  # for the ~2% of towns split across two school districts it keeps the
+  # higher SD rate -- exact for everyone else, conservative for those few.
   pa_rate_panel <- pa_resident[, .(
     resident_eit = max(muni_eit_rate, na.rm = TRUE),
     sd_eit = max(sd_eit_rate, na.rm = TRUE),
@@ -391,6 +407,10 @@ if (RUN_COUSUB_PANELS) local({
   # nonresident rate for each muni, and flag the imputation.
   pa_rate_panel <- pa_rate_panel[order(municipality_id, year)]
   pa_rate_panel[, nonres_imputed := is.na(muni_nonres_eit)]
+  # Lay explanation: before 2012 many towns simply didn't report their
+  # nonresident rate to the state, even though they had one. Because these
+  # rates almost never move, we fill each gap with the town's earliest
+  # post-2012 rate and flag every filled-in value as imputed.
   post_nr <- pa_rate_panel[year >= 2012 & !is.na(muni_nonres_eit),
     .(muni_nonres_backfill = muni_nonres_eit[which.min(year)]), by = municipality_id]
   pa_rate_panel <- merge(pa_rate_panel, post_nr, by = "municipality_id", all.x = TRUE)
@@ -504,6 +524,10 @@ if (RUN_COUSUB_PANELS) local({
   # point-in-polygon is exact. Cached because the spatial join is the slowest
   # step in the build (~30s after blocks are downloaded).
   pa_block_xwalk_file <- file.path(DERIVED_DIR, "pa_block_xwalk.rds")
+  # Lay explanation: census blocks are the smallest map pieces, and each one
+  # sits wholly inside a single municipality, like a tile inside one room.
+  # Dropping a pin at each block's center and asking which town it lands in
+  # gives every block exactly one town -- and one set of tax rates to inherit.
   if (!file.exists(pa_block_xwalk_file)) {
     pa_blocks <- tigris::blocks(state = "PA", year = 2020) %>%
       st_transform(4326) %>%
@@ -625,6 +649,10 @@ if (RUN_COUSUB_PANELS) local({
     od_dt <- merge(od_dt, work_xw, by = "w_block", all.x = TRUE)
     od_dt[, home_out_of_state := substr(h_block, 1, 2) != state_fips]
 
+    # Lay explanation: each LODES row says "this many people live in block A
+    # and work in block B." After tagging both ends with their towns, this
+    # tallies, for every workplace town and year, the total jobs there and
+    # how many of those workers also live in that town versus commute in.
     city_od <- od_dt[!is.na(work_city), .(
       total_jobs = sum(S000, na.rm = TRUE),
       live_and_work = sum(S000[home_city == work_city], na.rm = TRUE),
@@ -740,6 +768,10 @@ if (RUN_BLOCK_PANEL) local({
   ## Attach primary sd_id per muni from raw DCED panel (modal SD across years) ----
   eit_raw <- fread(file.path(RAW_DIR, "pa_eit_rate_panel.csv"))
   eit_raw <- eit_raw[!is.na(sd_id), .(municipality_id, sd_id)]
+  # Lay explanation: a town occasionally shows up under different school
+  # districts across years (reporting quirks). We assign each town the
+  # district it reports most often -- its usual school district -- and every
+  # block in the town inherits that assignment.
   muni_sd <- eit_raw[, .N, by = .(municipality_id, sd_id)][
     order(municipality_id, -N), .SD[1], by = municipality_id][
     , .(municipality_id, sd_id)]

@@ -44,6 +44,10 @@ RUN_REVENUE  <- TRUE  # log EIT revenue decomposition + ES + Laffer offset + spl
 
 # Shared setup ----
 # One panel build for the whole stage: classified cousub panel + muni stack.
+# Lay explanation: the dataset is assembled once and every model below eats
+# from the same plate -- the classified town panel and the stacked
+# mini-experiments are identical across the headline, pooled, and revenue
+# sections, so no two sections can quietly drift apart.
 env <- build_headline_env()
 panel <- env$panel
 stk_muni <- env$stk_muni
@@ -76,6 +80,10 @@ if (RUN_HEADLINE) local({
     # NOTE: nonresident side intentionally excluded per current paper scope.
     # NOTE: Cousub-level model intentionally uses only muni AFR shares; the
     #       SD F-33 shares enter at the SD- and block-level specifications.
+    # Lay explanation: town and school-district rate changes go into ONE
+    # regression, so the town-rate effect is measured net of whatever the
+    # school district was doing to its own rate at the same time -- both
+    # governments tax the same paycheck and often move together.
     f <- as.formula(paste0(outcome,
          " ~ i(treat_cell, dose_stack, ref='NC') ",
          "+ i(cell_sd, dose_sd, ref='NC') + ",
@@ -131,6 +139,10 @@ if (RUN_HEADLINE) local({
   # 2026-07 for the property-tax-controlled spec (muni/sd/county effective
   # rates added; share_re + share_eit dropped). Pre-property values were
   # log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058.
+  # Lay explanation: a tripwire. If any future edit to the data or code
+  # nudges the headline numbers away from the ones printed in the paper,
+  # the script halts with an error instead of quietly writing new results
+  # that no longer match the published tables.
   .chk <- coefs[grepl("Inc-bind:dose_stack", term)]
   .exp <- c(log_live_and_work = -0.437, log_in_commuters = -0.317,
             log_total_jobs = -0.391, share_live_in = -0.054)
@@ -196,9 +208,14 @@ if (RUN_POOLED) local({
   # Collect results across all (level, mode, outcome) combinations
   results <- list()
   diagnostics <- list()
+  full_tables <- list()   # unfiltered coeftables (per-pp) for the full paper table
   save_result <- function(level_tag, mode, outcome, m, term_filter = "direction::|ever_inc_post|ever_dec_post") {
     ct <- as.data.table(m$coeftable, keep.rownames = "term")
     setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"), c("est", "se", "p"), skip_absent = TRUE)
+    if (mode == "per_pp") {
+      full_tables[[length(full_tables) + 1L]] <<-
+        copy(ct)[, `:=`(level = level_tag, outcome = outcome, n = nobs(m))]
+    }
     ic <- ct[grepl(term_filter, term)]
     if (nrow(ic) == 0) return(invisible())
     ic[, level := level_tag]
@@ -223,6 +240,10 @@ if (RUN_POOLED) local({
   # Pooled per-pp regression is:
   #   y = FE + i(direction_muni, dose_muni) + i(direction_sd, dose_sd) + X
   # producing four coefficients of interest: muni-Inc, muni-Dec, SD-Inc, SD-Dec.
+  # Lay explanation: here we deliberately throw away the binding detail and
+  # keep only the direction of each change (Inc / Dec / never). This mimics
+  # what a standard design that ignores the max-rule would estimate, giving
+  # a benchmark to hold the cell-by-cell results against.
   stk_muni[, direction_muni := fcase(
     as.character(treat_cell) %in% inc_cells, "Inc",
     as.character(treat_cell) %in% dec_cells, "Dec",
@@ -295,6 +316,8 @@ if (RUN_POOLED) local({
   fwrite(res_dt, file.path(RESULTS_DIR, "pooled_results.csv"))
   fwrite(rbindlist(diagnostics, fill = TRUE),
          file.path(RESULTS_DIR, "pooled_diagnostics.csv"))
+  fwrite(rbindlist(full_tables, fill = TRUE),
+         file.path(RESULTS_DIR, "pooled_full_table.csv"))
 
   # Pooled Inc/Dec summary
   print(res_dt[, .(level, mode, outcome, direction,
@@ -481,6 +504,10 @@ if (RUN_REVENUE) local({
   # beta_mech = 1/tau_pre; offset = 1 - beta_net * tau_pre. Within-PA
   # local-displacement offset on the Home-Rule-heavy Inc-bind cohort;
   # not a state-level fiscal multiplier.
+  # Lay explanation: if nobody moved, raising the rate would lift revenue
+  # mechanically -- rate up, same tax base, more money. The offset is the
+  # share of that promised gain eaten away because the base shrinks as
+  # workers sort away: 0 = the town keeps it all, 1 = fully eaten.
   beta_net <- decomp["Inc-bind", beta]
   base <- panel[cell_muni == "Inc-bind", {cm <- c_muni[1L]; .(tau = resident_eit[match(cm - 1L, year)])}, by = muni]
   tau_mean <- mean(base$tau, na.rm = TRUE); tau_med <- median(base$tau, na.rm = TRUE)

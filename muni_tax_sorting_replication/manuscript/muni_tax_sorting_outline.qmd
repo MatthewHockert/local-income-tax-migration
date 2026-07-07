@@ -232,6 +232,12 @@ Table format, all results tables: outcomes across the top; variables down the le
 
 3. Act 47 — drop all Act 47 cities.
 
+4. Pre-trend battery — four tests per cell (joint Wald, individual leads, linear pre-slope, HonestDiD breakdown); robust_clean verdict. Moved into the robustness script.
+
+5. Dose-permutation randomization inference — shuffle dose magnitudes across treated munis, 500 draws; Inc-bind permutation p = 0.016 (dose size drives the result); Inc-becomes uninformative (identified off crossing, not size).
+
+6. Fake-timing placebo — events shifted 4 years early, pre-event data only; Inc-bind null on all outcomes; Inc-becomes fails the counts (confirms its suggestive label).
+
 Exhibits:
 
 - Figure `dcdh_bycell_es` — dCDH ES by group.
@@ -246,6 +252,13 @@ Exhibits:
   - Note: [re-run under property controls].
 - Table `act47_robustness` — Act 47 exclusion.
   - Note: [re-run under property controls].
+- Table `pretrend_battery` — four tests per cell.
+  - Note: joint Wald over-rejects on thin cohorts; robust_clean drives the verdict.
+- Table `perm_inference` + Figure `perm_inference_hist` — permutation distributions with true estimates.
+  - Say: Inc-bind sits in the 1.6% tail.
+- Table `fake_timing` — placebo events, pre-event data.
+  - Say: Inc-bind null; Inc-becomes drifts.
+  - Note: 31 of 79 treated munis have room for a placebo window; underpowered by construction.
 
 # Discussion
 

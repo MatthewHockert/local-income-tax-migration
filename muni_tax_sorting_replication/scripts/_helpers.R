@@ -109,10 +109,13 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   burden <- merge(burden[, .(municipality_id = muni_id, year,
                              muni_eff_rate, sd_eff_rate, county_eff_rate)],
                   xw, by = "municipality_id", all.x = TRUE)
+  # x100: raw effective rates are decimals (0.015 = 1.5%); rescale to
+  # PERCENTAGE POINTS so control coefficients read per-pp, the same units
+  # as the EIT dose. (Pure relabeling -- other coefficients are unaffected.)
   burden <- burden[!is.na(cousub_fips),
-                   .(muni_eff_rate   = mean(muni_eff_rate,   na.rm = TRUE),
-                     sd_eff_rate     = mean(sd_eff_rate,     na.rm = TRUE),
-                     county_eff_rate = mean(county_eff_rate, na.rm = TRUE)),
+                   .(muni_eff_rate   = 100 * mean(muni_eff_rate,   na.rm = TRUE),
+                     sd_eff_rate     = 100 * mean(sd_eff_rate,     na.rm = TRUE),
+                     county_eff_rate = 100 * mean(county_eff_rate, na.rm = TRUE)),
                    by = .(muni = cousub_fips, year)]
   panel <- merge(panel, burden, by = c("muni", "year"), all.x = TRUE)
   
@@ -144,12 +147,20 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     setorder(p, muni, year)
     # home_binds: 1 if the residence-side stack exceeds the work-side rate,
     # i.e. the worker's bill is set by the HOME rates (the stack "binds").
+    # Lay explanation: a PA worker pays whichever is bigger -- the combined
+    # home-town + school-district rate, or the rate where they work.
+    # home_binds = 1 means the home side wins that comparison, so it is the
+    # home rates that actually set this worker's tax bill.
     p[, home_binds := as.integer(home_stack > muni_nonres_eit)]
     lag_col <- paste0("lag_", tag)
     p[, (lag_col) := shift(get(rate_var)), by = muni]
     # Year-over-year change in this setter's rate -> Inc/Dec event flags.
     # 1e-6 tolerance guards float noise; NA = no change that year.
     ev_col <- paste0("ev_", tag)
+    # Lay explanation: flip through each town's rate history like a flipbook
+    # and stamp every page where the rate moved -- "Inc" if it rose from the
+    # year before, "Dec" if it fell. Years with no movement stay blank; the
+    # first stamped page becomes that town's event year.
     p[, (ev_col) := fifelse(is.na(get(lag_col)), NA_character_,
                     fifelse(get(rate_var) > get(lag_col) + 1e-6, "Inc",
                     fifelse(get(rate_var) < get(lag_col) - 1e-6, "Dec", NA_character_)))]
@@ -161,10 +172,18 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     # prebind = binding state in the year BEFORE the event (lag of home_binds
     # evaluated at the event year); postbind = state in the event year itself.
     # The (prebind, postbind) pair is what splits Inc into bind/becomes/nobind.
+    # Lay explanation: two snapshots around the change -- was the worker's
+    # bill set by home rates the year BEFORE (prebind), and is it the year
+    # OF the change (postbind)? This before/after pair is what sorts each
+    # increase into bind / becomes / nobind just below.
     pbind <- p[, .(muni, year, lag_home_binds = shift(home_binds)), by = muni]
     ev <- merge(ev, pbind[, .(muni, year, lag_home_binds)],
                 by.x = c("muni","c_var"), by.y = c("muni","year"), all.x = TRUE)
     ev[, prebind := lag_home_binds]; ev[, lag_home_binds := NULL]
+    # Lay explanation: sort each change into a cell. Inc-bind = home rates
+    # already set the bill and rose, so workers feel the hike; Inc-becomes =
+    # the hike newly pushed home rates past the work rate; Inc-nobind = the
+    # rate rose on paper but no bill moved (the placebo). Dec cells mirror.
     ev[, cell := fcase(
       ev_dir == "Inc" & prebind == 1 & postbind == 1, "Inc-bind",
       ev_dir == "Inc" & prebind == 0 & postbind == 1, "Inc-becomes",
@@ -191,6 +210,10 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     # the whole sample. Munis with changes that produced no classifiable first
     # event (e.g. missing lag year) are "Uncertain", NOT silently NC — an
     # earlier version leaked them into the control group.
+    # Lay explanation: only towns whose rate sat perfectly still for the
+    # whole sample earn the "NC" (never-changer) control badge. A town that
+    # did change but whose change cannot be dated cleanly is labeled
+    # "Uncertain" rather than quietly passed off as a control.
     rate_changes <- p2[!is.na(get(rate_var)), .(
       n = sum(abs(diff(get(rate_var))) > 1e-6, na.rm = TRUE)
     ), by = muni]
@@ -199,6 +222,10 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     p2[!muni %in% truly_stable & is.na(get(cell_v)), (cell_v) := "Uncertain"]
     # Flip-flopper filter: after the first event, all subsequent rate changes
     # in the same direction. Any opposite-direction reversal -> Uncertain.
+    # Lay explanation: a town that both raised AND cut its rate over the
+    # years is like a witness who keeps changing their story -- we cannot
+    # say whether it was "treated" with an increase or a decrease, so it is
+    # dropped rather than guessed at.
     ff <- p2[!is.na(get(rate_var)), .(year, rate = get(rate_var)), by = muni][
       order(muni, year)]
     ff[, d := c(NA_real_, diff(rate)), by = muni]
@@ -209,6 +236,10 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     # Dose = cumulative rate change since the pre-event baseline, 0 before the
     # event and 0 for NC. Accumulates if the muni keeps raising after the first
     # event (flip-floppers are already excluded, so it is monotone).
+    # Lay explanation: dose = how far the rate has climbed above where it
+    # sat just before the first change -- like marking a child's height
+    # against a pencil line on the doorframe. Zero before the change, zero
+    # forever for control towns, and it grows with any later hikes.
     p2[, (dose_v) := fifelse(!is.na(get(c_v)) & year >= get(c_v),
                              get(rate_var) - get(base_v), 0)]
     cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
@@ -248,6 +279,11 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   # this is why the FE must be stack-interacted (muni^stack, year^stack): each
   # copy gets its own intercept, keeping comparisons within-cohort and avoiding
   # treated-vs-treated contrasts.
+  # Lay explanation: one mini-experiment per adoption year. The towns that
+  # changed in, say, 2009 are compared to a fresh photocopy of every
+  # never-changer over the same window; 2013's changers get their own copy,
+  # and so on. Stacking the mini-experiments lets each cohort be judged
+  # against clean controls only, never against other changers.
   build_stack <- function(p, side_tag, dose_col, K = K_stack) {
     cell_v <- paste0("cell_", side_tag)
     c_v    <- paste0("c_", side_tag)
@@ -275,6 +311,10 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     # pre-event dose so dose_stack is exactly 0 pre-event inside every stack
     # (a treated muni's global dose can be non-zero pre-window if its event
     # window is clipped by the sample edge).
+    # Lay explanation: inside each mini-experiment, re-zero every town's
+    # dose against its own pre-change average, so "dose" always means "how
+    # much higher than before THIS change" -- even for towns whose window
+    # got clipped by the edge of the data.
     stk[, base_rate := mean(get(dose_col)[rel < 0], na.rm = TRUE),
         by = .(stack, muni)]
     stk[!is.finite(base_rate), base_rate := 0]
@@ -297,6 +337,11 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
 add_realized_dose <- function(panel, K = 5L) {
   mu_year <- unique(panel[, .(muni, year, resident_eit, c_muni)])
   setorder(mu_year, muni, year)
+  # Lay explanation: give each town ONE number -- how much its rate will
+  # eventually have risen five years after the change. The event study then
+  # interacts this fixed tag with year-by-year dummies to ask whether towns
+  # headed for big hikes were already drifting away from small-hike towns
+  # BEFORE anything actually happened.
   rd <- mu_year[!is.na(c_muni), {
     pre <- resident_eit[year == c_muni - 1L]
     yr_max <- min(c_muni + K, max(year, na.rm = TRUE))
@@ -316,6 +361,10 @@ add_realized_dose <- function(panel, K = 5L) {
 # hdid_breakdown(): HonestDiD (Rambachan-Roth) breakdown Mbar — the smallest
 # relative-magnitudes bound at which the robust CI includes 0.
 # Inf = robust beyond the grid; NA = not computable.
+# Lay explanation: a stress test. It asks how big a hidden pre-existing
+# drift -- measured in multiples of the largest wobble we can already see
+# before the event -- would have to be before the estimate could plausibly
+# be zero. The bigger the breakdown number, the sturdier the result.
 hdid_breakdown <- function(m, Mbarvec = c(0.5, 1, 1.5, 2)) {
   if (!requireNamespace("HonestDiD", quietly = TRUE))
     return(list(orig_excl0 = NA, breakdown = NA_real_))
@@ -348,6 +397,10 @@ hdid_breakdown <- function(m, Mbarvec = c(0.5, 1, 1.5, 2)) {
 #   4. HonestDiD breakdown Mbar
 # robust_clean = no significant individual leads AND flat linear pre-slope.
 # Returns a one-row data.table; rbind across cells/outcomes for the battery table.
+# Lay explanation: all four tests probe the same worry from different
+# angles -- were treated and control towns already on different paths
+# BEFORE the rate change? If so, the "effect" could just be old drift
+# continuing, so a result only counts as clean when the battery agrees.
 pretrend_bucket <- function(m, lin_model = NULL, lin_term = "dose_rel",
                             Mbarvec = c(0.5, 1, 1.5, 2)) {
   ct <- as.data.table(m$coeftable, keep.rownames = "term")
@@ -568,7 +621,7 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
                               caption, label, short_labels = TRUE,
                               notes = character(0), col_spec = NULL,
                               sideways = FALSE,
-                              diag_fields = c("n","r2","wr2","dep_mean","dep_sd"),
+                              diag_fields = c("n","r2","wr2","dep_mean"),
                               controls_dt = NULL, control_labels = NULL,
                               section_header_above_cells = NULL) {
   stopifnot(is.data.table(coefs_dt), is.data.table(diag_dt))
@@ -675,7 +728,9 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
     r2       = list(field = "r2",       label = "$R^2$",       fmt = function(x) formatC(x, format = "f", digits = 3)),
     wr2      = list(field = "wr2",      label = "Within $R^2$",fmt = function(x) formatC(x, format = "f", digits = 3)),
     dep_mean = list(field = "dep_mean", label = "Dep.\\ mean", fmt = function(x) formatC(x, format = "f", digits = 3)),
-    dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 3))
+    dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 3)),
+    wald_p   = list(field = "wald_p",   label = "Joint Wald $p$ (leads)",
+                    fmt = function(x) formatC(x, format = "f", digits = 3))
   )
   diag_block <- character(0)
   for (k in diag_fields) {

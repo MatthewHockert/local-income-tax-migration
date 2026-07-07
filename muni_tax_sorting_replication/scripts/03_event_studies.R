@@ -32,7 +32,7 @@ setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 # Flags ----
 RUN_HEADLINE_ES      <- TRUE
 RUN_POOLED_ES        <- TRUE
-RUN_PRETREND_BATTERY <- TRUE
+# RUN_PRETREND_BATTERY moved to 04_robustness.R (2026-07-07)
 
 # Shared setup ----
 env <- build_headline_env()
@@ -51,6 +51,11 @@ cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
 # column name, `realized_dose_muni`, as the original inline block). Stack is on
 # muni cohorts, identical to the headline construction.
 if (RUN_HEADLINE_ES || RUN_POOLED_ES) {
+  # Lay explanation: tag each treated town with one number -- the total rate
+  # change it will have racked up five years after its first change. It is a
+  # size label, like knowing in advance which towns are headed for a big hike.
+  # The event study then asks: were the big-hike towns already drifting away
+  # from the controls BEFORE the hike? If yes, the comparison is suspect.
   panel_es <- add_realized_dose(copy(panel), K = K_stack)
 
   build_stack <- function(p, K = K_stack) {
@@ -101,6 +106,11 @@ if (RUN_HEADLINE_ES) local({
       dd <- dd[, ..cols]
       dd <- dd[complete.cases(dd)]
       if (nrow(dd) == 0 || sum(dd$treat_cell_muni == cl) == 0) next
+      # Lay explanation: i(rel, realized_dose, ref=-1) estimates a separate
+      # per-percentage-point effect for EACH year relative to the rate change
+      # (-5, -4, ..., +5), like a film strip around the event. The year just
+      # before the change is pinned at zero, so every frame reads as "how far
+      # from where we stood the year before it happened."
       f <- as.formula(paste0(o,
         " ~ i(rel, realized_dose_muni, ref = -1) ",
         "+ i(cell_sd, dose_sd, ref = 'NC') ",
@@ -119,6 +129,11 @@ if (RUN_HEADLINE_ES) local({
 
       post <- ic[rel >= 0 & rel <= 5]
       pre  <- ic[rel <= -2]
+      # Lay explanation: the Wald test asks whether all the BEFORE-the-change
+      # coefficients are jointly zero. If treated and control towns really
+      # were moving in parallel before the tax change, nothing should show up
+      # in those years -- a big test statistic (small p) means the two groups
+      # were already on different paths and the comparison is contaminated.
       wp <- wald_pretrend(m, "^rel::-[2-9]")
       att_results[[length(att_results) + 1L]] <- data.table(
         outcome = o, cell = cl,
@@ -153,6 +168,10 @@ if (RUN_POOLED_ES) local({
 
   stk_muni <- copy(stk_es)
   ctrls_muni <- ctrls
+  # Lay explanation: instead of studying each binding cell on its own, lump
+  # every rate INCREASE together (and, separately, every DECREASE) and compare
+  # that whole pile to the never-changers. This is the naive "all hikes vs no
+  # hikes" view -- useful as a benchmark for what the cell split adds.
   stk_muni[, pool_inc := as.integer(as.character(treat_cell_muni) %in% inc_cells)]
   stk_muni[, pool_dec := as.integer(as.character(treat_cell_muni) %in% dec_cells)]
   stk_muni[, is_nc    := as.integer(as.character(treat_cell_muni) == "NC")]
@@ -220,85 +239,7 @@ if (RUN_POOLED_ES) local({
   print(rbind(r_muni_inc$att, r_muni_dec$att, fill = TRUE))
 })
 
-# Pre-trend battery ----
-# (from q3_unified_pretrend_battery.R) Multiple pre-trend tests on the
-# realized-dose ES, per muni-side cell x outcome. The single joint Wald
-# over-rejects on the thin cohorts (14-24 treated clusters), so we report a
-# battery of four:
-#   1. joint Wald on leads (asymptotic)             -- the standard test
-#   2. individual leads: # significant at 5%, min p
-#   3. linear pre-trend slope (asymptotic, 1 df)    -- more stable than joint
-#   4. HonestDiD breakdown Mbar (Rambachan-Roth)    -- how large a pre-trend
-#        violation (relative to the max pre-period deviation) is needed before
-#        the post-effect CI includes zero; bigger = more robust.
-# Per-model tests + hdid_breakdown() now come from pretrend_bucket() in
-# _helpers.R (extracted verbatim). robust_clean = passes the
-# few-clusters-robust frequentist tests (individual leads + linear slope);
-# the joint Wald and HonestDiD breakdown are reported but do not drive the
-# verdict.
-# (A wild-cluster bootstrap was attempted but fwildclusterboot is incompatible
-#  with the stacked design's singleton fixed effects; HonestDiD serves the same
-#  small-sample-robustness purpose and is the standard tool.)
-if (RUN_PRETREND_BATTERY) local({
-  K <- 5L; set.seed(42); Mbarvec <- c(0.5, 1, 1.5, 2)
-  cs <- ctrls_str
-  panel_bat <- copy(panel)
-
-  mu <- unique(panel_bat[, .(muni, year, resident_eit, c_muni)])
-  setorder(mu, muni, year)
-  rd <- mu[!is.na(c_muni), {
-    pre <- resident_eit[year == c_muni - 1L]
-    ymx <- min(c_muni + K, max(year, na.rm = TRUE)); end <- resident_eit[year == ymx]
-    list(rdose = (if (length(end) == 1) end else NA) - (if (length(pre) == 1) pre else NA))
-  }, by = muni]
-  rd[is.na(rdose), rdose := 0]
-  rd <- rbind(rd, data.table(muni = unique(panel_bat[cell_muni == "NC", muni]), rdose = 0))
-  panel_bat <- merge(panel_bat, rd, by = "muni", all.x = TRUE)
-  panel_bat[is.na(rdose), rdose := 0]
-
-  build_stack <- function(p) {
-    tr <- unique(p[cell_muni != "NC", .(muni, co = c_muni)])
-    nc <- unique(p[cell_muni == "NC", muni])
-    rbindlist(lapply(sort(unique(tr$co)), function(cy) {
-      w <- (cy - K):(cy + K); tm <- tr[co == cy]; if (!nrow(tm)) return(NULL)
-      dt <- p[muni %in% tm$muni & year %in% w]; dt[, tc := as.character(cell_muni)]
-      dc <- p[muni %in% nc & year %in% w];      dc[, tc := "NC"]
-      d <- rbind(dt, dc, fill = TRUE); d[, rel := as.integer(year - cy)]; d[, stk := cy]; d
-    }), fill = TRUE)
-  }
-  stk <- build_stack(panel_bat)
-  stk[, smuni := paste0(stk, "_", muni)]; stk[, syear := paste0(stk, "_", year)]
-  stk[, cell_sd := factor(cell_sd, levels = cell_levels)]
-  stk[, cell_nr := factor(cell_nr, levels = cell_levels)]
-  stk[is.na(dose_sd), dose_sd := 0]; stk[is.na(dose_nr), dose_nr := 0]
-  stk[, dose_rel := rdose * rel]
-
-  outcomes <- c("log_live_and_work", "log_in_commuters", "log_total_jobs", "share_live_in")
-  rows <- list()
-  for (o in outcomes) for (cl in c("Inc-bind", "Inc-becomes", "Inc-nobind")) {
-    d <- stk[tc %in% c("NC", cl)]
-    cols <- c("muni", "rel", "smuni", "syear", "rdose",
-              "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
-    dd <- d[, ..cols][complete.cases(d[, ..cols])]; if (!nrow(dd)) next
-    f <- as.formula(paste0(o, " ~ i(rel, rdose, ref=-1) + i(cell_sd, dose_sd, ref='NC') + ",
-                           "i(cell_nr, dose_nr, ref='NC') + ", cs, " | smuni + syear"))
-    m <- tryCatch(feols(f, dd, cluster = ~muni), error = function(e) NULL)
-    if (is.null(m)) next
-    # linear pre-trend slope on the pre-event window
-    dp <- d[rel < 0]
-    cols2 <- c("muni", "dose_rel", "smuni", "syear",
-               "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
-    dp <- dp[, ..cols2][complete.cases(d[rel < 0, ..cols2])]
-    ml <- tryCatch(feols(as.formula(paste0(o, " ~ dose_rel + i(cell_sd,dose_sd,ref='NC') + ",
-                    "i(cell_nr,dose_nr,ref='NC') + ", cs, " | smuni + syear")),
-                    dp, cluster = ~muni), error = function(e) NULL)
-    rows[[length(rows) + 1L]] <- cbind(
-      data.table(outcome = o, cell = cl, n_treated = uniqueN(dd$muni[dd$rdose != 0])),
-      pretrend_bucket(m, lin_model = ml, lin_term = "dose_rel", Mbarvec = Mbarvec))
-  }
-  bat <- rbindlist(rows, fill = TRUE)
-  fwrite(bat, file.path(RESULTS_DIR, "pretrend_battery.csv"))
-  print(bat)
-})
+# (Pre-trend battery moved to 04_robustness.R on 2026-07-07 -- it is a
+#  robustness test, and the user wants all robustness in one script.)
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()

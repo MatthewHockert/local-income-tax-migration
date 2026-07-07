@@ -6,7 +6,7 @@
 #   q3_unified_act32_3level.R         -> RUN_ACT32
 #   q3_unified_act47_robustness.R     -> RUN_ACT47
 #   q3_unified_curvature_robustness.R -> RUN_CURVATURE
-# (The pre-trend battery lives in stage 03, not here.)
+#   pre-trend battery (moved in from stage 03, 2026-07-07)
 #
 # All sections share ONE headline environment (build_headline_env() in
 # _helpers.R): the cousub panel with binding-cell classification and the
@@ -36,6 +36,9 @@ RUN_DCDH_BYCELL <- TRUE
 RUN_ACT32       <- TRUE
 RUN_ACT47       <- TRUE
 RUN_CURVATURE   <- TRUE
+RUN_PRETREND_BATTERY <- TRUE   # 4-test battery per cell (moved from stage 03)
+RUN_DOSE_PERMUTATION <- TRUE   # randomization inference: shuffle dose magnitudes (~15 min)
+RUN_FAKE_TIMING      <- TRUE   # placebo cohorts 4 years early, pre-event data only
 
 # Shared setup ----
 env <- build_headline_env()
@@ -43,6 +46,8 @@ panel <- env$panel
 stk_muni <- env$stk_muni
 ctrls <- env$ctrls
 ctrls_str <- env$ctrls_str
+cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
+                 "Dec-bind", "Dec-becomes-non", "Dec-nobind")
 
 # Pull the estimates out of a did_multiplegt_dyn object into a tidy table:
 # Effects = post-event rows (rel 1..K), Placebos = pre-event rows (rel -1..-K,
@@ -50,13 +55,25 @@ ctrls_str <- env$ctrls_str
 # NOTE the scale: these are per-event LEVEL effects at the realized dose,
 # NOT per-pp slopes -- compare to feols only after multiplying the feols ACR
 # by the group's mean dose (~0.33 pp). Used by both dCDH sections.
+# Lay explanation: the two estimators answer in different units. The headline
+# reports a price-per-mile ("effect per percentage point of tax"); dCDH
+# reports the whole trip ("effect of the hike each town actually took").
+# Since a typical hike is about a third of a point, the headline number must
+# be multiplied by that trip length before the two can be compared.
 extract_dcdh <- function(m) {
   res <- m$results
-  eff <- as.data.table(res$Effects)[, .(rel = seq_len(.N), est = Estimate, se = SE,
-                                         ci_lo = `LB CI`, ci_hi = `UB CI`)]
-  pl <- if (!is.null(res$Placebos) && res$N_Placebos > 0)
-          as.data.table(res$Placebos)[, .(rel = -seq_len(.N), est = Estimate, se = SE,
-                                           ci_lo = `LB CI`, ci_hi = `UB CI`)] else NULL
+  # Keep N (observations) and Switchers (treated units) per horizon when the
+  # package reports them -- they feed the dCDH table diagnostics block.
+  grab <- function(x, sgn = 1L) {
+    d <- as.data.table(x)
+    out <- d[, .(rel = sgn * seq_len(.N), est = Estimate, se = SE,
+                 ci_lo = `LB CI`, ci_hi = `UB CI`)]
+    if ("N" %in% names(d))         out[, n_obs := d$N]
+    if ("Switchers" %in% names(d)) out[, n_switchers := d$Switchers]
+    out
+  }
+  eff <- grab(res$Effects)
+  pl <- if (!is.null(res$Placebos) && res$N_Placebos > 0) grab(res$Placebos, -1L) else NULL
   ref <- data.table(rel = 0L, est = 0, se = 0, ci_lo = 0, ci_hi = 0)
   rbindlist(list(pl, ref, eff), fill = TRUE)[order(rel)]
 }
@@ -75,8 +92,8 @@ extract_dcdh <- function(m) {
 # Treatment = resident rate LEVEL (continuous = 1), group = muni, time = year,
 # cluster = muni.
 #
-# Window: effects = 3, placebo = 2 -- the longest horizon the continuous +
-# controlled estimator supports on this sample (longer errors out).
+# Window: effects = 5, placebo = 5, matching the by-cell dCDH and the
+# stacked exhibits.
 #
 # SEs: analytical by default (NBOOT = 0). The package notes analytical SEs can
 # be LIBERAL with the continuous option; set NBOOT >= 50 for the recommended
@@ -87,7 +104,9 @@ if (RUN_DCDH_POOLED) local({
   suppressMessages(library(DIDmultiplegtDYN))
   # NB: did_multiplegt_dyn's effects/placebo must be DOUBLE, not integer (3L
   # throws "Positive integer required" -- a package quirk).
-  K_post <- 3; K_pre <- 2
+  # +-5 to match the by-cell dCDH and the stacked exhibits (aligned 2026-07-06;
+  # the old +-3/+-2 cap predated the property-controls spec and was stale).
+  K_post <- 5; K_pre <- 5
   NBOOT  <- as.integer(Sys.getenv("DCDH_BOOTSTRAP", "0"))   # set DCDH_BOOTSTRAP=50 to bootstrap
 
   panel <- panel[as.character(cell_muni) %in% c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind") &
@@ -170,6 +189,11 @@ if (RUN_DCDH_BYCELL) local({
   outcomes <- c("log_live_and_work", "log_in_commuters", "log_total_jobs", "share_live_in")
 
   all <- list()
+  # Lay explanation: run the alternative estimator three times on three
+  # slices of towns -- everyone pooled, then only towns whose bills actually
+  # moved (Inc-bind), then only towns newly pulled above the workplace floor
+  # (Inc-becomes). Each slice keeps the never-changers as its yardstick, so
+  # the bind/becomes split gets its own independent second opinion.
   for (gn in names(groups)) {
     pg <- panel[as.character(cell_muni) %in% groups[[gn]]]
     pg[, muni_int := as.integer(factor(muni))]
@@ -189,7 +213,19 @@ if (RUN_DCDH_BYCELL) local({
       co <- extract_dcdh(m); co[, `:=`(group = gn, outcome = o)]
       pj <- tryCatch(m$results$p_jointplacebo, error = function(e) NA_real_)
       co[, joint_placebo_p := if (is.null(pj)) NA_real_ else pj]
-      co[, ate := tryCatch(m$results$ATE$Estimate[1], error = function(e) NA_real_)]
+      # The package's "ATE" is its Average Total Effect PER UNIT OF TREATMENT
+      # (dose-normalized) -- the dCDH analog of the ACR, directly comparable to
+      # the feols per-pp coefficient. It is a 1-row matrix, so $Estimate fails;
+      # convert first (the old $-access returned NULL -> NA silently).
+      # Lay explanation: unlike the year-by-year effects above (which are in
+      # "whole trip" units), this ATE is already back in price-per-mile
+      # terms -- effect per unit of tax. It is the ONE number from this
+      # estimator that can sit directly next to the headline per-pp estimate
+      # with no rescaling.
+      co[, ate := tryCatch({
+        a <- m$results$ATE
+        if (is.null(a)) NA_real_ else as.numeric(as.data.table(a)$Estimate[1])
+      }, error = function(e) NA_real_)]
       co[, se_type := if (NBOOT > 0) sprintf("bootstrap(%d)", NBOOT) else "analytical"]
       all[[paste(gn, o)]] <- co
       message(sprintf("  done; effect@+%d = %+.3f", max(co$rel), co[rel == max(rel), est]))
@@ -232,6 +268,12 @@ if (RUN_DCDH_BYCELL) local({
 #
 # Output: data/results/act32_split_cousub.csv (+ _diag.csv)
 if (RUN_ACT32) local({
+  # Lay explanation: before 2012, paying the local income tax was partly an
+  # honor system -- many workers simply never filed. Act 32 (effective 2012)
+  # made every employer withhold the tax from paychecks, so the bill became
+  # unavoidable. Splitting events at 2012 tests a sharp prediction: if
+  # people respond to taxes they actually pay, effects should be stronger
+  # after withholding made the tax impossible to dodge.
   ACT32_YEAR <- 2012L
 
   run_act32_split <- function(stk, c_col, cell_col, dose_col,
@@ -239,7 +281,18 @@ if (RUN_ACT32) local({
     ctrls_str <- paste(ctrls, collapse = " + ")
     results <- list()
     diagnostics <- list()
+    fulls <- list()
     cohort <- stk[, get(c_col)]
+    # Cohort counts per cell x period: documents WHY a cell can be absent from
+    # a period's table (e.g. no Inc-nobind first events before 2012).
+    cc <- unique(stk[!is.na(get(c_col)) & get(cell_col) != "NC",
+                     .(muni, cell = get(cell_col), co = get(c_col))])
+    cc[, period := fifelse(co < ACT32_YEAR, "pre", "post")]
+    # Lay explanation: this printout is a head count -- how many towns of
+    # each binding type first changed rates before vs after 2012. If a cell
+    # shows zero in one column, that cell simply has no towns to estimate in
+    # that period, which is why a row can vanish from one side of the split.
+    print(dcast(cc[, .N, by = .(cell, period)], cell ~ period, value.var = "N", fill = 0))
     for (label in c("pre", "post")) {
       if (label == "pre") {
         sub <- stk[is.na(get(c_col)) | get(c_col) < ACT32_YEAR]
@@ -276,6 +329,11 @@ if (RUN_ACT32) local({
         ic[, n := nobs(m)]
         results[[length(results) + 1L]] <- ic[, .(period, outcome, cell,
                                                   est, se, p, n)]
+        fulls[[length(fulls) + 1L]] <- copy(ct)[, `:=`(period = label,
+          outcome = o, n = nobs(m),
+          r2 = round(fitstat(m, "r2", simplify = TRUE), 4),
+          wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+          dep_mean = round(mean(m$residuals + m$fitted.values, na.rm = TRUE), 4))]
         dep_vec <- m$residuals + m$fitted.values
         diagnostics[[length(diagnostics) + 1L]] <- data.table(
           period   = label, outcome = o,
@@ -288,6 +346,8 @@ if (RUN_ACT32) local({
     }
     out <- rbindlist(results, fill = TRUE)
     fwrite(out, file.path(RESULTS_DIR, paste0("act32_split_", level_tag, ".csv")))
+    fwrite(rbindlist(fulls, fill = TRUE),
+           file.path(RESULTS_DIR, paste0("act32_full_", level_tag, ".csv")))
     diag_dt <- rbindlist(diagnostics, fill = TRUE)
     fwrite(diag_dt, file.path(RESULTS_DIR, paste0("act32_split_", level_tag, "_diag.csv")))
     message(sprintf("[%s] Act 32 split saved (%d coef rows, %d diag rows).",
@@ -315,6 +375,12 @@ if (RUN_ACT47) local({
   # Act 47 distressed-municipality list (DCED designations 1987-2019).
   # Source: PA DCED Act 47 active and rescinded designation list.
   # Names normalized to match DCED's municipality names.
+  # Lay explanation: Act 47 cities are Pennsylvania's officially "financially
+  # distressed" places -- and distressed cities are exactly the ones that
+  # raise income taxes hardest while also losing residents for reasons that
+  # have nothing to do with the tax. The check drops any treated town whose
+  # name matches this list and re-runs the headline: if the result survives,
+  # it is not just a story about a couple of collapsing cities.
   act47_names <- toupper(c(
     "ALIQUIPPA", "BRADDOCK", "CARBONDALE", "CHESTER CITY", "CLAIRTON",
     "DUQUESNE", "EAST PITTSBURGH", "FARRELL", "FRANKLIN",
@@ -407,6 +473,9 @@ if (RUN_ACT47) local({
     s[is.na(dose_nr), dose_nr := 0]
   }
 
+  # Returns TWO tables per model: the Inc-bind summary row (concise CSV, as
+  # before) and the FULL coeftable + diagnostics, so 06_tables.R can build a
+  # main-results-format Act 47 table (all cells + controls + diagnostics).
   run_one <- function(stk, outcome) {
     f <- as.formula(paste0(outcome,
          " ~ i(treat_cell, dose_muni, ref = 'NC') ",
@@ -421,30 +490,40 @@ if (RUN_ACT47) local({
     ct <- as.data.table(m$coeftable, keep.rownames = "term")
     setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"),
              c("est", "se", "p"), skip_absent = TRUE)
+    full <- copy(ct)[, `:=`(outcome = outcome, n = nobs(m),
+      r2 = round(fitstat(m, "r2", simplify = TRUE), 4),
+      wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+      dep_mean = round(mean(m$residuals + m$fitted.values, na.rm = TRUE), 4))]
     ic <- ct[grepl("^treat_cell::Inc-bind:", term)]
-    data.table(outcome = outcome,
-               est = round(ic$est, 4),
-               se = round(ic$se, 4),
-               p = round(ic$p, 4),
-               n = nobs(m))
+    list(summary = data.table(outcome = outcome,
+                              est = round(ic$est, 4),
+                              se = round(ic$se, 4),
+                              p = round(ic$p, 4),
+                              n = nobs(m)),
+         full = full)
   }
 
   outcomes <- c("log_live_and_work", "log_in_commuters",
                 "log_total_jobs", "share_live_in")
   n_inc_bind_total <- nrow(treated_incbind)
   message(sprintf("Cousub headline (all %d Inc-bind munis)", n_inc_bind_total))
-  res_full <- rbindlist(lapply(outcomes, function(o) run_one(stk_full, o)))
+  runs_full <- lapply(outcomes, function(o) run_one(stk_full, o))
+  res_full <- rbindlist(lapply(runs_full, `[[`, "summary"))
   res_full[, spec := sprintf("All %d Inc-bind munis", n_inc_bind_total)]
   print(res_full)
 
   message("Cousub headline (excluding Act 47 Inc-bind munis)")
-  res_a47drop <- rbindlist(lapply(outcomes, function(o) run_one(stk_a47drop, o)))
+  runs_drop <- lapply(outcomes, function(o) run_one(stk_a47drop, o))
+  res_a47drop <- rbindlist(lapply(runs_drop, `[[`, "summary"))
   res_a47drop[, spec := sprintf("Drop %d Act 47 Inc-bind", length(act47_munis_in_panel))]
   print(res_a47drop)
 
   results <- rbind(res_full, res_a47drop)
   fwrite(results, file.path(RESULTS_DIR, "act47_robustness_cousub.csv"))
-  message("Saved data/results/act47_robustness_cousub.csv")
+  # full coeftable on the Act-47-dropped sample, main-results format input
+  act47_full <- rbindlist(lapply(runs_drop, `[[`, "full"))
+  fwrite(act47_full, file.path(RESULTS_DIR, "act47_full_table.csv"))
+  message("Saved data/results/act47_robustness_cousub.csv + act47_full_table.csv")
 
   # 3. LaTeX summary table for the paper
   fmt_coef <- function(est, se, p) {
@@ -535,6 +614,11 @@ if (RUN_CURVATURE) local({
     m <- feols(as.formula(paste0(o, " ~ dose + dose2 + ", cs, " | stack_muni + stack_year")),
                d, cluster = ~muni)
     b <- coef(m)[c("dose", "dose2")]; V <- vcov(m)[c("dose", "dose2"), c("dose", "dose2")]
+    # Lay explanation: with a squared-dose term in the model, the damage done
+    # by one MORE bit of tax depends on how much tax is already in place:
+    # that marginal effect is b1 + 2*b2*dose. Tracing it across doses asks
+    # whether the tenth notch of a hike stings as much as the first --
+    # a downward slope means each extra bit hurts less than the last.
     acrt_d <- b["dose"] + 2 * b["dose2"] * dgrid
     var_d  <- V["dose", "dose"] + 4 * dgrid^2 * V["dose2", "dose2"] + 4 * dgrid * V["dose", "dose2"]
     se_d   <- sqrt(pmax(var_d, 0))
@@ -631,6 +715,12 @@ if (RUN_CURVATURE) local({
   # Diagnostic is about the dose model, not the controls; fiscal controls make
   # did_multiplegt_dyn(continuous=2) ~5x slower, so we drop them here (the linear-
   # vs-quadratic dose comparison is unaffected in substance).
+  # Lay explanation: same curvature question as Part A, but asked through the
+  # alternative estimator, which never lets any town count negatively in the
+  # average. It is run twice -- once assuming effects scale in a straight
+  # line with dose, once allowing a bend -- and the two event-study paths are
+  # overlaid. If they sit on top of each other, the straight-line assumption
+  # was not hiding anything.
   panel <- panel[as.character(cell_muni) %in% c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind") &
                    !is.na(resident_eit)]
   panel[, muni_int := as.integer(factor(muni))]
@@ -670,4 +760,263 @@ if (RUN_CURVATURE) local({
 })
 
 # Done ----
+# Pre-trend battery ----
+# (from q3_unified_pretrend_battery.R) Multiple pre-trend tests on the
+# realized-dose ES, per muni-side cell x outcome. The single joint Wald
+# over-rejects on the thin cohorts (14-24 treated clusters), so we report a
+# battery of four:
+#   1. joint Wald on leads (asymptotic)             -- the standard test
+#   2. individual leads: # significant at 5%, min p
+#   3. linear pre-trend slope (asymptotic, 1 df)    -- more stable than joint
+#   4. HonestDiD breakdown Mbar (Rambachan-Roth)    -- how large a pre-trend
+#        violation (relative to the max pre-period deviation) is needed before
+#        the post-effect CI includes zero; bigger = more robust.
+# Per-model tests + hdid_breakdown() now come from pretrend_bucket() in
+# _helpers.R (extracted verbatim). robust_clean = passes the
+# few-clusters-robust frequentist tests (individual leads + linear slope);
+# the joint Wald and HonestDiD breakdown are reported but do not drive the
+# verdict.
+# (A wild-cluster bootstrap was attempted but fwildclusterboot is incompatible
+#  with the stacked design's singleton fixed effects; HonestDiD serves the same
+#  small-sample-robustness purpose and is the standard tool.)
+if (RUN_PRETREND_BATTERY) local({
+  K <- 5L; set.seed(42); Mbarvec <- c(0.5, 1, 1.5, 2)
+  cs <- ctrls_str
+  panel_bat <- copy(panel)
+
+  mu <- unique(panel_bat[, .(muni, year, resident_eit, c_muni)])
+  setorder(mu, muni, year)
+  rd <- mu[!is.na(c_muni), {
+    pre <- resident_eit[year == c_muni - 1L]
+    ymx <- min(c_muni + K, max(year, na.rm = TRUE)); end <- resident_eit[year == ymx]
+    list(rdose = (if (length(end) == 1) end else NA) - (if (length(pre) == 1) pre else NA))
+  }, by = muni]
+  rd[is.na(rdose), rdose := 0]
+  rd <- rbind(rd, data.table(muni = unique(panel_bat[cell_muni == "NC", muni]), rdose = 0))
+  panel_bat <- merge(panel_bat, rd, by = "muni", all.x = TRUE)
+  panel_bat[is.na(rdose), rdose := 0]
+
+  build_stack <- function(p) {
+    tr <- unique(p[cell_muni != "NC", .(muni, co = c_muni)])
+    nc <- unique(p[cell_muni == "NC", muni])
+    rbindlist(lapply(sort(unique(tr$co)), function(cy) {
+      w <- (cy - K):(cy + K); tm <- tr[co == cy]; if (!nrow(tm)) return(NULL)
+      dt <- p[muni %in% tm$muni & year %in% w]; dt[, tc := as.character(cell_muni)]
+      dc <- p[muni %in% nc & year %in% w];      dc[, tc := "NC"]
+      d <- rbind(dt, dc, fill = TRUE); d[, rel := as.integer(year - cy)]; d[, stk := cy]; d
+    }), fill = TRUE)
+  }
+  stk <- build_stack(panel_bat)
+  stk[, smuni := paste0(stk, "_", muni)]; stk[, syear := paste0(stk, "_", year)]
+  stk[, cell_sd := factor(cell_sd, levels = cell_levels)]
+  stk[, cell_nr := factor(cell_nr, levels = cell_levels)]
+  stk[is.na(dose_sd), dose_sd := 0]; stk[is.na(dose_nr), dose_nr := 0]
+  stk[, dose_rel := rdose * rel]
+
+  outcomes <- c("log_live_and_work", "log_in_commuters", "log_total_jobs", "share_live_in")
+  # Battery groups: the three decomposition cells PLUS the pooled-Increase
+  # aggregate (all Inc cells together), so the pooled model gets the same
+  # four-test documentation. Pooled is expected to FAIL the leads -- the
+  # Inc-becomes/Inc-nobind selection is the reason the decomposition exists.
+  # Lay explanation: the four groups tested are the three flavors of increase
+  # plus all of them mixed together. The mixed group SHOULD flunk the
+  # pre-trend test: it blends towns whose bills actually moved with towns
+  # already drifting for other reasons. If Inc-bind alone passes while the
+  # blend fails, that is the whole argument for splitting into cells.
+  battery_groups <- list(
+    "Inc-bind"    = "Inc-bind",
+    "Inc-becomes" = "Inc-becomes",
+    "Inc-nobind"  = "Inc-nobind",
+    "Pooled-Inc"  = c("Inc-bind", "Inc-becomes", "Inc-nobind"))
+  rows <- list()
+  for (o in outcomes) for (cl in names(battery_groups)) {
+    d <- stk[tc %in% c("NC", battery_groups[[cl]])]
+    cols <- c("muni", "rel", "smuni", "syear", "rdose",
+              "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
+    dd <- d[, ..cols][complete.cases(d[, ..cols])]; if (!nrow(dd)) next
+    f <- as.formula(paste0(o, " ~ i(rel, rdose, ref=-1) + i(cell_sd, dose_sd, ref='NC') + ",
+                           "i(cell_nr, dose_nr, ref='NC') + ", cs, " | smuni + syear"))
+    m <- tryCatch(feols(f, dd, cluster = ~muni), error = function(e) NULL)
+    if (is.null(m)) next
+    # linear pre-trend slope on the pre-event window
+    # Lay explanation: dose_rel = eventual dose x years-until-change, so one
+    # coefficient asks a single question -- were bigger-hike towns drifting
+    # along a straight line before the change? Estimating one slope instead
+    # of five separate lead coefficients spends far less data, which keeps
+    # the test stable when only 14-24 treated towns are in the cell.
+    dp <- d[rel < 0]
+    cols2 <- c("muni", "dose_rel", "smuni", "syear",
+               "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
+    dp <- dp[, ..cols2][complete.cases(d[rel < 0, ..cols2])]
+    ml <- tryCatch(feols(as.formula(paste0(o, " ~ dose_rel + i(cell_sd,dose_sd,ref='NC') + ",
+                    "i(cell_nr,dose_nr,ref='NC') + ", cs, " | smuni + syear")),
+                    dp, cluster = ~muni), error = function(e) NULL)
+    rows[[length(rows) + 1L]] <- cbind(
+      data.table(outcome = o, cell = cl, n_treated = uniqueN(dd$muni[dd$rdose != 0])),
+      pretrend_bucket(m, lin_model = ml, lin_term = "dose_rel", Mbarvec = Mbarvec))
+  }
+  bat <- rbindlist(rows, fill = TRUE)
+  fwrite(bat, file.path(RESULTS_DIR, "pretrend_battery.csv"))
+  print(bat)
+})
+
+
+# Dose-permutation randomization inference ----
+# Strong parallel trends is fundamentally about DOSE SELECTION: did the
+# municipalities that chose big increases differ in trend from those that
+# chose small ones? This test shuffles the dose MAGNITUDES across treated
+# municipalities (keeping each muni's timing and binding cell fixed),
+# re-estimates the headline decomposition, and asks where the true
+# coefficient falls in the distribution of shuffled ones.
+# Lay explanation: imagine every treated town keeps the YEAR it raised taxes
+# but swaps the SIZE of its hike with another town at random. If the real
+# estimate only stands out because big hikes went to towns already losing
+# residents, the shuffled estimates would often look just as extreme. A true
+# estimate in the far tail of the shuffled distribution says the size of the
+# hike, not the kind of town, drives the result.
+# Output: data/results/perm_inference_draws.csv, perm_inference_summary.csv,
+#         figures/perm_inference_hist.png
+if (RUN_DOSE_PERMUTATION) local({
+  set.seed(20260707)
+  n_perm <- as.integer(Sys.getenv("N_PERM", "500"))
+  o <- "log_live_and_work"
+  cols <- c("muni", "year", "treat_cell", "dose_stack", "cell_sd", "dose_sd",
+            "stack_muni", "stack_year", o, ctrls)
+  d0 <- stk_muni[, ..cols]
+  d0[is.na(dose_sd), dose_sd := 0]
+  d0 <- d0[complete.cases(d0)]
+  f <- as.formula(paste0(o, " ~ i(treat_cell, dose_perm, ref = 'NC')",
+       " + i(cell_sd, dose_sd, ref = 'NC') + ", ctrls_str,
+       " | stack_muni + stack_year"))
+  cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  get_betas <- function(m) {
+    b <- coef(m)
+    sapply(cells, function(cl) {
+      tm <- sprintf("treat_cell::%s:dose_perm", cl)
+      if (tm %in% names(b)) unname(b[tm]) else NA_real_
+    })
+  }
+  d0[, dose_perm := dose_stack]
+  m0 <- feols(f, d0, cluster = ~muni)
+  b_true <- get_betas(m0)
+  # realized magnitude per treated muni = its max cumulative dose in-window
+  mags <- d0[as.character(treat_cell) != "NC",
+             .(mag = max(dose_stack, na.rm = TRUE)), by = muni]
+  draws <- vector("list", n_perm)
+  for (r in seq_len(n_perm)) {
+    mags[, mag_perm := sample(mag)]
+    dd <- merge(d0, mags[, .(muni, mag, mag_perm)], by = "muni", all.x = TRUE)
+    dd[, sc := fifelse(!is.na(mag) & mag > 0, mag_perm / mag, 1)]
+    dd[, dose_perm := dose_stack * sc]
+    mm <- tryCatch(feols(f, dd, cluster = ~muni), error = function(e) NULL)
+    if (is.null(mm)) next
+    draws[[r]] <- as.data.table(as.list(get_betas(mm)))[, rep := r]
+    if (r %% 50 == 0) message(sprintf("  permutation %d / %d", r, n_perm))
+  }
+  pd <- rbindlist(draws, fill = TRUE)
+  setnames(pd, cells, c("incbind", "incbecomes", "incnobind"), skip_absent = TRUE)
+  fwrite(pd, file.path(RESULTS_DIR, "perm_inference_draws.csv"))
+  summ <- data.table(
+    cell = cells,
+    beta_true = round(b_true, 4),
+    perm_mean = round(sapply(c("incbind", "incbecomes", "incnobind"),
+                             function(x) mean(pd[[x]], na.rm = TRUE)), 4),
+    perm_p = round(sapply(seq_along(cells), function(j) {
+      x <- pd[[c("incbind", "incbecomes", "incnobind")[j]]]
+      mean(abs(x) >= abs(b_true[j]), na.rm = TRUE)
+    }), 4),
+    n_perm = nrow(pd))
+  fwrite(summ, file.path(RESULTS_DIR, "perm_inference_summary.csv"))
+  print(summ)
+  ph <- melt(pd, id.vars = "rep",
+             measure.vars = c("incbind", "incbecomes", "incnobind"),
+             variable.name = "cell", value.name = "beta")
+  vl <- data.table(cell = factor(c("incbind", "incbecomes", "incnobind")),
+                   beta_true = b_true)
+  gp <- ggplot(ph, aes(beta)) +
+    geom_histogram(bins = 40, fill = "grey65", color = "white") +
+    geom_vline(data = vl, aes(xintercept = beta_true),
+               color = "#C5283D", linewidth = 0.7) +
+    facet_wrap(~ cell, ncol = 3, scales = "free",
+               labeller = as_labeller(c(incbind = "Inc-bind",
+                                        incbecomes = "Inc-becomes",
+                                        incnobind = "Inc-nobind"))) +
+    labs(title = "Dose-permutation randomization inference (log live-and-work)",
+         subtitle = sprintf("%d permutations of dose magnitudes across treated munis; red line = true estimate", nrow(pd)),
+         x = "permuted coefficient", y = "count") +
+    theme_bw(base_size = 10)
+  ggsave(file.path(OUT_DIR, "perm_inference_hist.png"), gp,
+         width = 10, height = 3.8, dpi = 300)
+})
+
+# Fake-timing placebo cohorts ----
+# Assign every treated municipality a PLACEBO event 4 years before its real
+# one, keep only data from BEFORE the real event, and re-run the headline
+# decomposition on the placebo timing. Nothing real happened at the placebo
+# date, so the coefficients should be null; a non-zero "effect" would mean
+# treated munis were already drifting before their actual rate change.
+# Cohorts with real events before 2008 are dropped (no room for a pre-window;
+# the count is reported). Underpowered by construction -- treat as a
+# direction check alongside the permutation test.
+# Output: data/results/fake_timing_placebo.csv
+if (RUN_FAKE_TIMING) local({
+  SHIFT <- 4L; K <- 5L
+  treated <- unique(panel[!is.na(c_muni) & as.character(cell_muni) != "NC",
+                          .(muni, c_true = c_muni, cell = as.character(cell_muni))])
+  n_all <- nrow(treated)
+  treated <- treated[c_true - SHIFT - 2L >= 2002L]   # >= 2 placebo pre-years
+  message(sprintf("fake-timing: %d of %d treated munis have room for a placebo window",
+                  nrow(treated), n_all))
+  # realized magnitude tag from the true event (dose applied at fake timing)
+  rd <- add_realized_dose(copy(panel), K = K)
+  tag <- unique(rd[!is.na(c_muni), .(muni, dtag = realized_dose_muni)])
+  treated <- merge(treated, tag, by = "muni", all.x = TRUE)
+  nc <- unique(panel[cell_muni == "NC", muni])
+  stk_fake <- rbindlist(lapply(sort(unique(treated$c_true - SHIFT)), function(cy) {
+    win <- (cy - K):(cy + K)
+    tm <- treated[c_true - SHIFT == cy]
+    if (!nrow(tm)) return(NULL)
+    dt <- merge(panel[muni %in% tm$muni & year %in% win],
+                tm[, .(muni, c_true, cell_fake = cell, dtag)], by = "muni")
+    dt <- dt[year < c_true]                        # pre-real-event data only
+    dc <- panel[muni %in% nc & year %in% win]
+    dc[, `:=`(cell_fake = "NC", dtag = 0, c_true = NA_integer_)]
+    d <- rbind(dt, dc, fill = TRUE)
+    d[, stack := cy]; d[, rel := as.integer(year - cy)]
+    d
+  }), fill = TRUE)
+  stk_fake[, stack_muni := paste0(stack, "_", muni)]
+  stk_fake[, stack_year := paste0(stack, "_", year)]
+  stk_fake[, cell_fake := factor(cell_fake,
+      levels = c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind"))]
+  # placebo dose: the muni's TRUE realized magnitude, switched on at the
+  # FAKE event date
+  stk_fake[, dose_fake := fifelse(rel >= 0, dtag, 0)]
+  outcomes <- c("log_live_and_work", "log_in_commuters",
+                "log_total_jobs", "share_live_in")
+  rows <- list()
+  for (o in outcomes) {
+    cols <- c("muni", "rel", "stack_muni", "stack_year", "cell_fake",
+              "dose_fake", o, ctrls)
+    dd <- stk_fake[, ..cols][complete.cases(stk_fake[, ..cols])]
+    if (!nrow(dd)) next
+    m <- tryCatch(feols(as.formula(paste0(o,
+          " ~ i(cell_fake, dose_fake, ref = 'NC') + ", ctrls_str,
+          " | stack_muni + stack_year")), dd, cluster = ~muni),
+          error = function(e) NULL)
+    if (is.null(m)) next
+    ct <- as.data.table(m$coeftable, keep.rownames = "term")
+    setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"),
+             c("est", "se", "p"), skip_absent = TRUE)
+    ct <- ct[grepl("^cell_fake::", term)]
+    ct[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
+    ct[, `:=`(outcome = o, n = nobs(m),
+              n_treated = uniqueN(dd$muni[dd$dose_fake != 0]))]
+    rows[[length(rows) + 1L]] <- ct[, .(outcome, cell, est, se, p, n, n_treated)]
+  }
+  out <- rbindlist(rows, fill = TRUE)
+  fwrite(out, file.path(RESULTS_DIR, "fake_timing_placebo.csv"))
+  print(out)
+})
+
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()
