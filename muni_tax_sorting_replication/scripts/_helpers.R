@@ -762,7 +762,7 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   if (wide) tabular <- c("  \\resizebox{\\textwidth}{!}{",
                           tabular, "  }")
   out <- c(
-    if (sideways) "\\begin{sidewaystable}" else "\\begin{table}[!htbp]",
+    if (sideways) "\\begin{sidewaystable}" else "\\begin{table}[H]",
     "  \\centering",
     paste0("  \\caption{", caption, "}"),
     paste0("  \\label{", label, "}"),

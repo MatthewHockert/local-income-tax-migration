@@ -1,3 +1,6 @@
+% !TEX root = muni_tax_sorting.tex
+% !TEX program = pdflatex
+% !BIB program = biber
 \documentclass[12pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{setspace}
@@ -10,7 +13,7 @@
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage[style=apa,backend=biber,natbib=true]{biblatex}
-\addbibresource{../references/local_income_taxes_2.bib}
+\addbibresource{../muni_tax_sorting_replication/manuscript/references.bib}
 \usepackage{bm}
 
 \newcommand{\sym}[1]{\textsuperscript{#1}}
@@ -157,17 +160,13 @@ The remainder of the paper is organized as follows.
 Section~\ref{sec:background} describes the institutional setting---the
 EIT and Act~32, and the municipal and county property tax.
 Section~\ref{sec:theory} introduces the six-cell binding decomposition
-for the EIT and the continuous effective-rate treatment for the
-property tax. Section~\ref{sec:data} describes the data sources: LODES,
+for the EIT. Section~\ref{sec:data} describes the data sources: LODES,
 the DCED rate and millage registers, the STEB common-level ratios, and
 the ACS income and home-value series. Section~\ref{sec:strategy}
 explains the continuous stacked difference-in-differences design at the
-municipality level for both taxes. Section~\ref{sec:results} reports the
-EIT binding decomposition, the property-tax results, the per-dollar
-comparison of the two taxes, and the EIT revenue response.
-Section~\ref{sec:robustness} reports robustness diagnostics, and
-Section~\ref{sec:discussion} discusses the capitalization interpretation
-and concludes.
+municipality level. Section~\ref{sec:results} reports the
+EIT binding decomposition and the EIT revenue response.
+Section~\ref{sec:robustness} reports robustness diagnostics.
 
 %==========================================================
 \section{Institutional Background}
@@ -307,7 +306,7 @@ heterogeneity test of Section~\ref{subsec:rob-act32}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{../figures/nonres_coverage.png}
+    \includegraphics[width=0.85\textwidth]{../figures/act32_cdf.png}
     \caption{Share of PA municipalities reporting a work
     rate to DCED, by year. The break at 2012 reflects the Act 32
     requirement that employers withhold at the higher of the home
@@ -348,9 +347,8 @@ reassessment, with any real increase requiring a separate, capped vote.
 These features mean the statutory millage and the effective burden it
 implies can diverge, which is why the analysis works with the effective
 rate (millage $\times$ CLR) and its policy-driven component rather than
-raw millage (Section~\ref{subsec:proptax-theory}). Unlike the EIT, the
-property tax falls on the dwelling rather than the worker, the
-distinction the comparison turns on.
+raw millage. Unlike the EIT, the property tax falls on the dwelling
+rather than the worker.
 
 %==========================================================
 \section{Conceptual Framework: Binding Decomposition}
@@ -470,51 +468,6 @@ conventional pooled-Increase specification is not. In the pooled
 specification, every increase is a treated event, while here the
 institutional rule predicts that only a subset of statutory
 increases should generate a response.
-
-\subsection{The Property Tax: A Continuous Treatment Without a Placebo}
-\label{subsec:proptax-theory}
-
-The property tax has no piecewise structure and therefore no binding
-decomposition. Every increase in the rate raises the bill of every
-resident owner directly (and renters through capitalized rents), so
-there is no non-binding cell and no within-design placebo. The treatment
-is the \emph{effective} property-tax rate on market value,
-\[
-  \tau^{P}_{it} \;=\; \big(\text{mills}^{\text{muni}}_{it}
-  + \text{mills}^{\text{county}}_{it}\big)\big/1000 \;\times\; \text{CLR}_{c(i),t},
-\]
-where the common-level ratio $\text{CLR}$ (assessed value over market
-value, certified annually by the State Tax Equalization Board for each
-county $c$) converts statutory mills, levied on assessed value, into a
-rate on market value that is comparable across counties with different
-assessment practices. Two features of $\tau^{P}$ require care. The
-CLR drifts mechanically between countywide reassessments as market values
-rise and assessments lag, and that drift is correlated with local
-house-price growth---itself a driver of location choice---so the raw
-effective rate is not a clean policy treatment. And Pennsylvania law
-makes reassessments revenue-neutral (millage is rolled back as the base
-jumps), so a statutory millage \emph{cut} at reassessment need not lower
-the burden at all. I therefore use the policy-driven component: the
-cumulative \emph{discretionary} millage change valued at the
-municipality's baseline assessment ratio, where the reassessment-year
-increment is measured as the deviation from the revenue-neutral rollback
-(zero for a pure rollback, positive only when the rate is set above
-revenue-neutral). This strips the endogenous drift and the mechanical
-rebasing from the treatment.
-
-The cost of this cleaner treatment is weaker identification than the
-EIT. Property millage changes almost every year (the school-district
-component moves under the Act~1 index, and municipalities and counties
-adjust frequently), so there is no never-treated control pool;
-identification comes from variation in the \emph{magnitude} of the
-cumulative policy dose across municipalities, not from a clean
-treated-versus-untreated contrast. And, lacking a binding rule, the
-property tax has no placebo cell to fall back on. Its only
-identification check is the realized-dose pre-trend
-(Section~\ref{sec:strategy}). I state this asymmetry plainly: the EIT
-result is validated by both a clean pre-trend and a within-design
-placebo; the property-tax result rests on the pre-trend alone, and I
-report what that single check can and cannot support.
 
 %==========================================================
 \section{Data}
@@ -787,8 +740,13 @@ The set
 $\mathcal{C}_{-\text{NC}} = \{\text{Inc-bind, Inc-becomes, Inc-nobind}\}$
 collects the three estimated treated cells; $\text{cell}^s_i$ is the cell label
 on rate-setter $s$ and the unit level being modeled $i$. The regression returns three $\beta^s_k$
-coefficients per rate-setter, each the per-pp dose-response of $Y$
-to a 1 pp change in rate $s$ restricted to units in cell $k$. The
+coefficients per rate-setter. Because the dose $\Delta\tau^s_{it}$ enters
+linearly, each $\beta^s_k$ is an \emph{average causal response} (ACR): the
+dose-weighted average per-percentage-point effect of rate $s$ on $Y$ within
+cell $k$, not the marginal effect at any single dose
+\citep{bakerDifferenceinDifferencesDesignsPractitioners2025,dechaisemartin2024}.
+Section~\ref{subsec:rob-acr} shows this ACR is recovered with non-negative
+weights and is not distorted by dose curvature. The
 $\beta^{\text{muni}}_{\text{Inc-nobind}}$ coefficient is the
 within-design placebo meaning that the rate hike
 does not move the worker's bill in this cell, so the coefficient
@@ -914,40 +872,6 @@ Section~\ref{sec:results} reports the headline binding
 decomposition at the municipality and the pooled-Increase
 benchmark. Additional diagnostics (pre/post Act~32 split, Act~47
 exclusion) are in Section~\ref{sec:robustness}.
-
-\subsection{Property-Tax Treatment and the Concurrent-Tax Control}
-\label{subsec:proptax-strategy}
-
-The property tax enters the same municipality-level stacked design, but
-as a continuous policy dose rather than a binding cell. For municipality
-$i$, the treatment is the cumulative discretionary millage change since
-its event, valued at the baseline CLR (Section~\ref{subsec:proptax-theory});
-the event is the municipality's largest material discretionary millage
-increase, which gives staggered timing across the panel. Because millage
-changes nearly every year there is no never-treated pool, so the dose
-enters continuously and identification is from variation in dose
-\emph{magnitude}: the realized-dose event study replaces the cell$\times$dose
-interaction with the eventual cumulative policy dose interacted with
-event time, exactly as for the EIT, and the pre-event coefficients are
-the only test of parallel trends. Where that test fails---on the
-residence-count outcomes---I do not report a point estimate but instead
-Rambachan--Roth honest-DiD bounds \citep{rambachanMorePlausibleApproach2023}
-that treat the observed pre-trend as a bias budget; where it passes---on
-the local-employment composition share and the workplace counts---I
-report the dose-response coefficient.
-
-Each leg controls for the concurrent change in the other tax. The EIT
-binding-decomposition regression includes the concurrent cumulative
-property dose, and the property-tax regression includes the concurrent
-cumulative EIT dose, each as a continuous control over the same event
-window. This is a nuisance control, not a joint identification of both
-elasticities in one model: the two taxes are estimated in separate
-designs and compared, because the property tax's residence-count margin
-is not cleanly identified and could not carry a co-equal coefficient.
-The municipal and school-district resident EIT changes are weakly
-correlated ($-0.12$) and the discretionary-millage and EIT-rate changes
-co-occur only modestly, so the concurrent controls move the estimates
-little; I report the comparison both with and without them.
 
 %==========================================================
 \section{Results}
@@ -1163,75 +1087,6 @@ only cell that survives the strong parallel-trends standard.
 \end{figure}
 
 %==========================================================
-\subsection{Property Tax: No Detectable Sorting on the Clean Margins}
-\label{subsec:results-proptax}
-
-The property tax is estimated on the same municipalities with the
-policy-driven effective-rate dose (median effective rate about $2.1\%$
-of market value). Its realized-dose pre-trend splits cleanly by outcome
-(Figure~\ref{fig:proptax_es}). The local-employment composition share
-and the workplace counts show no differential pre-trend across dose
-magnitudes (joint Wald $p=0.35$, $0.97$, $0.97$), but the residence
-counts do: municipalities that go on to raise the property tax are
-already on diverging resident-population paths beforehand (log
-live-and-work Wald $p=0.05$, log employed residents $p=0.01$). The same
-diagnostic run on the EIT shows no such residence-scale divergence, so
-the contamination is a whole-municipality residential trajectory, not a
-composition shift, and a finer geography would not absorb it because the
-treatment is municipality-wide. I therefore report the residence-count
-margins as honest-DiD bounds and the composition and workplace margins
-as point estimates.
-
-On the cleanly identified margins the property tax shows \emph{no
-detectable} sorting response: the dose-response coefficient is
-statistically indistinguishable from zero on the composition share
-($-0.001$, $p=0.26$), on log total jobs ($-0.021$, $p=0.42$), and on log
-in-commuters ($-0.020$, $p=0.44$). On the contaminated residence-count
-margins, the Rambachan--Roth bounds (relative-magnitude $\bar M=1$)
-include zero while ruling out an EIT-sized effect---per \$1{,}000 of
-annual tax, $[-0.275, +0.201]$ for log live-and-work and $[-0.131,
-+0.123]$ for log residents. So the residence margin is unidentified, not
-a clean null: it bounds the response well below the EIT but cannot
-distinguish a small effect from none.
-
-\begin{figure}[H]
-  \centering
-  \caption{Property-tax realized-dose event study, by outcome type}
-  \label{fig:proptax_es}
-  \includegraphics[width=0.95\textwidth]{../figures/proptax_es_scale_vs_comp.png}
-  \begin{minipage}{0.95\textwidth}
-    \footnotesize \textit{Notes:} Per-unit-of-policy-dose coefficient at
-    each event time, faceted by outcome. The composition share and
-    workplace counts have flat pre-trends; the residence counts pre-trend,
-    so they are reported as honest-DiD bounds rather than point estimates.
-  \end{minipage}
-\end{figure}
-
-%==========================================================
-\subsection{Income versus Property Tax on a Common Dollar Basis}
-\label{subsec:results-compare}
-
-The income and property taxes are not directly comparable per percentage
-point: one pp of EIT falls on earned income, one pp of effective property
-rate on market value. I place them on a common basis---the percent change
-in the outcome per \$1{,}000 of annual tax bill---using each
-municipality's own median income and home value, so the comparison
-reflects the actual cross-municipality distribution rather than two
-representative constants. On every cleanly identified margin the
-property-tax response is bounded an order of magnitude below the EIT, and
-the property confidence interval excludes the EIT effect. Per \$1{,}000,
-the EIT moves the local-employment count by $-0.99$ (log total jobs)
-against a property-tax estimate of $-0.017$ with a $95\%$ interval of
-$[-0.056, +0.023]$---a ratio of about $60\times$, with a sensitivity band
-of roughly $43$--$82\times$ from the 10th--90th percentile of the
-cross-municipality home-to-income ratio; the in-commuter and composition
-margins give $53\times$ and $113\times$. Even the contaminated
-residence-count margin, under the honest bounds, lies an order of
-magnitude below the EIT's $-1.16$ per \$1{,}000. Residents respond to a
-dollar of income tax roughly an order of magnitude---fifty to a hundred
-times---more than to a dollar of property tax.
-
-%==========================================================
 \subsection{EIT Revenue Response}
 \label{subsec:results-revenue}
 
@@ -1267,15 +1122,7 @@ $-0.287^{***}$, and the decomposition recovers the binding-channel
 response. Full
 coefficient tables with fiscal controls are in the appendix.
 
-The property tax, estimated on the same municipalities with the
-policy-driven effective-rate dose, shows no detectable sorting on the
-cleanly identified margins (composition share and workplace counts) and
-honest-DiD bounds that rule out an EIT-sized effect on the contaminated
-residence-count margin. On a common per-\$1{,}000-of-annual-tax basis the
-income tax moves residents roughly fifty to a hundred times more than
-the property tax, a pattern consistent with the property burden
-capitalizing into house prices rather than relocating households. The
-revenue counterpart of the Inc-bind sorting response is a behavioral
+The revenue counterpart of the Inc-bind sorting response is a behavioral
 offset of about a third of the mechanically projected revenue gain for
 standard-structure municipalities.
 
@@ -1288,6 +1135,27 @@ muni-level dose-response. The realized-dose event-study pre-trend
 diagnostic was discussed alongside the headline in
 Section~\ref{subsubsec:decomp-es}. Full tables behind the
 robustness summaries are in Appendix~\ref{app:robustness}.
+
+\subsection{ACR Aggregation: Non-Negative Weights and Dose Linearity}
+\label{subsec:rob-acr}
+
+Each headline $\beta^M_k$ is an ACR, and a linear-in-dose stacked
+specification recovers it cleanly only if the implicit weights are
+non-negative and the dose-response is not strongly curved
+\citep{dechaisemartin2024}. I test both concerns jointly by re-estimating the
+muni-side increase response on the same sample with the non-negative-weight
+continuous-treatment estimator of
+\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}. Its event-study path
+is nearly identical in sign and magnitude to the linear stacked ACR, so the
+linear aggregation neither reverses sign through negative weights nor masks
+material curvature. Consistent with this, adding a quadratic dose term leaves
+the aggregate estimate essentially unchanged---the quadratic coefficient is
+small, the cubic is insignificant, and the Bayesian information criterion
+selects the linear specification---while within the load-bearing Inc-bind cell
+curvature is not separately identified given the thin treated cohort. I
+therefore report the linear ACR and plot the linear dose-response; higher-degree
+polynomials are neither selected by model-fit criteria nor stably estimable on
+this cohort.
 
 \subsection{Pre/Post Act 32 Decomposition}
 \label{subsec:rob-act32}
@@ -1329,188 +1197,6 @@ remain statistically significant at $5\%$ or better on the trimmed
 sample, so the headline is not purely driven by Act~47 selection. The
 attenuation when Act~47 cities are removed is consistent with those
 two cities having larger doses.
-
-\subsection{Property-Tax Treatment and Honest-DiD Sensitivity}
-\label{subsec:rob-proptax}
-
-Two checks bound the property-tax conclusion. First, the no-detectable-
-sorting result on the clean margins is unchanged whether the treatment
-is the policy-only dose (discretionary millage valued at the baseline
-assessment ratio, the headline) or the realized effective-rate dose
-(millage $\times$ contemporaneous CLR): the latter carries the endogenous
-assessment drift and is reported only as a robustness check, and the
-clean-margin coefficients remain small and statistically insignificant
-under both. Second, on the contaminated residence-count margins I report
-Rambachan--Roth bounds across relative-magnitude budgets; at $\bar M=1$
-the bounds include zero (the residence response is not separately
-identified) while still excluding the EIT-sized per-dollar effect, and
-they widen monotonically with $\bar M$. The property-tax result is thus
-robust in the only senses available to it: it does not depend on the
-dose construction, and its honest bounds rule out an income-tax-scale
-response without claiming a clean zero.
-
-%==========================================================
-\section{Discussion}
-\label{sec:discussion}
-%==========================================================
-
-The main finding of this paper is that sorting is identified through the
-binding mechanism. The Inc-bind realized dose of
-$0.24$ pp cumulative over five years, the municipal resident-rate
-increase reduces the log count of workers who both live and work in
-the municipality by roughly $13\%$. The Inc-nobind
-placebo is not statistically significant, and Inc-becomes
-lies between the two with a smaller statistically significant effects. The pattern matches the mechanism
-prediction. The same statutory rate change can produce a strong,
-moderate, or null behavioral response depending solely on whether
-the rate moves the worker's bill. This is direct evidence that
-workers respond to taxes they actually pay rather than to statutory
-rates per se. The per-pp coefficient ($-0.573$, or about $44\%$ per
-pp) is the regression slope and should not be read as a
-typical-event magnitude. A $1$ pp shock is quite far above the median realized dose in this cohort.
-
-Identification at the municipality level is supported by the
-realized-dose pre-trend diagnostic. The joint Wald test on the Inc-bind cell does not reject parallel
-trends ($p = 0.33$). The 24-municipality Inc-bind cohort identifies a causal effect, but generally eastern-PA-concentrated
-set of Home Rule boroughs and Act~47 designees.
-
-Other outcome variables suggest a general decline in economies of these cites such as the in-commuters coefficient is also negative
-($-0.412^{\ast\ast\ast}$). If
-residents only relocated their home while keeping their
-job in the rate-raising municipalities, in-commuters would
-theoretically rise as someone has to fill the displaced residents' jobs. If Inc-bind munis
-were raising the work rate $\tau^{\text{work,M}}$ at the same time
-as the resident rate, in-commuters would mechanically face a higher
-withholding bill on their own paychecks and the negative coefficient
-would have a direct work-side explanation. The data does not support that explanation. At the first-event year municipalities raise
-only the resident rate and leave the work rate unchanged. The negative
-in-commuters coefficient therefore reflects a broader local
-labor-market response to municipal fiscal stress, when the binding home-side rate rises rather than a
-mechanical tax on in-commuters' bills.
-
-The models also incorporate the two-rate-setting mechanisms (municipality and school distircts). The municipality resident-rate Inc-bind
-coefficient is large and negative, while the SD resident-rate
-coefficient in the same joint regression is small and
-positive, but not statistically significant. In the aggregate model the SD rate increases are associated with increased sorting within those cities. Although the models are mixed on statistical significance, the evidence is suggestive of the tax-amenity-bundle model. SD
-revenues primarily fund schools, which may be viewed as high quality schools thus capitalizing into the
-willingness to pay to reside in the district. The municipal resident-rate may be less salient to workers as the revenue funds streets, debt service,
-intergovernmental transfers, and general administration.
-The sign contrast is suggestive evidence of bundle-level Tiebout
-sorting and strengthens the binding-channel interpretation rather
-than complicating it. The binding rule tells us which rate
-events move workers' bills, and the rate-setter contrast tells us
-how workers value the revenue once collected.
-
-Six limitations merit acknowledgment. First, the LODES OD data
-covers PA municipalities but not cross-state inflows in the
-intra-state main file used here. Incorporating this data would
-tighten the estimates of in-commuters for border municipalities.
-
-Second, the paper estimates the residential-sorting response to the
-home-side resident rate but does not separately estimate the
-work-side response to the municipality work rate ($\tau^{\text{work,muni}}$).
-The work rate enters the design only through the
-binding classification of cells. A complementary work-side
-specification---estimating in-commuter and total-jobs responses to
-$\tau^{\text{work,muni}}$ events at the municipality level, with a parallel
-binding decomposition, testing the work side of the mechanism. I defer this to future work.
-
-Third, the per-pp coefficient is a displacement elasticity. The Inc-bind cohort is concentrated in eastern PA
-(Figure~\ref{fig:pa_map}). A worker leaving municipality (A) for an
-adjacent municipality (B) shows up as a $-1$ in municipality (A) live-and-work
-count and a $+1$ to that neighbor's residence count. The
-headline specification partially absorbs neighbor-rate variation
-through never-changed-only controls and municipality-by-stack
-fixed effects, but it does not formally model spatial spillovers,
-and a worker moving to an adjacent municipality whose rate is also moving
-violates SUTVA. The
-\citet{buttsDifferenceinDifferencesEstimationSpatial2023}
-estimator would permit me to generalize the stacked DiD to allow for SUTVA violations
-from spatial spillovers across treated units, using an explicit
-spatial weighting matrix. Applying this is left for future work.
-
-Fourth, LODES is a stock dataset rather than a person-linked
-flow dataset. For each (residence municipality, workplace municipality, year), I
-observe a count of workers, not individual migration flows. The headline coefficient on the municipality count of residents
-is therefore a net elasticity as measured by the difference of gross outflows and inflows. The paper's evidence that municipal rate
-hikes reduce the residential count is consistent both with workers
-leaving and with workers not arriving to replace those who left, however,
-LODES alone cannot decompose the two. Decomposing into gross
-outflow and gross inflow would require person-linked
-administrative data: the IRS Statistics of Income individual master
-file, the American Community Survey microdata with full
-residence-history linkage, or the LEHD
-Job-to-Job Flows file, which tracks the same workers across
-employer transitions at quarterly frequency. All three are
-restricted-access products requiring approved-project status under
-the Census Bureau's Federal Statistical Research Data Centers
-(FSRDCs) or IRS Statistics of Income agreements. The microdata
-cannot be exported and must be analyzed at a physical FSRDC
-location. Replicating the present analysis on person-linked data
-is a clear extension but not currently being undertaken at this time.
-
-The comparison with the property tax sharpens the interpretation. Per
-dollar of annual tax, residents respond to the income tax roughly an
-order of magnitude more than to the property tax, and on the cleanly
-identified margins the property-tax response is statistically
-indistinguishable from zero. This is what the capitalization view
-predicts \citep{oates1969}: a property-tax increase is substantially
-absorbed into lower house prices, so the burden reaching a mobile
-household is smaller than the statutory change and is borne in part by
-the immobile asset rather than the person, while an income-tax increase
-falls on the mobile earner directly. I read the pattern as consistent
-with capitalization rather than as proof of it, because I do not observe
-the house-price response that capitalization implies; what the data
-establish is that the property tax causes far less sorting per dollar
-than the income tax, not the channel through which the response is muted.
-
-The two legs are deliberately not identified equally well, and the
-asymmetry is informative rather than a shortcoming. The EIT's piecewise
-rule makes its design self-falsifying through the Inc-nobind placebo; the
-property tax, a continuous treatment with no never-treated group and no
-placebo, rests on its realized-dose pre-trend alone. That single check
-passes on the composition and workplace margins and fails on the
-residence-count margins, where municipalities raising the property tax
-are already on diverging resident trajectories, so I report those margins
-as honest-DiD bounds rather than point estimates. Two caveats bound the
-comparison. Its magnitude rests on the EIT binding-cell estimate, which
-is large; under any reasonable discount of it the property-tax response
-remains far smaller. And the residence-count margin is an
-\emph{unidentified} null, not a clean one: the honest bounds rule out an
-EIT-sized effect but include zero.
-
-%==========================================================
-\section{Conclusion}
-\label{sec:conclusion}
-%==========================================================
-
-This paper answers the question, when do local income taxes cause residential sorting? In
-Pennsylvania, when the piecewise max-rule makes a statutory rate
-increase it can mechanically change the worker's tax bill. Under the Inc-bind cell, the
-increase reduces the count of workers who both live and work in
-their own municipality by roughly $13\%$
-with clean realized-dose pre-trends, and a
-null finding in the Inc-nobind placebo. This is a local effect for a small
-cohort of binding rate-raisers rather than a state-average
-elasticity.
-
-The design delivers the within-design heterogeneity that
-\citet{agrawalLessonsStateLocal} finds missing from the US
-local-income-tax literature. The piecewise rule splits
-otherwise-identical rate increases into cells that moves the
-worker's bill (Inc-bind) and a placebo cell that does not
-(Inc-nobind), making the design self-falsifying in a way that
-pooled local-tax regressions cannot. The municipality and schoold district estimations are opposite with a negative results on the municipality rate and positive on the SD rate. This is
-consistent with workers sorting on the bundle of taxes and
-amenities rather than on rates alone.
-
-
-The natural next step is a companion paper on the work-side
-response to the muni work rate $\tau^{\text{work,muni}}$, which
-enters the present design only through the binding classification
-of cells. More broadly, the framework is portable to any setting
-where a piecewise tax rule determines whether a statutory change
-reaches the taxpayer's bill, such as local income taxes and property taxes.
 
 % \section*{Acknowledgments}
 % TODO: fill in before submission

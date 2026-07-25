@@ -13,7 +13,7 @@
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage[style=apa,backend=biber,natbib=true]{biblatex}
-\addbibresource{local_income_taxes_2.bib}
+\addbibresource{references.bib}
 \usepackage{bm}
 
 \newcommand{\sym}[1]{\textsuperscript{#1}}
@@ -25,8 +25,9 @@
     urlcolor=blue
 }
 
-\title{Do Local Taxes Cause Residential Sorting? \\
-\large Income versus Property Taxes in Pennsylvania}
+\title{Do Local Income Taxes Cause Residential
+Sorting? \\
+\large Evidence from Pennsylvania’s Piecewise Earned Income Tax}
 \author{Matthew Hockert\thanks{University of Minnesota. Email: hocke069@umn.edu}}
 \date{\today}
 
@@ -35,26 +36,7 @@
 \maketitle
 
 \begin{abstract}
-Do local taxes cause residential sorting, and does the answer depend
-on which tax? I compare two local taxes that fall on the same
-Pennsylvania municipalities over 2002--2019: the Earned Income Tax
-(EIT), levied on the mobile worker, and the property tax, levied on
-the immobile dwelling. Both are estimated at the municipality level in
-a continuous stacked difference-in-differences design using block-level
-LEHD/LODES data aggregated to municipalities. The EIT follows a
-piecewise max-rule, which lets me split otherwise-identical rate
-increases into a binding cell that moves the worker's bill and a
-within-design placebo cell that does not; a typical binding increase
-reduces the count of workers who both live and work in their own
-municipality by roughly $13\%$ ($-0.573$ log points per percentage
-point, $\approx -43\%$), with a clean realized-dose pre-trend, while the
-placebo cell is null. To ensure the income-tax response is not merely proxying for broader
-local fiscal burden, I include the municipality's property-tax burden
-among the controls; the binding-cell estimate is unchanged by its
-inclusion. The mechanism is intuitive: the EIT follows the worker to the
-municipality of residence, so relocating avoids it, whereas a property
-tax attaches to the parcel and cannot be escaped by moving within the
-same labor market.
+\input{abstract_body.tex}
 \end{abstract}
 
 \newpage
@@ -146,7 +128,7 @@ the income tax specifically, not to local fiscal burden in general.
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec:background} describes the institutional setting---the
-EIT and Act~32, and the municipal and county property tax.
+statutes governing the EIT, and Act~32.
 Section~\ref{sec:theory} introduces the six-cell binding decomposition
 for the EIT. Section~\ref{sec:data} describes the data sources: LODES,
 the DCED rate and millage registers, the STEB common-level ratios, and
@@ -161,43 +143,18 @@ Section~\ref{sec:robustness} reports robustness diagnostics.
 \label{sec:background}
 %==========================================================
 
-Pennsylvania has a deep cross-section of jurisdictions setting
-their own income tax rates with approximately 2{,}500 municipalities and 500 school
-districts each levy a separate Earned Income Tax on essentially
+Pennsylvania has a long history of setting their own income tax rates with approximately 2{,}500 municipalities and 500 school
+districts each with the power to levy their own Earned Income Tax on
 all earned income earned in or by Pennsylvania residents
 \citep{bagchiEffectsIntroducingWithholding2022,agrawalLessonsStateLocal}.
-Unlike property taxes, which are paid by owners and capitalized into
-home values, the EIT falls directly on workers and varies across
+The EIT falls directly on workers and varies across
 municipal boundaries, creating
 sharp spatial discontinuities in tax burden that can influence where
 workers choose to live and work.
 
-\subsection{Pennsylvania Earned Income Tax}
-\label{subsec:pennsylvania}
-
-
-
-Pennsylvania's EIT is mandatory for all municipalities under the
-Local Tax Enabling Act of 1965 \citep[Act 511;][]{paAct511_1965} and applies to all earned income. The standard combined cap is 1\%, typically split as
-0.5\% municipal and 0.5\% school district. Home Rule municipalities
-may exceed this cap \citep{paHomeRule}, and Philadelphia operates
-separately under the Sterling Act of 1932
-\citep{paSterlingAct_1932} at approximately 3.9\%. EIT is a valuable revenue funder for local governments next to property-taxes. However, quantifying the effect of property tax millage on sorting would
-require a 2002--2019 municipality-level millage panel that is not currently
-available from DCED, and I leave the comparison to property-tax
-sorting as a separate exercise. Out of caution that property taxes may impact sorting I control for the share of revenue that a municipality collects from property taxes, EIT, and transfers within a given year.
-
-
-
-Each Pennsylvania municipality has three EIT rates relevant to a
-worker:
-%
-the municipality resident rate $\tau^{\text{res,muni}}$ levied on residents of the municipality, the municipality work rate $\tau^{\text{work,muni}}$ levied on workers employed in the municipality, and the school-district rate $\tau^{\text{SD}}$ levied on residents only (school districts cannot tax nonresidents).
-%
-Each address is associated with a six-digit Political Subdivision (PSD)
-code identifying its (municipality, school district) pair. Workers report this
-code on the Residency Certification Form, and employers use it to
-determine withholding obligations.
+This variation is the product of many decades of government statutes, influencing who may levy the tax, how high the rate may go, and who may be
+taxed, are key for the design in Section~\ref{sec:strategy}. Figure~\ref{fig:law_timeline} places the many statutes through history the next section walks
+through them in order.
 
 %==========================================================
 \begin{figure}[H]
@@ -208,7 +165,44 @@ determine withholding obligations.
 \end{figure}
 %==========================================================
 
-Under Act 32 (effective January 1, 2012), a worker's total EIT bill
+\subsection{Pennsylvania Earned Income Tax}
+\label{subsec:pennsylvania}
+
+Local income taxation in Pennsylvania begins with the Sterling Act of
+1932 \citep{paSterlingAct_1932}, the first local income tax legislation
+in the country, under which Philadelphia became the first municipality in
+the United States to impose an income tax in 1939. Philadelphia still
+operates under the Sterling Act at approximately 3.9\% and remains
+outside the framework governing the rest of the state. Its
+residents pay the city resident rate regardless of work location with no
+offset, and nonresidents working in the city pay the city work rate, with
+no residual flowing to home jurisdictions in other Pennsylvania
+municipalities. Philadelphia does not enter the estimation sample. Its
+resident rate declines steadily across 2002--2019, and the design
+identifies off increase-side events, so the city is dropped along with
+every other municipality whose rate only falls.
+
+Local income taxation outside Philadelphia was expanded in 1965 under the Local Tax
+Enabling Act \citep[Act 511;][]{paAct511_1965}, which authorized
+municipalities and school districts throughout the state to levy
+an earned income tax on wages, salaries, commissions and net profits. The
+act enables a municipality and is not mandatory, therefore a municipality may levy no EIT at
+all. Where a municipality and an overlapping school district both levy,
+Act 511 caps their combined resident rate at one percent and splits it
+fifty-fifty by default, unless the two taxing bodies agree otherwise.
+School districts may not tax nonresidents, so the sharing rule never
+affects the municipal rate applied to nonresident workers. Act 511 also
+keeps a commuter's two tax bills from stacking, and it does so by giving
+the place of residence priority over the place of employment. That
+priority, rather than any single rate schedule, generates the piecewise
+structure the paper exploits.
+
+Each Pennsylvania municipality therefore has three EIT rates relevant to a
+worker:
+%
+the municipality resident rate $\tau^{\text{res,muni}}$ levied on residents of the municipality, the municipality work rate $\tau^{\text{work,muni}}$ levied on workers employed in the municipality, and the school-district rate $\tau^{\text{SD}}$ levied on residents only.
+
+That priority means a worker's total EIT bill
 is determined by the maximum of the home-side rate stack and the
 work-location rate, and the bill is split piecewise
 between home and work jurisdictions:
@@ -216,20 +210,21 @@ between home and work jurisdictions:
 \begin{equation}
 \bigl(\tau^{\text{home}},\ \tau^{\text{work}}\bigr) =
 \begin{cases}
-\bigl(\tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j - \tau^{\text{work,muni}}_i,\ \tau^{\text{work,muni}}_i\bigr)
-   & \text{if } \tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j > \tau^{\text{work,muni}}_i \\[4pt]
-\bigl(0,\ \tau^{\text{work,muni}}_i\bigr)
-   & \text{if } \tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j \leq \tau^{\text{work,muni}}_i
+\bigl(\tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j,\ 0\bigr)
+   & \text{if } \tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j \geq \tau^{\text{work,muni}}_i \\[4pt]
+\bigl(\tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j,\ \tau^{\text{work,muni}}_i - \tau^{\text{res,muni}}_j - \tau^{\text{SD}}_j\bigr)
+   & \text{if } \tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j < \tau^{\text{work,muni}}_i
 \end{cases}
 \label{eq:piecewise}
 \end{equation}
 %
-where $j$ is the worker's home municipality and $i$ is the work municipality. The
-work jurisdiction always collects its full work rate first, then
-the home municipality and school district split whatever portion of the
-worker's bill is left over after the work claim. If the work
-rate exceeds the home stack, the home jurisdictions get nothing. The
-worker's total bill is the higher of the two stacks:
+where $j$ is the worker's home municipality and $i$ is the work municipality.
+The home municipality and school district always collect their full
+stack, and the work municipality collects only the amount by which its
+nonresident rate exceeds that stack.
+When the home stack is the larger of the two the work municipality collects
+nothing, which is why municipalities raise little revenue from nonresidents
+\citep{paDeskbook2025}. The worker's total bill is the higher of the two stacks:
 %
 \begin{equation}
 \text{Bill}_{ji} = \max\!\bigl(\tau^{\text{res,muni}}_j + \tau^{\text{SD}}_j,\ \tau^{\text{work,muni}}_i\bigr).
@@ -250,23 +245,98 @@ while keeping the same job at $i$ saves at least the SD rate at $j$:
 the new bill is $\max(\tau^{\text{home}}_{j'}, \tau^{\text{work,muni}}_i)$,
 which is at most the old bill $\tau^{\text{home}}_j$ minus
 $\tau^{\text{SD}}_j$. The empirical design follows this logic directly by using both the treatment
-$\Delta\tau^{\text{muni}}$ and the binding classification 
+$\Delta\tau^{\text{muni}}$ and the binding classification
 built from the worker's home stack. The regressions therefore measure
 sorting in response to the same tax a mover would actually face.
-This paper does not estimate the effect of nonresident (workplace tax) increases on sorting due to the lack of binding rate changes of the workplace tax over the home-stack. For the work side to bind, a single rate-setter must exceed the home-stack, which under the standard Act 511 rate structure almost never occurs: across 2002–2019, the work rate is the binding side in roughly $0.2\%$ of municipality-years. The handful of exceptions are municipalities with statutory authority to exceed the Act 511 cap (Home Rule and Act 47 distressed cities). Because there are few work-binding events, a work-side binding decomposition is not identifiable.
 
-Philadelphia is the one exception to the Act 32 framework. It operates under
-the Sterling Act of 1932 where Philadelphia residents pay the city resident
-rate regardless of work location with no offset and Philadelphia
-nonresidents pay the city work rate, with no residual flowing
-to home jurisdictions in other Pennsylvania municipalities. My main estimates
-retain Philadelphia in the sample for completeness and the results are robust
-to dropping it.
+State law allows the Act 511 cap to be exceeded in a small number of
+statutorily defined circumstances, and which of them applies determines
+whether the excess can reach nonresidents. Municipalities adopting a home
+rule charter under the Home Rule Charter and Optional Plans Law
+\citep{paHomeRule} are no longer confined to the statutory limit on taxes
+levied on their own residents, and some have raised the resident rate
+above one percent; the nonresident rate is a different matter, and a home
+rule municipality may not exceed the statutory limit for nonresidents.
+Two distress regimes are the exception. A municipality declared
+financially distressed under the Municipalities Financial Recovery Act
+\citep[Act 47 of 1987;][]{paAct47_1987} may petition the Court of Common
+Pleas to raise its EIT above the Act 511 limit as part of an adopted
+recovery plan, renewable by annual petition, and Act 47 does not bar
+extending the increase to nonresidents. A municipality certified as
+having a financially distressed pension system under the Municipal
+Pension Plan Funding Standard and Recovery Act
+\citep[Act 205 of 1984;][]{paAct205_1984} holds the same above-cap
+authority as a pension-recovery remedy, available only once the
+municipality is already at the maximum rate otherwise allowed, and
+Act 205 likewise permits extension to nonresidents. The two distress
+regimes are therefore the only routes to a nonresident rate above one
+percent; home rule reaches the resident rate alone.
 
-Act 32 transformed the system by consolidating collection into
-approximately 67 county-based Tax Collection Districts (TCDs), each with a single appointed collector.
-The law mandated standardized employer withholding at the higher of
-the employee's resident and work rate. This had two consequences.
+This paper does not estimate the effect of nonresident (workplace tax) increases on sorting due to the lack of binding rate changes of the workplace tax over the home-stack. For the work side to bind, a single rate-setter must exceed the home-stack, which under the standard Act 511 rate structure almost never occurs: across 2002–2019, the work rate is the binding side in roughly $0.2\%$ of municipality-years. The handful of exceptions are the Act 47 and Act 205 distress municipalities just described, the only ones holding statutory authority to exceed the Act 511 cap on nonresidents. Because there are few work-binding events, a work-side binding decomposition is not identifiable.
+
+School districts reached above the shared cap by referendum. Act 50 of
+1998 \citep{paAct50_1998} authorized school districts to levy the EIT at
+rates up to 1.5\% with voter approval, beginning with the November 1999
+election, and required that the added revenue be offset by repealing
+occupation, occupational privilege and per capita taxes and by reducing
+real estate taxes through a homestead exclusion. Act 50's EIT-levy
+provisions were later repealed, first by Act 72 of 2004 and then by
+Act 1 of 2006, so the Act 50 route survives only for districts that
+adopted an increased rate before the repeal
+\citep{paDeskbook2025}. Act 24 of 2001 \citep{paAct24_2001} added the
+optional occupation tax elimination provisions that now form Chapter 4
+of Act 511, letting a municipality or school district replace the
+occupation tax outright with an EIT increase sized to the revenue that
+tax raised in the prior fiscal year, subject to referendum and
+conditional on eliminating the occupation tax; 36 school districts
+approved an Act 24 referendum in November 2001. The swap was extended to
+municipalities by amendment in June 2002, capped at occupation tax
+collections in 2001, so the municipal route opens in the first year of
+the estimation window. Act 24 rate increases are therefore
+revenue-neutral swaps rather than tax increases.
+
+The Taxpayer Relief Act \citep[Act 1 of 2006;][]{paAct1_2006} replaced
+that machinery and is the current route by which a school district may
+levy or increase an EIT above the shared cap, putting the increase to
+voters in exchange for homestead property tax relief
+\citep{paDeskbook2025}. Together with home rule, Act 47 and Act 205 on
+the municipal side and the Chapter 4 occupation tax swap on both sides,
+it is one of the statutory routes generating the above-cap rates
+observed in the DCED register.
+
+Act 32 of 2008 \citep{paAct32_2008} brought the largest change to the
+local income tax system since the Local Tax Enabling Act. Signed on
+July 7, 2008 and effective for tax years beginning January 1, 2012, it
+created 69 county-wide Tax Collection Districts, cutting the number of
+collectors in the state from roughly 560; created tax collection
+committees to oversee collection and distribution within each district;
+and required uniform regulations, forms and procedures to ensure
+consistent collections statewide. One district exists per county with two
+exceptions: Philadelphia is outside the Act 32 framework entirely and has
+no district, and Allegheny County is divided into four
+\citep{paDeskbook2025}.
+
+The provision that matters for identification is the withholding rule.
+Act 32 requires every employer with a Pennsylvania worksite to deduct
+from each employee the greater of that employee's resident tax or
+nonresident tax, read off the official tax register that the Department
+of Community and Economic Development
+maintains.\footnote{The department releases the register twice a year:
+rates released June 15 take effect July 1, and rates released
+December 15 take effect January 1 of the following year
+\citep{shapiroCommonwealthPennsylvania}. A rate change can therefore take
+effect mid-year, while the panel used here is annual.} Each address is
+associated with a six-digit Political Subdivision (PSD) code identifying
+its (municipality, school district) pair. Workers report this code on the
+Residency Certification Form, and employers use it to determine
+withholding obligations.\footnote{Act 32 defines a nonresident as a
+person performing services within the taxing political subdivision for
+90 or more consecutive days. For shorter assignments, withholding follows
+the location of the employer's permanent home office rather than the job
+site, so the work-side rate attaches only to workers stationed at a site
+for at least a quarter.}
+
+This had two consequences.
 First, it made the EIT mechanically binding where the rate changes now
 appear in every worker's paycheck through employer withholding,
 regardless of whether the worker resides in the taxing municipality.
@@ -315,43 +385,16 @@ heterogeneity test of Section~\ref{subsec:rob-act32}.
     \label{fig:act32_cdf}
 \end{figure}
 
-School districts in Pennsylvania also levy an EIT under Act 511
-\citep{paAct511_1965}, typically at 0.5\% (the other half of the
-standard 1\% cap). Act 1 of 2006 \citep{paAct1_2006} (the Taxpayer
-Relief Act) additionally authorized
-school districts to exceed the 0.5\% cap specifically to fund
-property tax relief. I find that the correlation between the municipal and school-district resident rates is only weakly negative of $-0.12$ indicating the two taxing jurisdictions move on relatively separate schedules. Since every census block sits in both a municipality
+School districts levy their EIT under the same Act 511 authority, at
+0.5\% wherever the default fifty-fifty split holds and higher where the
+district has taken one of the referendum routes described above---Act 1
+today, Act 50 for districts that adopted before its repeal, or the
+Chapter 4 occupation tax swap---or negotiated a different split with its
+municipalities. I find that the correlation between the municipal and school-district resident rates is only weakly negative of $-0.12$ indicating the two taxing jurisdictions move on relatively separate schedules. Since every census block sits in both a municipality
 and a school district, workers face two overlapping EIT rates
 that can change independently, providing a natural decomposition
 of the residential sorting response into municipal and school
 district components.
-
-\subsection{Pennsylvania Property Tax}
-\label{subsec:proptax-inst}
-
-The same municipalities, together with their counties, levy a real-estate
-property tax. Each taxing body sets a millage rate applied to the
-assessed value of a parcel; the assessed value is a county-set
-fraction of market value, and the State Tax Equalization Board (STEB)
-certifies that fraction---the common-level ratio (CLR)---for each county
-annually. The municipal and county millage are reported in the same DCED
-tax register that reports the EIT, so a municipality-by-year panel of
-both is directly available; the school-district real-estate millage is
-also reported but the school district is not used as an estimating unit
-here. Two institutional features shape the analysis. Pennsylvania
-reassesses infrequently and irregularly---many counties had not reassessed
-in decades during the sample, and only $24$ of $67$ reassessed at all over
-2002--2019---so the CLR drifts downward between reassessments as market
-values outpace stale assessments. And the Act~1 anti-windfall provisions
-require that millage be rolled back to revenue-neutrality at a
-reassessment, with any real increase requiring a separate, capped vote.
-These features mean the statutory millage and the effective burden it
-implies can diverge, which is why the analysis works with the effective
-rate (millage $\times$ CLR) and its policy-driven component rather than
-raw millage. Unlike the EIT, the property tax falls on the dwelling
-rather than the worker.
-
-
 
 \section{Data}
 \label{sec:data}
@@ -501,19 +544,6 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
   \includegraphics[width=0.95\textwidth]{../figures/schematic_binding_mechanism.png}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \caption{Stacked construction: one sub-experiment per cohort; never-changers replicated as controls.}
-  \label{fig:stacking_schematic}
-  \includegraphics[width=0.95\textwidth]{../figures/schematic_stacking.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Dose versus realized-dose tag: why the event study can test pre-trends.}
-  \label{fig:dose_vs_tag}
-  \includegraphics[width=0.95\textwidth]{../figures/schematic_dose_vs_tag.png}
-\end{figure}
 
 %==========================================================
 

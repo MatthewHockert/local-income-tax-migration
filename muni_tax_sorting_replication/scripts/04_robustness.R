@@ -960,59 +960,64 @@ if (RUN_DOSE_PERMUTATION) local({
 # direction check alongside the permutation test.
 # Output: data/results/fake_timing_placebo.csv
 if (RUN_FAKE_TIMING) local({
-  SHIFT <- 4L; K <- 5L
-  treated <- unique(panel[!is.na(c_muni) & as.character(cell_muni) != "NC",
-                          .(muni, c_true = c_muni, cell = as.character(cell_muni))])
-  n_all <- nrow(treated)
-  treated <- treated[c_true - SHIFT - 2L >= 2002L]   # >= 2 placebo pre-years
-  message(sprintf("fake-timing: %d of %d treated munis have room for a placebo window",
-                  nrow(treated), n_all))
-  # realized magnitude tag from the true event (dose applied at fake timing)
+  # Several placebo dates (Huntington-Klein: "pick a few different periods and
+  # pretend"): a real pre-existing drift shows up consistently across shifts;
+  # a one-off fluke does not. The three samples share munis and overlapping
+  # windows, so they are consistency checks, not independent tests.
+  SHIFTS <- c(3L, 4L, 5L); K <- 5L
+  treated_all <- unique(panel[!is.na(c_muni) & as.character(cell_muni) != "NC",
+                              .(muni, c_true = c_muni, cell = as.character(cell_muni))])
+  n_all <- nrow(treated_all)
   rd <- add_realized_dose(copy(panel), K = K)
   tag <- unique(rd[!is.na(c_muni), .(muni, dtag = realized_dose_muni)])
-  treated <- merge(treated, tag, by = "muni", all.x = TRUE)
   nc <- unique(panel[cell_muni == "NC", muni])
-  stk_fake <- rbindlist(lapply(sort(unique(treated$c_true - SHIFT)), function(cy) {
-    win <- (cy - K):(cy + K)
-    tm <- treated[c_true - SHIFT == cy]
-    if (!nrow(tm)) return(NULL)
-    dt <- merge(panel[muni %in% tm$muni & year %in% win],
-                tm[, .(muni, c_true, cell_fake = cell, dtag)], by = "muni")
-    dt <- dt[year < c_true]                        # pre-real-event data only
-    dc <- panel[muni %in% nc & year %in% win]
-    dc[, `:=`(cell_fake = "NC", dtag = 0, c_true = NA_integer_)]
-    d <- rbind(dt, dc, fill = TRUE)
-    d[, stack := cy]; d[, rel := as.integer(year - cy)]
-    d
-  }), fill = TRUE)
-  stk_fake[, stack_muni := paste0(stack, "_", muni)]
-  stk_fake[, stack_year := paste0(stack, "_", year)]
-  stk_fake[, cell_fake := factor(cell_fake,
-      levels = c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind"))]
-  # placebo dose: the muni's TRUE realized magnitude, switched on at the
-  # FAKE event date
-  stk_fake[, dose_fake := fifelse(rel >= 0, dtag, 0)]
   outcomes <- c("log_live_and_work", "log_in_commuters",
                 "log_total_jobs", "share_live_in")
   rows <- list()
-  for (o in outcomes) {
-    cols <- c("muni", "rel", "stack_muni", "stack_year", "cell_fake",
-              "dose_fake", o, ctrls)
-    dd <- stk_fake[, ..cols][complete.cases(stk_fake[, ..cols])]
-    if (!nrow(dd)) next
-    m <- tryCatch(feols(as.formula(paste0(o,
-          " ~ i(cell_fake, dose_fake, ref = 'NC') + ", ctrls_str,
-          " | stack_muni + stack_year")), dd, cluster = ~muni),
-          error = function(e) NULL)
-    if (is.null(m)) next
-    ct <- as.data.table(m$coeftable, keep.rownames = "term")
-    setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"),
-             c("est", "se", "p"), skip_absent = TRUE)
-    ct <- ct[grepl("^cell_fake::", term)]
-    ct[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
-    ct[, `:=`(outcome = o, n = nobs(m),
-              n_treated = uniqueN(dd$muni[dd$dose_fake != 0]))]
-    rows[[length(rows) + 1L]] <- ct[, .(outcome, cell, est, se, p, n, n_treated)]
+  for (SHIFT in SHIFTS) {
+    treated <- treated_all[c_true - SHIFT - 2L >= 2002L]   # >= 2 placebo pre-years
+    message(sprintf("fake-timing shift -%d: %d of %d treated munis eligible",
+                    SHIFT, nrow(treated), n_all))
+    treated <- merge(treated, tag, by = "muni", all.x = TRUE)
+    stk_fake <- rbindlist(lapply(sort(unique(treated$c_true - SHIFT)), function(cy) {
+      win <- (cy - K):(cy + K)
+      tm <- treated[c_true - SHIFT == cy]
+      if (!nrow(tm)) return(NULL)
+      dt <- merge(panel[muni %in% tm$muni & year %in% win],
+                  tm[, .(muni, c_true, cell_fake = cell, dtag)], by = "muni")
+      dt <- dt[year < c_true]                        # pre-real-event data only
+      dc <- panel[muni %in% nc & year %in% win]
+      dc[, `:=`(cell_fake = "NC", dtag = 0, c_true = NA_integer_)]
+      d <- rbind(dt, dc, fill = TRUE)
+      d[, stack := cy]; d[, rel := as.integer(year - cy)]
+      d
+    }), fill = TRUE)
+    stk_fake[, stack_muni := paste0(stack, "_", muni)]
+    stk_fake[, stack_year := paste0(stack, "_", year)]
+    stk_fake[, cell_fake := factor(cell_fake,
+        levels = c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind"))]
+    # placebo dose: the muni's TRUE realized magnitude, switched on at the
+    # FAKE event date
+    stk_fake[, dose_fake := fifelse(rel >= 0, dtag, 0)]
+    for (o in outcomes) {
+      cols <- c("muni", "rel", "stack_muni", "stack_year", "cell_fake",
+                "dose_fake", o, ctrls)
+      dd <- stk_fake[, ..cols][complete.cases(stk_fake[, ..cols])]
+      if (!nrow(dd)) next
+      m <- tryCatch(feols(as.formula(paste0(o,
+            " ~ i(cell_fake, dose_fake, ref = 'NC') + ", ctrls_str,
+            " | stack_muni + stack_year")), dd, cluster = ~muni),
+            error = function(e) NULL)
+      if (is.null(m)) next
+      ct <- as.data.table(m$coeftable, keep.rownames = "term")
+      setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"),
+               c("est", "se", "p"), skip_absent = TRUE)
+      ct <- ct[grepl("^cell_fake::", term)]
+      ct[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
+      ct[, `:=`(outcome = o, shift = SHIFT, n = nobs(m),
+                n_treated = uniqueN(dd$muni[dd$dose_fake != 0]))]
+      rows[[length(rows) + 1L]] <- ct[, .(shift, outcome, cell, est, se, p, n, n_treated)]
+    }
   }
   out <- rbindlist(rows, fill = TRUE)
   fwrite(out, file.path(RESULTS_DIR, "fake_timing_placebo.csv"))

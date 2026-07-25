@@ -236,7 +236,7 @@ Table format, all results tables: outcomes across the top; variables down the le
 
 5. Dose-permutation randomization inference — shuffle dose magnitudes across treated munis, 500 draws; Inc-bind permutation p = 0.016 (dose size drives the result); Inc-becomes uninformative (identified off crossing, not size).
 
-6. Fake-timing placebo — events shifted 4 years early, pre-event data only; Inc-bind null on all outcomes; Inc-becomes fails the counts (confirms its suggestive label).
+6. Fake-timing placebos — events shifted 3, 4, and 5 years early, pre-event data only; Inc-bind null at every placebo date (signs flip around zero); Inc-becomes drifts at every date (-0.14 to -0.19), confirming its suggestive label.
 
 Exhibits:
 
@@ -256,9 +256,9 @@ Exhibits:
   - Note: joint Wald over-rejects on thin cohorts; robust_clean drives the verdict.
 - Table `perm_inference` + Figure `perm_inference_hist` — permutation distributions with true estimates.
   - Say: Inc-bind sits in the 1.6% tail.
-- Table `fake_timing` — placebo events, pre-event data.
-  - Say: Inc-bind null; Inc-becomes drifts.
-  - Note: 31 of 79 treated munis have room for a placebo window; underpowered by construction.
+- Table `fake_timing` — placebo events at three shifts, pre-event data.
+  - Say: Inc-bind null at all three dates; Inc-becomes drifts at all three.
+  - Note: 37/31/27 eligible munis at shifts 3/4/5; shared munis, consistency check not independent tests; underpowered by construction.
 
 # Discussion
 

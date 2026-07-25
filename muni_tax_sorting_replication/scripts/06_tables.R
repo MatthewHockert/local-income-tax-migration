@@ -269,7 +269,7 @@ if (RUN_PAPER_TABLES) local({
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
 
     out <- c(
-      "\\begin{table}[!htbp]",
+      "\\begin{table}[H]",
       "  \\centering",
       paste0("  \\caption{", caption, "}"),
       paste0("  \\label{", label_id, "}"),
@@ -388,7 +388,7 @@ if (RUN_PAPER_TABLES) local({
       "    \\toprule", paste0("    ", hdr), "    \\midrule",
       paste0("    ", body), "    \\bottomrule", "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[!htbp]", "  \\centering",
+    out <- c("\\begin{table}[H]", "  \\centering",
       paste0("  \\caption{", caption, "}"), paste0("  \\label{", label_id, "}"),
       "  \\footnotesize", "  \\renewcommand{\\arraystretch}{0.9}", tabular,
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
@@ -606,7 +606,7 @@ if (RUN_PAPER_TABLES) local({
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
 
     out <- c(
-      "\\begin{table}[!htbp]",
+      "\\begin{table}[H]",
       "  \\centering",
       paste0("  \\caption{", caption, "}"),
       paste0("  \\label{", label_id, "}"),
@@ -762,7 +762,7 @@ if (RUN_PAPER_TABLES) local({
       "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
     out <- c(
-      "\\begin{table}[!htbp]",
+      "\\begin{table}[H]",
       "  \\centering",
       paste0("  \\caption{", caption, "}"),
       paste0("  \\label{", label_id, "}"),
@@ -905,7 +905,7 @@ if (RUN_PAPER_TABLES) local({
       "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
     out <- c(
-      "\\begin{table}[!htbp]",
+      "\\begin{table}[H]",
       "  \\centering",
       paste0("  \\caption{", caption, "}"),
       paste0("  \\label{", label_id, "}"),
@@ -998,7 +998,7 @@ if (RUN_PAPER_TABLES) local({
       "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
       "    \\bottomrule", "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[!htbp]", "  \\centering",
+    out <- c("\\begin{table}[H]", "  \\centering",
       "  \\caption{Pre-trend battery: four tests per binding cell}",
       "  \\label{tab:pretrend_battery}", "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
@@ -1023,7 +1023,7 @@ if (RUN_PAPER_TABLES) local({
         formatC(ps$perm_mean[i], format = "f", digits = 3), " & ",
         formatC(ps$perm_p[i], format = "f", digits = 3), " \\\\"))
     }
-    out <- c("\\begin{table}[!htbp]", "  \\centering",
+    out <- c("\\begin{table}[H]", "  \\centering",
       "  \\caption{Dose-permutation randomization inference (log live-and-work)}",
       "  \\label{tab:perm_inference}", "  \\footnotesize",
       "  \\begin{tabular}{lccc}", "    \\toprule",
@@ -1037,19 +1037,55 @@ if (RUN_PAPER_TABLES) local({
     writeLines(out, file.path(out_dir, "perm_inference.tex"))
   }
 
-  ## Fake-timing placebo table.
+  ## Fake-timing placebo table: one panel per placebo shift (3 / 4 / 5 years
+  ## early), cells x outcomes within each panel.
   ft_path <- file.path(in_dir, "fake_timing_placebo.csv")
   if (file.exists(ft_path)) {
     ft <- fread(ft_path)
-    body <- build_pub_table(
-      coefs_dt = ft[, .(outcome, cell, est, se, p)],
-      diag_dt  = unique(ft[, .(outcome, n)]),
-      outcomes = muni_outcomes, cells = cells_main,
-      caption  = "Fake-timing placebo: events shifted four years early, pre-event data only",
-      label    = "tab:fake_timing",
-      diag_fields = c("n"),
-      notes    = c("Each treated municipality is assigned a placebo event four years before its real one and only data from before the real event enter. Nothing happened at the placebo dates, so all coefficients should be null. Underpowered by construction (short pre-windows); read alongside the permutation test."))
-    writeLines(body, file.path(out_dir, "fake_timing.tex"))
+    if (!"shift" %in% names(ft)) ft[, shift := 4L]
+    ncols <- length(muni_outcomes)
+    mc <- paste0("\\multicolumn{", ncols + 1, "}{l}")
+    body <- character(0)
+    for (sh in sort(unique(ft$shift))) {
+      fs <- ft[shift == sh]
+      nt <- fs$n_treated[1]
+      body <- c(body,
+        paste0(mc, "{\\textit{Placebo event at $c-", sh, "$ (", nt,
+               " eligible munis)}} \\\\"))
+      for (cl in cells_main) {
+        est_row <- character(ncols); se_row <- character(ncols); any_p <- FALSE
+        for (j in seq_along(muni_outcomes)) {
+          r <- fs[cell == cl & outcome == muni_outcomes[j]]
+          if (nrow(r) == 0 || is.na(r$est[1])) { est_row[j] <- "---"; se_row[j] <- ""; next }
+          any_p <- TRUE
+          stars <- sig_stars(r$p[1])
+          est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
+          se_row[j]  <- fmt_se(r$se[1])
+        }
+        if (!any_p) next
+        body <- c(body,
+                  paste0("\\quad ", cl, " & ", paste(est_row, collapse = " & "), " \\\\"),
+                  paste0("       & ", paste(se_row, collapse = " & "), " \\\\"))
+      }
+      if (sh != max(ft$shift)) body <- c(body, "\\midrule")
+    }
+    hdr <- paste0("Cell & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
+    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
+      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
+      "    \\bottomrule", "  \\end{tabular}")
+    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+    out <- c("\\begin{table}[H]", "  \\centering",
+      "  \\caption{Fake-timing placebos: events shifted 3--5 years early, pre-event data only}",
+      "  \\label{tab:fake_timing}", "  \\footnotesize",
+      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
+      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+      paste0("    \\footnotesize \\textit{Notes:} Each treated municipality is assigned a placebo event 3, 4, or 5 years before its real one and only data from before the real event enter, so every coefficient should be null. ",
+             "The three panels share municipalities and overlapping windows; they are consistency checks, not independent tests. ",
+             "Eligibility (at least two placebo pre-years) varies with the shift. ",
+             "Underpowered by construction; read alongside the permutation test. SE in parens. ",
+             "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
+      "  \\end{minipage}", "\\end{table}")
+    writeLines(out, file.path(out_dir, "fake_timing.tex"))
   }
 
   ## dCDH results table: per-group effect at +5 (level-at-realized-dose scale)
@@ -1130,7 +1166,7 @@ if (RUN_PAPER_TABLES) local({
       "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
       "    \\bottomrule", "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[!htbp]", "  \\centering",
+    out <- c("\\begin{table}[H]", "  \\centering",
       "  \\caption{dCDH (non-negative weights): cumulative effect at $k=+5$ by group}",
       "  \\label{tab:dcdh_results}", "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
@@ -1172,7 +1208,7 @@ if (RUN_PAPER_TABLES) local({
       "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
       "    \\bottomrule", "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[!htbp]", "  \\centering",
+    out <- c("\\begin{table}[H]", "  \\centering",
       paste0("  \\caption{Realized-dose event study, full coefficients: ", group_label, "}"),
       paste0("  \\label{", label_id, "}"), "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,

@@ -35,7 +35,7 @@ RUN_EXTRA_FIGS           <- TRUE   # descriptive rate-change scatters, spaghetti
 RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, Inc-bind, Inc-becomes)
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
-RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, stacking, dose vs tag)
+RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, dose vs tag)
 
 # Shared headline environment ----
 # Built once for the sections that need the classified cousub panel / muni
@@ -1245,27 +1245,38 @@ if (RUN_FEOLS_ES_BYCELL) local({
 if (RUN_LAW_TIMELINE) local({
   fig_dir <- OUT_DIR
 
+  # Every statute walked through in the Institutional Background section, in
+  # order. `type` marks the 2012 binding date (the only label set in bold);
+  # `ypos` staggers labels so temporal neighbours sit on different levels (the
+  # 1998-2012 cluster is the tight one).
   ev <- data.table(
-    year  = c(1932, 1965, 1972, 1987, 2006, 2008, 2012),
-    name  = c("Sterling Act", "Act 511", "Home Rule", "Act 47",
-              "Act 1", "Act 32 enacted", "Act 32 effective"),
-    desc  = c("Phila. wage tax", "Local Tax Enabling Act\n(local EIT; 0.5% cap)",
-              "Charter Law\n(may exceed cap)", "Distressed cities\n(may exceed cap)",
-              "Taxpayer Relief Act\n(SD EIT shift; property\nanti-windfall)",
-              "consolidated\nwithholding", "EIT becomes binding"),
-    type  = c("EIT", "EIT", "EIT", "EIT", "Both", "EIT", "Key change"),
-    ypos  = c( 1.0, -1.0,  1.0, -1.0,  2.4, -1.6,  1.4))      # vertical stagger
+    year  = c(1932, 1965, 1972, 1984, 1987, 1998, 2001, 2006, 2008, 2012),
+    name  = c("Sterling Act", "Act 511", "Home Rule", "Act 205", "Act 47",
+              "Act 50", "Act 24", "Act 1", "Act 32 enacted", "Act 32 effective"),
+    desc  = c("Phila. wage tax\n(outside Act 32)",
+              "Local Tax Enabling Act\n1% cap shared 50/50;\nresident credit",
+              "Charter Law\n(residents only)",
+              "Pension distress\n(may exceed cap,\nincl. nonresidents)",
+              "Municipal distress\n(may exceed cap,\nincl. nonresidents)",
+              "SD EIT to 1.5%\nby referendum",
+              "SD occupation-tax swap;\nmunis added 2002",
+              "Taxpayer Relief Act\n(SD EIT above cap\nby referendum)",
+              "consolidated\nwithholding",
+              "max-rule binding\nvia withholding"),
+    type  = c("EIT statute", "EIT statute", "EIT statute", "EIT statute",
+              "EIT statute", "EIT statute", "EIT statute",
+              "EIT statute", "EIT statute", "Binding date"),
+    ypos  = c( 1.0, -1.0,  2.4, -2.4,  1.0, -1.0,  2.4, -2.4,  1.0, -1.0))
   ev[, lab := paste0(name, " (", year, ")\n", desc)]
-  ev[, face := ifelse(type == "Key change", "bold", "plain")]   # bold the binding date
+  ev[, face := ifelse(type == "Binding date", "bold", "plain")]  # bold the binding date
 
-  cols <- c("EIT" = "#2166ac", "Both" = "#1b7837", "Key change" = "#b2182b")
   samp <- data.table(xmin = 2002, xmax = 2019)
 
   g <- ggplot() +
     # estimation window
-    geom_rect(data = samp, aes(xmin = xmin, xmax = xmax, ymin = -3.2, ymax = 3.2),
+    geom_rect(data = samp, aes(xmin = xmin, xmax = xmax, ymin = -4.0, ymax = 3.9),
               fill = "grey85", alpha = 0.5) +
-    annotate("text", x = 2010.5, y = -3.0, label = "Estimation sample 2002–2019",
+    annotate("text", x = 2010.5, y = 3.7, label = "Estimation sample 2002–2019",
              size = 3, color = "grey35", fontface = "italic") +
     # the timeline spine
     geom_hline(yintercept = 0, color = "grey40", linewidth = 0.6) +
@@ -1274,12 +1285,13 @@ if (RUN_LAW_TIMELINE) local({
                  color = "black", linewidth = 0.5) +
     geom_point(data = ev, aes(x = year, y = 0), color = "black", size = 3) +
     geom_label(data = ev, aes(x = year, y = ypos, label = lab),
-               color = "black", size = 2.5, label.size = NA, fill = "white", lineheight = 0.9,
-               vjust = ifelse(ev$ypos > 0, 0, 1), fontface = ev$face) +
-    scale_x_continuous(breaks = seq(1930, 2020, 10), limits = c(1928, 2022)) +
-    scale_y_continuous(limits = c(-3.6, 3.8)) +
+               color = "black", size = 2.5, linewidth = 0, fill = "white",
+               lineheight = 0.9, vjust = ifelse(ev$ypos > 0, 0, 1),
+               fontface = ev$face) +
+    scale_x_continuous(breaks = seq(1930, 2020, 10), limits = c(1926, 2024)) +
+    scale_y_continuous(limits = c(-4.0, 3.9)) +
     labs(title = "Timeline of Pennsylvania local-tax rules",
-         subtitle = "Earned Income Tax (EIT) and property-tax statutes shaping the design",
+         subtitle = "Statutes governing the Earned Income Tax (EIT) and shaping the design",
          x = NULL, y = NULL) +
     theme_minimal(base_size = 11) +
     theme(panel.grid = element_blank(),
@@ -1289,19 +1301,19 @@ if (RUN_LAW_TIMELINE) local({
           legend.position = "none",
           plot.title = element_text(face = "bold"))
 
-  ggsave(file.path(fig_dir, "law_timeline.png"), g, width = 10, height = 5, dpi = 300)
+  ggsave(file.path(fig_dir, "law_timeline.png"), g, width = 11, height = 6.5, dpi = 300)
 })
 
 # Design schematics ----
-# Three CONCEPTUAL schematic figures explaining the research design. All
+# Two CONCEPTUAL schematic figures explaining the research design. All
 # numbers are hand-made and purely illustrative (no estimation, no data
 # files): (1) the max-rule binding mechanism behind the Inc-bind /
-# Inc-becomes / Inc-nobind cells, (2) the stacked sub-experiment
-# construction with the NC pool replicated into every stack, and (3) why
-# the constant realized-dose tag can test pre-trends when the mechanically
-# zero pre-event dose cannot.
+# Inc-becomes / Inc-nobind cells, and (2) why the constant realized-dose
+# tag can test pre-trends when the mechanically zero pre-event dose
+# cannot. (A third stacking-construction schematic was cut from the
+# paper 2026-07-22.)
 # Outputs: figures/schematic_binding_mechanism.png,
-#   figures/schematic_stacking.png, figures/schematic_dose_vs_tag.png
+#   figures/schematic_dose_vs_tag.png
 if (RUN_DESIGN_SCHEMATICS) local({
   fig_dir <- OUT_DIR
   ACCENT  <- "#C5283D"
@@ -1351,79 +1363,7 @@ if (RUN_DESIGN_SCHEMATICS) local({
   ggsave(file.path(fig_dir, "schematic_binding_mechanism.png"), g1,
          width = 9, height = 4, dpi = 300)
 
-  ## 2. Stacked construction ----
-  # Lay explanation: the stacked design runs one clean mini-experiment per
-  # cohort year c, each spanning [c-5, c+5]. A treated muni lives ONLY in
-  # its own cohort's band; the never-changer pool is photocopied into
-  # every band as the comparison group. So no treated muni ever serves as
-  # a control for a later-treated one -- the contamination the stacking
-  # exists to prevent.
-  hh <- 0.40                        # band half-height
-  coh <- data.table(cy = c(2006L, 2010L, 2014L), y0 = c(3, 2, 1),
-                    blab = c("Stack: 2006 cohort", "Stack: 2010 cohort",
-                             "Stack: 2014 cohort"),
-                    mgrp = c("A", "B", "C"))
-  bands <- coh[, .(cy, y0, xmin = cy - 5, xmax = cy + 5,
-                   ymin = y0 - hh, ymax = y0 + hh)]
-  tr <- rbindlist(lapply(seq_len(nrow(coh)), function(i) data.table(
-    cy   = coh$cy[i],
-    m    = paste0("treated ", coh$mgrp[i], 1:2),
-    y    = coh$y0[i] + c(0.26, 0.12),
-    xmin = coh$cy[i] - 5, xmax = coh$cy[i] + 5)))
-  ncp <- rbindlist(lapply(seq_len(nrow(coh)), function(i) data.table(
-    x = seq(coh$cy[i] - 5, coh$cy[i] + 5, by = 1),
-    y = coh$y0[i] - 0.16)))
-  # Bottom strip: the dose path for one treated muni (A1, cohort 2006) --
-  # flat at 0 until c-1, stepping up after the event. Drawn in figure
-  # coordinates: strip baseline at y = 0.02, dose in pp added on top.
-  dose_a1 <- data.table(year = 2001:2011,
-                        dose = c(rep(0, 5), rep(0.3, 3), rep(0.4, 3)))
-  g2 <- ggplot() +
-    geom_rect(data = bands,
-              aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-              fill = "grey93", color = "grey70", linewidth = 0.3) +
-    geom_segment(data = coh,
-                 aes(x = cy, xend = cy, y = y0 - hh, yend = y0 + hh),
-                 color = "grey30", linetype = "dashed", linewidth = 0.5) +
-    geom_text(data = coh, aes(x = cy, y = y0 + hh + 0.08, label = "event (c)"),
-              size = 2.3, color = "grey30") +
-    geom_segment(data = tr, aes(x = xmin, xend = xmax, y = y, yend = y),
-                 color = ACCENT, linewidth = 0.9) +
-    geom_text(data = tr, aes(x = xmin + 0.15, y = y + 0.062, label = m),
-              color = ACCENT, size = 2.3, hjust = 0) +
-    geom_point(data = ncp, aes(x = x, y = y), color = "grey55", size = 0.9) +
-    geom_text(data = coh,
-              aes(x = cy - 4.85, y = y0 - 0.30,
-                  label = "NC pool (replicated into every stack)"),
-              color = "grey40", size = 2.2, hjust = 0) +
-    annotate("segment", x = 2001, xend = 2019, y = 0.02, yend = 0.02,
-             color = "grey80", linewidth = 0.3) +
-    annotate("segment", x = 2006, xend = 2006, y = 0.02, yend = 0.46,
-             color = "grey60", linetype = "dashed", linewidth = 0.4) +
-    geom_step(data = dose_a1, aes(x = year, y = 0.02 + dose),
-              color = ACCENT, linewidth = 0.7) +
-    annotate("text", x = 2012, y = 0.24,
-             label = "dose for A1 (pp):\n0 until c-1, accumulates after c",
-             size = 2.3, color = "grey30", hjust = 0, lineheight = 0.95) +
-    annotate("text", x = 2000.8, y = 0.54,
-             label = "Dose (one treated muni, A1)",
-             size = 2.4, color = "grey30", hjust = 0, fontface = "italic") +
-    scale_y_continuous(breaks = coh$y0, labels = coh$blab,
-                       limits = c(-0.08, 3.62)) +
-    scale_x_continuous(breaks = seq(2001, 2019, by = 2),
-                       limits = c(2000.5, 2019.5)) +
-    labs(title = "Stacked construction: one sub-experiment per cohort; never-changers replicated as controls",
-         subtitle = "No treated municipality ever serves as a control for a later-treated one.",
-         x = "Calendar year", y = NULL) +
-    theme_bw(base_size = 10) +
-    theme(plot.title = element_text(face = "bold", size = 10.5),
-          plot.subtitle = element_text(size = 8.5, color = "grey25"),
-          panel.grid = element_blank(),
-          axis.text.y = element_text(size = 8.5))
-  ggsave(file.path(fig_dir, "schematic_stacking.png"), g2,
-         width = 9, height = 5, dpi = 300)
-
-  ## 3. Dose vs realized-dose tag ----
+  ## 2. Dose vs realized-dose tag ----
   # Lay explanation: the headline regressor (the dose) is zero before the
   # event by construction, so it carries no pre-event information -- it
   # cannot reveal a pre-trend. The event study instead tags each muni with
