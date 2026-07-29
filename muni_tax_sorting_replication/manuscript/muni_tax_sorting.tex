@@ -46,18 +46,38 @@ Sorting? \\
 \label{sec:intro}
 %==========================================================
 
-The Tiebout hypothesis predicts that residents sort across
-jurisdictions which offer different fiscal amenities at different costs and residents will 'vote with their feet' and choose specific bundles of amenities for a given amount of taxation, this is called the Tiebout margin \citep{tiebout1956}. A survey of the literature conducted by \citet{agrawalLessonsStateLocal} highlights the current findings of state and local income taxation and identifies sub-state (county, municipality, school districts) income-tax sorting as one of the field's open questions.
-The literature has focused mostly on state tax adjustments on high-earners
-\citep{young2016, agrawalRelocationRichMigration2019}. The research shows that
-top-income households are generally mobile when rates between states are large, and \citet{agrawal2015gradient} documents sharp discontinuities among commodity-taxes at sub-state borders. The closest existing research comes from
-\citet{yangRESPONSIVENESSINCOMELOCAL2017} which  finds small migration effects for county-level income tax adjustments in Indiana.
+Taxes on wealth and income have been a growing discussion not only at the federal level but across states and local governments in the United States. Much of this debate revolves around growing concerns over inequality and revenue shortfalls. Recently, states such as Massachusetts and California have changed or proposed new taxation rules on the top earners in their states. Massachusetts recently abandoned its flat 5\% rate with a 4\% tax on income over \$1 million \citep{vermeerMassachusettsSurtax2022}. Washington State, which has never levied a broad income tax, enacted a 9.9\% rate on income above \$1 million in 2026 that does not take effect until 2028 \citep{waSB6346_2026}, and California has proposed a one-time 5\% levy on billionaires' net worth for the 2026 ballot \citep{walczakCaliforniaWealthTax2026}. Meanwhile, other states have also followed suit by either raising their income taxes or floating the idea of creating an income tax at all. 
 
+It is not only state governments but local governments as well looking for funding sources as their municipal budgets get squeezed by inflation and shrinking government transfers. Local income taxation is more common than is often recognized: roughly $5{,}000$ jurisdictions across sixteen states levy some form of local income or wage tax \citep{walczakLocalIncomeTaxes2023}. New York City has levied its own income tax since 1966 \citep{walczakLocalIncomeTaxes2023}, and the current administration has proposed raising it on residents earning more than \$1 million a year to close a projected two-year budget gap \citep{nycMayorsOfficePrelimBudget2026}. Because the city's taxing authority is delegated by the state, the increase would require approval in Albany, a dependence on state enabling legislation that is characteristic of local income taxation, in general.
+
+Most of this debate happens around the top earners in these states and localities, with much of the common criticism saying that the earners will simply move to avoid the new and higher taxes. That objection is long-standing in public finance, and it is testable: it is a claim about how much of the tax base relocates when a rate changes, and how far a jurisdiction can raise rates before the base it is taxing moves away. The evidence that speaks to it, however, comes almost entirely from variation in top marginal rates, and that variation does not exist below the state level, where local income taxes are generally flat and fall on every earner alike. 
+
+% Literature review - Not truly substantive yet
+% Needs to reference research in these priorities:
+    % 1. US is the primary focus but outside countries may help
+    % 2. Need to tie it back to wealth and income taxes at the    state and local level, what state or municipalities have income taxes, who has raised them recently, and who are they usually set on. (e.g. blue states tend to have income taxes, Massachuettes recently raised its "billionaire" tax, California is proposing a one-time wealth tax, Indiana study of county level taxes and Bagchi Pa study)
+      % The general argument is that people will move when you do so
+      % That connects to Tiebout hypothesis
+    % 3. Tie it back to Agrawal literature review that is currently cited and state the opportunity that this paper fills as stated within the Agrawal lit review (2026)
+
+Prediction on the sorting of individuals given variation in taxes has a long history in economic theory. The Tiebout hypothesis predicts that residents sort across
+jurisdictions which offer different fiscal amenities at different costs and residents will 'vote with their feet' and choose specific bundles of amenities for a given amount of taxation, this is called the Tiebout margin \citep{tiebout1956}. This has been tested widely in at the state level but not less so for municipalities. The literature has focused mostly on state tax adjustments on high-earners
+\citep{young2016, young2011, agrawalRelocationRichMigration2019}. The research shows that
+top-income households are generally mobile and sensitive to higher rates. Some studies have looked at specific higher income groups or niche domains such as star scientists, foreign workers, or even professional athletes \citep{morettiEffectStateTaxes2017, kleven2020, agrawalStateTaxationNonresident2024}. Specifically, \citet{agrawalStateTaxationNonresident2024} look at professional golfers' response to changes in nonresident income and find that they respond to changes in state taxation of nonresident income by changing where they work rather than where they live.
+
+Few states permit local income taxes and the evidence in the United States is a handful of studies. The closest existing research comes from
+\citet{yangRESPONSIVENESSINCOMELOCAL2017} which  finds small migration effects for county-level income tax adjustments in Indiana, and \citet{yushkovLocalIncomeTaxes2025} reaches similar conclusions across Indiana and Maryland. Pennsylvania's EIT has been studied for compliance rather than for sorting \citep{bagchiEffectsIntroducingWithholding2022}, and the nearest Pennsylvania precedent is \citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and suburbanization. The strongest sub-state sorting evidence is from Switzerland, where municipalities set their own income tax rates and household location follows the resulting differences \citep{schmidheiny2012zurich, basten2017}.The imporant difference between the local level from the state level is that residence and workplace are often in different jurisdictions, meaning assigning taxation to residents or non-residents provides important variation for identifying migration effects. Municipalities may have an incentive to tax nonresidents in order to not burden their own residents but are constrained by both needed to raise revenue and not push away those who work but do not live in the municipality. Pennsylvania's municipalities often have to weigh who to tax, so a household is faced with a set of decisions in order to mitigate their tax bill such changing jobs, schools, or home.
+
+A survey of the literature conducted by \citet{agrawalLessonsStateLocal} highlights the current findings of state and local income taxation and identifies sub-state (county, municipality, school districts) income-tax sorting as one of the field's open questions. The consensus of the survey is that the literature on local income taxes in the United States is almost non-existent and that what evidence exists is primarily from Switzerland. That matters because Swiss municipalities tax income on a purely residential basis while local systems in the United States assign income using non-residential rules, so the Swiss estimates do easily translate to the US. The notes that whether mobility appears as households moving or as jobs moving depends on the source of the taxation itself.
+
+
+% preview of the background and identification
+% Need to double check this is accurate to the new writing below
 This paper estimates municipal-level migration effects among workers in Pennsylvania from 2002--2019, by merging local income tax data with the LEHD Origin-Destination
-Employment Statistics (LODES), which links each worker's residence to their workplace at annually and at sub-municipal geography. In Pennsylvania there are roughly $2{,}500$ municipalities and $500$ school districts (SD) that set
+Employment Statistics (LODES), which links each worker's residence to their workplace annually and at sub-municipal geography. In Pennsylvania there are roughly $2{,}500$ municipalities and $500$ school districts (SD) that set
 their own Earned Income Tax (EIT) rates
 \citep{bagchiEffectsIntroducingWithholding2022,agrawalLessonsStateLocal},
-producing a deep cross-section of multiple sub-state income-tax opportunities. The EIT offers two additional dimensions of variation that my
+producing a deep cross-section of multiple sub-state income-tax variation. The EIT offers two additional dimensions of variation that my
 empirical design exploits. First, the EIT is set independently by two
 overlapping rate-setting jurisdictions (municipalities and school
 districts) and a resident's home-side tax bill is the sum of the
@@ -66,9 +86,9 @@ focus is the municipal resident rate while the school district rate enters the e
 design but is treated as secondary.
 Second, the EIT operates using a piecewise maximization rule where each worker's bill is
 $T = \max(\tau^{\text{home}}, \tau^{\text{work,muni}})$, where
-$\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$ is the
+$\tau^{\text{home}} = \tau^{\text{res,muni}} + \tau^{\text{SD}}$, the
 sum of the municipal resident rate and the school-district resident
-rate at the worker's address (the home stack), and $\tau^{\text{work,muni}}$ is the
+rate, and $\tau^{\text{work,muni}}$ is the
 work rate of the worker's workplace municipality. The workplace rate is also referred to as the nonresident rate, however, I refer to it as the work rate because the primary outcome variable of is the number of people that live and work within a municipality, which is the only variable that has the cleanest causal identification to the work and home-stack rate changes A statutory home-side rate
 change only moves the bill if the home stack is on the binding side
 of the max. Act~32 of 2008 (effective 2012) consolidated EIT
@@ -78,11 +98,10 @@ max-rule mechanically enforced.
 \citet{bagchiEffectsIntroducingWithholding2022} estimates that Act~32 resulted in a $14 \%$ increase in compliance and much higher local revenues. My paper does not analyze compliance but rather estimates
 residential-sorting and provides additional analysis pre-post Act~32.
 
-Beyond contributing to the general literature on local tax rate changes and residential sorting  this paper's methodological contribution is utilizing the piecewise structure of the EIT to generate a binding decomposition to test how rate changes that move the tax bill from the work side to the home side effect residential sorting. A statutory rate change moves the worker's bill only when the home stack is on the binding side of the
-maximization function, but that same statutory change produces a predicted-null when
-the home stack stays below the work rate. Splitting
-rate-change events by whether or not they are binding isolates
-whose bill actually moves and those whose bill does not. This within-design heterogeneity is what \citet{agrawalLessonsStateLocal} identifies as missing from the existing U.S. local-income-tax literature.
+Beyond contributing to the general literature on local tax rate changes and residential sorting, this paper makes two methodological contributions. The first uses the piecewise structure of the EIT to split rate-change events by whether the home stack is on the binding side of the maximization function. Increases that move a worker's bill and increases that leave it untouched are statutory changes of the same size, so the non-binding cell is a placebo the design generates rather than one imposed from outside. This within-design heterogeneity is what \citet{agrawalLessonsStateLocal} identifies as missing from the existing U.S. local-income-tax literature.
+
+The second is the treatment definition. Work on local income taxes codes a rate change as a binary indicator and recovers the average effect of having changed the rate at all \citep{yangRESPONSIVENESSINCOMELOCAL2017, yushkovLocalIncomeTaxes2025}. I use the size of the change, so the estimate is a response per percentage point rather than a response to the average change happened to be in one sample. That matters for two reasons. A binary coefficient is the per-percentage-point effect scaled by the realized distribution of rate changes, so it cannot be compared across settings with different distributions, and pooling changes of different magnitudes under a single indicator treats them as one treatment when they are several, which is the hidden-variations half of the stable unit treatment value assumption \citep[ch.~1]{imbensCausalInferenceStatistics2015}. The cost is a stronger identifying assumption, because reading the dose coefficient as a causal response requires trends to be parallel across dose magnitudes and not only between treated and control municipalities. Section~\ref{subsec:realized-dose-es} reports the event study that tests it.
+
 The decomposition is implemented at the municipality-year level in
 a continuous stacked difference-in-differences design that uses
 never-changed municipalities as the control pool. The
@@ -91,40 +110,16 @@ home-side stack but is not used as a separate unit of analysis.
 Section~\ref{sec:theory} formalizes the binding decomposition and
 lays out the worker-bill differencing function each cell implies.
 
-The design shows that when the municipality-level tax is increased on an already binding home-stack (Inc-bind) residents who live and work there tend to decline. At the average Inc-bind dose of $0.24$ pp cumulative
-over five years, the muni-rate change reduces the log count of
-workers who both live and work in the municipality by roughly
-$13\%$ ($\beta = -0.573$ per pp, $0.24 \times -0.573 = -0.14$ log
-points). The increase becomes (Inc-becomes) cell, where an increase pushes a
-previously non-binding home stack above the work rate produces a
-smaller per-pp estimate of $-0.250$, implying cumulative dose of $0.41 \times -0.250 =
--0.10$ log points (about $-10\%$). The Inc-nobind cell is a null
-within-design placebo, indicating that the mechanism is producing estimates that match the hypothesized effects.
+% Results
+% Should show the effect of increases in general
+% Then decompose the increase effect by binding
+% Need to make sure these numbers match what is in the results section
+Municipalities that raised their resident rate saw the number of workers who both live and work there fall by about $9\%$. The binding decomposition shows that this average is carried entirely by the municipalities where the increase actually moved a bill. Where the home stack was already binding (Inc-bind), a typical increase reduces the count of workers who live and work in the municipality by about $10\%$. Where the increase pushed a home stack that had been sitting at the work rate above it (Inc-becomes), the effect is also about $10\%$, reached through a larger typical increase and a smaller response per percentage point. Where the rate rose but the home stack stayed below the work rate and no bill moved (Inc-nobind), the estimate is null. That cell is a placebo the design generates rather than one imposed from outside, and its null is the sharpest evidence that the response is to the tax bill and not to rate-setting behavior in general.
 
-The second contribution is comparative. The same municipalities levy a
-property tax---municipal and county real-estate millage---alongside the
-EIT, and I estimate its sorting effect in the same municipality-level
-design. The two taxes differ in what they fall on: the EIT is levied on
-the mobile worker, the property tax on the immobile dwelling, so the
-classic capitalization argument \citep{oates1969} predicts a much
-smaller mobility response to the property tax, with the burden absorbed
-into house prices instead. To make the treatment a policy object rather
-than a mechanical one, I use the effective property-tax rate---statutory
-millage times the county common-level ratio of assessed to market
-value---and isolate its policy-driven (discretionary millage) component,
-which strips out the assessment drift that would otherwise confound the
-treatment with local house-price dynamics. Each leg controls for the
-concurrent change in the other tax, so the income- and property-tax
-elasticities are separately identified.
-
-Because the property tax is identified far less cleanly than the EIT---it
-changes nearly every year, so there is no never-treated control group and
-no non-binding cell, leaving the realized-dose pre-trend as its only
-check---I treat it as a control on the income-tax response rather than as
-a second treatment estimated in its own right. Including the
-municipality's property-tax burden alongside the EIT leaves the
-binding-cell estimate unchanged, so the sorting I measure is a response to
-the income tax specifically, not to local fiscal burden in general.
+% I don't fully argree that it is comparative. It is simply a control because it does not have a clear identification strategy. While the result is validating due to EIT > Property_tax it may be that property tax is underestimated due to it not have a solid causal identification and is a control variable.
+% [Property-tax contribution paragraphs removed 2026-07-29. The replication package
+% has no property-tax results, and the roadmap below does not promise them. The
+% comment above is kept in case the leg is reinstated.]
 
 The remainder of the paper is organized as follows.
 Section~\ref{sec:background} describes the institutional setting---the
@@ -150,11 +145,11 @@ all earned income earned in or by Pennsylvania residents
 The EIT falls directly on workers and varies across
 municipal boundaries, creating
 sharp spatial discontinuities in tax burden that can influence where
-workers choose to live and work.
+individuals choose to live and work.
 
 This variation is the product of many decades of government statutes, influencing who may levy the tax, how high the rate may go, and who may be
-taxed, are key for the design in Section~\ref{sec:strategy}. Figure~\ref{fig:law_timeline} places the many statutes through history the next section walks
-through them in order.
+taxed, all of which are key for the design in Section~\ref{sec:strategy}. Figure~\ref{fig:law_timeline} places the many statutes on a timeline that the next section walks
+through in order.
 
 %==========================================================
 \begin{figure}[H]
@@ -172,12 +167,9 @@ Local income taxation in Pennsylvania begins with the Sterling Act of
 1932 \citep{paSterlingAct_1932}, the first local income tax legislation
 in the country, under which Philadelphia became the first municipality in
 the United States to impose an income tax in 1939. Philadelphia still
-operates under the Sterling Act at approximately 3.9\% and remains
+operates under the Sterling Act and remains
 outside the framework governing the rest of the state. Its
-residents pay the city resident rate regardless of work location with no
-offset, and nonresidents working in the city pay the city work rate, with
-no residual flowing to home jurisdictions in other Pennsylvania
-municipalities. Philadelphia does not enter the estimation sample. Its
+residents pay the city resident rate regardless of work location, and nonresidents working in the city pay the city work rate. Philadelphia does not enter the estimation sample. Its
 resident rate declines steadily across 2002--2019, and the design
 identifies off increase-side events, so the city is dropped along with
 every other municipality whose rate only falls.
@@ -185,20 +177,18 @@ every other municipality whose rate only falls.
 Local income taxation outside Philadelphia was expanded in 1965 under the Local Tax
 Enabling Act \citep[Act 511;][]{paAct511_1965}, which authorized
 municipalities and school districts throughout the state to levy
-an earned income tax on wages, salaries, commissions and net profits. The
+an earned income tax on wages, salaries, commissions, and net profits. The
 act enables a municipality and is not mandatory, therefore a municipality may levy no EIT at
 all. Where a municipality and an overlapping school district both levy,
 Act 511 caps their combined resident rate at one percent and splits it
 fifty-fifty by default, unless the two taxing bodies agree otherwise.
-School districts may not tax nonresidents, so the sharing rule never
-affects the municipal rate applied to nonresident workers. Act 511 also
+School districts may not tax nonresidents. Act 511 also
 keeps a commuter's two tax bills from stacking, and it does so by giving
 the place of residence priority over the place of employment. That
 priority, rather than any single rate schedule, generates the piecewise
 structure the paper exploits.
 
-Each Pennsylvania municipality therefore has three EIT rates relevant to a
-worker:
+Each Pennsylvania municipality therefore has three EIT rates:
 %
 the municipality resident rate $\tau^{\text{res,muni}}$ levied on residents of the municipality, the municipality work rate $\tau^{\text{work,muni}}$ levied on workers employed in the municipality, and the school-district rate $\tau^{\text{SD}}$ levied on residents only.
 
@@ -223,7 +213,7 @@ The home municipality and school district always collect their full
 stack, and the work municipality collects only the amount by which its
 nonresident rate exceeds that stack.
 When the home stack is the larger of the two the work municipality collects
-nothing, which is why municipalities raise little revenue from nonresidents
+nothing
 \citep{paDeskbook2025}. The worker's total bill is the higher of the two stacks:
 %
 \begin{equation}
@@ -241,26 +231,23 @@ without changing jobs has no effect. For workers who live and work in
 the same municipality, the home stack and work rate are both set by that municipality, and the bill is determined by the home stack on the binding side.
 
 A worker who lives in municipality $j$ and moves to a lower-rate municipality $j'$
-while keeping the same job at $i$ saves at least the SD rate at $j$:
+while keeping the same job at $i$ saves at least the SD rate at $j$ where
 the new bill is $\max(\tau^{\text{home}}_{j'}, \tau^{\text{work,muni}}_i)$,
 which is at most the old bill $\tau^{\text{home}}_j$ minus
 $\tau^{\text{SD}}_j$. The empirical design follows this logic directly by using both the treatment
 $\Delta\tau^{\text{muni}}$ and the binding classification
-built from the worker's home stack. The regressions therefore measure
-sorting in response to the same tax a mover would actually face.
+built from the worker's home stack. 
 
 State law allows the Act 511 cap to be exceeded in a small number of
-statutorily defined circumstances, and which of them applies determines
-whether the excess can reach nonresidents. Municipalities adopting a home
+circumstances. Municipalities adopting a home
 rule charter under the Home Rule Charter and Optional Plans Law
 \citep{paHomeRule} are no longer confined to the statutory limit on taxes
-levied on their own residents, and some have raised the resident rate
-above one percent; the nonresident rate is a different matter, and a home
-rule municipality may not exceed the statutory limit for nonresidents.
-Two distress regimes are the exception. A municipality declared
-financially distressed under the Municipalities Financial Recovery Act
-\citep[Act 47 of 1987;][]{paAct47_1987} may petition the Court of Common
-Pleas to raise its EIT above the Act 511 limit as part of an adopted
+levied on their own residents, and some have raised the resident stacked rate
+above one percent while the nonresident rate may not exceed the statutory limit for nonresidents.
+Two distress regimes, Act 47 and Act 205, are the exception. A
+municipality declared financially distressed under the Municipalities
+Financial Recovery Act
+\citep[Act 47 of 1987;][]{paAct47_1987} may petition to raise its EIT above the Act 511 limit as part of an adopted
 recovery plan, renewable by annual petition, and Act 47 does not bar
 extending the increase to nonresidents. A municipality certified as
 having a financially distressed pension system under the Municipal
@@ -268,49 +255,32 @@ Pension Plan Funding Standard and Recovery Act
 \citep[Act 205 of 1984;][]{paAct205_1984} holds the same above-cap
 authority as a pension-recovery remedy, available only once the
 municipality is already at the maximum rate otherwise allowed, and
-Act 205 likewise permits extension to nonresidents. The two distress
-regimes are therefore the only routes to a nonresident rate above one
-percent; home rule reaches the resident rate alone.
+Act 205 likewise permits extension to nonresidents.
 
-This paper does not estimate the effect of nonresident (workplace tax) increases on sorting due to the lack of binding rate changes of the workplace tax over the home-stack. For the work side to bind, a single rate-setter must exceed the home-stack, which under the standard Act 511 rate structure almost never occurs: across 2002–2019, the work rate is the binding side in roughly $0.2\%$ of municipality-years. The handful of exceptions are the Act 47 and Act 205 distress municipalities just described, the only ones holding statutory authority to exceed the Act 511 cap on nonresidents. Because there are few work-binding events, a work-side binding decomposition is not identifiable.
+This paper does not estimate the effect of nonresident increases on sorting due to the lack of binding rate changes of the workplace tax over the home-stack. For the work side to bind, a single rate-setter must exceed the home-stack, which under the standard Act 511 rate structure almost never occurs: across 2002–2019, the work rate is the binding side in roughly $0.2\%$ of municipality-years. The handful of exceptions are the Act 47 and Act 205 distress municipalities just described, the only ones holding statutory authority to exceed the Act 511 cap on nonresidents. Because there are few work-binding events, a work-side binding decomposition is not identifiable.
 
-School districts reached above the shared cap by referendum. Act 50 of
-1998 \citep{paAct50_1998} authorized school districts to levy the EIT at
-rates up to 1.5\% with voter approval, beginning with the November 1999
-election, and required that the added revenue be offset by repealing
-occupation, occupational privilege and per capita taxes and by reducing
-real estate taxes through a homestead exclusion. Act 50's EIT-levy
-provisions were later repealed, first by Act 72 of 2004 and then by
-Act 1 of 2006, so the Act 50 route survives only for districts that
-adopted an increased rate before the repeal
-\citep{paDeskbook2025}. Act 24 of 2001 \citep{paAct24_2001} added the
-optional occupation tax elimination provisions that now form Chapter 4
-of Act 511, letting a municipality or school district replace the
-occupation tax outright with an EIT increase sized to the revenue that
-tax raised in the prior fiscal year, subject to referendum and
-conditional on eliminating the occupation tax; 36 school districts
-approved an Act 24 referendum in November 2001. The swap was extended to
-municipalities by amendment in June 2002, capped at occupation tax
-collections in 2001, so the municipal route opens in the first year of
-the estimation window. Act 24 rate increases are therefore
-revenue-neutral swaps rather than tax increases.
-
-The Taxpayer Relief Act \citep[Act 1 of 2006;][]{paAct1_2006} replaced
-that machinery and is the current route by which a school district may
-levy or increase an EIT above the shared cap, putting the increase to
-voters in exchange for homestead property tax relief
-\citep{paDeskbook2025}. Together with home rule, Act 47 and Act 205 on
-the municipal side and the Chapter 4 occupation tax swap on both sides,
-it is one of the statutory routes generating the above-cap rates
-observed in the DCED register.
+School districts can go above the cap through referendum. Act 50 of 1998
+\citep{paAct50_1998} first authorized a district to levy the EIT at up to
+1.5\% with voter approval, offset by reducing real estate taxes through a
+homestead exclusion; those EIT provisions were later repealed, and the
+Taxpayer Relief Act \citep[Act 1 of 2006;][]{paAct1_2006} is now the route
+by which a district puts an increase to voters in exchange for homestead
+property tax relief \citep{paDeskbook2025}. A third route runs through both
+levels of government: the Optional Occupation Tax Elimination Act
+\citep[Act 24 of 2001;][]{paAct24_2001}, now Chapter 4 of Act 511, lets a
+municipality or school district retire its occupation tax and raise the EIT
+by the revenue that tax had produced, a swap rather than a net increase, and
+it was extended to municipalities in 2002
+\citep{shapiroCommonwealthPennsylvania}. Together with home rule, Act 47 and
+Act 205 on the municipal side, these are the statutory routes behind the
+above-cap rates observed in the DCED register.
 
 Act 32 of 2008 \citep{paAct32_2008} brought the largest change to the
-local income tax system since the Local Tax Enabling Act. Signed on
-July 7, 2008 and effective for tax years beginning January 1, 2012, it
+local income tax system since the Local Tax Enabling Act. Signed in 2008 and effective for tax years beginning January 1, 2012, it
 created 69 county-wide Tax Collection Districts, cutting the number of
-collectors in the state from roughly 560; created tax collection
-committees to oversee collection and distribution within each district;
-and required uniform regulations, forms and procedures to ensure
+collectors in the state from roughly 560 and created tax collection
+committees to oversee collection and distribution within each district.
+The statute further required uniform regulations, forms and procedures to ensure
 consistent collections statewide. One district exists per county with two
 exceptions: Philadelphia is outside the Act 32 framework entirely and has
 no district, and Allegheny County is divided into four
@@ -321,20 +291,11 @@ Act 32 requires every employer with a Pennsylvania worksite to deduct
 from each employee the greater of that employee's resident tax or
 nonresident tax, read off the official tax register that the Department
 of Community and Economic Development
-maintains.\footnote{The department releases the register twice a year:
-rates released June 15 take effect July 1, and rates released
-December 15 take effect January 1 of the following year
-\citep{shapiroCommonwealthPennsylvania}. A rate change can therefore take
-effect mid-year, while the panel used here is annual.} Each address is
+maintains. Each address is
 associated with a six-digit Political Subdivision (PSD) code identifying
 its (municipality, school district) pair. Workers report this code on the
 Residency Certification Form, and employers use it to determine
-withholding obligations.\footnote{Act 32 defines a nonresident as a
-person performing services within the taxing political subdivision for
-90 or more consecutive days. For shorter assignments, withholding follows
-the location of the employer's permanent home office rather than the job
-site, so the work-side rate attaches only to workers stationed at a site
-for at least a quarter.}
+withholding obligations.
 
 This had two consequences.
 First, it made the EIT mechanically binding where the rate changes now
@@ -354,7 +315,7 @@ $\max(\tau^{\text{home}}_{j'}, \tau^{\text{work,muni}}_i)$, which falls
 below the old home stack $\tau^{\text{home}}_j$ whenever
 $\tau^{\text{home}}_{j'} < \tau^{\text{home}}_j$ and the original
 home stack was the binding side. Act 32 thus changed enforcement
-and made the max-rule mechanically binding through withholding; it
+and made the max-rule mechanically binding through withholding and it
 did not eliminate the residential-relocation margin that the
 mechanism in this paper exploits.
 \citet{bagchiEffectsIntroducingWithholding2022} highlighted the impact of Act 32 by showing that consolidated employer
@@ -363,14 +324,14 @@ income in the rate-raising municipality. The present paper complements that work
 the residential-sorting response to the same withholding-enforcement
 mechanism exploiting the variation in whether a given
 rate change actually moves the worker's bill (the binding
-decomposition); the pre/post-Act-32 split in
+decomposition) and a pre/post-Act-32 split in
 Section~\ref{sec:robustness} shows the binding-cell sorting
 response is strengthened (the effect existed prior to Act 32) after Act 32, complementing the
 compliance-response finding.
 
 Figure~\ref{fig:act32_cdf} documents the institutional break at
 Act 32. Before 2012, fewer than 60\% of PA municipalities reported a
-work rate to DCED; after 2012, when consolidated withholding
+work rate to DCED, and after 2012, when consolidated withholding
 made the max-rule mechanically binding, coverage rises sharply.
 This is the pre-/post-Act-32 enforcement break used in the
 heterogeneity test of Section~\ref{subsec:rob-act32}.
@@ -385,12 +346,7 @@ heterogeneity test of Section~\ref{subsec:rob-act32}.
     \label{fig:act32_cdf}
 \end{figure}
 
-School districts levy their EIT under the same Act 511 authority, at
-0.5\% wherever the default fifty-fifty split holds and higher where the
-district has taken one of the referendum routes described above---Act 1
-today, Act 50 for districts that adopted before its repeal, or the
-Chapter 4 occupation tax swap---or negotiated a different split with its
-municipalities. I find that the correlation between the municipal and school-district resident rates is only weakly negative of $-0.12$ indicating the two taxing jurisdictions move on relatively separate schedules. Since every census block sits in both a municipality
+School districts levy their EIT under the same Act 511 authority. Since every census block sits in both a municipality
 and a school district, workers face two overlapping EIT rates
 that can change independently, providing a natural decomposition
 of the residential sorting response into municipal and school
@@ -1126,7 +1082,7 @@ the identical specification.
 This section summarizes the robustness checks behind the headline
 muni-level dose-response. The realized-dose event-study pre-trend
 diagnostic was discussed alongside the headline in
-Section~\ref{subsubsec:decomp-es}. Full tables behind the
+Section~\ref{subsec:results-es}. Full tables behind the
 robustness summaries are in Appendix~\ref{app:robustness}.
 
 \subsection{de Chaisemartin and D'Haultfœuille Estimator}
@@ -1202,7 +1158,7 @@ $2$ of the $24$ Inc-bind municipalities match the DCED Act~47
 designation list (Carbondale and Hazleton). The other historically
 Act-47-designated PA cities (e.g.\ Braddock, Coatesville, Johnstown)
 do not appear in the Inc-bind cell here because their rate trajectories are non-monotone (did not move in one direction) and were removed (Section~\ref{subsec:stacked-continuous}).
-Table~\ref{tab:act47_robustness} re-estimates the
+Table~\ref{tab:act47_full_results} re-estimates the
 municipality-level Inc-bind coefficient on the remaining $22$
 non-Act-47 Inc-bind municipalities.
 
@@ -1335,7 +1291,7 @@ the same joint regression.
 
 Per-cell realized-dose Sun--Abraham event studies at the muni
 level for the remaining residence-side outcomes (log live-and-work
-is in the body, Section~\ref{subsubsec:decomp-es}).
+is in the body, Section~\ref{subsec:results-es}).
 
 \begin{figure}[H]
   \centering

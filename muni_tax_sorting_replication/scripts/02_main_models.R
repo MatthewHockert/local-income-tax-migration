@@ -39,6 +39,7 @@ setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
 # Flags ----
 RUN_HEADLINE <- TRUE  # headline binding decomposition (8 outcomes) + validation gate
+RUN_NOPROP   <- TRUE  # headline re-run WITHOUT the property effective-rate controls
 RUN_POOLED   <- TRUE  # pooled Inc/Dec per-pp + binary benchmark (cousub)
 RUN_REVENUE  <- TRUE  # log EIT revenue decomposition + ES + Laffer offset + splits
 
@@ -169,6 +170,93 @@ if (RUN_HEADLINE) local({
   ctrl_lw <- coefs[outcome == "log_live_and_work" & term %in% ctrls]
   print(ctrl_lw[, .(term, est = round(est, 4), se = round(se, 4),
                     p = round(p, 4), sig)])
+})
+
+# Headline WITHOUT property controls ----
+# Does conditioning on the property tax move the EIT estimate? Re-runs the
+# headline spec verbatim except that muni/sd/county effective property rates
+# are removed from the right-hand side. Everything else -- outcomes, muni and
+# SD cell x dose interactions, AFR spending shares, stack-interacted FE,
+# clustering on muni -- is identical.
+#
+# Two no-property variants, because dropping a control also drops it from
+# complete.cases() and would otherwise change the SAMPLE at the same time:
+#   fixed  = same estimation sample as the headline, property rates omitted
+#            from the regression only. This isolates the control's effect.
+#   free   = complete cases on the reduced control set, so munis with missing
+#            property data re-enter. This is what the estimate would be if the
+#            property panel had never been built.
+# The `fixed` column is the answer to "does the control change the estimate".
+# NOTE: this is NOT the same comparison as the pre-property headline recorded
+# in the validation gate above (log_LW = -0.573), because that spec also
+# carried share_re and share_eit, which were dropped when the property rates
+# were added. Two things changed there at once; only one changes here.
+# Outputs -> data/results/headline_noprop_compare.csv
+# Lay explanation: the paper conditions on how heavily a town taxes property
+# so that the income-tax effect is not just picking up "high-tax town." This
+# section takes that control back out and checks whether the headline number
+# actually depended on it.
+if (RUN_NOPROP) local({
+
+  outcomes <- c("log_live_and_work", "log_in_commuters", "log_out_commuters",
+                "log_total_jobs", "log_total_residents",
+                "share_live_in", "share_work_outside", "share_nonres")
+  prop_ctrls <- c("muni_eff_rate", "sd_eff_rate", "county_eff_rate")
+  keep_ctrls <- setdiff(ctrls, prop_ctrls)
+
+  fit <- function(stk, outcome, use_ctrls, sample_ctrls) {
+    cols <- c("muni", "year", "treat_cell", "dose_stack",
+              "cell_sd", "dose_sd", "stack_muni", "stack_year",
+              outcome, sample_ctrls)
+    cols <- intersect(cols, names(stk))
+    d <- stk[, ..cols]
+    if (!is.null(d$dose_sd)) d[is.na(dose_sd), dose_sd := 0]
+    d <- d[complete.cases(d)]
+    if (nrow(d) == 0) return(NULL)
+    f <- as.formula(paste0(outcome,
+         " ~ i(treat_cell, dose_stack, ref='NC') ",
+         "+ i(cell_sd, dose_sd, ref='NC') + ",
+         paste(use_ctrls, collapse = " + "),
+         " | stack_muni + stack_year"))
+    feols(f, data = d, cluster = ~muni)
+  }
+
+  grab <- function(m, lab, o) {
+    if (is.null(m)) return(NULL)
+    ct <- as.data.table(m$coeftable, keep.rownames = "term")
+    setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"), c("est", "se", "p"),
+             skip_absent = TRUE)
+    ct <- ct[grepl("^treat_cell::", term)]
+    ct[, `:=`(cell = sub("treat_cell::(.*):dose_stack", "\\1", term),
+              spec = lab, outcome = o, n = nobs(m))]
+    ct[, .(outcome, cell, spec, est, se, p, n)]
+  }
+
+  res <- list()
+  for (o in outcomes) {
+    m_with  <- fit(stk_muni, o, ctrls,      ctrls)          # headline
+    m_fixed <- fit(stk_muni, o, keep_ctrls, ctrls)          # same sample, no property
+    m_free  <- fit(stk_muni, o, keep_ctrls, keep_ctrls)     # reduced-sample
+    res[[o]] <- rbindlist(list(grab(m_with,  "with_property",   o),
+                               grab(m_fixed, "no_property_fixed", o),
+                               grab(m_free,  "no_property_free",  o)), fill = TRUE)
+  }
+  cmp <- rbindlist(res, fill = TRUE)
+  fwrite(cmp, file.path(RESULTS_DIR, "headline_noprop_compare.csv"))
+
+  wide <- dcast(cmp, outcome + cell ~ spec, value.var = c("est", "n"))
+  wide[, delta_fixed := round(est_no_property_fixed - est_with_property, 4)]
+  wide[, pct_shift   := round(100 * delta_fixed / abs(est_with_property), 1)]
+  print(wide[cell %in% c("Inc-bind", "Inc-becomes", "Inc-nobind") &
+             outcome %in% c("log_live_and_work", "log_in_commuters",
+                            "log_total_jobs", "share_live_in"),
+             .(outcome, cell,
+               with_prop  = round(est_with_property, 3),
+               no_prop    = round(est_no_property_fixed, 3),
+               delta      = delta_fixed,
+               pct_shift,
+               n_with     = n_with_property,
+               n_free     = n_no_property_free)])
 })
 
 # Pooled Inc/Dec benchmark ----

@@ -36,6 +36,7 @@ RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, In
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
 RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, dose vs tag)
+RUN_TAX_MIX_FIG          <- TRUE   # tax-revenue mix by source, muni + SD panels
 
 # Shared headline environment ----
 # Built once for the sections that need the classified cousub panel / muni
@@ -1410,6 +1411,157 @@ if (RUN_DESIGN_SCHEMATICS) local({
           panel.grid.minor = element_blank())
   ggsave(file.path(fig_dir, "schematic_dose_vs_tag.png"), g3,
          width = 9, height = 3.5, dpi = 300)
+})
+
+# Tax-revenue mix by source (build_tax_mix_figure.R) ----
+# Composition of local tax revenue in PA, 2002-2019, as each source's share of
+# its own layer's total tax revenue. Two panels, because the two rate-setting
+# layers in the design have opposite revenue structures and pooling them would
+# bury the EIT under school-district property tax:
+#   (a) municipalities -- DCED AFR, six sources
+#   (b) school districts -- Census F-33, four sources (SCHLEV 03 only)
+# Shares are of statewide summed dollars, not the mean of unit-level shares, so
+# the figure describes where PA local tax revenue actually comes from rather
+# than what the median jurisdiction looks like.
+# PHILADELPHIA IS EXCLUDED from both panels. Its wage tax is a Sterling Act levy
+# predating Act 511, outside the max-rule the paper studies, and it is dropped
+# from the estimation sample. It is also 43-47% of all municipal tax revenue in
+# the state, so leaving it in inverts the municipal panel: EIT 46% / property 32%
+# with Philadelphia, property 46% / EIT 36% without.
+# Outputs -> figures/tax_revenue_mix.png, data/results/tax_revenue_mix.csv
+# Lay explanation: this is the institutional backdrop for the paper -- it shows
+# that the earned income tax funds about a third of municipal budgets, roughly
+# on par with property tax, while school districts run almost entirely on
+# property tax and collect only about a tenth of their taxes from the EIT.
+if (RUN_TAX_MIX_FIG) local({
+  fig_dir <- OUT_DIR; YRS <- c(2002L, 2019L)
+
+  ## --- municipal: DCED Annual Financial Report -------------------------------
+  afr <- fread(file.path(RAW_DIR, "pa_afr_panel.csv"))
+  afr[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
+  afr[, yr := as.integer(ifelse(!is.na(reporting_year), reporting_year, year))]
+  afr <- afr[!is.na(muni_id) & yr %between% YRS &
+             !municipality_name %like% "PHILADELPHIA"]
+
+  # DCED changed the AFR export format in 2006: 2002-2005 rows carry the short
+  # column names and 2006+ rows the "*_revenues" names, side by side as separate
+  # columns of the same file. Coalesce new-over-old, as build_headline_env() does.
+  cz <- function(new, old) {
+    v <- suppressWarnings(as.numeric(afr[[new]]))
+    w <- suppressWarnings(as.numeric(afr[[old]]))
+    fifelse(!is.na(v), v, w)
+  }
+  add <- function(...) {
+    m <- cbind(...)
+    out <- rowSums(m, na.rm = TRUE)
+    out[rowSums(!is.na(m)) == 0] <- NA_real_
+    out
+  }
+  muni <- afr[, .(
+    year        = yr,
+    `Property`  = cz("real_estate_tax_revenues",   "real_estate_tax"),
+    `Income (EIT)` = cz("earned_income_tax_revenues", "earned_income_tax"),
+    `Realty transfer` = cz("realty_transfer_tax_revenues", "realty_transfer_tax"),
+    `Sales and gross receipts` = add(cz("business_gross_receipts_tax_revenues", "business_gross_recpts"),
+                                     cz("amusement_and_admissions_tax_revenues", "amusmnt_admsns"),
+                                     cz("mechanical_device_tax_revenues", "mechanical_devices_tax")),
+    # per capita + occupation + local services (the occupational privilege tax
+    # before Act 222 of 2004 renamed it) -- all levied per head, not on a base
+    `Head taxes` = add(cz("per_capita_tax_revenues", "per_capita_tax"),
+                       cz("occupational_tax_revenues", "occupation_tax"),
+                       cz("local_services_tax_revenues", "occptnl_priv_tax")),
+    `Other`     = cz("all_other_taxes_revenues", "all_other_taxes"),
+    reported_total = cz("total_taxes_revenues", "total_taxes"))]
+
+  cats_m <- c("Property", "Income (EIT)", "Realty transfer",
+              "Sales and gross receipts", "Head taxes", "Other")
+  agg_m <- muni[, c(lapply(.SD, sum, na.rm = TRUE), .(n_units = .N)),
+                by = year, .SDcols = c(cats_m, "reported_total")]
+
+  # The itemised lines do not always exhaust DCED's own reported tax total --
+  # a handful of cities (Pittsburgh above all) collect taxes that the AFR folds
+  # into the total without giving them a line. Rather than drop those dollars or
+  # quietly change the denominator, the unitemised residual is added to "Other",
+  # so shares are of DCED's reported total and sum to 100 by construction.
+  agg_m[, itemised := rowSums(.SD), .SDcols = cats_m]
+  agg_m[, residual := pmax(reported_total - itemised, 0)]
+  print(sprintf("[tax mix] muni: %d years, %d-%d units/yr, unitemised residual %.1f-%.1f%% of reported taxes",
+                nrow(agg_m), min(agg_m$n_units), max(agg_m$n_units),
+                100 * min(agg_m$residual / agg_m$reported_total),
+                100 * max(agg_m$residual / agg_m$reported_total)))
+  if (agg_m[, max(residual / reported_total)] > 0.10)
+    warning("unitemised municipal tax residual exceeds 10% in some year")
+  agg_m[, Other := Other + residual]
+
+  ## --- school district: Census F-33 -----------------------------------------
+  # SCHLEV 03 = operating local school districts; the other levels (charters,
+  # supervisory unions, service agencies) report no tax revenue. F-33 dollars
+  # are in thousands, so scale to match the AFR.
+  f33 <- fread(file.path(RAW_DIR, "pa_sd_finance_raw.csv"))
+  f33 <- f33[SCHLEV == "03" & fy %between% YRS & !NAME %like% "PHILADELPHIA"]
+  sd_dt <- f33[, .(year = as.integer(fy),
+                   `Property`     = as.numeric(T06) * 1000,
+                   `Income (EIT)` = as.numeric(T40) * 1000,
+                   `Sales and gross receipts` = (as.numeric(T09) + as.numeric(T15)) * 1000,
+                   `Other`        = as.numeric(T99) * 1000)]
+  cats_s <- c("Property", "Income (EIT)", "Sales and gross receipts", "Other")
+  agg_s <- sd_dt[, c(lapply(.SD, sum, na.rm = TRUE), .(n_units = .N)),
+                 by = year, .SDcols = cats_s]
+  print(sprintf("[tax mix] SD: %d years, %d-%d districts/yr",
+                nrow(agg_s), min(agg_s$n_units), max(agg_s$n_units)))
+
+  ## --- shares ---------------------------------------------------------------
+  to_long <- function(a, cats, lab) {
+    l <- melt(a[, c("year", cats), with = FALSE], id.vars = "year",
+              variable.name = "source", value.name = "dollars")
+    l[, share := 100 * dollars / sum(dollars), by = year]
+    l[, layer := lab][]
+  }
+  long <- rbind(to_long(agg_m, cats_m, "(a) Municipalities (DCED AFR)"),
+                to_long(agg_s, cats_s, "(b) School districts (Census F-33)"))
+  long[, source := factor(source, levels = cats_m)]
+  fwrite(long[order(layer, source, year)], file.path(RESULTS_DIR, "tax_revenue_mix.csv"))
+  print(long[year %in% c(2002, 2019)][order(layer, -share),
+             .(layer, year, source, share = round(share, 1))])
+
+  ## --- figure ---------------------------------------------------------------
+  # Colour and linetype both encode the source, so the panels stay readable in
+  # greyscale; the Okabe-Ito palette keeps them separable for colour-blind readers.
+  pal <- c("Property" = "#0072B2", "Income (EIT)" = "#D55E00",
+           "Realty transfer" = "#009E73", "Sales and gross receipts" = "#CC79A7",
+           "Head taxes" = "#E69F00", "Other" = "#666666")
+  lty <- c("Property" = "solid", "Income (EIT)" = "solid",
+           "Realty transfer" = "dashed", "Sales and gross receipts" = "dotted",
+           "Head taxes" = "dotdash", "Other" = "longdash")
+  lwd <- c("Property" = 1.0, "Income (EIT)" = 1.0, "Realty transfer" = 0.6,
+           "Sales and gross receipts" = 0.6, "Head taxes" = 0.6, "Other" = 0.6)
+
+  g <- ggplot(long, aes(year, share, colour = source,
+                        linetype = source, linewidth = source)) +
+    geom_line() +
+    # Free y: school-district property tax sits near 86%, and a shared 0-100 axis
+    # would compress every other source into an unreadable band at the floor.
+    facet_wrap(~ layer, nrow = 1, scales = "free_y") +
+    scale_colour_manual(values = pal, name = NULL, drop = FALSE) +
+    scale_linetype_manual(values = lty, name = NULL, drop = FALSE) +
+    scale_linewidth_manual(values = lwd, name = NULL, drop = FALSE, guide = "none") +
+    scale_x_continuous(breaks = seq(2002, 2018, 4)) +
+    scale_y_continuous(limits = c(0, NA), breaks = pretty_breaks(6),
+                       expand = expansion(mult = c(0.02, 0.08))) +
+    labs(title = "Shares of total local tax revenue, Pennsylvania 2002-2019",
+         subtitle = paste("Each source as a percent of its own layer's total tax revenue; statewide summed dollars.",
+                          "Philadelphia excluded: its wage tax is a Sterling Act levy outside the Act 511 max-rule.",
+                          sep = "\n"),
+         x = "Year", y = "Share of total taxes (%)") +
+    theme_bw(base_size = 11) +
+    theme(legend.position = "bottom",
+          plot.subtitle = element_text(size = 8, colour = "grey25"),
+          strip.background = element_rect(fill = "grey95", colour = NA),
+          strip.text = element_text(face = "bold"),
+          panel.grid.minor = element_blank()) +
+    guides(colour = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2))
+  ggsave(file.path(fig_dir, "tax_revenue_mix.png"), g,
+         width = 10, height = 5, dpi = 300)
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()
