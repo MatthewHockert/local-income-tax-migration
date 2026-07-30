@@ -370,60 +370,7 @@ corresponding COUSUBFP code, matching $2{,}496$ of $2{,}505$ PA municipalities
 ($99.6\%$). The remaining $9$ are small boroughs that have either dissolved or
 merged during 2002--2019 and are dropped from the analysis.
 
-The residence--workplace data come from LEHD LODES Version~8,
-2002--2019 \citep{lehdLODES}. The Census Bureau applies
-synthetic noise infusion at the block level to protect respondent
-confidentiality and is calibrated so that aggregation to tract and larger
-geographies approximates ground truth
-\citep{grahamDESIGNCOMPARISONLODES}. The sample period of 2002--2019
-reflects LODES coverage beginning in 2002 and
-2020--2023 to not include disruptions in the data resulting from the COVID Pandemic.
-
-The origin--destination file records job counts by residence block and
-workplace block, which I aggregate to municipality pairs and then to the
-four outcomes used below. Live-and-work workers are jobs whose residence
-and workplace municipalities coincide, the margin a resident rate change
-acts on most directly. In-commuters are jobs located in the municipality
-but held by residents of another. Total jobs is the sum of the two, so it
-is a workplace-side count and not a population measure. The live-and-work
-share divides live-and-work workers by total jobs, so its denominator is
-the local job base rather than the resident labor force. A coefficient on
-that share therefore answers how the composition of a municipality's
-workforce shifts, and it can move because residents leave or because
-in-commuting grows.
-
-Municipal and school-district EIT rates come from the Pennsylvania
-Department of Community and Economic Development (DCED) MunStats
-portal \citep{padcedMunStats}, scraped annually. In some DCED reports, the flat-dollar Local Services Tax is filled in the same field
-as the EIT in some years, so rates above $5\%$ are treated as
-data-entry errors and dropped except for Home Rule cities and Philadelphia.
-
-Municipal fiscal controls come from the PA DCED Statewide Municipal
-Annual Financial Report database \citep{padcedAFR}. School-district
-fiscal controls come from the Census Annual Survey of School System
-Finances (F-33) \citep{censusF33}, and the NCES \texttt{LEAID}-to-DCED
-SD ID crosswalk covers all $500$ school districts. All fiscal
-controls are share-based and time-varying. Municipality regressions use
-four DCED AFR shares, three of expenditure (police services, streets,
-debt service) and one of revenue (intergovernmental revenue), together
-with the three effective property-tax rates described below.
-LODES blocks are aggregated to muni for analysis.
-
-Two AFR shares that a fiscal-composition control set would ordinarily
-include are deliberately left out. The EIT-revenue share is a function of
-the EIT rate, so it sits between the treatment and the outcome and
-conditioning on it absorbs part of the effect being estimated. The
-real-estate-tax share is a revenue-side proxy for the same property burden
-that the effective property rates measure directly, so it is redundant
-once those rates are in the specification.
-
-The municipality--SD assignment uses the modal SD ID per muni in
-the DCED rate panel ($97.6\%$ of municipalities are single-SD), so
-each muni-year carries a single $\tau^{\text{SD}}$ co-treatment.
-
-Two restrictions take the raw panel to the estimation sample, and all
-descriptive statistics reported below are computed on that sample rather
-than on the raw panel. The raw 2002--2019 municipality panel holds
+The raw 2002--2019 municipality panel holds
 $45{,}291$ muni-years across $2{,}559$ municipalities. I first drop
 municipalities whose rate history moves in both directions over the
 sample, because a municipality that raises and later cuts its rate cannot
@@ -439,78 +386,112 @@ the outcomes are logged, each regression drops the additional muni-years
 in which the relevant count is zero, so per-outcome sample sizes appear in
 Table~\ref{tab:summary_muni} row by row.
 
-For the property tax, municipal, school-district and county real-estate
-millage come from the same DCED MunStats register, scraped annually
+The residence--workplace data come from LEHD LODES Version~8,
+2002--2019 \citep{lehdLODES}. The Census Bureau applies
+synthetic noise infusion at the block level to protect respondent
+confidentiality and is calibrated so that aggregation to tract and larger
+geographies approximates ground truth
+\citep{grahamDESIGNCOMPARISONLODES}. The sample period of 2002--2019
+reflects LODES coverage beginning in 2002 and
+2020--2023 to not include disruptions in the data resulting from the COVID Pandemic.
+
+The origin--destination file records job counts by residence block and
+workplace block, which I aggregate to the municipality and then transform into the
+four outcomes used. The first variable, Live-and-work, are workers whose residence
+and workplace municipalities are the same, I argue this is the outcome a resident rate change
+acts on most directly. The second outcome variable is in-commuters which are jobs located in the municipality
+but held by residents of another. Third, total jobs is the total number of jobs in a municipality, a proxy for the measure of how well a municipality's economy is functioning. Lastly, live-and-work
+share divides live-and-work workers by total jobs, so its denominator is
+the local job base rather than the resident labor force. A coefficient on
+that share therefore answers how the composition of a municipality's
+workforce shifts, and it can move because residents leave or because
+in-commuting grows.
+
+Municipal and school-district earned income tax (EIT) rates come from the Pennsylvania
+Department of Community and Economic Development (DCED) MunStats
+portal \citep{padcedMunStats}, and is scraped for annual values. In some DCED reports, the flat-dollar Local Services Tax is filled in the same field
+as the EIT in some years, so rates above $5\%$ are treated as
+data-entry errors and dropped except for Home Rule cities. The municipality and SD assignment uses the SD rates reported for each muni in
+the DCED rate panel ($97.6\%$ of municipalities are single-SD), so
+each muni-year carries a single $\tau^{\text{SD}}$ co-treatment. For $2.4\%$ of municipalities that have multiple school districts that overlap within its borders I take the max of the set.
+
+Municipal fiscal controls come from the PA DCED Statewide Municipal
+Annual Financial Report (AFR) database \citep{padcedAFR}. School-district
+fiscal controls come from the Census Annual Survey of School System
+Finances (F-33) \citep{censusF33}, and the NCES \texttt{LEAID}-to-DCED
+SD ID crosswalk covers all $500$ school districts. Municipality regressions use
+four DCED AFR shares, three of expenditure (police services, streets,
+debt service) and one of revenue (intergovernmental revenue), together
+with the three effective property-tax rates described below. All fiscal
+controls are share-based and time-varying. Two AFR shares are deliberately left out. First, the EIT-revenue share is a function of
+the EIT rate, so it sits between the treatment and the outcome and
+conditioning on it absorbs part of the effect being estimated. Second, the
+real-estate-tax share is a revenue-side proxy for the same property burden
+that the effective property rates measure directly so it is also not used in the estimation. 
+
+% what is a CLR? How is it calculated? - SOurce: https://www.pa.gov/agencies/revenue/resources/tax-types-and-information/realty-transfer-tax/common-level-ratios
+% what is millage? 
+% what is the effective rate? What equation do we use to calculate the effective rate?  - source to verify the way we did it is right?
+
+The property tax for municipal, school-district, and county real-estate
+millage come from the same DCED MunStats register, and is scraped for annual values
 \citep{padcedMunStats}. The county tax register reports general-purpose
-and total millage for all $66$ assessing counties, Philadelphia being a
-consolidated city--county. County common-level ratios come from the
-Pennsylvania Department of Revenue's historical CLR factor series
-\citep{padorCLR}, in which the published factor is the reciprocal of the
-CLR. Millage is statutory and levied on assessed value, so converting it
-to a burden on market value requires the CLR. I therefore multiply each
-layer's millage by the county ratio and carry the three layers
-separately, since the municipality is the estimating unit and the three
-governments set rates independently. After the repair described below,
-their medians across the estimation sample are $0.14$, $1.45$ and $0.42$
-percentage points of market value for the municipal, school-district and
-county layers, and the combined burden has a median of about $2.0\%$.
+and total millage for all $66$ assessing counties.
 
-This construction is vulnerable at countywide reassessments, and the raw
-register does not survive the vulnerability intact. A reassessment resets
-the assessment basis rather than the tax burden. The common-level ratio
-jumps toward unity, because assessed value is restored to market value,
-and statutory millage should fall by the same factor, so the effective
-rate passes through the reassessment unchanged. Many governments in the
-DCED register never rebased their reported millage. Their old-basis
-millage is then multiplied by a new-basis ratio and the implied burden
-rises by the full size of the reassessment. Wilkes-Barre City is the
-clearest case. Luzerne County reassessed effective 2009, its ratio moved
-from $0.05$ to $1.00$, and the county's median municipal millage fell
-from $22.50$ to $0.93$ accordingly. Wilkes-Barre's reported millage
-instead rose from $73.63$ to $141.33$ over the following decade, so its
-implied burden reads between $7$ and $14$ percentage points of market
-value for eleven consecutive years against its own pre-2008 range of
-$0.36$ to $0.48$.
+Millage is the statutory rate, one mill being one dollar of tax per
+thousand dollars of assessed value. Assessed value is not market value.
+Pennsylvania counties assess at widely different fractions of market
+value and reassess rarely, so identical millage implies very different
+burdens across counties and the statutory rate is not comparable on its
+own. The common level ratio bridges the two. Pennsylvania law defines it
+as the ratio of assessed value to current market value prevailing in a
+county, determined annually by the State Tax Equalization Board from
+validated sales data \citep{padcedSTEB}. County ratios come from the
+Department of Revenue's historical factor series \citep{padorCLR}. The property tax is therefore calculated as:
+%
+\begin{equation}
+\tau^{P} = \frac{\text{mills}}{1000} \times \text{CLR},
+\label{eq:eff_property}
+\end{equation}
+%
+I compute each jurisdiction separately since the municipality is the estimating unit and the three
+governments set rates independently.
 
-I repair this rather than dropping the affected observations, which would
-discard eleven years of a municipality that raises its resident rate and
-therefore contributes to identification. Two rules do the work. The first
-uses the reassessment itself. A reassessment is identified by the ratio
-being restored to market value rather than by the size of its movement,
-since the ratio drifts with the market every year and thirteen genuine
-reassessments move it by less than half. Within a reassessment year, a
-government that failed to rebase is one whose millage did not fall by the
-implied factor, and that shortfall is also the correction. The second
-rule uses the cross-section. Every government in a county-year is
-multiplied by the same ratio, so a unit sitting far above its county-year
-peers across most of the panel is on the wrong basis even where no
-reassessment inside the sample window reveals it. The repair leaves no
-municipal or county observation above five percentage points, where the
-raw register leaves fifteen and seventy-six, and it reduces the median
-year-over-year discontinuity in the implied burden at every layer.
-Corrections touch under three percent of municipal observations, and
-every corrected unit-year is written to an audit file recording the
-original value, the factor applied, and which rule fired.
+However, the tax calculation is not always accurate due to infrequent assessments. In a
+reassessment the county revalues every property at current market value,
+so assessed value rises to the market value and the ratio between them
+should rise with it. Because the tax base has grown, each government
+lowers its millage in proportion, and the effective tax bill the property owner
+actually pays should not change. Where a government's millage was
+never restated on the new basis, the old millage is paired with the new
+ratio, and the computed burden jumps by the size of the reassessment and
+stays high for the rest of the panel.
 
-The school-district layer resists both rules. Eight hundred and fifteen
-district-years remain above five percentage points after repair, against
-$1{,}482$ before. The residual cases are not reassessment failures. Some
-are outright transcription errors, such as a district reported at
-$6{,}555$ mills in two years against roughly $65$ on either side, and
-others are districts whose millage never shared a basis with their
-county's ratio at any point in the sample, so no discontinuity exists to
-key on. I report this rather than tightening the rules until the count
-reaches zero, which would fit the repair to the target. The school
-district enters the municipality-level specification only as a control,
-and the headline estimate in Section~\ref{sec:results} moves by less than
-a fifth of a standard error when the school-district rate is omitted from
-the specification entirely, so the residual contamination does not bear
-on the estimates. The durable fix is to abandon the
-millage-and-ratio reconstruction for certified market values from the
-State Tax Equalization Board, which would give the burden directly and
-involve no assessment basis at all. Those values are certified annually
-for every municipality and school district but are not currently
-published in a form covering 2002--2019, so I leave that to future work.
+I correct the millage rather than dropping the observations. Two rules do the work. The first looks for
+the reassessment. A reassessment is recognized by the ratio moving to
+one, which is what assessing at full market value means, rather than by
+how far the ratio moved, because ordinary market drift moves it every
+year and some genuine reassessments move it very little. In a
+reassessment year a government that failed to restate its millage is one
+whose millage did not fall when the base grew, and the size of that
+failure is also the correction. The second rule looks across
+municipal governments. Every municipality in a county shares one ratio, so a
+municipality whose computed burden sits far above its neighbors' for most
+of the panel is on the wrong basis even when no reassessment inside the
+sample reveals it. The correction touches a small share of observations,
+leaves no municipal or county burden at an implausible level, and makes
+the series smoother from year to year. Every corrected value is written
+to an audit file recording what it was, what it became, and which rule
+fired.
+
+The school-district layer resists both rules and some districts remain
+implausibly high. Those are transcription errors in the dataset, and districts whose
+millage never matched their county's basis anywhere in the sample meaning
+there is no break for the rules to find. I leave them rather than
+dropping the variation. The school district enters the
+municipality-level specification only as a control, and the headline
+estimate barely moves when it is left out altogether, so what remains
+does not affect the results.
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
