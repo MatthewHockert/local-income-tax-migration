@@ -93,8 +93,16 @@ if (RUN_SUMMARY_STATS) local({
       "    \\midrule")
     for (i in seq_len(nrow(rows_dt))) {
       r <- rows_dt[i]
+      # A row whose label starts with "PANEL:" is a section header, not data.
+      if (grepl("^PANEL:", r$label)) {
+        body <- c(body, "    \\addlinespace",
+                  sprintf("    \\multicolumn{6}{l}{\\textit{%s}} \\\\",
+                          sub("^PANEL:\\s*", "", r$label)),
+                  "    \\addlinespace")
+        next
+      }
       body <- c(body, sprintf(
-        "    %s & %s & %.3f & %.3f & %.3f & %.3f \\\\",
+        "    %s & %s & %.2f & %.2f & %.2f & %.2f \\\\",
         r$label,
         format(as.integer(r$N), big.mark = ","),
         r$mean, r$sd, r$min, r$max))
@@ -115,6 +123,7 @@ if (RUN_SUMMARY_STATS) local({
     data.table(label = label, N = s[1], mean = s[2], sd = s[3],
                p25 = s[4], p50 = s[5], p75 = s[6], min = s[7], max = s[8])
   }
+  mk_panel <- function(title) data.table(label = paste0("PANEL: ", title))
 
   # Muni-type tagging (city / borough / township)
   muni_type_from_name <- function(nm) {
@@ -125,33 +134,80 @@ if (RUN_SUMMARY_STATS) local({
   }
   rate[, muni_type := muni_type_from_name(municipality)]
 
-  # 1. Muni-level summary
-  cousub_keyed <- copy(cousub)
-  setnames(cousub_keyed, "work_city", "muni", skip_absent = TRUE)
-  rate_type <- unique(rate[, .(municipality_id, year, muni_type)])
-  rate_type[, municipality_id := as.character(municipality_id)]
-  cousub_keyed[, muni := as.character(muni)]
-  m <- merge(cousub_keyed, rate_type,
-             by.x = c("muni","year"), by.y = c("municipality_id","year"),
-             all.x = TRUE)
-  m[, home_stack := resident_eit + sd_eit]
+  # 1. Muni-level summary -- ESTIMATION SAMPLE
+  # The table must describe the muni-years the headline regressions actually
+  # use, not the raw LODES panel. Three restrictions get us there, in the same
+  # order build_headline_env() applies them:
+  #   (a) raw cousub panel, 2002-2019
+  #   (b) drop flip-floppers ("Uncertain") and any muni with a Dec event
+  #       -> env$panel
+  #   (c) drop muni-years missing any fiscal control (feols complete.cases)
+  #       -> est
+  # Each outcome row then reports its OWN non-missing N inside `est`, which is
+  # exactly that outcome's regression N at the muni-year level (before the
+  # stack replicates NC munis across cohorts).
+  ctrls <- env$ctrls
+  est <- copy(env$panel)
+  est <- est[complete.cases(est[, ..ctrls])]
 
+  raw_muni <- copy(cousub)
+  setnames(raw_muni, "work_city", "muni", skip_absent = TRUE)
+  sample_steps <- data.table(
+    step = c("Raw cousub panel, 2002--2019",
+             "Less flip-floppers and decrease munis",
+             "Less muni-years missing a fiscal control"),
+    munis      = c(uniqueN(raw_muni$muni), uniqueN(env$panel$muni), uniqueN(est$muni)),
+    muni_years = c(nrow(raw_muni),         nrow(env$panel),         nrow(est)))
+  fwrite(sample_steps, file.path(RESULTS_DIR, "sample_construction.csv"))
+
+  # Shares reported in percent so two decimals stay informative.
   muni_rows <- list(
-    mk_row("Resident rate $\\tau^{M}$ (\\%)",        m$resident_eit),
-    mk_row("Nonresident rate $\\tau^{nr,M}$ (\\%)",  m$muni_nonres_eit),
-    mk_row("SD rate $\\tau^{SD}$ (\\%)",             m$sd_eit),
-    mk_row("Home stack $\\tau^{M}+\\tau^{SD}$ (\\%)", m$home_stack),
-    mk_row("Live-and-work workers",                   m$live_and_work),
-    mk_row("Total jobs",                              m$total_jobs),
-    mk_row("Share live-and-work in muni",             m$share_live_in)
+    mk_panel("Tax rates (percentage points)"),
+    mk_row("Resident EIT rate $\\tau^{M}$",            est$resident_eit),
+    mk_row("Nonresident EIT rate $\\tau^{nr,M}$",      est$muni_nonres_eit),
+    mk_row("School-district EIT rate $\\tau^{SD}$",    est$sd_eit),
+    mk_row("Home stack $\\tau^{M}+\\tau^{SD}$",        est$home_stack),
+    mk_row("Effective property rate, muni",            est$muni_eff_rate),
+    mk_row("Effective property rate, school district", est$sd_eff_rate),
+    mk_row("Effective property rate, county",          est$county_eff_rate),
+
+    mk_panel("Outcomes"),
+    mk_row("Live-and-work workers",                    est$live_and_work),
+    mk_row("In-commuters",                             est$in_commuters),
+    mk_row("Total jobs",                               est$total_jobs),
+    mk_row("Share live-and-work in muni (\\%)",     100 * est$share_live_in),
+
+    mk_panel("Fiscal controls (percent of total)"),
+    mk_row("Police, share of expenditure",             100 * est$share_police),
+    mk_row("Streets, share of expenditure",            100 * est$share_streets),
+    mk_row("Debt service, share of expenditure",       100 * est$share_debt_svc),
+    mk_row("Intergovernmental, share of revenue",      100 * est$share_intergov)
   )
   write_summary_table(muni_rows,
-    "Muni-year summary statistics (2002--2019)",
+    "Estimation-sample summary statistics, muni-year (2002--2019)",
     "tab:summary_muni", "summary_muni.tex",
-    notes = c("Muni-year level; one observation per (municipality, year).",
-              "Rates in percentage points. $\\tau^{nr,M}$ has reporting gaps before Act 32; the $N$ for that row is smaller than the full panel."))
+    notes = c(sprintf(paste("Estimation sample: %s muni-years across %s municipalities.",
+                            "The raw 2002--2019 cousub panel has %s muni-years across %s municipalities.",
+                            "Dropping flip-floppers and decrease municipalities leaves %s, and dropping",
+                            "muni-years missing a fiscal control leaves the sample above."),
+                      format(nrow(est), big.mark = ","),
+                      format(uniqueN(est$muni), big.mark = ","),
+                      format(sample_steps$muni_years[1], big.mark = ","),
+                      format(sample_steps$munis[1], big.mark = ","),
+                      format(sample_steps$muni_years[2], big.mark = ",")),
+              "Each outcome row reports its own non-missing $N$, which is that outcome's",
+              "regression sample at the muni-year level. Log outcomes drop muni-years with a zero count.",
+              "$\\tau^{nr,M}$ has DCED reporting gaps before Act 32.",
+              "Effective property rates are statutory millage times the county common-level ratio, in percentage points,",
+              "after the assessment-basis repair described in Section~\\ref{subsec:sources}.",
+              "The stacked design replicates never-changer municipalities once per cohort, so stacked row counts exceed those here."))
 
-  # Muni-type sub-table (means only by type)
+  # Muni-type sub-table (means only by type), on the same estimation sample
+  rate_type <- unique(rate[, .(municipality_id, year, muni_type)])
+  rate_type[, municipality_id := as.character(municipality_id)]
+  m <- merge(est[, muni := as.character(muni)], rate_type,
+             by.x = c("muni","year"), by.y = c("municipality_id","year"),
+             all.x = TRUE)
   type_split <- m[!is.na(muni_type),
                   .(N_muni_years = .N,
                     mean_res = mean(resident_eit, na.rm = TRUE),
@@ -206,8 +262,10 @@ if (RUN_SUMMARY_STATS) local({
     "tab:summary_sd", "summary_sd.tex",
     notes = c("SD-year level. F-33 share controls are constructed from Census F-33 revenue/expenditure totals."))
 
-  # 4. Cell counts (uses the shared headline env's cousub stack classification)
-  panel <- copy(env$panel)
+  # 4. Cell counts -- same estimation sample as tab:summary_muni, so the
+  # municipality counts here reconcile with the regression Ns rather than
+  # with the raw panel.
+  panel <- copy(est)
 
   cell_levels_keep <- c("NC","Inc-bind","Inc-becomes","Inc-nobind")
   cell_cnt <- panel[as.character(cell_muni) %in% cell_levels_keep,
@@ -244,7 +302,7 @@ if (RUN_SUMMARY_STATS) local({
     cell_label <- as.character(r$cell_muni)
     if (cell_label == "NC") cell_label <- "Never-changers"
     body <- c(body, sprintf(
-      "    %s & %s & %s & %.3f & %.3f \\\\",
+      "    %s & %s & %s & %.2f & %.2f \\\\",
       cell_label,
       format(r$n_munis, big.mark = ","),
       format(r$n_muni_year, big.mark = ","),
@@ -253,7 +311,7 @@ if (RUN_SUMMARY_STATS) local({
   body <- c(body, "    \\bottomrule", "  \\end{tabular}",
             "  \\vspace{0.3em}",
             "  \\begin{minipage}{0.95\\textwidth}",
-            "    \\footnotesize \\textit{Notes:} Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\\Delta\\tau$ within the 5-year event window. The Extreme dose column reports the max cumulative dose for Inc cells and the min (most negative) cumulative dose for Dec cells, since cell assignment is determined by the first event but subsequent reversals can pull the signed cumulative path back across zero.",
+            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\\Delta\\tau$ within the 5-year event window. The Extreme dose column reports the max cumulative dose for Inc cells and the min (most negative) cumulative dose for Dec cells, since cell assignment is determined by the first event but subsequent reversals can pull the signed cumulative path back across zero.",
             "  \\end{minipage}", "\\end{table}")
   writeLines(body, file.path(tab_dir, "cell_counts_summary.tex"))
   fwrite(cell_tab, file.path(RESULTS_DIR, "cell_counts_summary.csv"))

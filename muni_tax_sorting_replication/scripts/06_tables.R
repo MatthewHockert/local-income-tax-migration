@@ -234,7 +234,7 @@ if (RUN_PAPER_TABLES) local({
           v <- r[[field]][1]
           if (is.na(v)) { out[j] <- "---"; next }
           out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
-                     else formatC(v, format = "f", digits = 3)
+                     else formatC(v, format = "f", digits = 2)
         }
         out
       }
@@ -349,7 +349,7 @@ if (RUN_PAPER_TABLES) local({
           r <- diag[outcome == outcomes[j]]
           if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
           v <- r[[field]][1]; if (is.na(v)) { out[j] <- "---"; next }
-          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",") else formatC(v, format = "f", digits = 3)
+          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",") else formatC(v, format = "f", digits = 2)
         }
         out
       }
@@ -576,7 +576,7 @@ if (RUN_PAPER_TABLES) local({
             x <- row[[field]][1]
             vals[j] <- if (is.na(x)) "---"
                        else if (field == "n") formatC(as.numeric(x), format = "d", big.mark = ",")
-                       else formatC(x, format = "f", digits = 3)
+                       else formatC(x, format = "f", digits = 2)
           }
           diag_block <- c(diag_block,
                           paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
@@ -722,7 +722,7 @@ if (RUN_PAPER_TABLES) local({
           x <- row[[field]][1]
           vals[j] <- if (is.na(x)) "---"
                      else if (field == "n") formatC(as.numeric(x), format = "d", big.mark = ",")
-                     else formatC(x, format = "f", digits = 3)
+                     else formatC(x, format = "f", digits = 2)
         }
         diag_block <- c(diag_block,
                         paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
@@ -864,7 +864,7 @@ if (RUN_PAPER_TABLES) local({
           v <- r[[field]][1]
           if (is.na(v)) { out[j] <- "---"; next }
           out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
-                     else formatC(v, format = "f", digits = 4)
+                     else formatC(v, format = "f", digits = 2)
         }
         out
       }
@@ -1019,8 +1019,8 @@ if (RUN_PAPER_TABLES) local({
     body <- character(0)
     for (i in seq_len(nrow(ps))) {
       body <- c(body, paste0(ps$cell[i], " & ",
-        formatC(ps$beta_true[i], format = "f", digits = 3), " & ",
-        formatC(ps$perm_mean[i], format = "f", digits = 3), " & ",
+        formatC(ps$beta_true[i], format = "f", digits = 2), " & ",
+        formatC(ps$perm_mean[i], format = "f", digits = 2), " & ",
         formatC(ps$perm_p[i], format = "f", digits = 3), " \\\\"))
     }
     out <- c("\\begin{table}[H]", "  \\centering",
@@ -1141,7 +1141,7 @@ if (RUN_PAPER_TABLES) local({
       for (j in seq_along(muni_outcomes)) {
         r <- dep_means[group == gn & outcome == muni_outcomes[j]]
         dm_row[j] <- if (nrow(r) == 0 || is.na(r$dep_mean[1])) "---"
-                     else formatC(r$dep_mean[1], format = "f", digits = 3)
+                     else formatC(r$dep_mean[1], format = "f", digits = 2)
       }
       body <- c(body,
                 paste0("\\textbf{", glab[[gn]], "} & ", paste(est_row, collapse = " & "), " \\\\"),

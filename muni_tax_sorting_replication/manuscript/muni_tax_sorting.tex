@@ -358,6 +358,8 @@ district components.
 
 \subsection{Data Sources}
 \label{subsec:sources}
+% subsec:sample / subsec:pipeline kept as aliases: cross-references elsewhere
+% in the draft still point at them.
 \label{subsec:sample}
 \label{subsec:pipeline}
 
@@ -377,6 +379,19 @@ geographies approximates ground truth
 reflects LODES coverage beginning in 2002 and
 2020--2023 to not include disruptions in the data resulting from the COVID Pandemic.
 
+The origin--destination file records job counts by residence block and
+workplace block, which I aggregate to municipality pairs and then to the
+four outcomes used below. Live-and-work workers are jobs whose residence
+and workplace municipalities coincide, the margin a resident rate change
+acts on most directly. In-commuters are jobs located in the municipality
+but held by residents of another. Total jobs is the sum of the two, so it
+is a workplace-side count and not a population measure. The live-and-work
+share divides live-and-work workers by total jobs, so its denominator is
+the local job base rather than the resident labor force. A coefficient on
+that share therefore answers how the composition of a municipality's
+workforce shifts, and it can move because residents leave or because
+in-commuting grows.
+
 Municipal and school-district EIT rates come from the Pennsylvania
 Department of Community and Economic Development (DCED) MunStats
 portal \citep{padcedMunStats}, scraped annually. In some DCED reports, the flat-dollar Local Services Tax is filled in the same field
@@ -386,50 +401,125 @@ data-entry errors and dropped except for Home Rule cities and Philadelphia.
 Municipal fiscal controls come from the PA DCED Statewide Municipal
 Annual Financial Report database \citep{padcedAFR}. School-district
 fiscal controls come from the Census Annual Survey of School System
-Finances (F-33) \citep{censusF33}; the NCES \texttt{LEAID}-to-DCED
+Finances (F-33) \citep{censusF33}, and the NCES \texttt{LEAID}-to-DCED
 SD ID crosswalk covers all $500$ school districts. All fiscal
-controls are share-based and time-varying. Municipality regressions
-use six DCED AFR shares: three expenditure shares
-(police-services, streets, debt-service) and three revenue shares
-(EIT-revenue, real-estate-tax, intergovernmental-revenue).
+controls are share-based and time-varying. Municipality regressions use
+four DCED AFR shares, three of expenditure (police services, streets,
+debt service) and one of revenue (intergovernmental revenue), together
+with the three effective property-tax rates described below.
 LODES blocks are aggregated to muni for analysis.
+
+Two AFR shares that a fiscal-composition control set would ordinarily
+include are deliberately left out. The EIT-revenue share is a function of
+the EIT rate, so it sits between the treatment and the outcome and
+conditioning on it absorbs part of the effect being estimated. The
+real-estate-tax share is a revenue-side proxy for the same property burden
+that the effective property rates measure directly, so it is redundant
+once those rates are in the specification.
 
 The municipality--SD assignment uses the modal SD ID per muni in
 the DCED rate panel ($97.6\%$ of municipalities are single-SD), so
 each muni-year carries a single $\tau^{\text{SD}}$ co-treatment.
-Municipality regressions
-further impose a
-minimum employment threshold of $50$ total jobs, which protects the
-share-based outcomes from mechanical noise (a single worker moving
-changes a share by $1/N$, so at $N=10$ a one-worker move dominates
-the per-pp coefficient) and matches the LODES synthetic-noise
-calibration that is validated at tract scale and above
-\citep{grahamDESIGNCOMPARISONLODES}. The threshold drops $185$ of
-$2{,}559$ municipalities ($7.2\%$), almost all sparsely populated
-NC-pool townships; the treated cohort is essentially unaffected.
 
-For the property tax, municipal and county real-estate millage come
-from the same DCED MunStats register, scraped annually
-\citep{padcedMunStats}; the county tax register reports general-purpose
-and total millage for all $66$ assessing counties (Philadelphia is a
-consolidated city--county). County common-level ratios come from the
-Pennsylvania Department of Revenue's historical CLR factor series, in
-which the published factor is the reciprocal of the CLR; its
-assessment-base-change footnotes also date each countywide reassessment,
-which I use to flag reassessment years. The effective property-tax rate
-combines municipal and county millage with the county CLR; across
-municipality-years its median is about $2.1\%$ of market value (with the
-school district excluded as an estimating unit).
+Two restrictions take the raw panel to the estimation sample, and all
+descriptive statistics reported below are computed on that sample rather
+than on the raw panel. The raw 2002--2019 municipality panel holds
+$45{,}291$ muni-years across $2{,}559$ municipalities. I first drop
+municipalities whose rate history moves in both directions over the
+sample, because a municipality that raises and later cuts its rate cannot
+be assigned a single binding-cell classification, along with
+municipalities whose first event is a decrease, which are outside the
+paper's scope and serve as neither treated units nor controls. That
+leaves $31{,}744$ muni-years across $1{,}764$ municipalities. I then drop
+muni-years missing any fiscal control, which is the sample the regressions
+select through listwise deletion, leaving $24{,}229$ muni-years across
+$1{,}763$ municipalities. The second restriction removes years rather than
+places, since AFR filing coverage is uneven early in the panel. Because
+the outcomes are logged, each regression drops the additional muni-years
+in which the relevant count is zero, so per-outcome sample sizes appear in
+Table~\ref{tab:summary_muni} row by row.
+
+For the property tax, municipal, school-district and county real-estate
+millage come from the same DCED MunStats register, scraped annually
+\citep{padcedMunStats}. The county tax register reports general-purpose
+and total millage for all $66$ assessing counties, Philadelphia being a
+consolidated city--county. County common-level ratios come from the
+Pennsylvania Department of Revenue's historical CLR factor series
+\citep{padorCLR}, in which the published factor is the reciprocal of the
+CLR. Millage is statutory and levied on assessed value, so converting it
+to a burden on market value requires the CLR. I therefore multiply each
+layer's millage by the county ratio and carry the three layers
+separately, since the municipality is the estimating unit and the three
+governments set rates independently. After the repair described below,
+their medians across the estimation sample are $0.14$, $1.45$ and $0.42$
+percentage points of market value for the municipal, school-district and
+county layers, and the combined burden has a median of about $2.0\%$.
+
+This construction is vulnerable at countywide reassessments, and the raw
+register does not survive the vulnerability intact. A reassessment resets
+the assessment basis rather than the tax burden. The common-level ratio
+jumps toward unity, because assessed value is restored to market value,
+and statutory millage should fall by the same factor, so the effective
+rate passes through the reassessment unchanged. Many governments in the
+DCED register never rebased their reported millage. Their old-basis
+millage is then multiplied by a new-basis ratio and the implied burden
+rises by the full size of the reassessment. Wilkes-Barre City is the
+clearest case. Luzerne County reassessed effective 2009, its ratio moved
+from $0.05$ to $1.00$, and the county's median municipal millage fell
+from $22.50$ to $0.93$ accordingly. Wilkes-Barre's reported millage
+instead rose from $73.63$ to $141.33$ over the following decade, so its
+implied burden reads between $7$ and $14$ percentage points of market
+value for eleven consecutive years against its own pre-2008 range of
+$0.36$ to $0.48$.
+
+I repair this rather than dropping the affected observations, which would
+discard eleven years of a municipality that raises its resident rate and
+therefore contributes to identification. Two rules do the work. The first
+uses the reassessment itself. A reassessment is identified by the ratio
+being restored to market value rather than by the size of its movement,
+since the ratio drifts with the market every year and thirteen genuine
+reassessments move it by less than half. Within a reassessment year, a
+government that failed to rebase is one whose millage did not fall by the
+implied factor, and that shortfall is also the correction. The second
+rule uses the cross-section. Every government in a county-year is
+multiplied by the same ratio, so a unit sitting far above its county-year
+peers across most of the panel is on the wrong basis even where no
+reassessment inside the sample window reveals it. The repair leaves no
+municipal or county observation above five percentage points, where the
+raw register leaves fifteen and seventy-six, and it reduces the median
+year-over-year discontinuity in the implied burden at every layer.
+Corrections touch under three percent of municipal observations, and
+every corrected unit-year is written to an audit file recording the
+original value, the factor applied, and which rule fired.
+
+The school-district layer resists both rules. Eight hundred and fifteen
+district-years remain above five percentage points after repair, against
+$1{,}482$ before. The residual cases are not reassessment failures. Some
+are outright transcription errors, such as a district reported at
+$6{,}555$ mills in two years against roughly $65$ on either side, and
+others are districts whose millage never shared a basis with their
+county's ratio at any point in the sample, so no discontinuity exists to
+key on. I report this rather than tightening the rules until the count
+reaches zero, which would fit the repair to the target. The school
+district enters the municipality-level specification only as a control,
+and the headline estimate in Section~\ref{sec:results} moves by less than
+a fifth of a standard error when the school-district rate is omitted from
+the specification entirely, so the residual contamination does not bear
+on the estimates. The durable fix is to abandon the
+millage-and-ratio reconstruction for certified market values from the
+State Tax Equalization Board, which would give the burden directly and
+involve no assessment basis at all. Those values are certified annually
+for every municipality and school district but are not currently
+published in a form covering 2002--2019, so I leave that to future work.
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
 
 This section presents the summary statistics at the municipality
-level. The primary outcome variables are resident-worker counts,
-workplace counts, in-commuter flows, and the live-and-work share.
-Fiscal outcomes used as control variables (log EIT revenue, log
-total tax revenue, log total revenue, log police expenditure) are
-reported in Appendix~\ref{app:robustness}.
+level, computed on the estimation sample described above so that the
+counts reported here reconcile with the regression samples in
+Section~\ref{sec:results}. The table reports the tax rates, the four
+outcomes and the fiscal controls in three panels.
 
 Table~\ref{tab:summary_muni} summarizes the estimation panel.
 
@@ -438,19 +528,24 @@ Table~\ref{tab:summary_muni} summarizes the estimation panel.
 
 \input{../tables/summary_muni.tex}
 
-Table \ref{tab:summary_muni} presents the municipality level summary statistics. Table \ref{tab:summary_muni} shows that there are roughly $43{,}374$ muni-year observations, and the resident rate is tightly clustered
-near the Act~511 default at $\bar{\tau}^{M}=0.53\%$ and a standard deviation of $0.16$pp. There is a long right tail indicated by the max rate of $4.33\%$ concentrated in Philadelphia and
-a handful of Home-Rule and Act~47 distressed cities. The
-work rate has $34{,}080$ observation, about $9{,}300$ fewer
-observations than the resident rate, due to DCED's lack of coverage for the work-rate field being incomplete before Act~32 mandated
-reporting. The SD rate has nearly twice the
-muni-rate dispersion (SD $0.29$pp vs.\ $0.16$pp) and maxes at $2.05\%$, potentially making the school-district
-rate-setter a larger statistical lever. The home stack averages
-$1.15\%$, above the $1\%$ Act~511 cap, because Act~1 SD increases
-and Home-Rule muni rates push the upper level past the ceiling.
-Only $9.5\%$ of muni jobs are
-held by residents of the same muni showing that residential sorting operates
-on a thin within-muni margin.
+The resident rate is tightly clustered near the Act~511 default at
+$\bar{\tau}^{M}=0.52\%$ with a standard deviation of $0.13$pp. The
+maximum is $2.50\%$, well below the $4.33\%$ observed in the raw panel,
+because Philadelphia and several other high-rate cities have rate
+histories that move in both directions and are excluded by the
+flip-flopper restriction. The estimation sample is therefore one of
+ordinary municipalities levying rates near the statutory default, which
+is the population the design is built to speak to. The SD rate has
+more than twice the muni-rate dispersion ($0.30$pp against $0.13$pp) and
+reaches $2.05\%$, making the school district the larger statistical
+lever of the two rate-setters. The home stack averages $1.16\%$, above
+the $1\%$ Act~511 cap, because Act~1 SD increases and Home-Rule muni
+rates push the combined level past the ceiling. On average $9.4\%$ of a
+municipality's jobs are held by its own residents, so residential
+sorting operates on a thin within-muni margin. The three property
+layers are an order of magnitude larger than the EIT rates in
+percentage-point terms, which is the reason they are controlled for
+rather than ignored.
 
 
 
@@ -459,18 +554,31 @@ on a thin within-muni margin.
 \input{../tables/cell_counts_summary.tex}
 
 Table~\ref{tab:cell_counts_summary} reports the cell
-assignments on the muni resident-rate side. Of roughly $2{,}560$
-municipalities, after dropping those that decrease or flip-flop any of
-their three rates, $1{,}687$ never-changers form the NC control pool and
-only $77$ enter one of the three increase cells, split as $24$ Inc-bind,
-$39$ Inc-becomes, and $14$ Inc-nobind.
+assignments on the muni resident-rate side. Within the estimation sample,
+$1{,}686$ never-changers form the NC control pool and only $77$
+municipalities enter one of the three increase cells, split as $24$
+Inc-bind, $39$ Inc-becomes, and $14$ Inc-nobind.
 Inc-becomes shows a larger average
 dose than Inc-bind, indicating that crossing the binding threshold typically
 requires a bigger statutory move than slowly inching up an already-binding
 rate.
 
+The doses run in the opposite order to the one a skeptic would need.
+Inc-nobind, the cell in which the rate rose but no bill moved, carries
+the largest average dose of the three at $0.34$pp, against $0.27$pp for
+Inc-becomes and $0.21$pp for Inc-bind. Whatever the estimates in that
+cell turn out to be, they cannot be dismissed as the result of small
+statutory changes, because the changes there are the largest in the
+sample. The placebo is a demanding one.
+
 Figure~\ref{fig:rate_changes_by_year} reports the timing of
-municipal resident-rate changes across the panel. Increases jumped in the early 2000s, from 2002 to 2009 and taper off after. Most of the identifying variation in my models predates Act 32, highlighting the significant effects found are on smaller increases and further warranting a pre-post 2012 decomposition.
+municipal resident-rate changes across the panel. Increases are
+concentrated in the first half of the sample and taper off after $2009$.
+Of the $77$ treated municipalities in the estimation sample, $60$ have
+event years before $2012$. Most of the
+identifying variation therefore predates Act~32, which both indicates
+that the effects recovered are driven by smaller increases and warrants
+the pre-post $2012$ decomposition reported in Section~\ref{sec:robustness}.
 
 \begin{figure}[H]
     \centering
