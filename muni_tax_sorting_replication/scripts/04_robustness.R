@@ -494,6 +494,14 @@ if (RUN_ACT47) local({
                     "Dec-bind", "Dec-becomes-non", "Dec-nobind"))]
     s[is.na(dose_sd), dose_sd := 0]
     s[is.na(dose_nr), dose_nr := 0]
+    # Re-baseline the dose WITHIN each stack window, mirroring build_stack()
+    # in _helpers.R. Without this the regressor is the global dose_muni and
+    # the table is not the headline specification, which is why this table
+    # used to report a different Inc-bind coefficient from Table
+    # headline_muni_cell_results on an identical N (fixed 2026-07-30).
+    s[, base_rate := mean(dose_muni[rel < 0], na.rm = TRUE), by = .(stack, muni)]
+    s[!is.finite(base_rate), base_rate := 0]
+    s[, dose_stack := dose_muni - base_rate]
   }
 
   # Returns TWO tables per model: the Inc-bind summary row (concise CSV, as
@@ -501,12 +509,11 @@ if (RUN_ACT47) local({
   # main-results-format Act 47 table (all cells + controls + diagnostics).
   run_one <- function(stk, outcome) {
     f <- as.formula(paste0(outcome,
-         " ~ i(treat_cell, dose_muni, ref = 'NC') ",
-         "+ i(cell_sd, dose_sd, ref = 'NC') ",
-         "+ i(cell_nr, dose_nr, ref = 'NC') + ",
+         " ~ i(treat_cell, dose_stack, ref = 'NC') ",
+         "+ i(cell_sd, dose_sd, ref = 'NC') + ",
          ctrls_str, " | stack_muni + stack_year"))
     dd <- stk[, c("muni", "year", "stack_muni", "stack_year", "treat_cell",
-                  "dose_muni", "cell_sd", "dose_sd", "cell_nr", "dose_nr",
+                  "dose_stack", "cell_sd", "dose_sd",
                   outcome, muni_ctrls), with = FALSE]
     dd <- dd[complete.cases(dd)]
     m <- feols(f, data = dd, cluster = ~muni)

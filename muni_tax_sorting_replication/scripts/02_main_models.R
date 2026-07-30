@@ -137,16 +137,22 @@ if (RUN_HEADLINE) local({
   # Headline Inc-bind coefficients must match the paper. Halts loudly if a
   # future change makes the headline drift from the current values (Table:
   # headline_muni_combined; Inc-bind row, muni resident rate). Values updated
-  # 2026-07 for the property-tax-controlled spec (muni/sd/county effective
-  # rates added; share_re + share_eit dropped). Pre-property values were
-  # log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058.
+  # 2026-07-30 for the assessment-basis-repaired property panel (see
+  # RUN_PROPERTY_REBASE in 01_data_prep.R). Lineage of this gate:
+  #   pre-property           log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058
+  #   property, raw register log_LW=-0.437 log_IC=-0.317 log_TJ=-0.391 share=-0.054
+  #   property, repaired     current values below
+  # The move from the raw to the repaired register is a measurement-error
+  # correction in a CONTROL, not a specification change: Wilkes-Barre (an
+  # Inc-bind unit) carried a municipal effective rate wrong by a factor of
+  # roughly 25 across 2009-2019.
   # Lay explanation: a tripwire. If any future edit to the data or code
   # nudges the headline numbers away from the ones printed in the paper,
   # the script halts with an error instead of quietly writing new results
   # that no longer match the published tables.
   .chk <- coefs[grepl("Inc-bind:dose_stack", term)]
-  .exp <- c(log_live_and_work = -0.437, log_in_commuters = -0.317,
-            log_total_jobs = -0.391, share_live_in = -0.054)
+  .exp <- c(log_live_and_work = -0.539, log_in_commuters = -0.349,
+            log_total_jobs = -0.428, share_live_in = -0.058)
   for (.o in names(.exp)) {
     .got <- .chk[outcome == .o, est]
     if (length(.got) != 1 || abs(.got - .exp[.o]) > 0.005)
@@ -154,7 +160,7 @@ if (RUN_HEADLINE) local({
                    .o, ifelse(length(.got) == 1, sprintf("%.3f", .got), "NA"), .exp[.o]))
   }
   print(paste("[validation] headline Inc-bind matches spec:",
-              "log_LW=-0.437 log_IC=-0.317 log_TJ=-0.391 share=-0.054"))
+              "log_LW=-0.539 log_IC=-0.349 log_TJ=-0.428 share=-0.058"))
 
   diag_dt <- rbindlist(diagnostics, fill = TRUE)
   fwrite(diag_dt, file.path(RESULTS_DIR, "headline_diagnostics.csv"))

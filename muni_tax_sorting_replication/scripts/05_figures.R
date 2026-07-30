@@ -187,8 +187,8 @@ if (RUN_SUMMARY_STATS) local({
     "Estimation-sample summary statistics, muni-year (2002--2019)",
     "tab:summary_muni", "summary_muni.tex",
     notes = c(sprintf(paste("Estimation sample: %s muni-years across %s municipalities.",
-                            "The raw 2002--2019 cousub panel has %s muni-years across %s municipalities;",
-                            "dropping flip-floppers and decrease municipalities leaves %s, and dropping",
+                            "The raw 2002--2019 cousub panel has %s muni-years across %s municipalities.",
+                            "Dropping flip-floppers and decrease municipalities leaves %s, and dropping",
                             "muni-years missing a fiscal control leaves the sample above."),
                       format(nrow(est), big.mark = ","),
                       format(uniqueN(est$muni), big.mark = ","),
@@ -196,9 +196,10 @@ if (RUN_SUMMARY_STATS) local({
                       format(sample_steps$munis[1], big.mark = ","),
                       format(sample_steps$muni_years[2], big.mark = ",")),
               "Each outcome row reports its own non-missing $N$, which is that outcome's",
-              "regression sample at the muni-year level; log outcomes drop muni-years with a zero count.",
+              "regression sample at the muni-year level. Log outcomes drop muni-years with a zero count.",
               "$\\tau^{nr,M}$ has DCED reporting gaps before Act 32.",
-              "Effective property rates are statutory millage times the county common-level ratio, in percentage points.",
+              "Effective property rates are statutory millage times the county common-level ratio, in percentage points,",
+              "after the assessment-basis repair described in Section~\\ref{subsec:sources}.",
               "The stacked design replicates never-changer municipalities once per cohort, so stacked row counts exceed those here."))
 
   # Muni-type sub-table (means only by type), on the same estimation sample
