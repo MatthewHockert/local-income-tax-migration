@@ -23,6 +23,67 @@ source(file.path(.cfg_dir, "config.R"))
 # RAW_DIR / DERIVED_DIR / RESULTS_DIR come from config.R (single source).
 FIG_DIR <- OUT_DIR
 
+# Merge diagnostics ----
+# Every join in this pipeline is a place where rows can silently vanish or
+# silently fail to match. `merge_check()` wraps a left join and reports what
+# actually happened: rows in, rows out, how many left-hand rows found a match,
+# and which key values did not. Set VERBOSE_MERGES <- FALSE to silence.
+#
+# Motivating case (2026-07-30): the Act 47 exclusion matched "WILKES-BARRE"
+# against DCED's "WILKES BARRE CITY" with fixed = TRUE, silently matched
+# nothing, and the robustness check ran for months without excluding the city
+# it was written to exclude. A match-rate line would have caught it on the
+# first run.
+if (!exists("VERBOSE_MERGES")) VERBOSE_MERGES <- TRUE
+
+merge_check <- function(x, y, by, label, all.x = TRUE, expect_min_match = NULL,
+                        show_unmatched = 5L, ...) {
+  nx <- nrow(x)
+  key_x <- unique(x[, ..by])
+  key_y <- unique(y[, ..by])
+  matched_keys <- nrow(merge(key_x, key_y, by = by))
+  out <- merge(x, y, by = by, all.x = all.x, ...)
+  rate <- if (nrow(key_x) > 0) matched_keys / nrow(key_x) else NA_real_
+
+  if (isTRUE(VERBOSE_MERGES)) {
+    message(sprintf(
+      "[merge] %-34s rows %s -> %s | keys %s, matched %s (%.1f%%)",
+      label, format(nx, big.mark = ","), format(nrow(out), big.mark = ","),
+      format(nrow(key_x), big.mark = ","),
+      format(matched_keys, big.mark = ","), 100 * rate))
+    if (nrow(out) > nx)
+      message(sprintf("[merge]   NOTE: row count GREW by %s -- `by` is not unique in y",
+                      format(nrow(out) - nx, big.mark = ",")))
+    if (matched_keys < nrow(key_x) && show_unmatched > 0) {
+      miss <- key_x[!key_y, on = by]
+      ex <- utils::head(miss, show_unmatched)
+      message(sprintf("[merge]   unmatched keys (first %d of %s): %s",
+                      nrow(ex), format(nrow(miss), big.mark = ","),
+                      paste(apply(ex, 1, paste, collapse = "/"), collapse = ", ")))
+    }
+  }
+  if (!is.null(expect_min_match) && !is.na(rate) && rate < expect_min_match)
+    warning(sprintf("[merge] %s: match rate %.1f%% below expected floor %.1f%%",
+                    label, 100 * rate, 100 * expect_min_match), call. = FALSE)
+  out
+}
+
+# Report rows/units dropped by a filter, so sample restrictions are visible
+# in the run log rather than inferred from the final N.
+filter_check <- function(dt, keep, label, unit = NULL) {
+  n0 <- nrow(dt); u0 <- if (!is.null(unit)) uniqueN(dt[[unit]]) else NA_integer_
+  out <- dt[keep]
+  if (isTRUE(VERBOSE_MERGES)) {
+    u1 <- if (!is.null(unit)) uniqueN(out[[unit]]) else NA_integer_
+    message(sprintf("[filter] %-33s rows %s -> %s (-%s)%s",
+      label, format(n0, big.mark = ","), format(nrow(out), big.mark = ","),
+      format(n0 - nrow(out), big.mark = ","),
+      if (!is.null(unit)) sprintf(" | %s %s -> %s", unit,
+        format(u0, big.mark = ","), format(u1, big.mark = ",")) else ""))
+  }
+  out
+}
+
 # Headline environment ----
 # Everything the models need, built once per stage script: the cousub panel
 # (rates + AFR spending shares + property effective rates), the binding-cell
@@ -49,7 +110,9 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
                          by = .(muni, year)]
   for (c in c("resident_eit","sd_eit","muni_nonres_eit"))
     rate_keep[!is.finite(get(c)), (c) := NA_real_]
-  panel <- merge(panel, rate_keep, by = c("muni", "year"), all.x = TRUE)
+  panel <- merge_check(panel, rate_keep, by = c("muni", "year"),
+                       label = "LODES panel <- DCED EIT rates",
+                       expect_min_match = 0.90)
   panel[, home_stack := resident_eit + sd_eit]
   panel[, in_commuters := live_outside]
   panel[, out_commuters := residents_work_outside]
@@ -65,7 +128,11 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   afr <- fread(file.path(RAW_DIR, "pa_afr_panel.csv"))
   xw  <- unique(rate[!is.na(cousub_fips), .(municipality_id, cousub_fips)])
   afr[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
-  afr <- merge(afr, xw, by.x = "muni_id", by.y = "municipality_id", all.x = TRUE)
+  setnames(xw, "municipality_id", "muni_id")
+  afr <- merge_check(afr, xw, by = "muni_id",
+                     label = "AFR <- DCED muni/cousub xwalk",
+                     expect_min_match = 0.95)
+  setnames(xw, "muni_id", "municipality_id")
   afr[, yr := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
   fc <- afr[!is.na(cousub_fips), {
     total_rev <- as.numeric(ifelse(!is.na(total_revenues), total_revenues, revenues))
@@ -96,7 +163,9 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   fc <- fc[!is.na(muni) & !is.na(year)]
   fc <- fc[, lapply(.SD, function(x) if (is.numeric(x)) mean(x, na.rm = TRUE) else first(x)),
            by = .(muni, year)]
-  panel <- merge(panel, fc, by = c("muni", "year"), all.x = TRUE)
+  panel <- merge_check(panel, fc, by = c("muni", "year"),
+                       label = "panel <- AFR fiscal shares",
+                       expect_min_match = 0.70)
   
   # Property-tax effective rates (statutory millage x STEB common-level ratio),
   # kept SEPARATE per rate-setter: muni_eff_rate, sd_eff_rate, county_eff_rate.
@@ -105,10 +174,20 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   #   scrape_pa_dced_county_tax.py -> build_pde_sd_millage.py ->
   #   multitax_gapfill_sd.py -> multitax_effective_rate.py
   # vendored here as data/multitax/pa_property_burden_panel.csv (regenerate via those).
-  burden <- fread(file.path(RAW_DIR, "multitax", "pa_property_burden_panel.csv"))
-  burden <- merge(burden[, .(municipality_id = muni_id, year,
-                             muni_eff_rate, sd_eff_rate, county_eff_rate)],
-                  xw, by = "municipality_id", all.x = TRUE)
+  # Prefer the assessment-basis-repaired panel when 01_data_prep.R has built it
+  # (RUN_PROPERTY_REBASE). Falls back to the raw panel so the pipeline still
+  # runs on a fresh checkout. See the repair block in 01_data_prep.R for why.
+  .burden_fixed <- file.path(RAW_DIR, "multitax", "pa_property_burden_panel_repaired.csv")
+  .burden_raw   <- file.path(RAW_DIR, "multitax", "pa_property_burden_panel.csv")
+  .burden_path  <- if (file.exists(.burden_fixed)) .burden_fixed else .burden_raw
+  if (isTRUE(VERBOSE_MERGES))
+    message(sprintf("[data]   property burden: %s", basename(.burden_path)))
+  burden <- fread(.burden_path)
+  burden <- merge_check(burden[, .(municipality_id = muni_id, year,
+                                   muni_eff_rate, sd_eff_rate, county_eff_rate)],
+                        xw, by = "municipality_id",
+                        label = "property burden <- cousub xwalk",
+                        expect_min_match = 0.95)
   # x100: raw effective rates are decimals (0.015 = 1.5%); rescale to
   # PERCENTAGE POINTS so control coefficients read per-pp, the same units
   # as the EIT dose. (Pure relabeling -- other coefficients are unaffected.)
@@ -117,8 +196,10 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
                      sd_eff_rate     = 100 * mean(sd_eff_rate,     na.rm = TRUE),
                      county_eff_rate = 100 * mean(county_eff_rate, na.rm = TRUE)),
                    by = .(muni = cousub_fips, year)]
-  panel <- merge(panel, burden, by = c("muni", "year"), all.x = TRUE)
-  
+  panel <- merge_check(panel, burden, by = c("muni", "year"),
+                       label = "panel <- property effective rates",
+                       expect_min_match = 0.90)
+
   panel <- panel[, lapply(.SD, function(x) {
     if (is.numeric(x)) mean(x, na.rm = TRUE) else first(x)
   }), by = .(muni, year)]
@@ -127,6 +208,27 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
       set(panel, which(!is.finite(panel[[col]])), col, NA_real_)
     }
   }
+
+  # Plausibility guard on the joined property rates. A correct join produces
+  # effective rates of roughly 0.1-3 pp of market value. Values far above that
+  # mean statutory millage and the county CLR are on DIFFERENT assessment
+  # bases -- the millage predates a countywide reassessment while the CLR
+  # follows it, or vice versa. This is a join-correctness failure, not an
+  # outlier: see Wilkes-Barre 2009-2019 (millage never rebased after Luzerne's
+  # 2009 reassessment, effective rate wrong by ~25x). Reported, not corrected.
+  if (isTRUE(VERBOSE_MERGES)) {
+    for (v in c("muni_eff_rate", "sd_eff_rate", "county_eff_rate")) {
+      bad <- panel[is.finite(get(v)) & get(v) > 5]
+      if (nrow(bad)) {
+        message(sprintf(
+          "[check]  %-15s %s muni-years above 5pp (max %.1f) across %d munis -- suspect millage/CLR basis mismatch",
+          v, format(nrow(bad), big.mark = ","), max(bad[[v]]), uniqueN(bad$muni)))
+        tr <- bad[, .N, by = muni][order(-N)][1]
+        message(sprintf("[check]    worst offender: muni %s in %d years", tr$muni, tr$N))
+      }
+    }
+  }
+
   
   # Controls: keep the spending-composition shares; DROP the two tax-revenue shares
   # (share_re is subsumed by the property effective rates; share_eit is downstream of
@@ -255,7 +357,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   u <- Reduce(union, list(unique(panel[cell_muni == "Uncertain", muni]),
                            unique(panel[cell_sd   == "Uncertain", muni]),
                            unique(panel[cell_nr   == "Uncertain", muni])))
-  panel <- panel[!muni %in% u]
+  panel <- filter_check(panel, !panel$muni %in% u,
+                        "drop flip-floppers (Uncertain)", unit = "muni")
   
   # Drop Dec munis entirely (paper scope: Inc cells only).
   # Removes any muni whose muni-side OR SD-side classification is in the Dec set;
@@ -264,10 +367,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   dec_munis <- unique(c(panel[cell_muni %in% dec_cells_drop, muni],
                          panel[cell_sd   %in% dec_cells_drop, muni],
                          panel[cell_nr   %in% dec_cells_drop, muni]))
-  cat(sprintf("Dropping %d Dec munis (%.1f%% of panel).\n",
-              length(dec_munis),
-              100 * length(dec_munis) / uniqueN(panel$muni)))
-  panel <- panel[!muni %in% dec_munis]
+  panel <- filter_check(panel, !panel$muni %in% dec_munis,
+                        "drop decrease munis (Dec cells)", unit = "muni")
   panel[, cell_muni := droplevels(cell_muni)]
   panel[, cell_sd   := droplevels(cell_sd)]
   panel[, cell_nr   := droplevels(cell_nr)]
@@ -572,11 +673,11 @@ sig_stars <- function(p) {
   out[!is.na(p) & p < 0.01] <- "***"
   out
 }
-fmt_est <- function(x, digits = 3) {
+fmt_est <- function(x, digits = 2) {
   if (is.null(x) || length(x) == 0) return("")
   ifelse(is.na(x), "---", formatC(x, format = "f", digits = digits))
 }
-fmt_se <- function(x, digits = 3) {
+fmt_se <- function(x, digits = 2) {
   if (is.null(x) || length(x) == 0) return("")
   ifelse(is.na(x), "", sprintf("(%s)", formatC(x, format = "f", digits = digits)))
 }
@@ -584,7 +685,7 @@ fmt_n <- function(x) {
   if (is.null(x) || length(x) == 0) return("")
   ifelse(is.na(x), "---", formatC(as.numeric(x), format = "d", big.mark = ","))
 }
-fmt_pct <- function(x, digits = 3) {
+fmt_pct <- function(x, digits = 2) {
   if (is.null(x)) return("")
   ifelse(is.na(x), "---", formatC(x, format = "f", digits = digits))
 }
@@ -711,7 +812,7 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   }
 
   # Per-outcome diagnostics block
-  diag_rows <- function(field, label_text, fmt = function(x) formatC(x, format = "f", digits = 3)) {
+  diag_rows <- function(field, label_text, fmt = function(x) formatC(x, format = "f", digits = 2)) {
     vals <- character(length(outcomes))
     for (j in seq_along(outcomes)) {
       o <- outcomes[j]
@@ -725,10 +826,10 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   }
   diag_lookup <- list(
     n        = list(field = "n",        label = "$N$",         fmt = fmt_n),
-    r2       = list(field = "r2",       label = "$R^2$",       fmt = function(x) formatC(x, format = "f", digits = 3)),
-    wr2      = list(field = "wr2",      label = "Within $R^2$",fmt = function(x) formatC(x, format = "f", digits = 3)),
-    dep_mean = list(field = "dep_mean", label = "Dep.\\ mean", fmt = function(x) formatC(x, format = "f", digits = 3)),
-    dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 3)),
+    r2       = list(field = "r2",       label = "$R^2$",       fmt = function(x) formatC(x, format = "f", digits = 2)),
+    wr2      = list(field = "wr2",      label = "Within $R^2$",fmt = function(x) formatC(x, format = "f", digits = 2)),
+    dep_mean = list(field = "dep_mean", label = "Dep.\\ mean", fmt = function(x) formatC(x, format = "f", digits = 2)),
+    dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 2)),
     wald_p   = list(field = "wald_p",   label = "Joint Wald $p$ (leads)",
                     fmt = function(x) formatC(x, format = "f", digits = 3))
   )

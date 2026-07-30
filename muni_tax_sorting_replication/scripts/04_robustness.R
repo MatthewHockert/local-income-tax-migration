@@ -399,18 +399,41 @@ if (RUN_ACT47) local({
                                 name = toupper(municipality))])
   panel <- merge(panel, muni_names, by = "muni", all.x = TRUE)
 
-  # Flag Act 47 munis in the Inc-bind cell
+  # Flag Act 47 munis in the Inc-bind cell.
+  # Name normalization is load-bearing: the distressed list writes
+  # "WILKES-BARRE" but DCED writes "WILKES BARRE CITY", and a fixed=TRUE
+  # grepl on the raw strings silently returns FALSE. That bug meant the
+  # Act 47 exclusion never actually excluded Wilkes-Barre (found 2026-07-30).
+  # Strip punctuation, collapse whitespace, compare on the normalized form.
+  norm_name <- function(x) {
+    x <- toupper(x)
+    x <- gsub("[^A-Z0-9 ]", " ", x)   # hyphens, periods, apostrophes -> space
+    x <- gsub("\\s+", " ", x)
+    trimws(x)
+  }
+  act47_norm <- norm_name(act47_names)
   treated_incbind <- unique(panel[cell_muni == "Inc-bind",
                                     .(muni, name)])
-  treated_incbind[, is_act47 := vapply(name, function(nm) {
-    any(sapply(act47_names, function(a47) grepl(a47, nm, fixed = TRUE)))
+  treated_incbind[, name_norm := norm_name(name)]
+  treated_incbind[, is_act47 := vapply(name_norm, function(nm) {
+    any(vapply(act47_norm, function(a47) grepl(a47, nm, fixed = TRUE), logical(1)))
   }, logical(1))]
 
-  message(sprintf("Inc-bind munis: %d total", nrow(treated_incbind)))
-  message(sprintf("Act 47 (or distressed-list) matches: %d",
+  message(sprintf("[act47] Inc-bind munis: %d total", nrow(treated_incbind)))
+  message(sprintf("[act47] distressed-list matches: %d",
                   sum(treated_incbind$is_act47)))
-  message("Act 47 Inc-bind munis identified:")
+  message("[act47] Act 47 Inc-bind munis identified:")
   print(treated_incbind[is_act47 == TRUE, name])
+
+  # Guard: report any distressed-list entry that matches nothing anywhere in
+  # the panel. A name on the list that never matches is either a municipality
+  # outside the estimation sample or a spelling that has drifted from DCED's.
+  all_norm <- norm_name(unique(panel$name))
+  unmatched <- act47_names[!vapply(act47_norm, function(a47)
+    any(grepl(a47, all_norm, fixed = TRUE)), logical(1))]
+  if (length(unmatched))
+    message(sprintf("[act47] WARNING: %d list entries match no municipality in the panel: %s",
+                    length(unmatched), paste(unmatched, collapse = ", ")))
 
   # 2. Re-estimate headline cousub regression excluding Act 47 munis
   act47_munis_in_panel <- treated_incbind[is_act47 == TRUE, muni]
@@ -528,7 +551,7 @@ if (RUN_ACT47) local({
   # 3. LaTeX summary table for the paper
   fmt_coef <- function(est, se, p) {
     stars <- if (is.na(p)) "" else if (p < 0.01) "***" else if (p < 0.05) "**" else if (p < 0.10) "*" else ""
-    sprintf("$%+.3f^{%s}$ (%.3f)", est, stars, se)
+    sprintf("$%+.2f^{%s}$ (%.2f)", est, stars, se)
   }
 
   tex <- sprintf("\\begin{table}[H]
