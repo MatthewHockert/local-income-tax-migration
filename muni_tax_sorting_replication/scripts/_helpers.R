@@ -29,11 +29,13 @@ FIG_DIR <- OUT_DIR
 # actually happened: rows in, rows out, how many left-hand rows found a match,
 # and which key values did not. Set VERBOSE_MERGES <- FALSE to silence.
 #
-# Motivating case (2026-07-30): the Act 47 exclusion matched "WILKES-BARRE"
-# against DCED's "WILKES BARRE CITY" with fixed = TRUE, silently matched
-# nothing, and the robustness check ran for months without excluding the city
-# it was written to exclude. A match-rate line would have caught it on the
-# first run.
+# Motivating case (2026-07-30): the Act 47 exclusion carried a hardcoded
+# distressed-municipality list that was wrong in both directions -- ten names
+# that were never designated, six designated municipalities missing -- and
+# matched it with fixed = TRUE against differently-punctuated DCED names, so
+# some entries silently matched nothing. Neither failure announced itself. A
+# match-rate line, plus a warning for list entries that match nothing, would
+# have surfaced both on the first run.
 if (!exists("VERBOSE_MERGES")) VERBOSE_MERGES <- TRUE
 
 merge_check <- function(x, y, by, label, all.x = TRUE, expect_min_match = NULL,

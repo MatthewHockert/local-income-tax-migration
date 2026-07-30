@@ -381,16 +381,39 @@ if (RUN_ACT47) local({
   # have nothing to do with the tax. The check drops any treated town whose
   # name matches this list and re-runs the headline: if the result survives,
   # it is not just a story about a couple of collapsing cities.
-  act47_names <- toupper(c(
-    "ALIQUIPPA", "BRADDOCK", "CARBONDALE", "CHESTER CITY", "CLAIRTON",
-    "DUQUESNE", "EAST PITTSBURGH", "FARRELL", "FRANKLIN",
-    "GREENVILLE", "HARRISBURG", "HAZLETON", "HOMESTEAD", "JEANNETTE",
-    "JOHNSTOWN", "MILLBOURNE", "NANTICOKE", "NEW CASTLE", "PITTSBURGH",
-    "PLYMOUTH TOWNSHIP", "RANKIN", "READING", "SCRANTON", "SHAMOKIN",
-    "SHARON", "TURTLE CREEK", "WEST HAZLETON", "WILKES-BARRE",
-    "WILKINSBURG", "YEADON", "ALTOONA", "COATESVILLE", "DUBOIS",
-    "ELLPORT", "GLASSPORT", "MAHANOY CITY"
-  ))
+  # Act 47 distressed municipalities, transcribed from DCED's own register
+  # (https://dced.pa.gov/local-government/act-47-financial-distress/,
+  # retrieved 2026-07-30): three active determinations plus every rescission
+  # DCED lists. Cross-checked against the Wikipedia table for the
+  # Financially Distressed Municipalities Act.
+  #
+  # The previous hardcoded list was wrong in BOTH directions. It carried ten
+  # municipalities that were never designated (Carbondale, Jeannette, Sharon,
+  # Turtle Creek, Wilkes-Barre, Yeadon, Coatesville, DuBois, Ellport,
+  # Glassport) and omitted six that were (Newville, Shenandoah, Ambridge,
+  # North Braddock, Westfall Twp, Colwyn). `designated` is the determination
+  # year, which matters because the exclusion is only meaningful for a
+  # municipality that was ALREADY in recovery when it changed its rate.
+  act47 <- data.table::data.table(
+    name = toupper(c(
+      "NEWVILLE", "CHESTER", "HARRISBURG",
+      "SHENANDOAH", "AMBRIDGE", "WILKINSBURG", "EAST PITTSBURGH",
+      "NORTH BRADDOCK", "HOMESTEAD", "MILLBOURNE", "WESTFALL",
+      "WEST HAZLETON", "NANTICOKE", "CLAIRTON", "PLYMOUTH", "ALTOONA",
+      "PITTSBURGH", "FARRELL", "SCRANTON", "COLWYN", "READING",
+      "FRANKLIN", "MAHANOY CITY", "JOHNSTOWN", "HAZLETON", "RANKIN",
+      "BRADDOCK", "DUQUESNE", "GREENVILLE", "ALIQUIPPA", "NEW CASTLE",
+      "SHAMOKIN")),
+    designated = c(
+      2014L, 1995L, 2010L,
+      1988L, 1990L, 1988L, 1992L,
+      1995L, 1993L, 1993L, 2009L,
+      2003L, 2006L, 1988L, 2004L, 2012L,
+      2003L, 1987L, 1992L, 2015L, 2009L,
+      1988L, 2016L, 1992L, 2017L, 1989L,
+      1988L, 1991L, 2002L, 1987L, 2007L,
+      2014L))
+  act47_names <- act47$name
 
   # 1. Pull municipality names onto the shared headline panel
   rate <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_rate_panel.rds")))
@@ -399,37 +422,46 @@ if (RUN_ACT47) local({
                                 name = toupper(municipality))])
   panel <- merge(panel, muni_names, by = "muni", all.x = TRUE)
 
-  # Flag Act 47 munis in the Inc-bind cell.
-  # Name normalization is load-bearing: the distressed list writes
-  # "WILKES-BARRE" but DCED writes "WILKES BARRE CITY", and a fixed=TRUE
-  # grepl on the raw strings silently returns FALSE. That bug meant the
-  # Act 47 exclusion never actually excluded Wilkes-Barre (found 2026-07-30).
-  # Strip punctuation, collapse whitespace, compare on the normalized form.
+  # Flag Act 47 munis in the Inc-bind cell. Names are normalized on both
+  # sides (punctuation to space, whitespace collapsed) because DCED's rate
+  # register and the distressed register do not agree on hyphenation.
   norm_name <- function(x) {
     x <- toupper(x)
     x <- gsub("[^A-Z0-9 ]", " ", x)   # hyphens, periods, apostrophes -> space
     x <- gsub("\\s+", " ", x)
     trimws(x)
   }
-  act47_norm <- norm_name(act47_names)
-  treated_incbind <- unique(panel[cell_muni == "Inc-bind",
-                                    .(muni, name)])
+  act47[, name_norm := norm_name(name)]
+  treated_incbind <- unique(panel[cell_muni == "Inc-bind", .(muni, name, c_muni)])
   treated_incbind[, name_norm := norm_name(name)]
-  treated_incbind[, is_act47 := vapply(name_norm, function(nm) {
-    any(vapply(act47_norm, function(a47) grepl(a47, nm, fixed = TRUE), logical(1)))
-  }, logical(1))]
+  # Carry the determination year through, so "distressed" can be evaluated
+  # AT the rate-change year rather than ever-in-the-panel.
+  treated_incbind[, act47_year := vapply(name_norm, function(nm) {
+    hit <- act47$designated[vapply(act47$name_norm,
+             function(a47) grepl(a47, nm, fixed = TRUE), logical(1))]
+    if (length(hit)) min(hit) else NA_integer_
+  }, integer(1))]
+  treated_incbind[, is_act47 := !is.na(act47_year)]
+  treated_incbind[, in_recovery_at_event := !is.na(act47_year) & c_muni >= act47_year]
 
   message(sprintf("[act47] Inc-bind munis: %d total", nrow(treated_incbind)))
-  message(sprintf("[act47] distressed-list matches: %d",
-                  sum(treated_incbind$is_act47)))
-  message("[act47] Act 47 Inc-bind munis identified:")
-  print(treated_incbind[is_act47 == TRUE, name])
+  message(sprintf("[act47] ever designated: %d | already in recovery at their rate change: %d",
+                  sum(treated_incbind$is_act47),
+                  sum(treated_incbind$in_recovery_at_event)))
+  if (any(treated_incbind$is_act47))
+    print(treated_incbind[is_act47 == TRUE,
+          .(name, cohort = c_muni, designated = act47_year, in_recovery_at_event)])
+  # The exclusion is a blunt "ever designated" one, which is the conservative
+  # choice. Note in the paper that no Inc-bind municipality was actually in
+  # recovery when it raised its rate, so the concern this check addresses
+  # (rate increases mandated by a state-supervised recovery plan) does not
+  # arise in this sample.
 
   # Guard: report any distressed-list entry that matches nothing anywhere in
   # the panel. A name on the list that never matches is either a municipality
   # outside the estimation sample or a spelling that has drifted from DCED's.
   all_norm <- norm_name(unique(panel$name))
-  unmatched <- act47_names[!vapply(act47_norm, function(a47)
+  unmatched <- act47$name[!vapply(act47$name_norm, function(a47)
     any(grepl(a47, all_norm, fixed = TRUE)), logical(1))]
   if (length(unmatched))
     message(sprintf("[act47] WARNING: %d list entries match no municipality in the panel: %s",
