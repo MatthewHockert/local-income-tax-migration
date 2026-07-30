@@ -446,15 +446,71 @@ and total millage for all $66$ assessing counties, Philadelphia being a
 consolidated city--county. County common-level ratios come from the
 Pennsylvania Department of Revenue's historical CLR factor series
 \citep{padorCLR}, in which the published factor is the reciprocal of the
-CLR. Its assessment-base-change footnotes also date each countywide
-reassessment, which I use to flag reassessment years. Millage is
-statutory and levied on assessed value, so converting it to a burden on
-market value requires the CLR. I therefore multiply each layer's millage
-by the county ratio and carry the three layers separately, since the
-municipality is the estimating unit and the three governments set rates
-independently. Their medians are $0.15$, $1.49$ and $0.43$ percentage
-points of market value for the municipal, school-district and county
-layers, and the combined burden has a median of about $2.1\%$.
+CLR. Millage is statutory and levied on assessed value, so converting it
+to a burden on market value requires the CLR. I therefore multiply each
+layer's millage by the county ratio and carry the three layers
+separately, since the municipality is the estimating unit and the three
+governments set rates independently. Their medians are $0.15$, $1.49$ and
+$0.43$ percentage points of market value for the municipal,
+school-district and county layers, and the combined burden has a median
+of about $2.1\%$.
+
+This construction is vulnerable at countywide reassessments, and the raw
+register does not survive the vulnerability intact. A reassessment resets
+the assessment basis rather than the tax burden. The common-level ratio
+jumps toward unity, because assessed value is restored to market value,
+and statutory millage should fall by the same factor, so the effective
+rate passes through the reassessment unchanged. Many governments in the
+DCED register never rebased their reported millage. Their old-basis
+millage is then multiplied by a new-basis ratio and the implied burden
+rises by the full size of the reassessment. Wilkes-Barre City is the
+clearest case. Luzerne County reassessed effective 2009, its ratio moved
+from $0.05$ to $1.00$, and the county's median municipal millage fell
+from $22.50$ to $0.93$ accordingly. Wilkes-Barre's reported millage
+instead rose from $73.63$ to $141.33$ over the following decade, so its
+implied burden reads between $7$ and $14$ percentage points of market
+value for eleven consecutive years against its own pre-2008 range of
+$0.36$ to $0.48$.
+
+I repair this rather than dropping the affected observations, which would
+discard eleven years of a municipality that raises its resident rate and
+therefore contributes to identification. Two rules do the work. The first
+uses the reassessment itself. A reassessment is identified by the ratio
+being restored to market value rather than by the size of its movement,
+since the ratio drifts with the market every year and thirteen genuine
+reassessments move it by less than half. Within a reassessment year, a
+government that failed to rebase is one whose millage did not fall by the
+implied factor, and that shortfall is also the correction. The second
+rule uses the cross-section. Every government in a county-year is
+multiplied by the same ratio, so a unit sitting far above its county-year
+peers across most of the panel is on the wrong basis even where no
+reassessment inside the sample window reveals it. The repair leaves no
+municipal or county observation above five percentage points, where the
+raw register leaves fifteen and seventy-six, and it reduces the median
+year-over-year discontinuity in the implied burden at every layer.
+Corrections touch under three percent of municipal observations, and
+every corrected unit-year is written to an audit file recording the
+original value, the factor applied, and which rule fired.
+
+The school-district layer resists both rules. Eight hundred and fifteen
+district-years remain above five percentage points after repair, against
+$1{,}482$ before. The residual cases are not reassessment failures. Some
+are outright transcription errors, such as a district reported at
+$6{,}555$ mills in two years against roughly $65$ on either side, and
+others are districts whose millage never shared a basis with their
+county's ratio at any point in the sample, so no discontinuity exists to
+key on. I report this rather than tightening the rules until the count
+reaches zero, which would fit the repair to the target. The school
+district enters the municipality-level specification only as a control,
+and the headline estimate in Section~\ref{sec:results} moves by less than
+a fifth of a standard error when the school-district rate is omitted from
+the specification entirely, so the residual contamination does not bear
+on the estimates. The durable fix is to abandon the
+millage-and-ratio reconstruction for certified market values from the
+State Tax Equalization Board, which would give the burden directly and
+involve no assessment basis at all. Those values are certified annually
+for every municipality and school district but are not currently
+published in a form covering 2002--2019, so I leave that to future work.
 
 \subsection{Descriptive Statistics}
 \label{subsec:descriptive}
