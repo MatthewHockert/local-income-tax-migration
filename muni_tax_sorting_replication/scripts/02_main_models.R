@@ -42,6 +42,7 @@ RUN_HEADLINE <- TRUE  # headline binding decomposition (8 outcomes) + validation
 RUN_NOPROP   <- TRUE  # headline re-run WITHOUT the property effective-rate controls
 RUN_POOLED   <- TRUE  # pooled Inc/Dec per-pp + binary benchmark (cousub)
 RUN_REVENUE  <- TRUE  # log EIT revenue decomposition + ES + Laffer offset + splits
+RUN_LEVELS_COMPARE <- TRUE  # headline + pooled re-run with the treatment in LEVELS
 
 # Shared setup ----
 # One panel build for the whole stage: classified cousub panel + muni stack.
@@ -141,7 +142,13 @@ if (RUN_HEADLINE) local({
   # RUN_PROPERTY_REBASE in 01_data_prep.R). Lineage of this gate:
   #   pre-property           log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058
   #   property, raw register log_LW=-0.437 log_IC=-0.317 log_TJ=-0.391 share=-0.054
-  #   property, repaired     current values below
+  #   property, repaired     log_LW=-0.539 log_IC=-0.349 log_TJ=-0.428 share=-0.058
+  #   treatment in LEVELS    current values below
+  # The last step is a description change, not a specification change: level and
+  # baseline-differenced change are identical after stack_muni FE. The small
+  # movement is sample composition -- the rate LEVEL is missing on muni-years
+  # where the CHANGE is known to be zero, so listwise deletion drops ~1,300
+  # stacked rows (172,795 -> 171,451 for log_live_and_work).
   # The move from the raw to the repaired register is a measurement-error
   # correction in a CONTROL, not a specification change: Wilkes-Barre (an
   # Inc-bind unit) carried a municipal effective rate wrong by a factor of
@@ -151,8 +158,8 @@ if (RUN_HEADLINE) local({
   # the script halts with an error instead of quietly writing new results
   # that no longer match the published tables.
   .chk <- coefs[grepl("Inc-bind:dose_stack", term)]
-  .exp <- c(log_live_and_work = -0.539, log_in_commuters = -0.349,
-            log_total_jobs = -0.428, share_live_in = -0.058)
+  .exp <- c(log_live_and_work = -0.537, log_in_commuters = -0.345,
+            log_total_jobs = -0.423, share_live_in = -0.058)
   for (.o in names(.exp)) {
     .got <- .chk[outcome == .o, est]
     if (length(.got) != 1 || abs(.got - .exp[.o]) > 0.005)
@@ -160,7 +167,7 @@ if (RUN_HEADLINE) local({
                    .o, ifelse(length(.got) == 1, sprintf("%.3f", .got), "NA"), .exp[.o]))
   }
   print(paste("[validation] headline Inc-bind matches spec:",
-              "log_LW=-0.539 log_IC=-0.349 log_TJ=-0.428 share=-0.058"))
+              "log_LW=-0.537 log_IC=-0.345 log_TJ=-0.423 share=-0.058"))
 
   diag_dt <- rbindlist(diagnostics, fill = TRUE)
   fwrite(diag_dt, file.path(RESULTS_DIR, "headline_diagnostics.csv"))
@@ -677,3 +684,105 @@ if (RUN_REVENUE) local({
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()
+
+# ---------------------------------------------------------------------------
+# Levels vs changes: treatment variable specification check
+# ---------------------------------------------------------------------------
+# The headline and pooled specifications regress on the cumulative rate CHANGE
+# from a pre-event baseline (dose_stack, dose_sd). Because dose and level differ
+# by a municipality-specific constant, and the FE are stack-interacted at the
+# municipality, the two are equivalent up to that constant: subtracting a
+# unit-specific constant from a regressor leaves every coefficient unchanged
+# when unit FE are present. This block runs both side by side to document that,
+# and to show the one place the choice does bite -- sample retention, since the
+# rate LEVEL is missing on municipality-years where the CHANGE is known to be
+# zero (never-changers and pre-event years).
+#
+# The sample is held fixed across the two specifications so any difference is
+# specification and not composition. Output: data/results/levels_vs_changes.csv
+if (RUN_LEVELS_COMPARE) local({
+
+  outcomes <- c("log_live_and_work", "log_in_commuters",
+                "log_total_jobs", "share_live_in")
+  stk <- copy(stk_muni)
+  if (!"direction_muni" %in% names(stk)) {
+    inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+    dec_cells <- c("Dec-bind", "Dec-becomes-non", "Dec-nobind")
+    stk[, direction_muni := fcase(
+      as.character(treat_cell) %in% inc_cells, "Inc",
+      as.character(treat_cell) %in% dec_cells, "Dec",
+      as.character(treat_cell) == "NC", "NC", default = NA_character_)]
+    stk[, direction_sd := fcase(
+      as.character(cell_sd) %in% inc_cells, "Inc",
+      as.character(cell_sd) %in% dec_cells, "Dec",
+      as.character(cell_sd) == "NC", "NC", default = NA_character_)]
+    lv <- c("NC", "Inc", "Dec")
+    stk[, direction_muni := factor(direction_muni, levels = lv)]
+    stk[, direction_sd   := factor(direction_sd,   levels = lv)]
+  }
+
+  sd_counterpart <- c(treat_cell = "cell_sd", direction_muni = "direction_sd")
+
+  fit <- function(o, group_var, muni_reg, sd_reg) {
+    sd_group <- sd_counterpart[[group_var]]
+    cols <- intersect(c("muni", "year", "stack_muni", "stack_year",
+                        group_var, sd_group,
+                        muni_reg, sd_reg, o, ctrls), names(stk))
+    d <- stk[, ..cols]
+    if (!is.null(d[[sd_reg]])) d[is.na(get(sd_reg)), (sd_reg) := 0]
+    # Fix the sample across BOTH specifications so differences are not
+    # composition: require every regressor either version needs.
+    need <- intersect(c("dose_stack", "dose_sd", "resident_eit", "sd_eit",
+                        o, ctrls), names(stk))
+    keep <- complete.cases(stk[, ..need]) & complete.cases(d)
+    d <- d[keep]
+    if (nrow(d) == 0) return(NULL)
+    f <- as.formula(paste0(o, " ~ i(", group_var, ", ", muni_reg, ", ref='NC')",
+                           " + i(", sd_group, ", ", sd_reg, ", ref='NC') + ",
+                           paste(ctrls, collapse = " + "),
+                           " | stack_muni + stack_year"))
+    m <- suppressMessages(feols(f, data = d, cluster = ~muni, notes = FALSE))
+    ct <- as.data.table(m$coeftable, keep.rownames = "term")
+    setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"), c("est", "se", "p"),
+             skip_absent = TRUE)
+    # Keep EVERY coefficient, controls included, not just the treatment terms.
+    ct[, `:=`(outcome = o, n = nobs(m))]
+    ct[, label := fifelse(
+      grepl("::", term),
+      paste0(fifelse(grepl(paste0("^", group_var), term), "muni ", "SD "),
+             sub("^[^:]+::([^:]+):.*$", "\\1", term)),
+      term)]
+    ct[, is_ctrl := !grepl("::", term)]
+    ct[, .(outcome, label, is_ctrl, est, se, p, n)]
+  }
+
+  rows <- list()
+  for (o in outcomes) {
+    for (spec in c("decomposition", "pooled")) {
+      gv <- if (spec == "decomposition") "treat_cell" else "direction_muni"
+      a <- fit(o, gv, "dose_stack",   "dose_sd")   # as published
+      b <- fit(o, gv, "resident_eit", "sd_eit")    # levels
+      if (is.null(a) || is.null(b)) next
+      a[, version := "change"]; b[, version := "level"]
+      rows[[length(rows) + 1L]] <- rbind(a, b)[, spec := spec]
+    }
+  }
+  out <- rbindlist(rows, fill = TRUE)
+  wide <- dcast(out, spec + outcome + label + is_ctrl ~ version,
+                value.var = c("est", "se", "n"))
+  wide[, diff := round(est_level - est_change, 4)]
+  for (cc in c("est_change", "est_level", "se_change", "se_level"))
+    wide[, (cc) := round(get(cc), 4)]
+  setorder(wide, spec, outcome, is_ctrl, label)
+  fwrite(wide, file.path(RESULTS_DIR, "levels_vs_changes.csv"))
+  message("Saved data/results/levels_vs_changes.csv")
+  for (sp in unique(wide$spec)) for (oo in unique(wide[spec == sp]$outcome)) {
+    x <- wide[spec == sp & outcome == oo]
+    cat(sprintf("\n--- %s | %s | N = %s ---\n", sp, oo,
+                format(x$n_change[1], big.mark = ",")))
+    cat(sprintf("%-34s %14s %14s\n", "", "CHANGE", "LEVEL"))
+    for (i in seq_len(nrow(x))) with(x[i], cat(sprintf(
+      "%-34s %8.4f (%.4f) %8.4f (%.4f)\n", label, est_change, se_change,
+      est_level, se_level)))
+  }
+})

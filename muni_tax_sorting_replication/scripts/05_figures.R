@@ -162,20 +162,25 @@ if (RUN_SUMMARY_STATS) local({
 
   # Shares reported in percent so two decimals stay informative.
   muni_rows <- list(
+    # Row order is deliberate: the two residence-side rates first, then the
+    # stack they sum to, then the work-side nonresident rate last, since it
+    # is the comparison rate rather than part of the stack.
     mk_panel("Tax rates (percentage points)"),
     mk_row("Resident EIT rate $\\tau^{M}$",            est$resident_eit),
-    mk_row("Nonresident EIT rate $\\tau^{nr,M}$",      est$muni_nonres_eit),
     mk_row("School-district EIT rate $\\tau^{SD}$",    est$sd_eit),
     mk_row("Home stack $\\tau^{M}+\\tau^{SD}$",        est$home_stack),
+    mk_row("Nonresident EIT rate $\\tau^{nr,M}$",      est$muni_nonres_eit),
     mk_row("Effective property rate, muni",            est$muni_eff_rate),
     mk_row("Effective property rate, school district", est$sd_eff_rate),
     mk_row("Effective property rate, county",          est$county_eff_rate),
 
+    # Live-and-work and its share are the two the paper leans on, so they sit
+    # together at the top of the block.
     mk_panel("Outcomes"),
     mk_row("Live-and-work workers",                    est$live_and_work),
+    mk_row("Share live-and-work in muni (\\%)",     100 * est$share_live_in),
     mk_row("In-commuters",                             est$in_commuters),
     mk_row("Total jobs",                               est$total_jobs),
-    mk_row("Share live-and-work in muni (\\%)",     100 * est$share_live_in),
 
     mk_panel("Fiscal controls (percent of total)"),
     mk_row("Police, share of expenditure",             100 * est$share_police),
@@ -311,7 +316,7 @@ if (RUN_SUMMARY_STATS) local({
   body <- c(body, "    \\bottomrule", "  \\end{tabular}",
             "  \\vspace{0.3em}",
             "  \\begin{minipage}{0.95\\textwidth}",
-            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Cells classify each muni's first resident-rate event by direction (Inc/Dec) and the binding-state transition relative to the muni's nonresident rate. NC is the never-changed control pool. Dose is the cumulative $\\Delta\\tau$ within the 5-year event window. The Extreme dose column reports the max cumulative dose for Inc cells and the min (most negative) cumulative dose for Dec cells, since cell assignment is determined by the first event but subsequent reversals can pull the signed cumulative path back across zero.",
+            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Each municipality is classified on its first resident-rate change, by direction and by whether the home stack binds before and after. NC never changed any rate. Dose is the cumulative change in the rate over the five-year event window, and Extreme dose is its largest value.",
             "  \\end{minipage}", "\\end{table}")
   writeLines(body, file.path(tab_dir, "cell_counts_summary.tex"))
   fwrite(cell_tab, file.path(RESULTS_DIR, "cell_counts_summary.csv"))

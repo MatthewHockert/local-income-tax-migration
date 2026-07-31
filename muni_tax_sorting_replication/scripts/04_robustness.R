@@ -37,7 +37,10 @@ RUN_ACT32       <- TRUE
 RUN_ACT47       <- TRUE
 RUN_CURVATURE   <- TRUE
 RUN_PRETREND_BATTERY <- TRUE   # 4-test battery per cell (moved from stage 03)
-RUN_DOSE_PERMUTATION <- TRUE   # randomization inference: shuffle dose magnitudes (~15 min)
+# DROPPED FROM THE PAPER 2026-07-30. Section 6.5 (dose-permutation
+# randomization inference) was cut, so this block no longer feeds anything.
+# The code is left in place, gated off, rather than deleted.
+RUN_DOSE_PERMUTATION <- FALSE  # randomization inference: shuffle dose magnitudes (~15 min)
 RUN_FAKE_TIMING      <- TRUE   # placebo cohorts 4 years early, pre-event data only
 
 # Shared setup ----
@@ -107,7 +110,10 @@ if (RUN_DCDH_POOLED) local({
   # +-5 to match the by-cell dCDH and the stacked exhibits (aligned 2026-07-06;
   # the old +-3/+-2 cap predated the property-controls spec and was stale).
   K_post <- 5; K_pre <- 5
-  NBOOT  <- as.integer(Sys.getenv("DCDH_BOOTSTRAP", "0"))   # set DCDH_BOOTSTRAP=50 to bootstrap
+  # as.numeric, NOT as.integer: `bootstrap` has the same package quirk as
+  # `effects`/`placebo` above and rejects an integer with "Syntax error in
+  # bootstrap option. Positive integer required."
+  NBOOT  <- as.numeric(Sys.getenv("DCDH_BOOTSTRAP", "0"))   # set DCDH_BOOTSTRAP=50 to bootstrap
 
   panel <- panel[as.character(cell_muni) %in% c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind") &
                    !is.na(resident_eit)]
@@ -177,7 +183,7 @@ if (RUN_DCDH_POOLED) local({
 if (RUN_DCDH_BYCELL) local({
   suppressMessages(library(DIDmultiplegtDYN))
   K_post <- 5; K_pre <- 5
-  NBOOT  <- as.integer(Sys.getenv("DCDH_BOOTSTRAP", "0"))
+  NBOOT  <- as.numeric(Sys.getenv("DCDH_BOOTSTRAP", "0"))  # numeric: see note in the pooled block
 
   panel <- panel[as.character(cell_muni) %in% c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind") &
                    !is.na(resident_eit)]

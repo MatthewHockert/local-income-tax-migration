@@ -421,13 +421,38 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     stk[, base_rate := mean(get(dose_col)[rel < 0], na.rm = TRUE),
         by = .(stack, muni)]
     stk[!is.finite(base_rate), base_rate := 0]
-    stk[, dose_stack := get(dose_col) - base_rate]
+    stk[, dose_change := get(dose_col) - base_rate]
+
+    # TREATMENT IN LEVELS (2026-07-30) --------------------------------------
+    # The design is levels with municipality fixed effects doing the
+    # differencing. The level and the baseline-differenced change differ by a
+    # municipality-specific constant, and stack_muni FE absorb constants, so
+    # every coefficient and standard error is identical either way. Verified
+    # coefficient by coefficient, controls included, in RUN_LEVELS_COMPARE
+    # (02_main_models.R -> data/results/levels_vs_changes.csv): max absolute
+    # difference 0.0000 across both specifications and all four outcomes.
+    #
+    # We pass the LEVEL so the code matches how the paper describes the
+    # specification. `dose_change` is retained above so the two can be
+    # compared without rebuilding.
+    #
+    # One real consequence: the rate level is missing on some muni-years where
+    # the change is known to be zero (never-changers and pre-event years with
+    # unrecorded rates), so listwise deletion drops ~1,300 stacked rows that
+    # the change version kept.
+    lvl_col <- c(muni = "resident_eit", sd = "sd_eit",
+                 nr = "muni_nonres_eit")[[side_tag]]
+    stk[, dose_stack := get(lvl_col)]
     cell_levels <- c("NC","Inc-bind","Inc-becomes","Inc-nobind",
                      "Dec-bind","Dec-becomes-non","Dec-nobind","Inc-loses","Dec-gains")
     stk[, treat_cell := factor(treat_cell, levels = cell_levels)]
     stk
   }
   stk_muni <- build_stack(panel, "muni", "dose_muni")
+  # SD co-treatment on the same footing: level, not baseline-differenced change.
+  # `dose_sd_change` keeps the old construction for comparison.
+  stk_muni[, dose_sd_change := dose_sd]
+  stk_muni[, dose_sd := sd_eit]
 
   list(panel = panel, stk_muni = stk_muni, ctrls = ctrls,
        ctrls_str = paste(ctrls, collapse = " + "))
