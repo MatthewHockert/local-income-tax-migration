@@ -670,6 +670,14 @@ linearity for the count of workers who live and work in the municipality
 for total jobs or in-commuters. The marginal effect is steepest at
 moderate rate changes and flatter at either end of the observed range.
 
+It is worth being explicit about what this means for the estimated model.
+Under a linear specification the marginal effect cannot vary, so
+$\text{ACRT}(d)$ is constant and equal to the ACR at every dose. The two
+parameters are the same number, and the distinction between them is
+visible only once the dose is allowed to enter flexibly. That is the work
+the spline figures do, and it is the reason they are reported alongside a
+linear headline rather than instead of one.
+
 Curvature does not undermine the headline estimand, because the ACR is
 defined as a dose-weighted average of marginal effects that vary with
 dose. It is the case the ACR exists to summarise, and a linear
@@ -967,25 +975,35 @@ analogue $\beta^{SD}_{\text{Inc}}$.
 
 \input{../tables/pooled_per_pp_cousub.tex}
 
-A municipal resident-rate increase reduces the number of workers who both
-live and work in the municipality by $0.284$ log points per percentage
-point (SE $0.052$). The same increase reduces in-commuters by $0.220$ and
-total jobs by $0.248$, both precisely estimated, and moves the
-live-and-work share by $-0.021$ (SE $0.011$), significant at the ten
-percent level. Increases in the school-district rate carry small positive
-coefficients on every outcome and none is distinguishable from zero at
-conventional levels, so the municipal effect is not being driven by
-school districts moving their own rates at the same time.
+Table~\ref{tab:pooled_per_pp_cousub} reports the pooled coefficients. Each
+is a response per percentage point of statutory rate, so the economic
+magnitude depends on how large a rate change municipalities actually made.
+The average increase reaches $0.34$ percentage points by the fifth year
+after the event, and I use that figure throughout to convert coefficients
+into effects.
 
-Applied to the average increase in the sample, a little over a quarter of
-a percentage point, the first of these implies a decline of roughly seven
-percent in the resident workforce. That number is the one a design
-without the binding rule would report, and Figure~\ref{fig:spline_pooled}
-shows why it is difficult to interpret. The pooled dose axis runs over
+A municipal resident-rate increase reduces the number of workers who both
+live and work in the municipality. At the average increase the decline is
+$9.2$ percent ($e^{-0.284 \times 0.34} - 1$). In-commuters fall by $7.2$
+percent and total jobs by $8.1$ percent, both precisely estimated. The
+live-and-work share is a level rather than a log, so it is converted by
+multiplying through the average increase and then read against its own
+mean of $9.2$ percentage points. It falls by $0.72$ percentage points at
+the average increase, a proportional decline of $7.8$ percent, and is
+significant only at the ten percent level.
+
+School-district rate increases carry small positive coefficients on every
+outcome and none is distinguishable from zero. The municipal effect is
+therefore not an artifact of school districts moving their own rates in
+the same years, which matters because both governments tax the same
+paycheck and often act together.
+
+These are the numbers a conventional design would report. Their weakness
+is visible in Figure~\ref{fig:spline_pooled}: the dose axis runs over
 increases that reached the worker's bill in full, increases that reached
-it only in part, and increases that never reached it at all, so the
-curve traced there is an average across three different treatments rather
-than a dose-response to one.
+it only in part, and increases that never reached it at all. The curve
+averages three different treatments rather than tracing the response to
+one. The decomposition separates them.
 
 \begin{figure}[H]
   \centering
@@ -1011,47 +1029,83 @@ the identical specification.
 
 \input{../tables/headline_muni_combined.tex}
 
-Splitting the pooled coefficient by binding state recovers the ladder the
-institutional rule predicts. Where the increase passed through to the
-worker's bill in full, the count of workers who live and work in the
-municipality falls by $0.537$ log points per percentage point (SE
-$0.141$). Where it passed through only in part, the effect is $0.250$ (SE
-$0.048$). Where it never reached the bill, the coefficient is $-0.110$
-with a standard error of $0.151$ and a $p$-value of $0.466$. The same
-ordering holds on in-commuters ($-0.345$, $-0.212$, $+0.145$) and on
-total jobs ($-0.423$, $-0.233$, $+0.114$), and on the live-and-work share
-only the binding cell is distinguishable from zero ($-0.058$, SE
-$0.019$).
+Table~\ref{tab:headline_muni_combined} splits the pooled coefficient by
+binding state. The ordering the institutional rule predicts appears in
+every outcome, and it appears in the right size order.
 
-The magnitudes are economically meaningful at the rate changes
-municipalities actually chose. The average binding increase is $0.21$
-percentage points, which implies a decline of about eleven percent in the
-resident workforce. The average partial-pass-through increase is larger
-at $0.27$ percentage points but reaches the bill only above the work
-rate, and it implies a decline of about seven percent.
+Where the increase passed through to the worker's bill in full, the count
+of workers who live and work in the municipality falls by $12.2$ percent
+at that group's average increase of $0.24$ percentage points. Where it
+passed through only in part, the fall is $9.2$ percent, reached through a
+larger average increase of $0.38$ points and a smaller response to each
+point of it. Both are precisely estimated. Where the increase never
+reached the bill, the coefficient is $-0.110$ with a $p$-value of $0.466$.
+The same ordering holds on in-commuters, at $-0.345$, $-0.212$ and
+$+0.145$, and on total jobs, at $-0.423$, $-0.233$ and $+0.114$. On the live-and-work share only the binding
+group is distinguishable from zero, where the share falls by $1.42$
+percentage points against a mean of $9.2$, a proportional decline of
+$15.4$ percent. That the share moves proportionally more than the count
+is what a sorting response implies: residents leave faster than the local
+job base shrinks, so the fraction of local jobs held by residents falls
+on both margins.
 
-The null in the non-binding cell is the sharpest result in the table, and
-it is not an artifact of small rate changes. Those municipalities raised
-their rates by more than either other group, $0.34$ percentage points on
-average against $0.21$ for the binding cell, and still show no response
-on any of the four outcomes. They behaved like tax-raising municipalities
-in every respect except the one that matters, which is whether anyone's
-bill moved.
+The null in the non-binding group is the sharpest result in the table
+because it cannot be explained by those municipalities having done less.
+They raised their rates by more than either other group, $0.43$
+percentage points on average against $0.24$ for the binding group, and
+show no response on any of the four outcomes. They behaved like
+tax-raising municipalities in every respect except the one the
+institutional rule says should matter, which is whether anyone's bill
+moved.
 
-The school-district cells in the lower panel are estimated from the same
-regression and are uniformly small and positive. They are reported so
-that the municipal coefficients can be read as net of school-district
-rate setting rather than as absorbing it.
+The school-district cells in the lower panel come from the same
+regression and are uniformly small and positive. They are reported so the
+municipal coefficients can be read as net of school-district rate setting
+rather than as absorbing it.
+
+The property-tax controls are worth reading even though they are not the
+object of the design. They enter as controls, with no event-study, no
+cohort structure and no pre-trend test behind them, so what follows is
+correlational and should not be read as a causal estimate of the property
+tax. Taken that way it is a useful plausibility check, because a
+specification that recovers sorting away from income taxes ought to
+recover something similar for the other local tax on the same households.
+
+It does, for the layer the municipality sets. A one percentage point
+higher municipal effective property rate is associated with $0.213$ fewer
+log points of resident workforce, the same direction as the earned income
+tax and precisely estimated. The magnitude is roughly two and a half times
+smaller than the binding-cell EIT response per point of rate. Two
+explanations are consistent with that ordering. Property taxes capitalise
+into house prices, so a household buying into a high-rate municipality is
+partly compensated at purchase and the ongoing burden it faces is smaller
+than the statutory rate implies. Earned income taxes do not capitalise the
+same way, since they fall on a flow that follows the worker, and
+relocation is one of the few margins available for avoiding them.
+
+The school-district layer runs the other way, at $+0.017$ and marginally
+significant, and the county layer is null. A positive coefficient on
+school-district property taxes is what a Tiebout account would predict.
+School districts are the level at which the tax most visibly buys a
+service households sort toward, so a higher rate is bundled with better
+schools in a way that a higher municipal rate is not. I note the pattern
+because it is consistent with the mechanism the paper appeals to, not
+because the design identifies it.
+
 
 Figures~\ref{fig:spline_incbind} and~\ref{fig:spline_incbecomes} trace
 the dose-response within the two cells where the bill moves. The total
-effect declines monotonically across the observed range in both. The
-marginal effect is not constant: for the resident workforce the curvature
-test rejects a straight line ($p = 0.004$), with the response steepest at
-moderate increases and flatter at either end. The reported coefficient is
-the dose-weighted average of that varying slope, which is what the ACR is
-defined to be, and not the effect of one further percentage point at any
-particular starting rate.
+effect declines monotonically across the observed range in both. Within
+these cells the data cannot establish that the marginal effect varies. A
+quadratic fitted to the Inc-bind sample alone does not reject a constant
+slope ($p = 0.74$ on the squared term), and the pooled curvature
+diagnostic that does reject
+(Appendix~\ref{app:curvature}) is estimated across all three increase
+cells rather than within any one of them. The figures should therefore be
+read as showing what a flexible fit looks like, not as evidence that the
+response bends. Under the linear specification the reported coefficient
+is both the ACR and the marginal effect at every dose, since the two
+coincide when the slope is not allowed to move.
 
 \begin{figure}[H]
   \centering
@@ -1118,29 +1172,52 @@ particular starting rate.
 %
 % %==========================================================
 %
-The event study asks two things of the decomposition. Whether the
-response appears when the rate changes rather than before, and whether
+The event study asks two things of the decomposition. Whether the response
+appears when the rate changes rather than before it, and whether
 municipalities that eventually take large increases were already moving
 differently from those that take small ones.
 
-Figure~\ref{fig:feols_es_bycell} plots the realized-dose path by group.
-In the binding cell the resident workforce is flat through the pre-event
-window and then declines steadily after the change, reaching $-0.766$ log
-points per percentage point by the fifth year (SE $0.093$). The
-pre-event coefficients average $-0.120$ and the joint Wald test does not
-reject their being zero ($p = 0.227$). This is the cleanest evidence in
-the paper. It is also the only place the pre-trend test is passed.
+In the binding group the resident workforce is flat through the pre-event
+window and then declines steadily, reaching $-0.766$ per percentage point
+by the fifth year. The four pre-event coefficients average $-0.120$ and
+the joint Wald test does not reject their being zero ($p = 0.227$). This
+is the cleanest evidence in the paper, and it is also the only place the
+test is passed. The partial-pass-through group rejects on the resident
+workforce ($p < 0.001$) despite a well-behaved post-event path, the
+non-binding group rejects as well, and the binding group itself rejects
+on the live-and-work share ($p = 0.004$) even while passing on the count.
 
-Elsewhere the diagnostic fails, and the failures should be read as
-limits on what the decomposition supports rather than as confirmation of
-it. The partial-pass-through cell rejects parallel trends on the
-resident workforce ($p < 0.001$) despite a well-behaved post-event path,
-and the non-binding cell rejects as well ($p < 0.001$), so its null
-cannot be leaned on as heavily as its point estimate invites. The
-binding cell itself fails on the live-and-work share ($p = 0.004$) even
-though it passes on the count. The causal reading is therefore secure for
-one cell and one outcome, the count of workers who live and work in the
-municipality where the increase bound, and is weaker everywhere else.
+Two pre-trend tests appear in this paper and they do not agree, which is
+worth resolving rather than leaving to the reader. The de Chaisemartin and
+D'Haultf\oe uille placebo in Section~\ref{subsec:rob-acr} fails to reject
+on all four outcomes, with $p$-values between $0.23$ and $0.69$. The
+realized-dose test here rejects on three of the four for the pooled
+specification. They are testing different conditions. The placebo compares
+the outcome path of municipalities that switch against those that have not
+yet switched, which is average parallel trends and is what a binary design
+requires. The realized-dose test tags each municipality with the rate
+change it will eventually take and asks whether the size of that eventual
+change predicts the pre-event slope, which is strong parallel trends and
+is what a continuous treatment requires
+\citep{callawayDifferenceindifferencesContinuousTreatment2024}. Passing
+the first and failing the second is the signature of dose magnitude being
+correlated with pre-existing trajectories, which is precisely the failure
+mode a continuous design has to rule out and a binary one never
+encounters. The stricter test is the relevant one here, and the pooled
+specification does not survive it.
+
+Taken together the results support three claims. First, municipalities
+that raise the earned income tax lose resident workers, and at the average
+increase the loss is on the order of nine to twelve percent depending on
+whether the increase reaches the bill. Second, the response tracks the tax
+liability rather than the statutory rate, since the group whose rates rose
+most and whose bills did not move shows nothing. Third, the identification
+is secure for one group and one outcome and weaker elsewhere. The binding
+group's effect on the count of workers who live and work in the
+municipality passes every diagnostic applied to it. The remaining cells
+and outcomes carry pre-trends that the design cannot rule out, and I read
+them as corroborating the direction of the effect rather than as
+independent estimates of its size.
 
 \begin{figure}[H]
   \centering
@@ -1193,6 +1270,27 @@ grounds that the analytical ones can be liberal, so the standard errors
 reported here should be read as a lower bound on sampling uncertainty.
 The point estimates are unaffected.}
 % [Results prose removed 2026-07-02 pending property-controls re-run.]
+
+The two estimators agree closely on the outcomes the paper rests on. At
+five years after the event the estimator returns $-0.092$ on the count of
+workers who live and work in the municipality, against $-0.097$ implied
+by the linear coefficient applied to the average cumulative rate change
+of $0.34$ percentage points. On the live-and-work share the figures are
+$-0.005$ and $-0.007$. The gaps are a few thousandths of a log point and
+far inside the sampling error of either estimate. Agreement on the two
+commuter-flow outcomes is looser, at $-0.115$ against $-0.085$ on total
+jobs and $-0.111$ against $-0.075$ on in-commuters.
+
+That agreement carries the two things this section is for. Because the
+estimator assigns no negative weight to any municipality-year, matching
+its answer means the linear specification is not being distorted by the
+weighting problem that heterogeneous effects can create in a two-way
+fixed effects regression. And because the estimator imposes no functional
+form on the dose, matching its answer means the linear approximation is
+not losing much to curvature over the range of rate changes
+municipalities actually chose. The estimator's own joint placebo test
+also fails to reject on all four outcomes, with $p$-values between $0.23$
+and $0.69$.
 
 \input{../tables/dcdh_results.tex}
 

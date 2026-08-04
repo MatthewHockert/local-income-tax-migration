@@ -53,6 +53,7 @@ ui <- fluidPage(
                    choices = c("Dose-response" = "curve",
                                "Spline basis"  = "basis"),
                    selected = "curve"),
+      checkboxInput("show_quad", "Overlay quadratic", FALSE),
       checkboxInput("show_ci", "Confidence bands", TRUE),
       checkboxInput("show_tangent", "Tangent at d", TRUE),
       hr(),
@@ -73,6 +74,7 @@ server <- function(input, output, session) {
     d <- CURVES[outcome == input$outcome & group == input$group]
     if (!nrow(d)) return(NULL)
     list(att = d[curve == "ATT"], acrt = d[curve == "ACRT"],
+         attq = d[curve == "ATT_quad"], acrtq = d[curve == "ACRT_quad"],
          acr = d[curve == "ACRT", acr][1], dmax = max(d$dose, na.rm = TRUE))
   })
 
@@ -235,6 +237,13 @@ server <- function(input, output, session) {
     if (isTRUE(input$show_tangent)) g <- g +
       geom_line(data = tang, aes(x, y), colour = "#b2182b",
                 linewidth = 1.1, alpha = 0.75)
+    if (isTRUE(input$show_quad) && nrow(s$attq)) {
+      g <- g +
+        geom_line(data = s$attq, aes(dose, y), colour = "#7b3294",
+                  linewidth = 1.0, linetype = "22") +
+        geom_line(data = copy(s$acrtq)[, y2 := f(y)], aes(dose, y2),
+                  colour = "#7b3294", linewidth = 0.8, linetype = "22", alpha = 0.7)
+    }
     g +
       geom_line(data = cv$att, aes(dose, y),  colour = "#1b7837", linewidth = 1.0) +
       geom_line(data = acrt,   aes(dose, y2), colour = "#b2182b", linewidth = 0.9) +
@@ -254,7 +263,8 @@ server <- function(input, output, session) {
            subtitle = if (input$model == "linear")
              "Green: ATT(d) = ACR x d. Red: ACRT(d), constant and equal to the ACR. This is what the paper estimates."
            else
-             "Green: ATT(d), total effect (left). Red: ACRT(d), its slope (right). Red straight line: tangent at d. Blue dashed: the ACR.") +
+             paste("Green: ATT(d), total effect (left). Red: ACRT(d), its slope (right). Blue dashed: the ACR.",
+                   if (isTRUE(input$show_quad)) "Purple dashed: the quadratic fit on the same sample." else "")) +
       theme_bw(base_size = 13) +
       theme(axis.title.y.left  = element_text(colour = "#1b7837"),
             axis.title.y.right = element_text(colour = "#b2182b"),

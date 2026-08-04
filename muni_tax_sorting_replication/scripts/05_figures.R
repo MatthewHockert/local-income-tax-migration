@@ -1080,7 +1080,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   # group's own dose terciles; boundary at [0, max dose] so the basis is
   # linear beyond the observed range (ns property).
   fit_group <- function(treated_cells) {
-    ATT <- list(); ACRT <- list(); BAS <- list(); keep <- c(treated_cells, "NC")
+    ATT <- list(); ACRT <- list(); BAS <- list(); QUA <- list(); keep <- c(treated_cells, "NC")
     dmax_g <- quantile(stk[as.character(treat_cell) %in% treated_cells & dose > 0, dose],
                        0.95, na.rm = TRUE)
     dg <- seq(0, dmax_g, length.out = 80)
@@ -1101,6 +1101,12 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       # both shows how much the straight line smooths over.
       fS <- feols(as.formula(paste0(o," ~ ",paste(bn,collapse=" + ")," + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
       fL <- feols(as.formula(paste0(o," ~ dose + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
+      # Quadratic on the SAME sample and controls, so the spline and the
+      # polynomial are directly comparable rather than differing in setup too.
+      d[, dose2 := dose^2]
+      fQ <- feols(as.formula(paste0(o," ~ dose + dose2 + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
+      bq <- coef(fQ)[c("dose","dose2")]; Vq <- vcov(fQ)[c("dose","dose2"), c("dose","dose2")]
+      q_p <- fQ$coeftable["dose2", "Pr(>|t|)"]
       csp <- coef(fS)[bn]; Vsp <- vcov(fS)[bn, bn]; acr <- as.numeric(coef(fL)["dose"])
       # ATT(d) = B(d)'b - B(0)'b  (effect of dose d relative to dose 0); the
       # G %*% Vsp %*% G' diagonal gives delta-method variances for the curve.
@@ -1121,9 +1127,21 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       # the decomposition b_j * B_j(d) that sums to ATT(d).
       BAS[[o]] <- data.table(outcome=lab[o], knot1=kk[1], knot2=kk[2],
                              bk_lo=bb[1], bk_hi=bb[2],
-                             b1=csp[1], b2=csp[2], b3=csp[3], acr=acr)
+                             b1=csp[1], b2=csp[2], b3=csp[3], acr=acr,
+                             q1=bq[1], q2=bq[2], q_dose2_p=q_p)
+      # Quadratic ATT(d) = b1 d + b2 d^2 and ACRT(d) = b1 + 2 b2 d, delta-method SEs.
+      attq  <- bq[1]*dg + bq[2]*dg^2
+      vattq <- dg^2*Vq[1,1] + dg^4*Vq[2,2] + 2*dg^3*Vq[1,2]
+      acrtq <- bq[1] + 2*bq[2]*dg
+      vacrq <- Vq[1,1] + 4*dg^2*Vq[2,2] + 4*dg*Vq[1,2]
+      QUA[[o]] <- rbind(
+        data.table(outcome=lab[o], dose=dg, curve="ATT_quad",  y=attq,
+                   lo=attq-1.96*sqrt(pmax(vattq,0)), hi=attq+1.96*sqrt(pmax(vattq,0)), acr=NA_real_),
+        data.table(outcome=lab[o], dose=dg, curve="ACRT_quad", y=acrtq,
+                   lo=acrtq-1.96*sqrt(pmax(vacrq,0)), hi=acrtq+1.96*sqrt(pmax(vacrq,0)), acr=NA_real_))
     }
-    list(ATT = rbindlist(ATT), ACRT = rbindlist(ACRT), BASIS = rbindlist(BAS))
+    list(ATT = rbindlist(ATT), ACRT = rbindlist(ACRT),
+         BASIS = rbindlist(BAS), QUAD = rbindlist(QUA))
   }
 
   plot_group <- function(res, ttl, outfile) {
@@ -1212,7 +1230,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   ## can read them without refitting the stacked panel.
   export_curves <- function(res, grp) rbind(
     res$ATT[,  .(group = grp, outcome, dose, curve = "ATT",  y, lo, hi, acr = NA_real_)],
-    res$ACRT[, .(group = grp, outcome, dose, curve = "ACRT", y, lo, hi, acr)])
+    res$ACRT[, .(group = grp, outcome, dose, curve = "ACRT", y, lo, hi, acr)],
+    res$QUAD[, .(group = grp, outcome, dose, curve, y, lo, hi, acr)])
   fwrite(rbind(export_curves(res_pooled,     "Pooled Increase"),
                export_curves(res_incbind,    "Inc-bind"),
                export_curves(res_incbecomes, "Inc-becomes")),
