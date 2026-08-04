@@ -1382,4 +1382,122 @@ if (RUN_WORKBOOK) local({
   saveWorkbook(wb, out_xlsx, overwrite = TRUE)
 })
 
+
+# ---------------------------------------------------------------------------
+# Pooled-specification robustness battery (appendix)
+# ---------------------------------------------------------------------------
+# One table per check, mirroring the decomposition tables in Section 6.
+local({
+  outs <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
+  hdr  <- c("Share live in muni", "Log(work in own muni)",
+            "Log(in-commuters)", "Log(total jobs)")
+  TERM <- "direction_muni::Inc:dose_stack"
+
+  wrap <- function(body, cap, lab, notes) c(
+    "\\begin{table}[H]", "  \\centering", sprintf("  \\caption{%s}", cap),
+    sprintf("  \\label{%s}", lab), "  \\small", "  \\resizebox{\\textwidth}{!}{",
+    "  \\begin{tabular}{lcccc}", "    \\toprule",
+    sprintf("    & %s \\\\", paste(hdr, collapse = " & ")), "    \\midrule",
+    body, "    \\bottomrule", "  \\end{tabular}", "  }", "  \\vspace{0.3em}",
+    "  \\begin{minipage}{0.95\\textwidth}",
+    paste("    \\footnotesize \\textit{Notes:}", notes), "  \\end{minipage}", "\\end{table}")
+
+  # `want` rather than `term`: the data.table has a column called `term`, and a
+  # parameter of the same name shadows it inside the j-expression.
+  rowpair <- function(x, label, want = TERM) {
+    est <- se <- character(length(outs))
+    for (j in seq_along(outs)) {
+      r <- x[outcome == outs[j]][grepl(want, term, fixed = TRUE)]
+      if (!nrow(r)) { est[j] <- "---"; se[j] <- ""; next }
+      est[j] <- paste0(fmt_est(r$est[1]), "\\sym{", sig_stars(r$p[1]), "}")
+      se[j]  <- fmt_se(r$se[1])
+    }
+    c(sprintf("    %s & %s \\\\", label, paste(est, collapse = " & ")),
+      sprintf("     & %s \\\\", paste(se, collapse = " & ")))
+  }
+
+  ## Act 32
+  f <- file.path(RESULTS_DIR, "pooled_act32.csv")
+  if (file.exists(f)) {
+    d <- fread(f); body <- character(0)
+    for (pd in c("pre", "post")) {
+      x <- d[period == pd]; if (!nrow(x)) next
+      nt <- x$n_treated[1]
+      body <- c(body, rowpair(x, sprintf("%s-Act 32 cohorts (%d munis)",
+                                          tools::toTitleCase(pd), nt)))
+    }
+    writeLines(wrap(body,
+      "Pooled Increase effect, split at the Act 32 enforcement break",
+      "tab:pooled_act32",
+      paste("Cohorts split at Act 32's effective year, 2012. Specification otherwise",
+            "unchanged. SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.")),
+      file.path(TABLE_DIR, "pooled_act32.tex"))
+    message("Saved tables/pooled_act32.tex")
+  }
+
+  ## Act 47
+  f <- file.path(RESULTS_DIR, "pooled_act47.csv")
+  if (file.exists(f)) {
+    d <- fread(f); body <- character(0)
+    for (sp in unique(d$spec)) {
+      x <- d[spec == sp]; body <- c(body, rowpair(x, sprintf("%s", sp)))
+    }
+    writeLines(wrap(body,
+      "Pooled Increase effect, excluding Act 47 distressed municipalities",
+      "tab:pooled_act47",
+      paste("Act 47 status from DCED's distressed register. Excluded from the treated",
+            "group only. SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.")),
+      file.path(TABLE_DIR, "pooled_act47.tex"))
+    message("Saved tables/pooled_act47.tex")
+  }
+
+  ## Fake timing
+  f <- file.path(RESULTS_DIR, "pooled_fake_timing.csv")
+  if (file.exists(f)) {
+    d <- fread(f); body <- character(0)
+    for (sh in sort(unique(d$shift))) {
+      x <- d[shift == sh]; if (!nrow(x)) next
+      nt <- x$n_treated[1]
+      body <- c(body, sprintf("    \\multicolumn{5}{l}{\\textit{Placebo event at $c-%d$ (%d eligible munis)}} \\\\", sh, nt),
+                rowpair(x, "\\quad Pooled Inc", want = "direction_muni::Inc:dose_fake"))
+    }
+    writeLines(wrap(body,
+      "Pooled Increase effect at placebo event dates",
+      "tab:pooled_fake_timing",
+      paste("Placebo events 3, 4 or 5 years early, using only data before the real",
+            "change, so every coefficient should be null. Counts fall with the shift",
+            "because eligibility needs two placebo pre-years inside the panel. Panels",
+            "overlap. SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.")),
+      file.path(TABLE_DIR, "pooled_fake_timing.tex"))
+    message("Saved tables/pooled_fake_timing.tex")
+  }
+
+  ## Pre-trend battery
+  f <- file.path(RESULTS_DIR, "pooled_pretrend_battery.csv")
+  if (file.exists(f)) {
+    d <- fread(f)
+    pick <- function(field, fmt) vapply(outs, function(o) {
+      r <- d[outcome == o]; if (!nrow(r) || is.na(r[[field]][1])) "---" else fmt(r[[field]][1])
+    }, character(1))
+    f3 <- function(x) formatC(x, format = "f", digits = 3)
+    body <- c(
+      sprintf("    Joint Wald $p$ (leads) & %s \\\\", paste(pick("wald_joint_p", f3), collapse = " & ")),
+      sprintf("    Leads significant at 5\\%% (of 4) & %s \\\\",
+              paste(pick("n_leads_sig5", function(x) sprintf("%d", as.integer(x))), collapse = " & ")),
+      sprintf("    Smallest lead $p$ & %s \\\\", paste(pick("min_lead_p", f3), collapse = " & ")),
+      sprintf("    Linear pre-slope & %s \\\\", paste(pick("lin_slope", f3), collapse = " & ")),
+      sprintf("    Linear pre-slope $p$ & %s \\\\", paste(pick("lin_slope_p", f3), collapse = " & ")),
+      sprintf("    Clean & %s \\\\", paste(pick("robust_clean",
+              function(x) ifelse(as.logical(x), "yes", "no")), collapse = " & ")))
+    writeLines(wrap(body,
+      "Pre-trend battery for the pooled Increase specification",
+      "tab:pooled_pretrend_battery",
+      paste("Tests on the four pre-event leads of the pooled realized-dose event study.",
+            "Clean means the joint Wald does not reject at 10\\% and no single lead is",
+            "significant at 5\\%.")),
+      file.path(TABLE_DIR, "pooled_pretrend_battery.tex"))
+    message("Saved tables/pooled_pretrend_battery.tex")
+  }
+})
+
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()

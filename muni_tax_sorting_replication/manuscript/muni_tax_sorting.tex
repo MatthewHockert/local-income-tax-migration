@@ -661,13 +661,25 @@ one.
 
 The dose-response figures in this paper are fit to a natural spline in the dose, with interior
 knots at the terciles of the positive treated doses and boundary knots at
-zero and the largest observed dose. The curvature diagnostic is a visual device and not a hard set interpretation of the causal parameters and it does not reject linearity over the observed
-range of rate changes. A larger sample with a wider spread of rate
-changes could support a genuinely polynomial dose-response.
+zero and the largest observed dose. The spline is a visual device rather
+than an estimating equation, and it is deliberately more flexible than
+the data can support so that any bending is visible if it is there. It
+is. The curvature diagnostic in Appendix~\ref{app:curvature} rejects
+linearity for the count of workers who live and work in the municipality
+($p = 0.004$) and for their share of local jobs ($p = 0.020$), though not
+for total jobs or in-commuters. The marginal effect is steepest at
+moderate rate changes and flatter at either end of the observed range.
 
-Reading the linear coefficient as the ACR requires the dose-response
-curve to be well approximated by a straight line over the range of rate
-changes municipalities actually chose. Section~\ref{subsec:rob-acr}
+Curvature does not undermine the headline estimand, because the ACR is
+defined as a dose-weighted average of marginal effects that vary with
+dose. It is the case the ACR exists to summarise, and a linear
+specification recovers that average whether or not the underlying curve
+bends. What curvature rules out is reading the coefficient as a constant
+marginal effect. The reported number is the average response across the
+rate changes municipalities actually chose, not the effect of one further
+percentage point at any particular starting point.
+
+Section~\ref{subsec:rob-acr}
 therefore re-estimates the effect with the de Chaisemartin and
 D'Haultf\oe uille estimator, which recovers a weighted average of
 marginal effects without imposing linearity and without the negative
@@ -955,8 +967,25 @@ analogue $\beta^{SD}_{\text{Inc}}$.
 
 \input{../tables/pooled_per_pp_cousub.tex}
 
-% [Results prose removed 2026-07-02 pending property-controls re-run;
-%  regenerate numbers from data/q3_unified CSVs before rewriting.]
+A municipal resident-rate increase reduces the number of workers who both
+live and work in the municipality by $0.284$ log points per percentage
+point (SE $0.052$). The same increase reduces in-commuters by $0.220$ and
+total jobs by $0.248$, both precisely estimated, and moves the
+live-and-work share by $-0.021$ (SE $0.011$), significant at the ten
+percent level. Increases in the school-district rate carry small positive
+coefficients on every outcome and none is distinguishable from zero at
+conventional levels, so the municipal effect is not being driven by
+school districts moving their own rates at the same time.
+
+Applied to the average increase in the sample, a little over a quarter of
+a percentage point, the first of these implies a decline of roughly seven
+percent in the resident workforce. That number is the one a design
+without the binding rule would report, and Figure~\ref{fig:spline_pooled}
+shows why it is difficult to interpret. The pooled dose axis runs over
+increases that reached the worker's bill in full, increases that reached
+it only in part, and increases that never reached it at all, so the
+curve traced there is an average across three different treatments rather
+than a dose-response to one.
 
 \begin{figure}[H]
   \centering
@@ -982,9 +1011,47 @@ the identical specification.
 
 \input{../tables/headline_muni_combined.tex}
 
-% [Results prose removed 2026-07-02 pending property-controls re-run.
-%  Structure to restore: typical-dose translation (Inc-bind), share outcome,
-%  Inc-becomes read, Inc-nobind placebo, SD-side cells.]
+Splitting the pooled coefficient by binding state recovers the ladder the
+institutional rule predicts. Where the increase passed through to the
+worker's bill in full, the count of workers who live and work in the
+municipality falls by $0.537$ log points per percentage point (SE
+$0.141$). Where it passed through only in part, the effect is $0.250$ (SE
+$0.048$). Where it never reached the bill, the coefficient is $-0.110$
+with a standard error of $0.151$ and a $p$-value of $0.466$. The same
+ordering holds on in-commuters ($-0.345$, $-0.212$, $+0.145$) and on
+total jobs ($-0.423$, $-0.233$, $+0.114$), and on the live-and-work share
+only the binding cell is distinguishable from zero ($-0.058$, SE
+$0.019$).
+
+The magnitudes are economically meaningful at the rate changes
+municipalities actually chose. The average binding increase is $0.21$
+percentage points, which implies a decline of about eleven percent in the
+resident workforce. The average partial-pass-through increase is larger
+at $0.27$ percentage points but reaches the bill only above the work
+rate, and it implies a decline of about seven percent.
+
+The null in the non-binding cell is the sharpest result in the table, and
+it is not an artifact of small rate changes. Those municipalities raised
+their rates by more than either other group, $0.34$ percentage points on
+average against $0.21$ for the binding cell, and still show no response
+on any of the four outcomes. They behaved like tax-raising municipalities
+in every respect except the one that matters, which is whether anyone's
+bill moved.
+
+The school-district cells in the lower panel are estimated from the same
+regression and are uniformly small and positive. They are reported so
+that the municipal coefficients can be read as net of school-district
+rate setting rather than as absorbing it.
+
+Figures~\ref{fig:spline_incbind} and~\ref{fig:spline_incbecomes} trace
+the dose-response within the two cells where the bill moves. The total
+effect declines monotonically across the observed range in both. The
+marginal effect is not constant: for the resident workforce the curvature
+test rejects a straight line ($p = 0.004$), with the response steepest at
+moderate increases and flatter at either end. The reported coefficient is
+the dose-weighted average of that varying slope, which is what the ACR is
+defined to be, and not the effect of one further percentage point at any
+particular starting rate.
 
 \begin{figure}[H]
   \centering
@@ -1051,6 +1118,30 @@ the identical specification.
 %
 % %==========================================================
 %
+The event study asks two things of the decomposition. Whether the
+response appears when the rate changes rather than before, and whether
+municipalities that eventually take large increases were already moving
+differently from those that take small ones.
+
+Figure~\ref{fig:feols_es_bycell} plots the realized-dose path by group.
+In the binding cell the resident workforce is flat through the pre-event
+window and then declines steadily after the change, reaching $-0.766$ log
+points per percentage point by the fifth year (SE $0.093$). The
+pre-event coefficients average $-0.120$ and the joint Wald test does not
+reject their being zero ($p = 0.227$). This is the cleanest evidence in
+the paper. It is also the only place the pre-trend test is passed.
+
+Elsewhere the diagnostic fails, and the failures should be read as
+limits on what the decomposition supports rather than as confirmation of
+it. The partial-pass-through cell rejects parallel trends on the
+resident workforce ($p < 0.001$) despite a well-behaved post-event path,
+and the non-binding cell rejects as well ($p < 0.001$), so its null
+cannot be leaned on as heavily as its point estimate invites. The
+binding cell itself fails on the live-and-work share ($p = 0.004$) even
+though it passes on the count. The causal reading is therefore secure for
+one cell and one outcome, the count of workers who live and work in the
+municipality where the increase bound, and is weaker everywhere else.
+
 \begin{figure}[H]
   \centering
   \caption{Realized-dose event study by group (pooled / Inc-bind / Inc-becomes), level-at-mean-dose scale.}
@@ -1333,6 +1424,106 @@ is in the body, Section~\ref{subsec:results-es}).
 \end{figure}
 
 %==========================================================
+\section{Robustness for the Pooled Specification}
+\label{app:pooled-robustness}
+
+Section~\ref{sec:robustness} runs its checks on the binding decomposition.
+This appendix runs the same battery on the pooled Increase specification
+of Equation~(\ref{eq:pooled}), so the benchmark is held to the standard
+the headline estimator is held to. Each subsection below is the pooled
+counterpart of the correspondingly named check in
+Section~\ref{sec:robustness}, with the school-district co-treatment, the
+controls, the fixed effects and the municipality clustering unchanged
+throughout. The reported coefficient is $\beta^{M}_{\text{Inc}}$ in every
+table.
+
+\subsection{Pre/Post Act 32}
+\label{app:pooled-act32}
+
+Splitting cohorts at Act~32's effective year leaves the pooled effect on
+either side of the full-sample estimate rather than concentrated in one
+period. The pre-2012 cohorts give a larger response and the post-2012
+cohorts a smaller one, which is the opposite ordering to the
+decomposition's Inc-bind cell, where enforcement strengthens the effect.
+The pooled comparison is harder to read because the two periods differ in
+cell composition as well as in enforcement.
+
+\input{../tables/pooled_act32.tex}
+
+\subsection{Act 47 Distressed-Municipality Exclusion}
+\label{app:pooled-act47}
+
+Five municipalities in the pooled Increase group have ever carried an
+Act~47 designation. Excluding them from the treated group leaves the
+coefficient slightly larger rather than smaller on every outcome, so the
+pooled result is not being carried by distressed cities raising rates
+under a recovery plan.
+
+\input{../tables/pooled_act47.tex}
+
+\subsection{Pre-Trend Battery}
+\label{app:pooled-pretrend}
+
+This is where the pooled specification fails. The joint Wald test on the
+four pre-event leads rejects parallel trends on three of the four
+outcomes, and the pooled coefficient on the count of workers who live and
+work in the municipality, the paper's primary outcome, rejects at
+$p = 0.013$. Only the share of local jobs passes.
+
+The comparison with the decomposition is the point of running this at
+all. On the identical outcome and sample, the Inc-bind cell of the
+decomposition returns $p = 0.227$
+(Section~\ref{subsec:results-es}). Pooling across binding states mixes
+municipalities whose bills moved with municipalities whose bills did not,
+and it is the second group that carries the differential pre-trend.
+Separating them is what recovers a cell that survives the test.
+
+\input{../tables/pooled_pretrend_battery.tex}
+
+\subsection{Fake-Timing Placebo}
+\label{app:pooled-faketiming}
+
+Assigning each treated municipality a placebo event three, four or five
+years before its real one, and admitting only data that precede the real
+change, should produce nothing. The two outcomes the paper relies on pass
+cleanly. The count of workers who live and work in the municipality and
+their share of local jobs are null at every shift, so the sorting result
+is not a pre-existing drift dressed up as a response to the tax.
+
+The two outcomes that fold in commuters do not pass. In-commuters and
+total jobs show placebo effects of roughly $-0.11$ to $-0.14$, significant
+at five percent at every shift. Both count jobs held by people who live
+elsewhere, whose bills the municipal resident rate never touches, so they
+were the weaker tests to begin with.
+
+Eligibility requires at least two placebo pre-years inside the panel, so
+the municipality count falls from $37$ to $27$ as the shift lengthens and
+the earliest cohorts drop off the start of the sample. The three panels
+overlap heavily and are consistency checks rather than independent tests.
+
+\input{../tables/pooled_fake_timing.tex}
+
+\subsection{What the Battery Implies}
+\label{app:pooled-verdict}
+
+The pooled specification comes through the battery in reasonable shape on
+the outcomes the paper rests on. Act~32 and Act~47 leave it intact, and
+the fake-timing placebo is null on the resident workforce and on the
+live-and-work share at all three shifts. Where it struggles is on the
+commuter-flow outcomes, which fail the placebo, and on the realized-dose
+pre-trend, which the share alone survives.
+
+The pattern is informative rather than merely disappointing. The
+diagnostics fail exactly where the institutional rule predicts the
+municipal resident rate should have least purchase, on counts dominated
+by workers whose bills that rate does not reach. It is the same
+distinction the binding decomposition makes explicit, and the
+decomposition's advantage shows up in the pre-trend test: on the resident
+workforce the Inc-bind cell returns $p = 0.227$ against $p = 0.013$ for
+the pooled coefficient on the identical sample. The pooled estimate is a
+sound benchmark for the outcomes it is asked to carry, and the
+decomposition is what sharpens it.
+
 \section{Robustness: Full Tables}
 \label{app:robustness}
 %==========================================================

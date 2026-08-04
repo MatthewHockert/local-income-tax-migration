@@ -42,6 +42,7 @@ RUN_PRETREND_BATTERY <- TRUE   # 4-test battery per cell (moved from stage 03)
 # The code is left in place, gated off, rather than deleted.
 RUN_DOSE_PERMUTATION <- FALSE  # randomization inference: shuffle dose magnitudes (~15 min)
 RUN_FAKE_TIMING      <- TRUE   # placebo cohorts 4 years early, pre-event data only
+RUN_POOLED_ROBUSTNESS <- TRUE  # the same battery, run on the pooled Inc specification
 
 # Shared setup ----
 env <- build_headline_env()
@@ -670,7 +671,9 @@ if (RUN_CURVATURE) local({
   # must not mutate the shared stacked panel.
   stk <- copy(stk_muni); cs <- ctrls_str
   stk[, inc := as.integer(as.character(treat_cell) %in% c("Inc-bind", "Inc-becomes", "Inc-nobind"))]
-  stk[, dose := fifelse(inc == 1, dose_stack, 0)]; stk[, dose2 := dose^2]
+  # dose_change, NOT dose_stack -- see the note in 05_figures.R. The curvature
+  # test needs the actual dose magnitude, not the rate level.
+  stk[, dose := fifelse(inc == 1, dose_change, 0)]; stk[, dose2 := dose^2]
   dmax <- quantile(stk[inc == 1 & dose > 0, dose], 0.95, na.rm = TRUE)   # plot range
   dgrid <- seq(0, dmax, length.out = 60)
 
@@ -1090,6 +1093,142 @@ if (RUN_FAKE_TIMING) local({
   out <- rbindlist(rows, fill = TRUE)
   fwrite(out, file.path(RESULTS_DIR, "fake_timing_placebo.csv"))
   print(out)
+})
+
+
+
+# ---------------------------------------------------------------------------
+# Pooled specification: the full robustness battery
+# ---------------------------------------------------------------------------
+# Every check above is run on the binding decomposition. This block mirrors
+# each of them on the pooled Inc grouping of Equation (eq:pooled), so the
+# benchmark is held to the same standard as the headline estimator. Outputs
+# parallel their decomposition counterparts one for one:
+#   pooled_act32.csv            <- act32_full_cousub.csv
+#   pooled_act47.csv            <- act47_full_table.csv
+#   pooled_fake_timing.csv      <- fake_timing_placebo.csv (shifts 3, 4, 5)
+#   pooled_pretrend_battery.csv <- pretrend_battery.csv
+# The pooled dCDH already exists in dcdh_robustness.csv (RUN_DCDH_POOLED).
+if (RUN_POOLED_ROBUSTNESS) local({
+
+  ACT32_YEAR <- 2012L; SHIFTS <- c(3L, 4L, 5L); K <- 5L
+  outcomes <- c("log_live_and_work", "log_in_commuters",
+                "log_total_jobs", "share_live_in")
+  inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  dec_cells <- c("Dec-bind", "Dec-becomes-non", "Dec-nobind")
+  mk_dir <- function(x) fcase(as.character(x) %in% inc_cells, "Inc",
+                              as.character(x) %in% dec_cells, "Dec",
+                              as.character(x) == "NC", "NC",
+                              default = NA_character_)
+  stk <- copy(stk_muni)
+  stk[, direction_muni := factor(mk_dir(treat_cell), levels = c("NC","Inc","Dec"))]
+  stk[, direction_sd   := factor(mk_dir(cell_sd),    levels = c("NC","Inc","Dec"))]
+  stk[is.na(dose_sd), dose_sd := 0]
+
+  fit_full <- function(d, o, dose_col = "dose_stack") {
+    cols <- intersect(c("muni","direction_muni",dose_col,"direction_sd","dose_sd",
+                        "stack_muni","stack_year", o, ctrls), names(d))
+    x <- d[, ..cols]; x <- x[complete.cases(x)]
+    if (!nrow(x) || uniqueN(x$direction_muni) < 2) return(NULL)
+    f <- as.formula(paste0(o, " ~ i(direction_muni, ", dose_col, ", ref='NC')",
+                           " + i(direction_sd, dose_sd, ref='NC') + ",
+                           paste(ctrls, collapse = " + "),
+                           " | stack_muni + stack_year"))
+    m <- tryCatch(suppressMessages(feols(f, data = x, cluster = ~muni, notes = FALSE)),
+                  error = function(e) NULL)
+    if (is.null(m)) return(NULL)
+    ct <- as.data.table(m$coeftable, keep.rownames = "term")
+    setnames(ct, c("Estimate","Std. Error","Pr(>|t|)"), c("est","se","p"), skip_absent = TRUE)
+    ct[, `:=`(outcome = o, n = nobs(m),
+              r2  = round(fitstat(m, "r2",  simplify = TRUE), 4),
+              wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4),
+              dep_mean  = round(mean(m$residuals + m$fitted.values, na.rm = TRUE), 4),
+              n_treated = uniqueN(x[direction_muni == "Inc", muni]))][]
+  }
+  gather <- function(d, dose_col = "dose_stack")
+    rbindlist(lapply(outcomes, function(o) fit_full(d, o, dose_col)), fill = TRUE)
+
+  ## (1) Act 32 enforcement split
+  pre  <- gather(stk[is.na(c_muni) | c_muni <  ACT32_YEAR]); if (nrow(pre))  pre[,  period := "pre"]
+  post <- gather(stk[is.na(c_muni) | c_muni >= ACT32_YEAR]); if (nrow(post)) post[, period := "post"]
+  fwrite(rbind(pre, post, fill = TRUE), file.path(RESULTS_DIR, "pooled_act32.csv"))
+
+  ## (2) Act 47 distressed-municipality exclusion
+  a47_names <- toupper(c("NEWVILLE","CHESTER","HARRISBURG","SHENANDOAH","AMBRIDGE",
+    "WILKINSBURG","EAST PITTSBURGH","NORTH BRADDOCK","HOMESTEAD","MILLBOURNE",
+    "WESTFALL","WEST HAZLETON","NANTICOKE","CLAIRTON","PLYMOUTH","ALTOONA",
+    "PITTSBURGH","FARRELL","SCRANTON","COLWYN","READING","FRANKLIN","MAHANOY CITY",
+    "JOHNSTOWN","HAZLETON","RANKIN","BRADDOCK","DUQUESNE","GREENVILLE","ALIQUIPPA",
+    "NEW CASTLE","SHAMOKIN"))
+  nrm <- function(x) trimws(gsub("\\s+"," ", gsub("[^A-Z0-9 ]"," ", toupper(x))))
+  rate_nm <- unique(as.data.table(readRDS(file.path(DERIVED_DIR, "pa_rate_panel.rds")))[
+    !is.na(cousub_fips), .(muni = cousub_fips, nm = nrm(municipality))])
+  a47n <- nrm(a47_names)
+  rate_nm[, is47 := vapply(nm, function(z) any(vapply(a47n, function(a)
+    grepl(a, z, fixed = TRUE), logical(1))), logical(1))]
+  drop47 <- rate_nm[is47 == TRUE, muni]
+  n47 <- uniqueN(stk[muni %in% drop47 & direction_muni == "Inc", muni])
+  message(sprintf("[pooled-rob] Act 47 munis in the pooled Inc group: %d", n47))
+  aa <- gather(stk); if (nrow(aa)) aa[, spec := "All Inc munis"]
+  bb <- gather(stk[!(direction_muni == "Inc" & muni %in% drop47)])
+  if (nrow(bb)) bb[, spec := sprintf("Drop %d Act 47 munis", n47)]
+  fwrite(rbind(aa, bb, fill = TRUE), file.path(RESULTS_DIR, "pooled_act47.csv"))
+
+  ## (3) Fake-timing placebo at three shifts
+  pan <- copy(panel)
+  pan[, direction_muni := factor(mk_dir(cell_muni), levels = c("NC","Inc","Dec"))]
+  pan[, direction_sd   := factor(mk_dir(cell_sd),   levels = c("NC","Inc","Dec"))]
+  nc_munis <- unique(pan[direction_muni == "NC", muni])
+  tr_all   <- unique(stk[direction_muni == "Inc" & !is.na(c_muni), .(muni, c_true = c_muni)])
+  ft <- list()
+  for (SH in SHIFTS) {
+    tr <- tr_all[c_true - SH - 2L >= 2002L]
+    message(sprintf("[pooled-rob] fake timing -%d: %d of %d treated munis eligible",
+                    SH, nrow(tr), nrow(tr_all)))
+    fake <- rbindlist(lapply(sort(unique(tr$c_true - SH)), function(cy) {
+      win <- (cy - K):(cy + K); tm <- tr[c_true - SH == cy]
+      dt <- pan[muni %in% tm$muni & year %in% win & year < (cy + SH)]
+      dc <- pan[muni %in% nc_munis & year %in% win]
+      if (!nrow(dt)) return(NULL)
+      dt[, dir_fake := "Inc"]; dc[, dir_fake := "NC"]
+      rbind(dt, dc, fill = TRUE)[, stack := cy][]
+    }), fill = TRUE)
+    if (!nrow(fake)) next
+    fake[, `:=`(rel = year - stack, stack_muni = paste0(stack, "_", muni),
+                stack_year = paste0(stack, "_", year))]
+    fake[, direction_muni := factor(dir_fake, levels = c("NC","Inc","Dec"))]
+    fake[, dose_fake := fifelse(rel >= 0 & dir_fake == "Inc", resident_eit, 0)]
+    if (!"dose_sd" %in% names(fake)) fake[, dose_sd := 0]
+    fake[is.na(dose_sd), dose_sd := 0]
+    g <- gather(fake, "dose_fake")
+    if (!is.null(g) && nrow(g)) { g[, shift := SH]; ft[[as.character(SH)]] <- g }
+  }
+  if (length(ft)) fwrite(rbindlist(ft, fill = TRUE),
+                         file.path(RESULTS_DIR, "pooled_fake_timing.csv"))
+
+  ## (4) Pre-trend battery from the pooled realized-dose event study
+  esc <- file.path(RESULTS_DIR, "pooled_es_cousub_coefs.csv")
+  esa <- file.path(RESULTS_DIR, "pooled_es_cousub_att.csv")
+  if (file.exists(esc) && file.exists(esa)) {
+    co <- fread(esc)[direction == "Inc" & outcome %in% outcomes]
+    at <- fread(esa)[outcome %in% outcomes]
+    bat <- rbindlist(lapply(outcomes, function(o) {
+      cc <- co[outcome == o & rel <= -2]; ab <- at[outcome == o]
+      if (!nrow(cc) || !nrow(ab)) return(NULL)
+      ls <- tryCatch(summary(lm(est ~ rel, data = cc))$coefficients["rel", c(1, 4)],
+                     error = function(e) c(NA_real_, NA_real_))
+      data.table(outcome = o, n_leads = nrow(cc),
+                 wald_joint_p = ab$wald_pre_p[1],
+                 n_leads_sig5 = sum(cc$p < 0.05, na.rm = TRUE),
+                 min_lead_p   = min(cc$p, na.rm = TRUE),
+                 lin_slope    = unname(ls[1]), lin_slope_p = unname(ls[2]),
+                 robust_clean = ab$wald_pre_p[1] >= 0.10 &
+                                sum(cc$p < 0.05, na.rm = TRUE) == 0)
+    }), fill = TRUE)
+    fwrite(bat, file.path(RESULTS_DIR, "pooled_pretrend_battery.csv"))
+    message("[pooled-rob] pre-trend battery:"); print(bat)
+  }
+  message("Saved pooled_act32 / pooled_act47 / pooled_fake_timing / pooled_pretrend_battery")
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()

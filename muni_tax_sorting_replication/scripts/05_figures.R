@@ -191,21 +191,13 @@ if (RUN_SUMMARY_STATS) local({
   write_summary_table(muni_rows,
     "Estimation-sample summary statistics, muni-year (2002--2019)",
     "tab:summary_muni", "summary_muni.tex",
-    notes = c(sprintf(paste("Estimation sample: %s muni-years across %s municipalities.",
-                            "The raw 2002--2019 cousub panel has %s muni-years across %s municipalities.",
-                            "Dropping flip-floppers and decrease municipalities leaves %s, and dropping",
-                            "muni-years missing a fiscal control leaves the sample above."),
+    notes = c(sprintf(paste("Estimation sample: %s muni-years across %s municipalities,",
+                            "from a raw panel of %s. Each row reports its own non-missing $N$."),
                       format(nrow(est), big.mark = ","),
                       format(uniqueN(est$muni), big.mark = ","),
-                      format(sample_steps$muni_years[1], big.mark = ","),
-                      format(sample_steps$munis[1], big.mark = ","),
-                      format(sample_steps$muni_years[2], big.mark = ",")),
-              "Each outcome row reports its own non-missing $N$, which is that outcome's",
-              "regression sample at the muni-year level. Log outcomes drop muni-years with a zero count.",
-              "$\\tau^{nr,M}$ has DCED reporting gaps before Act 32.",
-              "Effective property rates are statutory millage times the county common-level ratio, in percentage points,",
-              "after the assessment-basis repair described in Section~\\ref{subsec:sources}.",
-              "The stacked design replicates never-changer municipalities once per cohort, so stacked row counts exceed those here."))
+                      format(sample_steps$muni_years[1], big.mark = ",")),
+              "Rates in percentage points. Effective property rates are millage times the county",
+              "common-level ratio, after the repair in Section~\\ref{subsec:sources}."))
 
   # Muni-type sub-table (means only by type), on the same estimation sample
   rate_type <- unique(rate[, .(municipality_id, year, muni_type)])
@@ -316,7 +308,7 @@ if (RUN_SUMMARY_STATS) local({
   body <- c(body, "    \\bottomrule", "  \\end{tabular}",
             "  \\vspace{0.3em}",
             "  \\begin{minipage}{0.95\\textwidth}",
-            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Each municipality is classified on its first resident-rate change, by direction and by whether the home stack binds before and after. NC never changed any rate. Dose is the cumulative change in the rate over the five-year event window, and Extreme dose is its largest value.",
+            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Municipalities are classified on their first resident-rate change. Dose is the cumulative change over the five-year window.",
             "  \\end{minipage}", "\\end{table}")
   writeLines(body, file.path(tab_dir, "cell_counts_summary.tex"))
   fwrite(cell_tab, file.path(RESULTS_DIR, "cell_counts_summary.csv"))
@@ -1065,7 +1057,11 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
 
   stk <- copy(env$stk_muni); ctrls <- env$ctrls; cs <- paste(ctrls, collapse = " + ")
   stk[, inc := as.integer(as.character(treat_cell) %in% c("Inc-bind","Inc-becomes","Inc-nobind"))]
-  stk[, dose := fifelse(inc == 1, dose_stack, 0)]
+  # dose_change, NOT dose_stack: since the levels switch dose_stack holds the
+  # rate LEVEL, which is fine inside a regression (unit FE absorb the
+  # difference) but wrong as an x-axis. Plotting the level would contrast NC
+  # pinned at 0 against treated munis at 0.5-2.5 and invent a dose-response.
+  stk[, dose := fifelse(inc == 1, dose_change, 0)]
   lab <- c(log_live_and_work="Work in own muni", share_live_in="Share live in muni",
            log_total_jobs="Total jobs", log_in_commuters="In-commuters")
   outs <- c("log_live_and_work","share_live_in","log_total_jobs","log_in_commuters")
@@ -1084,7 +1080,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   # group's own dose terciles; boundary at [0, max dose] so the basis is
   # linear beyond the observed range (ns property).
   fit_group <- function(treated_cells) {
-    ATT <- list(); ACRT <- list(); keep <- c(treated_cells, "NC")
+    ATT <- list(); ACRT <- list(); BAS <- list(); keep <- c(treated_cells, "NC")
     dmax_g <- quantile(stk[as.character(treat_cell) %in% treated_cells & dose > 0, dose],
                        0.95, na.rm = TRUE)
     dg <- seq(0, dmax_g, length.out = 80)
@@ -1121,8 +1117,13 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       acrt_s <- as.numeric(Bp %*% csp); se_a <- sqrt(pmax(rowSums((Bp %*% Vsp) * Bp), 0))
       ATT[[o]]  <- data.table(outcome=lab[o], dose=dg, y=att_s,  lo=att_s-1.96*se_s,  hi=att_s+1.96*se_s)
       ACRT[[o]] <- data.table(outcome=lab[o], dose=dg, y=acrt_s, lo=acrt_s-1.96*se_a, hi=acrt_s+1.96*se_a, acr=acr)
+      # Basis parameters, so the interactive explorer can rebuild B(d) and show
+      # the decomposition b_j * B_j(d) that sums to ATT(d).
+      BAS[[o]] <- data.table(outcome=lab[o], knot1=kk[1], knot2=kk[2],
+                             bk_lo=bb[1], bk_hi=bb[2],
+                             b1=csp[1], b2=csp[2], b3=csp[3], acr=acr)
     }
-    list(ATT = rbindlist(ATT), ACRT = rbindlist(ACRT))
+    list(ATT = rbindlist(ATT), ACRT = rbindlist(ACRT), BASIS = rbindlist(BAS))
   }
 
   plot_group <- function(res, ttl, outfile) {
@@ -1206,6 +1207,21 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   plot_group(res_pooled,     "Muni dose-response (spline) — POOLED Increase",  "acr_acrt_att_spline_pooled.png")
   plot_group(res_incbind,    "Muni dose-response (spline) — Inc-bind cell",    "acr_acrt_att_spline_incbind.png")
   plot_group(res_incbecomes, "Muni dose-response (spline) — Inc-becomes cell", "acr_acrt_att_spline_incbecomes.png")
+
+  ## Export the fitted curves so the interactive explorer (shiny/spline_explorer)
+  ## can read them without refitting the stacked panel.
+  export_curves <- function(res, grp) rbind(
+    res$ATT[,  .(group = grp, outcome, dose, curve = "ATT",  y, lo, hi, acr = NA_real_)],
+    res$ACRT[, .(group = grp, outcome, dose, curve = "ACRT", y, lo, hi, acr)])
+  fwrite(rbind(export_curves(res_pooled,     "Pooled Increase"),
+               export_curves(res_incbind,    "Inc-bind"),
+               export_curves(res_incbecomes, "Inc-becomes")),
+         file.path(RESULTS_DIR, "spline_curves.csv"))
+  fwrite(rbind(copy(res_pooled$BASIS)[,     group := "Pooled Increase"],
+               copy(res_incbind$BASIS)[,    group := "Inc-bind"],
+               copy(res_incbecomes$BASIS)[, group := "Inc-becomes"]),
+         file.path(RESULTS_DIR, "spline_basis.csv"))
+  message("Saved data/results/spline_curves.csv + spline_basis.csv")
 
   # (A compact 2-panel per-cell ATT figure was removed 2026-07-06: the paper
   #  uses the full per-cell plot_group() figures, same layout as the pooled one.)
