@@ -19,7 +19,6 @@
 suppressMessages({
   library(data.table)
   library(fixest)
-  library(HonestDiD)
 })
 
 .a <- grep("^--file=", commandArgs(FALSE), value = TRUE)

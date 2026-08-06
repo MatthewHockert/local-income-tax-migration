@@ -1353,7 +1353,7 @@ if (RUN_WORKBOOK) local({
     c("dcdh_robustness.csv",      "dcdh_robustness",  "Robustness: de Chaisemartin-D'Haultfoeuille (non-negative weights) ES vs linear feols"),
     c("curvature_acrt_feols.csv", "curvature_acrt",   "Curvature: parametric ACRT(d) dose-response (marginal effect)"),
     c("curvature_att_curve.csv",  "curvature_att",    "Curvature: ATT(d) dose-response (the paper figure fig:curvature_att)"),
-    c("pretrend_battery.csv",     "pretrend_battery", "MULTIPLE pre-trend tests: joint Wald, individual leads, linear slope, HonestDiD breakdown"),
+    c("pretrend_battery.csv",     "pretrend_battery", "MULTIPLE pre-trend tests: joint Wald, individual leads, linear pre-slope"),
     c("eit_revenue_offset.csv",   "rev_offset",       "EIT revenue: net response + Laffer offset at mean/median rate (in-text numbers)"),
     c("eit_revenue_decomp.csv",   "rev_decomp",       "EIT revenue: gross vs net decomposition"),
     c("eit_revenue_split.csv",    "rev_split",        "EIT revenue: pre/post Act-32 split"),

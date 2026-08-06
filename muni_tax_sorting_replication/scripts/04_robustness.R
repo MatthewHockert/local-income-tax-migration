@@ -839,23 +839,19 @@ if (RUN_CURVATURE) local({
 #   1. joint Wald on leads (asymptotic)             -- the standard test
 #   2. individual leads: # significant at 5%, min p
 #   3. linear pre-trend slope (asymptotic, 1 df)    -- more stable than joint
-#   4. HonestDiD breakdown Mbar (Rambachan-Roth)    -- how large a pre-trend
 #        violation (relative to the max pre-period deviation) is needed before
 #        the post-effect CI includes zero; bigger = more robust.
-# Per-model tests + hdid_breakdown() now come from pretrend_bucket() in
+# Per-model tests now come from pretrend_bucket() in
 # _helpers.R (extracted verbatim). robust_clean = passes the
 # few-clusters-robust frequentist tests (individual leads + linear slope);
-# the joint Wald and HonestDiD breakdown are reported but do not drive the
+# the joint Wald is reported but does not drive the
 # verdict.
 # (A wild-cluster bootstrap was attempted but fwildclusterboot is incompatible
-#  with the stacked design's singleton fixed effects; HonestDiD serves the same
 #  small-sample-robustness purpose and is the standard tool.)
 if (RUN_PRETREND_BATTERY) local({
   K <- 5L; set.seed(42)
   # Grids must resolve below 0.5: the breakdown on this design sits near 0.3,
   # so the old c(0.5, 1, 1.5, 2) grid returned its own minimum for every row.
-  Mbarvec <- c(0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2)
-  Mvec    <- NULL  # smoothness bound off; not reported, and it is slow
   cs <- ctrls_str
   panel_bat <- copy(panel)
 
@@ -928,8 +924,7 @@ if (RUN_PRETREND_BATTERY) local({
                     dp, cluster = ~muni), error = function(e) NULL)
     rows[[length(rows) + 1L]] <- cbind(
       data.table(outcome = o, cell = cl, n_treated = uniqueN(dd$muni[dd$rdose != 0])),
-      pretrend_bucket(m, lin_model = ml, lin_term = "dose_rel",
-                      Mbarvec = Mbarvec, Mvec = Mvec))
+      pretrend_bucket(m, lin_model = ml, lin_term = "dose_rel"))
   }
   bat <- rbindlist(rows, fill = TRUE)
   fwrite(bat, file.path(RESULTS_DIR, "pretrend_battery.csv"))

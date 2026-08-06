@@ -486,83 +486,18 @@ add_realized_dose <- function(panel, K = 5L) {
 }
 
 # Pre-trend machinery ----
-# hdid_breakdown(): HonestDiD (Rambachan-Roth) breakdown Mbar — the smallest
-# relative-magnitudes bound at which the robust CI includes 0.
-# Inf = robust beyond the grid; NA = not computable.
-# Lay explanation: a stress test. It asks how big a hidden pre-existing
-# drift -- measured in multiples of the largest wobble we can already see
-# before the event -- would have to be before the estimate could plausibly
-# be zero. The bigger the breakdown number, the sturdier the result.
-# Two bounds are reported because they answer different questions:
-#   relative magnitudes (Mbar) -- allows an ARBITRARY post-treatment violation
-#     up to Mbar times the largest observed consecutive pre-period jump.
-#   smoothness (M)             -- lets the pre-trend EXTRAPOLATE, bounding only
-#     how much it may curve (second differences <= M). This is the bound that
-#     matches a "flat linear pre-slope" argument.
-# The Mbar grid must start well below 0.5: on this design the breakdown sits
-# near 0.3, so the old c(0.5, 1, 1.5, 2) grid returned its own minimum for
-# every row and was uninformative.
-hdid_breakdown <- function(m,
-                           Mbarvec = c(0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4,
-                                       0.5, 0.75, 1, 1.5, 2),
-                           Mvec    = NULL) {
-  if (!requireNamespace("HonestDiD", quietly = TRUE))
-    return(list(orig_excl0 = NA, breakdown = NA_real_, breakdown_M = NA_real_,
-                max_pre_jump = NA_real_))
-  ct <- as.data.table(m$coeftable, keep.rownames = "term")[grepl("^rel::", term)]
-  ct[, rel := as.integer(sub("rel::(-?\\d+):.*", "\\1", term))]
-  setorder(ct, rel)
-  pre <- which(ct$rel <= -2); post <- which(ct$rel >= 0)
-  if (length(pre) < 2 || length(post) < 1)
-    return(list(orig_excl0 = NA, breakdown = NA_real_, breakdown_M = NA_real_,
-                max_pre_jump = NA_real_))
-  bh <- ct$Estimate
-  vc <- vcov(m); idx <- match(ct$term, rownames(vc)); sg <- vc[idx, idx]
-  lv <- rep(1 / length(post), length(post))
-  orig <- tryCatch(HonestDiD::constructOriginalCS(bh, sg, length(pre), length(post), l_vec = lv),
-                   error = function(e) NULL)
-  if (is.null(orig)) return(list(orig_excl0 = NA, breakdown = NA_real_,
-                                 breakdown_M = NA_real_, max_pre_jump = NA_real_))
-  orig_excl0 <- !(orig$lb <= 0 & 0 <= orig$ub)
-  sens <- tryCatch(as.data.table(HonestDiD::createSensitivityResults_relativeMagnitudes(
-            bh, sg, length(pre), length(post), l_vec = lv, Mbarvec = Mbarvec,
-            bound = "deviation from parallel trends")), error = function(e) NULL)
-  mpj <- if (length(pre) >= 2) max(abs(diff(bh[pre]))) else NA_real_
-  bd <- NA_real_
-  if (!is.null(sens)) {
-    incl0 <- sens[lb <= 0 & 0 <= ub]
-    bd <- if (nrow(incl0)) min(incl0$Mbar) else Inf
-  }
-  # Smoothness bound is OFF by default: not reported in the paper, and it adds
-  # roughly forty minutes to the battery. Pass a non-NULL Mvec to switch it on.
-  sm <- if (is.null(Mvec)) NULL else
-    tryCatch(as.data.table(HonestDiD::createSensitivityResults(
-          bh, sg, length(pre), length(post), l_vec = lv, Mvec = Mvec)),
-          error = function(e) NULL)
-  bdM <- NA_real_
-  if (!is.null(sm)) {
-    i0 <- sm[lb <= 0 & 0 <= ub]
-    bdM <- if (nrow(i0)) min(i0$M) else Inf
-  }
-  list(orig_excl0 = orig_excl0, breakdown = bd, breakdown_M = bdM,
-       max_pre_jump = mpj)
-}
 
 # pretrend_bucket(): run the WHOLE battery on one fitted event-study model.
 #   1. joint Wald on leads (over-rejects on thin cohorts -- report, don't decide)
 #   2. individual leads: count significant at 5%, min p
 #   3. linear pre-trend slope (pass a pre-window model via lin_model)
-#   4. HonestDiD breakdown Mbar
 # robust_clean = no significant individual leads AND flat linear pre-slope.
 # Returns a one-row data.table; rbind across cells/outcomes for the battery table.
-# Lay explanation: all four tests probe the same worry from different
+# Lay explanation: all three tests probe the same worry from different
 # angles -- were treated and control towns already on different paths
 # BEFORE the rate change? If so, the "effect" could just be old drift
 # continuing, so a result only counts as clean when the battery agrees.
-pretrend_bucket <- function(m, lin_model = NULL, lin_term = "dose_rel",
-                            Mbarvec = c(0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4,
-                                        0.5, 0.75, 1, 1.5, 2),
-                            Mvec    = NULL) {
+pretrend_bucket <- function(m, lin_model = NULL, lin_term = "dose_rel") {
   ct <- as.data.table(m$coeftable, keep.rownames = "term")
   setnames(ct, c("Estimate", "Std. Error", "Pr(>|t|)"),
            c("est", "se", "p"), skip_absent = TRUE)
@@ -574,14 +509,11 @@ pretrend_bucket <- function(m, lin_model = NULL, lin_term = "dose_rel",
     coef(lin_model)[lin_term] else NA_real_
   lin_p <- if (!is.null(lin_model) && lin_term %in% names(coef(lin_model)))
     lin_model$coeftable[lin_term, "Pr(>|t|)"] else NA_real_
-  hd <- hdid_breakdown(m, Mbarvec, Mvec)
   data.table(
     wald_joint_p = round(wj, 4),
     n_leads = nrow(pre), n_leads_sig5 = pre[p < 0.05, .N],
     min_lead_p = round(suppressWarnings(min(pre$p)), 4),
     lin_slope = round(lin_b, 4), lin_slope_p = round(lin_p, 4),
-    hdid_orig_excl0 = hd$orig_excl0, hdid_breakdown_Mbar = hd$breakdown,
-    hdid_breakdown_M = hd$breakdown_M, hdid_max_pre_jump = round(hd$max_pre_jump, 4),
     robust_clean = pre[p < 0.05, .N] == 0 &
       (is.na(lin_p) | lin_p > 0.10))
 }
