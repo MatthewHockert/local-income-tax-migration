@@ -749,7 +749,18 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
                               caption, label, short_labels = TRUE,
                               notes = character(0), col_spec = NULL,
                               sideways = FALSE,
-                              diag_fields = c("n","r2","wr2","dep_mean"),
+                              # Optional per-cell pre-trend p-values, long format
+                              # (cell, outcome, wald_pre_p). Printed as a third
+                              # line under each cell so the pre-trend test that
+                              # licenses a coefficient sits beside it.
+                              pretrend_dt = NULL,
+                              # dep_mean dropped from the printed diagnostics 2026-08-03. For a logged
+  # outcome it is the mean of the LOG, so exponentiating it gives the
+  # geometric mean (41 workers against an arithmetic mean of 226) and it
+  # invites conversions that are wrong by a factor of five. It is also
+  # computed on the stacked panel, where never-changers are replicated once
+  # per cohort. Level means live in the summary table instead.
+                              diag_fields = c("n","r2","wr2","pre_baseline"),
                               controls_dt = NULL, control_labels = NULL,
                               section_header_above_cells = NULL) {
   stopifnot(is.data.table(coefs_dt), is.data.table(diag_dt))
@@ -800,6 +811,15 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
     body <- c(body,
               paste0("\\textbf{", cl, "} & ", paste(est_vec, collapse = " & "), " \\\\"),
               paste0("                  & ", paste(se_vec,  collapse = " & "), " \\\\"))
+    if (!is.null(pretrend_dt) && is.data.table(pretrend_dt) && nrow(pretrend_dt) > 0) {
+      pw <- vapply(outcomes, function(o) {
+        r <- pretrend_dt[cell == cl & outcome == o]
+        if (!nrow(r) || is.na(r$wald_pre_p[1])) "---"
+        else formatC(r$wald_pre_p[1], format = "f", digits = 3)
+      }, character(1))
+      body <- c(body,
+                paste0("\\quad Pre-trend Wald $p$ & ", paste(pw, collapse = " & "), " \\\\"))
+    }
   }
   if (length(dropped_cells) > 0) {
     notes <- c(notes,
@@ -857,6 +877,10 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
     wr2      = list(field = "wr2",      label = "Within $R^2$",fmt = function(x) formatC(x, format = "f", digits = 2)),
     dep_mean = list(field = "dep_mean", label = "Dep.\\ mean", fmt = function(x) formatC(x, format = "f", digits = 2)),
     dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 2)),
+    pre_baseline = list(field = "pre_baseline",
+                    label = "Treated pre-period baseline",
+                    fmt = function(x) formatC(x, format = "f",
+                                              digits = if (abs(x) < 1) 3 else 0)),
     wald_p   = list(field = "wald_p",   label = "Joint Wald $p$ (leads)",
                     fmt = function(x) formatC(x, format = "f", digits = 3))
   )

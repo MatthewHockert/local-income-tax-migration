@@ -271,12 +271,24 @@ if (RUN_SUMMARY_STATS) local({
   cell_cnt[, cell_muni := factor(as.character(cell_muni), levels = cell_levels_keep)]
   setorder(cell_cnt, cell_muni)
 
+  # Mean dose at +5: the eventual cumulative increase, which is the figure the
+  # Results section uses to convert per-point coefficients into effects. It is
+  # NOT the same as the panel-wide mean below, which averages in pre-event
+  # years where the dose is zero by construction.
+  k5 <- env$stk_muni[rel == 5 & as.character(treat_cell) != "NC",
+                     .(dose_k5 = mean(dose_change, na.rm = TRUE)),
+                     by = .(cell_muni = treat_cell)]
+  k5_pooled <- env$stk_muni[rel == 5 & as.character(treat_cell) != "NC",
+                            mean(dose_change, na.rm = TRUE)]
+
   mean_dose <- panel[!is.na(cell_muni) & cell_muni != "NC",
                       .(mean_dose_pp = mean(dose_muni, na.rm = TRUE),
                         min_dose_pp  = min(dose_muni,  na.rm = TRUE),
                         max_dose_pp  = max(dose_muni,  na.rm = TRUE)),
                       by = .(cell_muni)]
   cell_tab <- merge(cell_cnt, mean_dose, by = "cell_muni", all.x = TRUE)
+  cell_tab <- merge(cell_tab, k5, by = "cell_muni", all.x = TRUE)
+  cell_tab[is.na(dose_k5), dose_k5 := 0]
   cell_tab[is.na(mean_dose_pp), mean_dose_pp := 0]
   cell_tab[is.na(min_dose_pp),  min_dose_pp  := 0]
   cell_tab[is.na(max_dose_pp),  max_dose_pp  := 0]
@@ -290,25 +302,33 @@ if (RUN_SUMMARY_STATS) local({
     "  \\caption{Cell counts: muni resident-rate side, 2002--2019}",
     "  \\label{tab:cell_counts_summary}",
     "  \\small",
-    "  \\begin{tabular}{lrrrr}",
+    "  \\begin{tabular}{lrrrrr}",
     "    \\toprule",
-    "    Cell & Munis & Muni-years & Mean dose (pp) & Extreme dose (pp) \\\\",
+    "    Cell & Munis & Muni-years & Mean dose (pp) & Mean dose at $+5$ (pp) & Extreme dose (pp) \\\\",
     "    \\midrule")
   for (i in seq_len(nrow(cell_tab))) {
     r <- cell_tab[i]
     cell_label <- as.character(r$cell_muni)
     if (cell_label == "NC") cell_label <- "Never-changers"
     body <- c(body, sprintf(
-      "    %s & %s & %s & %.2f & %.2f \\\\",
+      "    %s & %s & %s & %.2f & %.2f & %.2f \\\\",
       cell_label,
       format(r$n_munis, big.mark = ","),
       format(r$n_muni_year, big.mark = ","),
-      r$mean_dose_pp, r$extreme_dose_pp))
+      r$mean_dose_pp, r$dose_k5, r$extreme_dose_pp))
   }
-  body <- c(body, "    \\bottomrule", "  \\end{tabular}",
+  body <- c(body,
+            sprintf("    \\midrule\n    Pooled Increase & %s & %s & %.2f & %.2f & %.2f \\\\",
+                    format(sum(cell_tab[cell_muni != "NC"]$n_munis), big.mark = ","),
+                    format(sum(cell_tab[cell_muni != "NC"]$n_muni_year), big.mark = ","),
+                    weighted.mean(cell_tab[cell_muni != "NC"]$mean_dose_pp,
+                                  cell_tab[cell_muni != "NC"]$n_muni_year),
+                    k5_pooled,
+                    max(cell_tab[cell_muni != "NC"]$extreme_dose_pp)),
+            "    \\bottomrule", "  \\end{tabular}",
             "  \\vspace{0.3em}",
             "  \\begin{minipage}{0.95\\textwidth}",
-            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Municipalities are classified on their first resident-rate change. Dose is the cumulative change over the five-year window.",
+            "    \\footnotesize \\textit{Notes:} Estimation sample, as in Table~\\ref{tab:summary_muni}. Municipalities are classified on their first resident-rate change. Mean dose averages the cumulative rate change over every muni-year in the cell, including pre-event years where it is zero. Mean dose at $+5$ is the eventual cumulative increase, five years after the event, and is the figure used to convert coefficients into effects in Section~\\ref{sec:results}.",
             "  \\end{minipage}", "\\end{table}")
   writeLines(body, file.path(tab_dir, "cell_counts_summary.tex"))
   fwrite(cell_tab, file.path(RESULTS_DIR, "cell_counts_summary.csv"))
@@ -1297,10 +1317,10 @@ if (RUN_FEOLS_ES_BYCELL) local({
     mean_dose <- stk[treat_cell_muni %in% grp[[gn]] & realized_dose_muni > 0, mean(realized_dose_muni, na.rm = TRUE)]
     for (o in outs) {
       cols <- c("muni","rel","stack_muni","stack_year","treat_cell_muni","realized_dose_muni",
-                "cell_sd","dose_sd","cell_nr","dose_nr", o, ctrls)
+                "cell_sd","dose_sd", o, ctrls)
       dd <- stk[treat_cell_muni %in% keep, ..cols]; dd <- dd[complete.cases(dd)]
       f <- as.formula(paste0(o, " ~ i(rel, realized_dose_muni, ref = -1) + i(cell_sd, dose_sd, ref = 'NC')",
-                             " + i(cell_nr, dose_nr, ref = 'NC') + ", cs, " | stack_muni + stack_year"))
+                             " + ", cs, " | stack_muni + stack_year"))
       m <- feols(f, dd, cluster = ~muni)
       ct <- as.data.table(m$coeftable, keep.rownames = "term")[grepl("^rel::", term)]
       ct[, rel := as.integer(sub("rel::(-?\\d+):.*", "\\1", term))]

@@ -8,7 +8,6 @@
 #   y_{it} = alpha_{stack,muni} + gamma_{stack,year}
 #          + sum_{k != -1} beta^muni_k * 1{rel=k} * realized_dose_muni_i
 #          + sum_{c'} beta^SD_{c'} * Delta tau_SD_{it} * 1{cell_SD_i = c'}
-#          + sum_{c'} beta^nr_{c'} * Delta tau_nr_{it} * 1{cell_nr_i = c'}
 #          + X_{it} phi + epsilon
 # The realized dose is each treated muni's cumulative rate change from c-1 to
 # c+5 -- a CONSTANT per-muni magnitude tag, so the leads test STRONG parallel
@@ -100,9 +99,19 @@ if (RUN_HEADLINE_ES) local({
   for (o in outcomes) {
     for (cl in setdiff(cell_levels, "NC")) {
       dd <- stk_es[treat_cell_muni %in% c("NC", cl)]
+      # Same sample and same right-hand side as the headline, so the pre-trend
+      # test describes the regression it is licensing. Two alignments:
+      #   (a) condition on dose_stack as well, which is what the headline
+      #       requires non-missing. Without it the ES runs on ~1,300 rows the
+      #       headline drops, because realized_dose_muni is hard-zeroed for
+      #       never-changers while the rate level is genuinely missing.
+      #   (b) drop the nonresident-side terms, which the headline excludes per
+      #       current paper scope. They cost no observations, but leaving them
+      #       in means testing a different specification from the one estimated.
       cols <- c("muni", "year", "stack_muni", "stack_year", "treat_cell_muni",
-                "realized_dose_muni", "rel",
-                "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
+                "realized_dose_muni", "dose_stack", "rel",
+                "cell_sd", "dose_sd", o, ctrls)
+      cols <- intersect(cols, names(dd))
       dd <- dd[, ..cols]
       dd <- dd[complete.cases(dd)]
       if (nrow(dd) == 0 || sum(dd$treat_cell_muni == cl) == 0) next
@@ -113,8 +122,7 @@ if (RUN_HEADLINE_ES) local({
       # from where we stood the year before it happened."
       f <- as.formula(paste0(o,
         " ~ i(rel, realized_dose_muni, ref = -1) ",
-        "+ i(cell_sd, dose_sd, ref = 'NC') ",
-        "+ i(cell_nr, dose_nr, ref = 'NC') + ",
+        "+ i(cell_sd, dose_sd, ref = 'NC') + ",
         ctrls_str, " | stack_muni + stack_year"))
       m <- tryCatch(feols(f, data = dd, cluster = ~muni),
                     error = function(ee) NULL)
@@ -182,7 +190,7 @@ if (RUN_POOLED_ES) local({
     results <- list(); att <- list()
     for (o in muni_outcomes) {
       cols <- c("muni", "year", "stack", "stack_muni", "stack_year", "rel",
-                "realized_dose_muni", "cell_sd", "dose_sd", "cell_nr", "dose_nr",
+                "realized_dose_muni", "cell_sd", "dose_sd",
                 o, ctrls_muni)
       cols <- intersect(cols, names(dd))
       d <- dd[, ..cols]
@@ -193,7 +201,7 @@ if (RUN_POOLED_ES) local({
       f <- as.formula(paste0(o,
         " ~ i(rel, realized_dose_muni, ref = -1)",
         " + i(cell_sd, dose_sd, ref = 'NC')",
-        " + i(cell_nr, dose_nr, ref = 'NC') + ",
+        " + ",
         paste(ctrls_muni, collapse = " + "),
         " | stack_muni + stack_year"))
       m <- tryCatch(feols(f, data = d, cluster = ~muni),

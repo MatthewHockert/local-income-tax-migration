@@ -117,9 +117,16 @@ if (RUN_PAPER_TABLES) local({
       return(invisible())
     }
     diag <- read_diag(diag_csv)
+    # Per-cell pre-trend p from that cell's own realized-dose event study,
+    # so the diagnostic that licenses each coefficient sits with it.
+    pt <- tryCatch({
+      a <- fread(file.path(in_dir, "headline_es_att.csv"))
+      a[, .(cell, outcome, wald_pre_p)]
+    }, error = function(e) NULL)
     body <- build_pub_table(
       coefs_dt  = coefs,
       diag_dt   = diag,
+      pretrend_dt = pt,
       outcomes  = outcomes,
       cells     = cells,
       caption   = caption,
@@ -242,9 +249,7 @@ if (RUN_PAPER_TABLES) local({
         paste0(mc, "{\\textit{Diagnostics}} \\\\"),
         paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
         paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
-        paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\"),
-        paste0("Dep.\\ mean    & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
-        paste0("Dep.\\ SD      & ", paste(pick("dep_sd"),   collapse = " & "), " \\\\")
+        paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\")
       )
     }
 
@@ -367,7 +372,6 @@ if (RUN_PAPER_TABLES) local({
         paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
         paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
         paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\"),
-        paste0("Dep.\\ mean    & ", paste(pick("dep_mean"), collapse = " & "), " \\\\"),
         wald_row)
     }
 
@@ -562,7 +566,7 @@ if (RUN_PAPER_TABLES) local({
         diag_block <- c(diag_block,
           paste0("\\textit{", per_label, "} ",
                  paste(rep("&", ncols), collapse = " "), " \\\\"))
-        for (field in c("n","r2","wr2","dep_mean","dep_sd")) {
+        for (field in c("n","r2","wr2")) {
           label <- switch(field,
                           n = "\\quad $N$",
                           r2 = "\\quad $R^2$",
@@ -710,7 +714,7 @@ if (RUN_PAPER_TABLES) local({
     # Diagnostics: per-outcome N, R2, dep mean (+ pooled-ES joint Wald p, per-pp only)
     diag_block <- character(0)
     if (nrow(d) > 0) {
-      for (field in c("n","r2","wr2","dep_mean")) {
+      for (field in c("n","r2","wr2")) {
         label <- switch(field,
                         n = "$N$", r2 = "$R^2$",
                         wr2 = "Within $R^2$",
@@ -880,7 +884,6 @@ if (RUN_PAPER_TABLES) local({
         diag_line("n",        "$N$             "),
         diag_line("r2",       "$R^2$           "),
         diag_line("wr2",      "Within $R^2$    "),
-        diag_line("dep_mean", "Dep.\\ mean      "),
         diag_line("dep_sd",   "Dep.\\ SD        ")
       )
     }
@@ -989,8 +992,6 @@ if (RUN_PAPER_TABLES) local({
         paste0("\\quad Leads significant at 5\\% (of 4) & ",
                paste(pick_b(cl, "n_leads_sig5", fmt = function(x) sprintf("%d", as.integer(x))), collapse = " & "), " \\\\"),
         paste0("\\quad Linear pre-slope $p$ & ", paste(pick_b(cl, "lin_slope_p"), collapse = " & "), " \\\\"),
-        paste0("\\quad HonestDiD breakdown $\\bar{M}$ & ",
-               paste(pick_b(cl, "hdid_breakdown_Mbar", fmt = function(x) ifelse(is.infinite(x), "$>$grid", fmt3(x))), collapse = " & "), " \\\\"),
         paste0("\\quad Robust clean & ", paste(pick_b(cl, "robust_clean"), collapse = " & "), " \\\\"))
     }
     hdr <- paste0("Cell & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
@@ -999,15 +1000,14 @@ if (RUN_PAPER_TABLES) local({
       "    \\bottomrule", "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
     out <- c("\\begin{table}[H]", "  \\centering",
-      "  \\caption{Pre-trend battery: four tests per binding cell}",
+      "  \\caption{Pre-trend battery: three tests per binding cell}",
       "  \\label{tab:pretrend_battery}", "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
       paste0("    \\footnotesize \\textit{Notes:} Joint Wald and linear pre-slope test the realized-dose leads; larger $p$ means no detectable pre-trends. ",
              "Leads significant counts individually significant pre-event coefficients. ",
-             "HonestDiD breakdown is the Rambachan-Roth bound at which the post effect could be zero (larger is sturdier). ",
              "Robust clean requires no significant individual leads and a flat linear pre-slope; the joint Wald over-rejects on thin cohorts and does not drive the verdict. ",
-             "The pooled row fails by construction: Inc-becomes and Inc-nobind selection is the reason the decomposition exists."),
+             "The pooled row is shown for comparison, since Inc-becomes and Inc-nobind selection is the reason the decomposition exists."),
       "  \\end{minipage}", "\\end{table}")
     writeLines(out, file.path(out_dir, "pretrend_battery.tex"))
   }
@@ -1135,18 +1135,9 @@ if (RUN_PAPER_TABLES) local({
         est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
         se_row[j]  <- fmt_se(r$se[1])
       }
-      # Dep. mean row (requested above the avg-total-effect row): the average
-      # outcome level in this group's estimation sample, for effect-size scale.
-      dm_row <- character(ncols)
-      for (j in seq_along(muni_outcomes)) {
-        r <- dep_means[group == gn & outcome == muni_outcomes[j]]
-        dm_row[j] <- if (nrow(r) == 0 || is.na(r$dep_mean[1])) "---"
-                     else formatC(r$dep_mean[1], format = "f", digits = 2)
-      }
       body <- c(body,
                 paste0("\\textbf{", glab[[gn]], "} & ", paste(est_row, collapse = " & "), " \\\\"),
                 paste0("                  & ", paste(se_row, collapse = " & "), " \\\\"),
-                paste0("\\quad Dep.\\ mean & ", paste(dm_row, collapse = " & "), " \\\\"),
                 # Lay explanation: the rows above give the alternative
                 # estimator's total effect of a typical event; this row is
                 # its dose-normalized version -- effect per percentage point
@@ -1174,7 +1165,7 @@ if (RUN_PAPER_TABLES) local({
       paste0("    \\footnotesize \\textit{Notes:} Effect rows are per-event level effects at the realized dose, not per-pp slopes; ",
              "they are comparable to the linear ACR times the group mean dose. ",
              "The avg total effect per pp row is the estimator's dose-normalized average and is directly comparable to the linear ACR. ",
-             "Dep.\\ mean is computed on the dCDH estimator's own (unstacked) sample, so it differs slightly from the stacked headline table's. Joint placebo $p$ is the dCDH pre-trend test; values above conventional levels mean no detectable pre-trends. ",
+             "Joint placebo $p$ is the dCDH pre-trend test. Values above conventional levels mean no detectable pre-trends. ",
              "The fiscal controls (spending shares and property effective rates) enter the estimator but are partialled out of the outcome first-differences within baseline-dose groups, so no control coefficients exist to report. ",
              "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$ (normal approximation)."),
       "  \\end{minipage}", "\\end{table}")

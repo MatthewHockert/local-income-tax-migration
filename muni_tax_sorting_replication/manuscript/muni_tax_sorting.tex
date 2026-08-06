@@ -939,64 +939,66 @@ statistic for each cell-outcome combination.
 \label{sec:results}
 %==========================================================
 
-I report results in two layers. First,
-Section~\ref{subsec:results-pooled} presents the pooled Inc
-benchmark, which approximates what a conventional local-tax design
-would recover by averaging across all rate-increase events without
-distinguishing whether they bind. Second,
-Section~\ref{subsec:results-decomp} reports the binding
-decomposition at the municipality level. The central empirical
-comparison is between the Inc-bind cell (where the statutory rate
-change moves the worker's bill) and the Inc-nobind cell (where it
-does not), with Inc-nobind serving as the within-design placebo.
-Dec cells are not estimated: the cohort is thin
-(5 Dec-bind, 3 Dec-becomes-non, 11 Dec-nobind) and the
-realized-dose pre-trend rejects parallel trends on every Dec
-outcome (Wald $p<0.001$), so the Dec coefficients cannot be
-interpreted as causal. The pre-/post-Act-32 enforcement-break split
-appears in the Robustness section.
+I report the results in three components. First,
+Section~\ref{subsec:results-pooled} presents the pooled Inc model, which estimates the effect of a rate-increase on worker migration without
+distinguishing whether the tax change binds. Second,
+Section~\ref{subsec:results-decomp} reports the results of the increase through binding
+decomposition model at the municipality level. Third, I present the results of the event study for the pooled and binding decomposition models.
+Dec cells are not estimated because of too thin of a sample.
 
 \subsection{Pooled Results}
 \label{subsec:results-pooled}
 
-I first report the pooled-Increase specification from
-Equation~(\ref{eq:pooled}), which collapses each rate-setter to a
-single direction tag for rate increases. The pooled coefficients
-are useful because they approximate the estimand in a conventional
-local-tax design where the average per-pp dose-response of a
+I first report the pooled-Increase specification. The pooled coefficients estimate the average per-pp dose-response of a
 municipality-rate change and an SD-rate change without
-distinguishing whether the rate change moves the worker's bill.
+distinguishing whether the rate change is binding.
 
 Table~\ref{tab:pooled_per_pp_cousub} reports the per-pp pooled
 coefficients at the municipality level. The table reports the two
 coefficients of interest per outcome: the municipality resident-rate
 Inc effect $\beta^M_{\text{Inc}}$ and the school-district-rate Inc
-analogue $\beta^{SD}_{\text{Inc}}$.
+effect $\beta^{SD}_{\text{Inc}}$.
 
 \input{../tables/pooled_per_pp_cousub.tex}
 
-Table~\ref{tab:pooled_per_pp_cousub} reports the pooled coefficients. Each
-is a response per percentage point of statutory rate, so the economic
-magnitude depends on how large a rate change municipalities actually made.
-The average increase reaches $0.34$ percentage points by the fifth year
-after the event, and I use that figure throughout to convert coefficients
-into effects.
+Each coefficient is interpreted as a one percentage point increase in the tax rate. A one point increase reduces the count of workers who both
+live and work in the municipality by $0.284$ log points, a decline of
+$24.8$ percent ($e^{-0.284}-1$). In-commuters fall by $19.7$ percent and
+total jobs by $22.0$ percent, each statistically significant to $0.01$. The live-and-work
+share is not a logged outcome but instead a percentage. The coefficient of the live-and-work
+share is
+$-0.021$ and is interpreted as a fall of $2.11$ percentage points, significant only
+at the ten percent level.
 
-A municipal resident-rate increase reduces the number of workers who both
-live and work in the municipality. At the average increase the decline is
-$9.2$ percent ($e^{-0.284 \times 0.34} - 1$). In-commuters fall by $7.2$
-percent and total jobs by $8.1$ percent, both precisely estimated. The
-live-and-work share is a level rather than a log, so it is converted by
-multiplying through the average increase and then read against its own
-mean of $9.2$ percentage points. It falls by $0.72$ percentage points at
-the average increase, a proportional decline of $7.8$ percent, and is
-significant only at the ten percent level.
+In my sample a full percentage point change is larger than the average change. The
+largest cumulative increase in the sample is $0.85$ points and the
+average, five years after the first event, is $0.34$
+(Table~\ref{tab:cell_counts_summary}). Evaluating the results at that
+average increase, the resident workforce falls by $9.2$ percent
+($e^{\hat\beta \times \bar d} - 1 = e^{-0.284 \times 0.34} - 1 = -0.092$),
+in-commuters by $7.2$ percent, total jobs by $8.1$ percent, and the share
+by $0.72$ points. I report both interpretations because the first is the
+coefficient and the second is the policy change municipalities actually
+made.
 
 School-district rate increases carry small positive coefficients on every
 outcome and none is distinguishable from zero. The municipal effect is
 therefore not an artifact of school districts moving their own rates in
 the same years, which matters because both governments tax the same
 paycheck and often act together.
+
+The property-tax controls move in a way that supports the reading of the
+income-tax coefficient, though they are controls rather than objects of
+the design and carry no event study or pre-trend test behind them. A one
+percentage point higher municipal effective property rate is associated
+with $0.213$ fewer log points of resident workforce, the same direction
+as the earned income tax and precisely estimated, and with a $1.25$
+percentage point lower live-and-work share. The school-district property
+rate runs the other way at $+0.017$ and the county rate is null. The four
+fiscal spending shares are individually indistinguishable from zero on
+both outcomes. Section~\ref{subsec:results-decomp} returns to the
+property coefficients, where the same pattern appears in the
+decomposition.
 
 These are the numbers a conventional design would report. Their weakness
 is visible in Figure~\ref{fig:spline_pooled}: the dose axis runs over
@@ -1033,18 +1035,26 @@ Table~\ref{tab:headline_muni_combined} splits the pooled coefficient by
 binding state. The ordering the institutional rule predicts appears in
 every outcome, and it appears in the right size order.
 
-Where the increase passed through to the worker's bill in full, the count
-of workers who live and work in the municipality falls by $12.2$ percent
-at that group's average increase of $0.24$ percentage points. Where it
-passed through only in part, the fall is $9.2$ percent, reached through a
-larger average increase of $0.38$ points and a smaller response to each
-point of it. Both are precisely estimated. Where the increase never
-reached the bill, the coefficient is $-0.110$ with a $p$-value of $0.466$.
+Where the increase passed through to the worker's bill in full, a one
+point increase reduces the count of workers who live and work in the
+municipality by $0.537$ log points, or $41.6$ percent. Where it passed
+through only in part the coefficient is $0.250$, or $22.1$ percent. Where
+it never reached the bill it is $-0.110$, with a $p$-value of $0.466$.
+
+The per-point figures extrapolate further here than in the pooled
+specification, because the binding group's largest cumulative increase is
+only $0.50$ points. Evaluated instead at each group's own average
+increase five years after the event, taken from
+Table~\ref{tab:cell_counts_summary}, the binding group's resident
+workforce falls by $12.2$ percent at an increase of $0.24$ points, and
+the partial-pass-through group's falls by $9.2$ percent at a larger
+increase of $0.38$ points. The two reach similar totals by opposite routes, a larger
+response to a smaller rate change against a smaller response to a larger
+one, which is what partial pass-through implies.
 The same ordering holds on in-commuters, at $-0.345$, $-0.212$ and
 $+0.145$, and on total jobs, at $-0.423$, $-0.233$ and $+0.114$. On the live-and-work share only the binding
 group is distinguishable from zero, where the share falls by $1.42$
-percentage points against a mean of $9.2$, a proportional decline of
-$15.4$ percent. That the share moves proportionally more than the count
+percentage points. That the share moves proportionally more than the count
 is what a sorting response implies: residents leave faster than the local
 job base shrinks, so the fraction of local jobs held by residents falls
 on both margins.
@@ -1178,20 +1188,20 @@ municipalities that eventually take large increases were already moving
 differently from those that take small ones.
 
 In the binding group the resident workforce is flat through the pre-event
-window and then declines steadily, reaching $-0.766$ per percentage point
-by the fifth year. The four pre-event coefficients average $-0.120$ and
-the joint Wald test does not reject their being zero ($p = 0.227$). This
-is the cleanest evidence in the paper, and it is also the only place the
-test is passed. The partial-pass-through group rejects on the resident
-workforce ($p < 0.001$) despite a well-behaved post-event path, the
-non-binding group rejects as well, and the binding group itself rejects
-on the live-and-work share ($p = 0.004$) even while passing on the count.
+window and then declines steadily, reaching $-0.789$ per percentage point
+by the fifth year. The four pre-event coefficients average $-0.116$ and
+the joint Wald test does not reject their being zero ($p = 0.053$). The
+margin is narrow enough that this reads as a pass rather than a clean one.
+The partial-pass-through group rejects on the resident workforce
+($p < 0.001$) despite a well-behaved post-event path, the non-binding
+group rejects as well, and the binding group itself rejects on the
+live-and-work share ($p = 0.005$) even while passing on the count.
 
 Two pre-trend tests appear in this paper and they do not agree, which is
 worth resolving rather than leaving to the reader. The de Chaisemartin and
 D'Haultf\oe uille placebo in Section~\ref{subsec:rob-acr} fails to reject
 on all four outcomes, with $p$-values between $0.23$ and $0.69$. The
-realized-dose test here rejects on three of the four for the pooled
+realized-dose test here rejects on one of the four for the pooled
 specification. They are testing different conditions. The placebo compares
 the outcome path of municipalities that switch against those that have not
 yet switched, which is average parallel trends and is what a binary design
@@ -1203,8 +1213,9 @@ is what a continuous treatment requires
 the first and failing the second is the signature of dose magnitude being
 correlated with pre-existing trajectories, which is precisely the failure
 mode a continuous design has to rule out and a binary one never
-encounters. The stricter test is the relevant one here, and the pooled
-specification does not survive it.
+encounters. The stricter test is the relevant one here. The pooled
+specification survives it on three of the four outcomes and fails on the
+count of resident workers, which is the outcome the paper leans on most.
 
 Taken together the results support three claims. First, municipalities
 that raise the earned income tax lose resident workers, and at the average
@@ -1370,11 +1381,11 @@ municipalities, which is the conservative form of the check.
 \subsection{Pre-Trend Battery}
 \label{subsec:rob-battery}
 
-The joint Wald test over-rejects on cohorts of 14--24 treated
-municipalities, so Table~\ref{tab:pretrend_battery} reports four
+The joint Wald test over-rejects on cohorts of 13--39 treated
+municipalities, so Table~\ref{tab:pretrend_battery} reports three
 pre-trend tests per cell: the joint Wald on the realized-dose leads,
-the count of individually significant leads, a one-degree-of-freedom
-linear pre-slope, and the HonestDiD breakdown bound.
+the count of individually significant leads, and a one-degree-of-freedom
+linear pre-slope.
 % [Prose TO WRITE after reviewing the table.]
 
 \input{../tables/pretrend_battery.tex}
@@ -1562,19 +1573,21 @@ under a recovery plan.
 \subsection{Pre-Trend Battery}
 \label{app:pooled-pretrend}
 
-This is where the pooled specification fails. The joint Wald test on the
-four pre-event leads rejects parallel trends on three of the four
-outcomes, and the pooled coefficient on the count of workers who live and
-work in the municipality, the paper's primary outcome, rejects at
-$p = 0.013$. Only the share of local jobs passes.
+The joint Wald test on the four pre-event leads rejects parallel trends on
+one of the four outcomes. The count of workers who live and work in the
+municipality, the paper's primary outcome, rejects at $p = 0.029$. The
+in-commuter count, total jobs and the share of local jobs pass, at
+$p = 0.060$, $p = 0.103$ and $p = 0.259$.
 
 The comparison with the decomposition is the point of running this at
-all. On the identical outcome and sample, the Inc-bind cell of the
-decomposition returns $p = 0.227$
-(Section~\ref{subsec:results-es}). Pooling across binding states mixes
-municipalities whose bills moved with municipalities whose bills did not,
-and it is the second group that carries the differential pre-trend.
-Separating them is what recovers a cell that survives the test.
+all. On the same outcome the Inc-bind cell of the decomposition returns
+$p = 0.053$ (Section~\ref{subsec:results-es}). Both sit near the
+conventional threshold, so on this test the decomposition clears the
+pooled specification by less than the headline contrast suggests. Where
+the two separate is on the individual leads. Inc-bind has no lead
+significant at five percent on any outcome and a flat linear pre-slope
+throughout, while the pooled specification carries a significant lead on
+both the resident workforce and the in-commuter count.
 
 \input{../tables/pooled_pretrend_battery.tex}
 
@@ -1609,18 +1622,20 @@ the outcomes the paper rests on. Act~32 and Act~47 leave it intact, and
 the fake-timing placebo is null on the resident workforce and on the
 live-and-work share at all three shifts. Where it struggles is on the
 commuter-flow outcomes, which fail the placebo, and on the realized-dose
-pre-trend, which the share alone survives.
+pre-trend, where the resident workforce is the one outcome the joint Wald
+rejects.
 
 The pattern is informative rather than merely disappointing. The
-diagnostics fail exactly where the institutional rule predicts the
-municipal resident rate should have least purchase, on counts dominated
-by workers whose bills that rate does not reach. It is the same
-distinction the binding decomposition makes explicit, and the
-decomposition's advantage shows up in the pre-trend test: on the resident
-workforce the Inc-bind cell returns $p = 0.227$ against $p = 0.013$ for
-the pooled coefficient on the identical sample. The pooled estimate is a
-sound benchmark for the outcomes it is asked to carry, and the
-decomposition is what sharpens it.
+fake-timing placebo fails exactly where the institutional rule predicts
+the municipal resident rate should have least purchase, on counts
+dominated by workers whose bills that rate does not reach. It is the same
+distinction the binding decomposition makes explicit. The realized-dose
+pre-trend runs the other way, rejecting on the resident workforce, which
+is the outcome the rate does reach, and there the Inc-bind cell returns
+$p = 0.053$ against $p = 0.029$ for the pooled coefficient. That is a
+difference of degree rather than of kind. The pooled estimate is a sound
+benchmark for the outcomes it is asked to carry, and the decomposition
+sharpens it without fully settling the pre-trend question.
 
 \section{Robustness: Full Tables}
 \label{app:robustness}

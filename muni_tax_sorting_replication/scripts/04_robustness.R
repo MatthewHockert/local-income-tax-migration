@@ -903,10 +903,10 @@ if (RUN_PRETREND_BATTERY) local({
   for (o in outcomes) for (cl in names(battery_groups)) {
     d <- stk[tc %in% c("NC", battery_groups[[cl]])]
     cols <- c("muni", "rel", "smuni", "syear", "rdose",
-              "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
+              "cell_sd", "dose_sd", o, ctrls)
     dd <- d[, ..cols][complete.cases(d[, ..cols])]; if (!nrow(dd)) next
     f <- as.formula(paste0(o, " ~ i(rel, rdose, ref=-1) + i(cell_sd, dose_sd, ref='NC') + ",
-                           "i(cell_nr, dose_nr, ref='NC') + ", cs, " | smuni + syear"))
+                           cs, " | smuni + syear"))
     m <- tryCatch(feols(f, dd, cluster = ~muni), error = function(e) NULL)
     if (is.null(m)) next
     # linear pre-trend slope on the pre-event window
@@ -917,10 +917,10 @@ if (RUN_PRETREND_BATTERY) local({
     # the test stable when only 14-24 treated towns are in the cell.
     dp <- d[rel < 0]
     cols2 <- c("muni", "dose_rel", "smuni", "syear",
-               "cell_sd", "dose_sd", "cell_nr", "dose_nr", o, ctrls)
+               "cell_sd", "dose_sd", o, ctrls)
     dp <- dp[, ..cols2][complete.cases(d[rel < 0, ..cols2])]
     ml <- tryCatch(feols(as.formula(paste0(o, " ~ dose_rel + i(cell_sd,dose_sd,ref='NC') + ",
-                    "i(cell_nr,dose_nr,ref='NC') + ", cs, " | smuni + syear")),
+                    cs, " | smuni + syear")),
                     dp, cluster = ~muni), error = function(e) NULL)
     rows[[length(rows) + 1L]] <- cbind(
       data.table(outcome = o, cell = cl, n_treated = uniqueN(dd$muni[dd$rdose != 0])),

@@ -579,11 +579,11 @@ if (RUN_REVENUE) local({
   es_res <- list(); att_res <- list()
   for (cl in inc_cells) {
     cols <- c("muni", "year", "stack_muni", "stack_year", "tcell", "realized_dose_muni", "rel",
-              "cell_sd", "dose_sd", "cell_nr", "dose_nr", "log_eit_revenue", ctrls)
+              "cell_sd", "dose_sd", "log_eit_revenue", ctrls)
     dd <- es_stk[tcell %in% c("NC", cl), ..cols][complete.cases(es_stk[tcell %in% c("NC", cl), ..cols])]
     if (nrow(dd) == 0 || sum(dd$tcell == cl) == 0) next
     f <- as.formula(paste0("log_eit_revenue ~ i(rel, realized_dose_muni, ref=-1) + ",
-          "i(cell_sd, dose_sd, ref='NC') + i(cell_nr, dose_nr, ref='NC') + ", ctrls_str,
+          "i(cell_sd, dose_sd, ref='NC') + ", ctrls_str,
           " | stack_muni + stack_year"))
     mm <- tryCatch(feols(f, data = dd, cluster = ~muni), error = function(ee) NULL)
     if (is.null(mm)) next
@@ -784,5 +784,60 @@ if (RUN_LEVELS_COMPARE) local({
     for (i in seq_len(nrow(x))) with(x[i], cat(sprintf(
       "%-34s %8.4f (%.4f) %8.4f (%.4f)\n", label, est_change, se_change,
       est_level, se_level)))
+  }
+})
+
+# ---------------------------------------------------------------------------
+# Treated pre-period baselines for the results tables
+# ---------------------------------------------------------------------------
+# The "Dep. mean" convention breaks for this design in two ways, so the two
+# outcome types get different baselines and different labels.
+#
+# LOGGED outcomes: mean(log Y) is meaningless to print and exponentiating it is
+# a trap, since exp(mean(log Y)) is the GEOMETRIC mean, not the arithmetic one
+# (374 against 999 here). The magnitude conversion is already handled by
+# exp(beta)-1, so the baseline's job is sample transparency: it tells a reader
+# these are municipalities of a few hundred resident workers, not a few dozen
+# and not a metro. Reported in levels and labelled as a geometric mean.
+#
+# SHARE outcome: not logged, so beta is uninterpretable without a denominator.
+# -0.021 against a baseline of 0.15 is a 14 percent proportional shift; against
+# the full-sample 0.09 it would read as 23 percent. The relevant baseline is the
+# TREATED units before treatment, not the sample, which is dominated by
+# never-changers with much lower shares.
+#
+# Both are computed over t in [c-5, c-1] for treated municipalities in the
+# estimation sample. Output -> data/results/treated_pre_baselines.csv
+local({
+  inc  <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  cols <- c("muni","treat_cell","rel","live_and_work","in_commuters",
+            "total_jobs","share_live_in", ctrls)
+  d <- stk_muni[, ..cols]
+  d <- d[complete.cases(d[, ..ctrls])]
+  pre <- d[as.character(treat_cell) %in% inc & rel >= -5 & rel <= -1]
+  gm <- function(x) { x <- x[is.finite(x) & x > 0]; if (!length(x)) NA_real_ else exp(mean(log(x))) }
+  out <- rbind(
+    data.table(outcome = "log_live_and_work", baseline = gm(pre$live_and_work),
+               kind = "geometric mean, workers"),
+    data.table(outcome = "log_in_commuters",  baseline = gm(pre$in_commuters),
+               kind = "geometric mean, workers"),
+    data.table(outcome = "log_total_jobs",    baseline = gm(pre$total_jobs),
+               kind = "geometric mean, jobs"),
+    data.table(outcome = "share_live_in",     baseline = mean(pre$share_live_in, na.rm = TRUE),
+               kind = "mean share, proportion"))
+  out[, `:=`(n_munis = uniqueN(pre$muni), n_muni_years = nrow(pre))]
+  fwrite(out, file.path(RESULTS_DIR, "treated_pre_baselines.csv"))
+  message("Saved data/results/treated_pre_baselines.csv")
+  print(out)
+  # Attach to the diagnostics the paper tables read, so the row prints
+  # alongside N and R-squared without a second lookup.
+  for (f in c("headline_diagnostics.csv", "pooled_diagnostics.csv")) {
+    p <- file.path(RESULTS_DIR, f)
+    if (!file.exists(p)) next
+    dg <- fread(p)
+    dg[, pre_baseline := NULL]
+    dg <- merge(dg, out[, .(outcome, pre_baseline = baseline)], by = "outcome", all.x = TRUE)
+    fwrite(dg, p)
+    message("  merged pre_baseline into ", f)
   }
 })
