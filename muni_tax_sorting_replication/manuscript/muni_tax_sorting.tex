@@ -382,7 +382,14 @@ municipalities whose rate history moves in both directions over the
 sample, because a municipality that raises and later cuts its rate cannot
 be assigned a single binding-cell classification, along with
 municipalities whose first event is a decrease, which are outside the
-paper's scope and serve as neither treated units nor controls. That
+paper's scope and serve as neither treated units nor controls. The test
+is applied to each of the three rates a municipality faces, its own
+resident rate, its school district's resident rate, and its own
+nonresident rate, so a municipality with a clean resident-rate history is
+still removed if one of the other two reverses. The nonresident rate
+accounts for $554$ of the $795$ municipalities dropped at this step, and
+because that rate is not itself estimated here the restriction is
+conservative rather than identifying. That
 leaves $31{,}744$ muni-years across $1{,}764$ municipalities. I then drop
 muni-years missing any fiscal control, which is the sample the regressions
 select through listwise deletion, leaving $24{,}229$ muni-years across
