@@ -100,12 +100,20 @@ Inc-nobind placebo's post effect is null but its pre-trend is not clean.
   industry pattern direction-mixed (consistent with weak SD-level
   identification overall).
 
-**Pre-/post-Act-32 split:**
-- Cousub log_LW Inc-bind: pre = −0.339, post = **−0.534** (effect
-  strengthens after enforcement made EIT binding).
-- Block log_home_count Inc-bind: pre = −0.173, post = −0.176 (similar;
-  block-level effect predates Act 32, contradicting the binding-rule
-  story at finer geography).
+**Pre-/post-Act-32 split** (regen 2026-08-06, `act32_split_cousub.csv`):
+- Cousub log_LW Inc-bind: pre = **−0.544** (SE 0.201), post = **−0.531**
+  (SE 0.162). Essentially identical, both significant at 1%. The earlier
+  claim that enforcement STRENGTHENS the effect (pre −0.339 / post −0.534)
+  is superseded and no longer holds.
+- Cousub log_LW Inc-becomes: pre = −0.296, post = −0.222.
+- Cousub share_live_in Inc-bind: pre = −0.068, post = −0.043.
+- Reading: Act 32 changed collection, not liability, so a household already
+  paying its home rate faced the same bill either way. The post-2012
+  cohorts are also thin. The split shows the effect is not an artifact of
+  the enforcement regime rather than evidence about enforcement itself.
+- Written up in §6.2 of `manuscript/muni_tax_sorting.tex`.
+- The block-level line previously here refers to the retired block pipeline
+  (repo is cousub-only); see the repo-cleanup notes.
 
 ## Active pipeline run order
 
