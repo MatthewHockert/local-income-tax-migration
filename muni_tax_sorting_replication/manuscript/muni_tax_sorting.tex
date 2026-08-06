@@ -758,7 +758,7 @@ Where the home rate rises but stays below the work rate throughout, the
 bill does not move at all (Inc-nobind). Municipalities
 that never change a rate form the control pool (NC). Three mirror
 decrease groups exist by construction but are not estimated here, because
-the decrease cohort is thin ($5$ Dec-bind, $3$ Dec-becomes-non, $11$
+the decrease cohort is thin ($4$ Dec-bind, $3$ Dec-becomes-non, $11$
 Dec-nobind) and the realized-dose pre-trend rejects parallel trends on
 every decrease outcome.
 
@@ -978,8 +978,9 @@ $-0.021$ and is interpreted as a fall of $2.11$ percentage points, significant o
 at the ten percent level.
 
 In my sample a full percentage point change is larger than the average change. The
-largest cumulative increase in the sample is $0.85$ points and the
-average, five years after the first event, is $0.34$
+largest cumulative increase in the sample is $1.25$ points, only four
+municipalities reach a full point or more, and the average five years
+after the first event is $0.34$
 (Table~\ref{tab:cell_counts_summary}). Evaluating the results at that
 average increase, the resident workforce falls by $9.2$ percent
 ($e^{\hat\beta \times \bar d} - 1 = e^{-0.284 \times 0.34} - 1 = -0.092$),
@@ -1113,10 +1114,11 @@ because the design identifies it.
 Figures~\ref{fig:spline_incbind} and~\ref{fig:spline_incbecomes} trace
 the dose-response within the two cells where the bill moves. The total
 effect declines monotonically across the observed range in both. Within
-these cells the data cannot establish that the marginal effect varies. A
-quadratic fitted to the Inc-bind sample alone does not reject a constant
-slope ($p = 0.74$ on the squared term), and the pooled curvature
-diagnostic that does reject
+the binding cell the data cannot establish that the marginal effect
+varies, since a quadratic fitted to the Inc-bind sample alone does not
+reject a constant slope ($p = 0.74$ on the squared term). The
+partial-pass-through cell does reject ($p = 0.01$), and the pooled
+curvature diagnostic that also rejects
 (Appendix~\ref{app:curvature}) is estimated across all three increase
 cells rather than within any one of them. The figures should therefore be
 read as showing what a flexible fit looks like, not as evidence that the
@@ -1620,7 +1622,8 @@ is not a pre-existing drift dressed up as a response to the tax.
 
 The two outcomes that fold in commuters do not pass. In-commuters and
 total jobs show placebo effects of roughly $-0.11$ to $-0.14$, significant
-at five percent at every shift. Both count jobs held by people who live
+at five percent at the three- and four-year shifts and at ten percent at
+five years. Both count jobs held by people who live
 elsewhere, whose bills the municipal resident rate never touches, so they
 were the weaker tests to begin with.
 
