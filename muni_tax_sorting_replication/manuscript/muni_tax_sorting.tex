@@ -1373,12 +1373,18 @@ Hazleton was designated in $2017$, seven years after the $2010$ rate
 increase that places it in the cell. No Inc-bind municipality was
 therefore in recovery at the time of its rate change, so the confounder
 this exclusion is built to address does not arise in this sample. Other
-historically designated cities do not reach the Inc-bind cell because
-their rate trajectories are non-monotone and were removed
-(Section~\ref{subsec:stacked-continuous}).
+historically designated cities do not reach the Inc-bind cell because the
+reversal test in Section~\ref{subsec:stacked-continuous} removes them, and
+of the sixteen register entries absent from the estimation panel seven are
+removed on their nonresident rate rather than on their own resident
+trajectory. The check therefore establishes that the recovery-plan
+confounder does not arise among the municipalities the paper estimates on.
+It does not establish that the estimates are robust to municipal distress,
+because most designated cities sit outside the sample for reasons
+unconnected to distress.
 Table~\ref{tab:act47_full_results} nonetheless re-estimates the
 municipality-level Inc-bind coefficient on the $23$ never-designated
-municipalities, which is the conservative form of the check.
+municipalities, which removes a single unit and is close to mechanical.
 
 % \input{../tables/act47_robustness.tex}  % concise 2-col version
 \input{../tables/act47_full_results.tex}
@@ -1570,10 +1576,14 @@ cell composition as well as in enforcement.
 \label{app:pooled-act47}
 
 Five municipalities in the pooled Increase group have ever carried an
-Act~47 designation. Excluding them from the treated group leaves the
-coefficient slightly larger rather than smaller on every outcome, so the
-pooled result is not being carried by distressed cities raising rates
-under a recovery plan.
+Act~47 designation. Excluding them from the treated group moves every
+coefficient by roughly one standard error or less, larger in magnitude on
+the live-and-work count and its share and smaller on the two
+commuter-flow counts, and each estimate stays significant. The pooled
+result is not being carried by distressed cities raising rates under a
+recovery plan. As in Section~\ref{subsec:rob-act47}, this speaks to the
+municipalities inside the estimation sample, since most designated cities
+are removed by the reversal test before the check is run.
 
 \input{../tables/pooled_act47.tex}
 
