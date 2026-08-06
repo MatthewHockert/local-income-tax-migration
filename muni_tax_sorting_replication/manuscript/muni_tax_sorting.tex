@@ -1047,7 +1047,11 @@ Where the increase passed through to the worker's bill in full, a one
 point increase reduces the count of workers who live and work in the
 municipality by $0.537$ log points, or $41.6$ percent. Where it passed
 through only in part the coefficient is $0.250$, or $22.1$ percent. Where
-it never reached the bill it is $-0.110$, with a $p$-value of $0.466$.
+it never reached the bill it is $-0.110$, with a $p$-value of $0.466$. The
+force of that null is not that the point estimate is small but that its
+confidence interval, roughly $[-0.41, 0.19]$, excludes a response the size
+of the binding cell's. The placebo does not merely fail to find an effect,
+it rules out the effect the design attributes to a moving bill.
 
 The per-point figures extrapolate further here than in the pooled
 specification, because the binding group's largest cumulative increase is
@@ -1226,6 +1230,34 @@ encounters. The stricter test is the relevant one here. The pooled
 specification survives it on three of the four outcomes and fails on the
 count of resident workers, which is the outcome the paper leans on most.
 
+The realized-dose test is also not the only reading of the pre-period, and
+the battery in Section~\ref{subsec:rob-battery} separates two failures
+that the joint Wald reports identically. A joint Wald rejects on any
+departure of any shape. A linear pre-slope targets the alternative that
+actually threatens the design, treated and control municipalities drifting
+apart at a steady rate before the tax changes. Applying both to all
+sixteen cell-by-outcome rows, the Wald rejects on nine and the slope on
+three.
+
+Where both reject, the pre-trend is a trend and the estimate should not be
+read causally. That is true of exactly two rows, in-commuters and total
+jobs in the partial-pass-through cell, and it is reinforced by the
+fake-timing placebo, which fails on the same cell. Where the Wald rejects
+and the slope does not, the departure is in shape rather than in
+direction, and four of those seven rows are the entire non-binding cell,
+whose thirteen municipalities are too few for the Wald statistic's
+covariance matrix to be estimated reliably.
+
+For the binding cell's resident workforce this distinction matters most.
+No lead is individually significant, the linear pre-slope is $+0.024$ and
+indistinguishable from zero ($p = 0.47$), and the joint Wald sits at
+$p = 0.053$. The right statement is that the pre-trend diagnostics do not
+undermine the estimate, which is weaker than saying they support it. A
+pre-test that fails to reject is not evidence that parallel trends hold,
+and conditioning on having passed one carries its own bias. The estimate
+is offered as evidence
+of a large response rather than as a tightly bounded one.
+
 Taken together the results support three claims. First, municipalities
 that raise the earned income tax lose resident workers, and at the average
 increase the loss is on the order of nine to twelve percent depending on
@@ -1353,10 +1385,26 @@ tests whether the binding-cell effect strengthens under consolidated
 employer withholding
 (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
 
+It does not. The binding cell returns $-0.544$ before the break and
+$-0.531$ after, a difference far inside either standard error, and both
+periods are significant at the one percent level. The partial-pass-through
+cell moves in the same undramatic way, from $-0.296$ to $-0.222$. On the
+live-and-work share the binding cell reads $-0.068$ before and $-0.043$
+after.
+
+The natural reading was that consolidated withholding made the tax harder
+to avoid and should therefore sharpen the response. The data decline that
+reading. Two explanations fit. Act~32 changed collection rather than
+liability, so a household already paying its home rate faced the same bill
+before and after and had the same reason to move. And the pre-2012 cohorts
+carry most of the identifying variation, so the post-2012 estimate rests
+on few enough events that a moderate change would not be detectable. The
+check is therefore best read as showing the effect is not an artifact of
+the enforcement regime, rather than as evidence about enforcement itself.
+
 % \input{../tables/act32_cousub.tex}  % concise version
 \input{../tables/act32_full_pre.tex}
 \input{../tables/act32_full_post.tex}
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
 \subsection{Act 47 Distressed-Municipality Exclusion}
 \label{subsec:rob-act47}
@@ -1396,12 +1444,49 @@ municipalities, which removes a single unit and is close to mechanical.
 \subsection{Pre-Trend Battery}
 \label{subsec:rob-battery}
 
-The joint Wald test over-rejects on cohorts of 13--39 treated
-municipalities, so Table~\ref{tab:pretrend_battery} reports three
-pre-trend tests per cell: the joint Wald on the realized-dose leads,
-the count of individually significant leads, and a one-degree-of-freedom
-linear pre-slope.
-% [Prose TO WRITE after reviewing the table.]
+No single pre-trend test is decisive on cohorts of 13 to 39 treated
+municipalities, so Table~\ref{tab:pretrend_battery} reports three, each
+sensitive to a different kind of failure.
+
+The joint Wald tests all four pre-event leads against zero
+simultaneously. It rejects on any departure of any shape, which makes it
+the most demanding of the three and also the one most easily upset by a
+single stray coefficient or by a poorly estimated covariance matrix on a
+thin cohort. A clean result is a large $p$-value.
+
+The count of individually significant leads asks a narrower question: is
+any one pre-event coefficient distinguishable from zero at five percent.
+A clean result is zero of four.
+
+The linear pre-slope fits a single trend through the pre-event window and
+tests its slope, one degree of freedom. It is insensitive to an isolated
+spike and targets the alternative that actually threatens the design,
+namely treated and control municipalities drifting apart at a steady rate
+before the tax changes. A clean result is a slope indistinguishable from
+zero.
+
+The three disagree, and the pattern of disagreement is informative. The
+joint Wald rejects on nine of the sixteen cell-by-outcome rows, the linear
+pre-slope on three, and only five rows carry any individually significant
+lead. Two rows fail on both the Wald and the slope, and both are
+partial-pass-through commuter outcomes: in-commuters ($p = 0.0003$ joint,
+$p = 0.001$ slope) and total jobs ($p = 0.0004$ and $p = 0.001$). Those
+are genuine differential trends and the corresponding estimates should not
+be read causally.
+
+The remaining seven Wald rejections have the opposite signature. Four are
+the entire non-binding cell, where no lead is individually significant and
+the slope rejects on none of the four outcomes, on a cohort of thirteen
+municipalities whose covariance matrix the Wald statistic must invert. The
+other three are the binding cell's share, the partial-pass-through cell's
+resident workforce, and the pooled resident workforce, each with a flat
+slope. These are departures in shape rather than in trend.
+
+The binding cell's resident workforce, the paper's primary outcome, has no
+individually significant lead, a linear pre-slope of $+0.024$ that the
+data cannot distinguish from zero ($p = 0.47$), and a joint Wald of
+$p = 0.053$. Extrapolated forward, its pre-period predicts a mild increase
+rather than the decline that follows.
 
 \input{../tables/pretrend_battery.tex}
 
@@ -1433,11 +1518,31 @@ linear pre-slope.
 \subsection{Fake-Timing Placebo}
 \label{subsec:rob-faketiming}
 
-Each treated municipality is assigned a placebo event four years before
-its real one, and only data from before the real event enter the
-estimation. Nothing happened at the placebo dates, so the coefficients
+Each treated municipality is assigned a placebo event three, four or five
+years before its real one, and only data from before the real event enter
+the estimation. Nothing happened at the placebo dates, so the coefficients
 should be null.
-% [Prose TO WRITE after reviewing the table.]
+
+The binding cell passes on both outcomes the paper rests on. Its
+live-and-work coefficients are $+0.048$, $+0.066$ and $-0.041$ across the
+three shifts, none distinguishable from zero, and its share coefficients
+are $0.000$, $+0.020$ and $+0.002$. The estimated response is not a
+pre-existing drift relabelled as a reaction to the tax.
+
+The partial-pass-through cell does not pass. Its live-and-work placebo is
+$-0.174$ at the three-year shift ($p = 0.013$) and $-0.180$ at five years
+($p = 0.053$), the same sign and roughly two thirds the size of its real
+estimate. Read together with that cell's failure on both pre-trend tests
+in Section~\ref{subsec:rob-battery}, its coefficients carry the weakest
+causal warrant in the paper.
+
+The non-binding cell's share fails at the four- and five-year shifts
+($-0.074$ and $-0.065$), which is a further reason to treat that cell as
+uninformative rather than as a clean placebo.
+
+The three panels overlap heavily and are consistency checks rather than
+independent tests, and eligibility requires two placebo pre-years inside
+the panel, so the municipality count falls as the shift lengthens.
 
 \IfFileExists{../tables/fake_timing.tex}{\input{../tables/fake_timing.tex}}{\textit{[Fake-timing run in progress.]}}
 

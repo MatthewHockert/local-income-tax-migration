@@ -851,7 +851,11 @@ if (RUN_CURVATURE) local({
 #  with the stacked design's singleton fixed effects; HonestDiD serves the same
 #  small-sample-robustness purpose and is the standard tool.)
 if (RUN_PRETREND_BATTERY) local({
-  K <- 5L; set.seed(42); Mbarvec <- c(0.5, 1, 1.5, 2)
+  K <- 5L; set.seed(42)
+  # Grids must resolve below 0.5: the breakdown on this design sits near 0.3,
+  # so the old c(0.5, 1, 1.5, 2) grid returned its own minimum for every row.
+  Mbarvec <- c(0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2)
+  Mvec    <- NULL  # smoothness bound off; not reported, and it is slow
   cs <- ctrls_str
   panel_bat <- copy(panel)
 
@@ -924,7 +928,8 @@ if (RUN_PRETREND_BATTERY) local({
                     dp, cluster = ~muni), error = function(e) NULL)
     rows[[length(rows) + 1L]] <- cbind(
       data.table(outcome = o, cell = cl, n_treated = uniqueN(dd$muni[dd$rdose != 0])),
-      pretrend_bucket(m, lin_model = ml, lin_term = "dose_rel", Mbarvec = Mbarvec))
+      pretrend_bucket(m, lin_model = ml, lin_term = "dose_rel",
+                      Mbarvec = Mbarvec, Mvec = Mvec))
   }
   bat <- rbindlist(rows, fill = TRUE)
   fwrite(bat, file.path(RESULTS_DIR, "pretrend_battery.csv"))
