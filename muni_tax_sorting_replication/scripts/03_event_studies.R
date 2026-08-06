@@ -152,7 +152,10 @@ if (RUN_HEADLINE_ES) local({
         wald_pre_stat = round(wp$stat, 3),
         wald_pre_df = wp$df,
         wald_pre_p = round(wp$p, 4),
-        n = nobs(m))
+        n = nobs(m),
+        n_munis = uniqueN(dd$muni),
+        r2  = round(fitstat(m, "r2",  simplify = TRUE), 4),
+        wr2 = round(fitstat(m, "wr2", simplify = TRUE), 4))
     }
   }
   es_dt  <- rbindlist(es_results, fill = TRUE)

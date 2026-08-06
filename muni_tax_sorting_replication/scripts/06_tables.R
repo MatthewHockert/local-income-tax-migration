@@ -630,7 +630,7 @@ if (RUN_PAPER_TABLES) local({
                      "Pre-/post-Act-32 split --- municipality level",
                      "tab:act32_cousub", "act32_cousub.tex")
 
-  # 8. Pooled Inc/Dec headline tables
+  # 8. Pooled Increase headline tables
   # Each table reports four coefficients of interest per outcome:
   #   muni-Inc, muni-Dec, SD-Inc, SD-Dec (per-pp or binary, depending on mode).
   # The block level has 4 outcomes; the cousub level has up to 5; the SD
@@ -783,12 +783,12 @@ if (RUN_PAPER_TABLES) local({
 
   # Per-pp pooled tables
   write_pooled_table("cousub", "per_pp", muni_outcomes,
-                     "Pooled Inc/Dec headline --- municipality level (per pp)",
+                     "Pooled Increase headline --- municipality level (per pp)",
                      "tab:pooled_per_pp_cousub", "pooled_per_pp_cousub.tex")
 
   # Binary pooled tables
   write_pooled_table("cousub", "binary", muni_outcomes,
-                     "Pooled Inc/Dec headline --- municipality level (binary event)",
+                     "Pooled Increase headline --- municipality level (binary event)",
                      "tab:pooled_binary_cousub", "pooled_binary_cousub.tex",
                      notes = c("Binary post-treatment indicator: 1 in the event year and after."))
 
@@ -1174,7 +1174,7 @@ if (RUN_PAPER_TABLES) local({
 
   ## Event-study appendix full tables: lead/lag coefficients by event time,
   ## one table per group (Inc-bind / Inc-becomes / Inc-nobind / Pooled-Inc).
-  write_es_full_table <- function(dt, group_label, label_id, out_name) {
+  write_es_full_table <- function(dt, group_label, label_id, out_name, diag = NULL) {
     if (is.null(dt) || nrow(dt) == 0) return(invisible())
     rels <- sort(unique(dt$rel))
     ncols <- length(muni_outcomes)
@@ -1194,6 +1194,25 @@ if (RUN_PAPER_TABLES) local({
                 paste0("$k = ", k, "$ & ", paste(est_row, collapse = " & "), " \\\\"),
                 paste0("        & ", paste(se_row, collapse = " & "), " \\\\"))
     }
+    # Diagnostics footer: one row per statistic, aligned to the outcome columns.
+    if (!is.null(diag) && nrow(diag)) {
+      pick <- function(col) vapply(muni_outcomes, function(o) {
+        r <- diag[outcome == o]
+        if (!nrow(r) || is.null(r[[col]]) || is.na(r[[col]][1])) return("---")
+        v <- r[[col]][1]
+        if (col == "n") formatC(v, format = "d", big.mark = ",")
+        else if (col == "n_munis") formatC(v, format = "d")
+        else sprintf("%.3f", v)
+      }, character(1))
+      dg <- character(0)
+      for (cc in c("n", "n_munis", "r2", "wr2", "wald_pre_p")) {
+        if (!cc %in% names(diag)) next
+        lab <- c(n = "$N$", n_munis = "Municipalities", r2 = "$R^2$",
+                 wr2 = "Within $R^2$", wald_pre_p = "Joint Wald $p$ (leads)")[[cc]]
+        dg <- c(dg, paste0(lab, " & ", paste(pick(cc), collapse = " & "), " \\\\"))
+      }
+      if (length(dg)) body <- c(body, "\\midrule", dg)
+    }
     hdr <- paste0("Event time & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
     tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
       "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
@@ -1204,22 +1223,28 @@ if (RUN_PAPER_TABLES) local({
       paste0("  \\label{", label_id, "}"), "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      "    \\footnotesize \\textit{Notes:} Per-pp realized-dose coefficient at each event time; $k=-1$ omitted as the reference. SE clustered by municipality. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.",
+      "    \\footnotesize \\textit{Notes:} Per-pp realized-dose coefficient at each event time; $k=-1$ omitted as the reference. SE clustered by municipality. Joint Wald tests the four pre-event leads against zero. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.",
       "  \\end{minipage}", "\\end{table}")
     writeLines(out, file.path(out_dir, out_name))
   }
   es_coef_path <- file.path(in_dir, "headline_es_coefs.csv")
   if (file.exists(es_coef_path)) {
     ec <- fread(es_coef_path)
-    write_es_full_table(ec[cell == "Inc-bind"],    "Inc-bind cell",    "tab:es_full_incbind",    "es_full_incbind.tex")
-    write_es_full_table(ec[cell == "Inc-becomes"], "Inc-becomes cell", "tab:es_full_incbecomes", "es_full_incbecomes.tex")
-    write_es_full_table(ec[cell == "Inc-nobind"],  "Inc-nobind cell (placebo)", "tab:es_full_incnobind", "es_full_incnobind.tex")
+    ea_path <- file.path(in_dir, "headline_es_att.csv")
+    ea <- if (file.exists(ea_path)) fread(ea_path) else NULL
+    dsub <- function(cl) if (is.null(ea)) NULL else ea[cell == cl]
+    write_es_full_table(ec[cell == "Inc-bind"],    "Inc-bind cell",    "tab:es_full_incbind",    "es_full_incbind.tex",    dsub("Inc-bind"))
+    write_es_full_table(ec[cell == "Inc-becomes"], "Inc-becomes cell", "tab:es_full_incbecomes", "es_full_incbecomes.tex", dsub("Inc-becomes"))
+    write_es_full_table(ec[cell == "Inc-nobind"],  "Inc-nobind cell (placebo)", "tab:es_full_incnobind", "es_full_incnobind.tex", dsub("Inc-nobind"))
   }
   pe_coef_path <- file.path(in_dir, "pooled_es_cousub_coefs.csv")
   if (file.exists(pe_coef_path)) {
     pe <- fread(pe_coef_path)
     if ("direction" %in% names(pe)) pe <- pe[direction == "Inc"]
-    write_es_full_table(pe, "Pooled Increase", "tab:es_full_pooled", "es_full_pooled.tex")
+    pa_path <- file.path(in_dir, "pooled_es_cousub_att.csv")
+    pa <- if (file.exists(pa_path)) fread(pa_path) else NULL
+    if (!is.null(pa) && "direction" %in% names(pa)) pa <- pa[direction == "Inc"]
+    write_es_full_table(pe, "Pooled Increase", "tab:es_full_pooled", "es_full_pooled.tex", pa)
   }
 })
 

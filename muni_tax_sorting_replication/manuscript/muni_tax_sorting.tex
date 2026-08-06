@@ -1017,7 +1017,7 @@ one. The decomposition separates them.
 
 \begin{figure}[H]
   \centering
-  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (pooled Increase).}
+  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (pooled Increase). \textit{Notes:} The curve is a natural spline in the cumulative dose with interior knots at the terciles of the positive treated doses and boundary knots at zero and the largest observed dose. It is a visual device, deliberately more flexible than the data can support, so that any bending is visible if it is present. The straight line is the linear ACR, under which ACRT$(d)$ is constant and equal to it.}
   \label{fig:spline_pooled}
   \includegraphics[width=0.95\textwidth]{../figures/acr_acrt_att_spline_pooled.png}
 \end{figure}
@@ -1128,14 +1128,14 @@ coincide when the slope is not allowed to move.
 
 \begin{figure}[H]
   \centering
-  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-bind cell).}
+  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-bind cell). \textit{Notes:} The curve is a natural spline in the cumulative dose with interior knots at the terciles of the positive treated doses and boundary knots at zero and the largest observed dose. It is a visual device, deliberately more flexible than the data can support, so that any bending is visible if it is present. The straight line is the linear ACR, under which ACRT$(d)$ is constant and equal to it.}
   \label{fig:spline_incbind}
   \includegraphics[width=0.95\textwidth]{../figures/acr_acrt_att_spline_incbind.png}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-becomes cell).}
+  \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-becomes cell). \textit{Notes:} The curve is a natural spline in the cumulative dose with interior knots at the terciles of the positive treated doses and boundary knots at zero and the largest observed dose. It is a visual device, deliberately more flexible than the data can support, so that any bending is visible if it is present. The straight line is the linear ACR, under which ACRT$(d)$ is constant and equal to it.}
   \label{fig:spline_incbecomes}
   \includegraphics[width=0.95\textwidth]{../figures/acr_acrt_att_spline_incbecomes.png}
 \end{figure}
@@ -1465,21 +1465,13 @@ should be null.
 %==========================================================
 \appendix
 
-\section{Spline Specification for the Dose-Response Figures}
-\label{app:spline-spec}
-
-\begin{figure}[H]
-  \centering
-  \caption{Treated doses and knot placement, by estimation group.}
-  \label{fig:knot_placement}
-  \includegraphics[width=0.95\textwidth]{../figures/spline_knot_placement.png}
-\end{figure}
-% [Spec equations from outline to add at write time: pooled + per-cell
-%  muni and SD splines; knots at dose terciles; ATT(d), ACRT(d) formulas;
-%  BIC selects linear; spline is for visuals.]
-
 \section{Curvature Diagnostics}
 \label{app:curvature}
+
+This appendix carries the test behind the claim in
+Section~\ref{subsec:causal-params} that the dose-response bends. It is
+what licenses reporting a spline alongside the linear estimator, and what
+the linear specification is being checked against.
 
 \begin{figure}[htbp]
 \centering
@@ -1494,18 +1486,6 @@ where the response is effectively linear.}
 \label{fig:curvature_att}
 \end{figure}
 
-\section{Full Results with Control Coefficients}
-\label{app:full-results}
-%==========================================================
-
-This appendix reports the muni-level binding-decomposition
-regression with the fiscal-control coefficients and diagnostics.
-Table~\ref{tab:app_full_muni_cell_results} reports the muni-rate
-and SD-rate cells (two panels) with the shared fiscal controls from
-the same joint regression.
-
-\input{../tables/app_full_muni_cell_results.tex}
-
 %==========================================================
 \section{Realized-Dose Event Studies, Full Set}
 \label{app:es-full}
@@ -1519,143 +1499,36 @@ the same joint regression.
 \input{../tables/es_realized_cousub.tex}
 
 \label{app:es-realized}
-%==========================================================
-
-Per-cell realized-dose Sun--Abraham event studies at the muni
-level for the remaining residence-side outcomes (log live-and-work
-is in the body, Section~\ref{subsec:results-es}).
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on $\log(\text{in-commuters})$, by cell.}
-  \label{fig:app_es_realized_muni_incomm}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_in_commuters.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on $\log(\text{total jobs})$, by cell.}
-  \label{fig:app_es_realized_muni_jobs}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_log_total_jobs.png}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \caption{Muni-level realized-dose ES on the share of workers
-           living in their own municipality, by cell.}
-  \label{fig:app_es_realized_muni_share_in}
-  \includegraphics[width=0.95\textwidth]{../figures/es_realized_share_live_in.png}
-\end{figure}
 
 %==========================================================
 \section{Robustness for the Pooled Specification}
 \label{app:pooled-robustness}
 
-Section~\ref{sec:robustness} runs its checks on the binding decomposition.
-This appendix runs the same battery on the pooled Increase specification
-of Equation~(\ref{eq:pooled}), so the benchmark is held to the standard
-the headline estimator is held to. Each subsection below is the pooled
-counterpart of the correspondingly named check in
-Section~\ref{sec:robustness}, with the school-district co-treatment, the
-controls, the fixed effects and the municipality clustering unchanged
-throughout. The reported coefficient is $\beta^{M}_{\text{Inc}}$ in every
-table.
+The battery of Section~\ref{sec:robustness}, run on the pooled Increase
+specification of Equation~(\ref{eq:pooled}). The school-district
+co-treatment, controls, fixed effects and municipality clustering are
+unchanged throughout, and the reported coefficient is
+$\beta^{M}_{\text{Inc}}$ in every table.
 
 \subsection{Pre/Post Act 32}
 \label{app:pooled-act32}
-
-Splitting cohorts at Act~32's effective year leaves the pooled effect on
-either side of the full-sample estimate rather than concentrated in one
-period. The pre-2012 cohorts give a larger response and the post-2012
-cohorts a smaller one, which is the opposite ordering to the
-decomposition's Inc-bind cell, where enforcement strengthens the effect.
-The pooled comparison is harder to read because the two periods differ in
-cell composition as well as in enforcement.
 
 \input{../tables/pooled_act32.tex}
 
 \subsection{Act 47 Distressed-Municipality Exclusion}
 \label{app:pooled-act47}
 
-Five municipalities in the pooled Increase group have ever carried an
-Act~47 designation. Excluding them from the treated group moves every
-coefficient by roughly one standard error or less, larger in magnitude on
-the live-and-work count and its share and smaller on the two
-commuter-flow counts, and each estimate stays significant. The pooled
-result is not being carried by distressed cities raising rates under a
-recovery plan. As in Section~\ref{subsec:rob-act47}, this speaks to the
-municipalities inside the estimation sample, since most designated cities
-are removed by the reversal test before the check is run.
-
 \input{../tables/pooled_act47.tex}
 
 \subsection{Pre-Trend Battery}
 \label{app:pooled-pretrend}
-
-The joint Wald test on the four pre-event leads rejects parallel trends on
-one of the four outcomes. The count of workers who live and work in the
-municipality, the paper's primary outcome, rejects at $p = 0.029$. The
-in-commuter count, total jobs and the share of local jobs pass, at
-$p = 0.060$, $p = 0.103$ and $p = 0.259$.
-
-The comparison with the decomposition is the point of running this at
-all. On the same outcome the Inc-bind cell of the decomposition returns
-$p = 0.053$ (Section~\ref{subsec:results-es}). Both sit near the
-conventional threshold, so on this test the decomposition clears the
-pooled specification by less than the headline contrast suggests. Where
-the two separate is on the individual leads. Inc-bind has no lead
-significant at five percent on any outcome and a flat linear pre-slope
-throughout, while the pooled specification carries a significant lead on
-both the resident workforce and the in-commuter count.
 
 \input{../tables/pooled_pretrend_battery.tex}
 
 \subsection{Fake-Timing Placebo}
 \label{app:pooled-faketiming}
 
-Assigning each treated municipality a placebo event three, four or five
-years before its real one, and admitting only data that precede the real
-change, should produce nothing. The two outcomes the paper relies on pass
-cleanly. The count of workers who live and work in the municipality and
-their share of local jobs are null at every shift, so the sorting result
-is not a pre-existing drift dressed up as a response to the tax.
-
-The two outcomes that fold in commuters do not pass. In-commuters and
-total jobs show placebo effects of roughly $-0.11$ to $-0.14$, significant
-at five percent at the three- and four-year shifts and at ten percent at
-five years. Both count jobs held by people who live
-elsewhere, whose bills the municipal resident rate never touches, so they
-were the weaker tests to begin with.
-
-Eligibility requires at least two placebo pre-years inside the panel, so
-the municipality count falls from $37$ to $27$ as the shift lengthens and
-the earliest cohorts drop off the start of the sample. The three panels
-overlap heavily and are consistency checks rather than independent tests.
-
 \input{../tables/pooled_fake_timing.tex}
-
-\subsection{What the Battery Implies}
-\label{app:pooled-verdict}
-
-The pooled specification comes through the battery in reasonable shape on
-the outcomes the paper rests on. Act~32 and Act~47 leave it intact, and
-the fake-timing placebo is null on the resident workforce and on the
-live-and-work share at all three shifts. Where it struggles is on the
-commuter-flow outcomes, which fail the placebo, and on the realized-dose
-pre-trend, where the resident workforce is the one outcome the joint Wald
-rejects.
-
-The pattern is informative rather than merely disappointing. The
-fake-timing placebo fails exactly where the institutional rule predicts
-the municipal resident rate should have least purchase, on counts
-dominated by workers whose bills that rate does not reach. It is the same
-distinction the binding decomposition makes explicit. The realized-dose
-pre-trend runs the other way, rejecting on the resident workforce, which
-is the outcome the rate does reach, and there the Inc-bind cell returns
-$p = 0.053$ against $p = 0.029$ for the pooled coefficient. That is a
-difference of degree rather than of kind. The pooled estimate is a sound
-benchmark for the outcomes it is asked to carry, and the decomposition
-sharpens it without fully settling the pre-trend question.
 
 \section{Robustness: Full Tables}
 \label{app:robustness}
