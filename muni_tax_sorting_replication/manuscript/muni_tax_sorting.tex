@@ -1228,52 +1228,75 @@ declining relationship these two figures trace.
 % state early what metrics we'll be relying on here and define them such as what does passing or noto passing mean?
 % this section should tie back to our whole conversation around passing pretrends and noot passing and whether a single variable actually tells us its causal or not.
 
-The event study asks two things of the decomposition. Whether the response
-appears when the rate changes rather than before it, and whether
+This section describes the event study results. The event study was modeled using the realized dose over the sample period. I elected for this event study design over a binary because it is able to answer whether the response
+appears when the rate changes rather than before it and whether
 municipalities that eventually take large increases were already moving
 differently from those that take small ones.
 Figure~\ref{fig:feols_es_bycell} plots the event-time paths, and the full
 set of leads and lags behind it is reported cell by cell in
 Tables~\ref{tab:es_full_pooled} through~\ref{tab:es_full_incnobind}.
 
-Two quantities carry this section. The leads are the coefficients at event
+The leads are the coefficients at event
 times $-5$ through $-2$, each measuring how far apart large-dose and
 small-dose municipalities already were in that year relative to the year
 before the rate changed. The joint Wald test asks whether all four leads
 are zero at the same time. A large $p$-value means the test cannot detect
-a pre-existing divergence, which is the favourable outcome, and a small
-one means it can. It is worth being exact about what a large $p$-value
-buys. It says the data cannot detect a pre-trend, not that none exists,
-and on cohorts of thirteen to thirty-nine municipalities the test has
-limited power to find one. Passing is therefore an absence of evidence
-against the design rather than evidence for it.
+a pre-existing divergence, which is the desired outcome, and a small $p$-value indicates cities are moving on different paths prior to treatment.
 
-In the Inc-bind cell the resident workforce is flat across the pre-event
-window, at $-0.223$, $-0.043$, $+0.048$ and $-0.245$, and then declines
-steadily once the rate changes, reaching $-0.789$ per percentage point by
-the fifth year. The four leads average $-0.116$ and the joint Wald returns
-$p = 0.053$. That is a pass, and a narrow one.
+% lets organize to talk about the outcome variables
+  % within these outcome variable paragraphs we describe by pooled, inc-bind, inc-becomes
+  % what do they mean with the wald test.
 
-The other cells do not pass on the same outcome. Inc-becomes rejects at
-$p < 0.001$ despite a well behaved post-event path, and Inc-nobind rejects
-at $p < 0.001$ as well. Inc-bind itself rejects on the live-and-work share
-($p = 0.005$) while passing on the count. A reader who stopped here would
-conclude that most of the decomposition fails its pre-trend test.
 
-That conclusion would be too quick, because a single test cannot separate
-two very different failures. The battery in
-Section~\ref{subsec:rob-battery} runs the joint Wald alongside a linear
-pre-slope, which tests the alternative that actually threatens the design,
-namely treated and control municipalities drifting apart at a steady rate
-before the tax changes. The joint Wald rejects on any departure in any
-shape, including one stray year. Across the sixteen cell-by-outcome rows
-the Wald rejects on nine and the slope on three. Where both reject the
-pre-trend is a trend and the estimate should not be read causally, which
-is the case for in-commuters and total jobs in Inc-becomes. Where only the
-Wald rejects the departure is in shape rather than in direction, and four
-of those rows are the whole of Inc-nobind, whose thirteen municipalities
-are too few for the Wald statistic's covariance matrix to be estimated
-reliably.
+Start with the count of workers who live and work in the municipality,
+the outcome the paper leans on most. In Inc-bind it is flat across the
+pre-event window and then declines steadily once the rate changes,
+reaching $-0.789$ per percentage point by the fifth year. Its four leads
+average $-0.116$ and the joint Wald returns $p = 0.053$, which is a pass
+and a narrow one. Inc-becomes shows the same post-event shape at roughly a
+third the size, $-0.242$ by the fifth year, but its leads average $+0.045$
+and the Wald rejects at $p = 0.001$. Inc-nobind has no post-event decline
+to speak of and rejects hardest of all, with leads averaging $+0.207$ and
+a Wald below $0.001$. The pooled specification, which mixes all three,
+rejects at $p = 0.029$. Only the cell where the bill was already moving
+clears the test on this outcome.
+
+The share of local jobs held by residents behaves differently, and the
+pattern almost inverts. Here Inc-bind is the cell that rejects, at
+$p = 0.005$, even though its post-event path is the largest and most
+precisely estimated of the four. Inc-becomes does not reject
+($p = 0.293$), nor does the pooled specification ($p = 0.259$), while
+Inc-nobind again rejects below $0.001$. So the two residence-side
+outcomes disagree about which cell is clean, and no reading of the Wald
+alone reconciles them.
+
+The two commuter-side outcomes reverse the picture once more. On
+in-commuters and total jobs Inc-bind is the cleanest cell in the table,
+with Wald values of $0.775$ and $0.783$, while Inc-becomes rejects on both
+at $p < 0.001$ and Inc-nobind at $0.005$ and $0.001$. Inc-bind's leads on
+these outcomes are positive and imprecise rather than small, so the
+comfortable $p$-values reflect noise as much as flatness. These were the
+weaker tests to begin with, since the municipal resident rate never
+reaches an in-commuter's bill.
+
+Read across the four outcomes, then, the Wald test does not deliver a
+single verdict. It clears Inc-bind on three outcomes and rejects it on the
+fourth, rejects Inc-becomes on three and clears it on one, and rejects
+Inc-nobind everywhere. A reader who stopped here would conclude that most
+of the decomposition fails its pre-trend test, and that conclusion would
+be too quick, because a single test cannot separate two very different
+failures. The battery in Section~\ref{subsec:rob-battery} runs the joint
+Wald alongside a linear pre-slope, which tests the alternative that
+actually threatens the design, namely treated and control municipalities
+drifting apart at a steady rate before the tax changes. The joint Wald
+rejects on any departure in any shape, including one stray year. Across
+the sixteen cell-by-outcome rows the Wald rejects on nine and the slope on
+three. Where both reject the pre-trend is a trend and the estimate should
+not be read causally, which is the case for in-commuters and total jobs in
+Inc-becomes. Where only the Wald rejects the departure is in shape rather
+than in direction, and four of those rows are the whole of Inc-nobind,
+whose thirteen municipalities are too few for the Wald statistic's
+covariance matrix to be estimated reliably.
 
 For Inc-bind on the resident workforce no lead is individually
 significant, the linear pre-slope is $+0.024$ and indistinguishable from
@@ -1282,26 +1305,29 @@ forward its pre-period predicts a mild increase rather than the decline
 that follows. The right statement is that the pre-trend diagnostics do not
 undermine the estimate, which is weaker than saying they support it. A
 test that fails to detect a pre-trend is not evidence that parallel trends
-hold, and conditioning on having passed one carries its own bias. No
-single diagnostic makes an estimate causal. What the battery establishes
-is which estimates survive being looked at from several directions, and
-the Inc-bind effect on the resident workforce is the one that does.
+hold, and on cohorts of thirteen to thirty-nine municipalities it has
+limited power to find one. No single diagnostic makes an estimate causal.
+What the battery establishes is which estimates survive being looked at
+from several directions, and the Inc-bind effect on the resident workforce
+is the one that does.
 
-A second pre-trend test appears in Section~\ref{subsec:rob-acr} and
-reaches a friendlier verdict, so the disagreement is worth naming here
-rather than leaving to the reader. The de Chaisemartin and
-D'Haultf\oe uille placebo detects no pre-trend on any of the four
-outcomes, with $p$-values between $0.23$ and $0.69$, where again the large
-values are the favourable ones. The two tests ask different questions. The
-placebo compares municipalities that switch against those that have not
-switched yet, which is average parallel trends and is what a binary design
-requires. The realized-dose test tags each municipality with the rate
-change it will eventually take and asks whether the size of that change
-predicts the pre-event path, which is strong parallel trends and is what a
-continuous treatment requires
+The de Chaisemartin and D'Haultf\oe uille estimator in
+Section~\ref{subsec:rob-acr} supports these results on both counts that
+matter here. Its effect estimates line up with the ones above once the two
+are put on the same scale, and its placebo detects no pre-trend on any of
+the four outcomes, with $p$-values between $0.23$ and $0.69$. That is a
+friendlier verdict than the one this section reports, and the reason is
+that the two tests ask different questions. The placebo compares
+municipalities that switch against those that have not switched yet, which
+is average parallel trends and is what a binary design requires. The
+realized-dose test tags each municipality with the rate change it will
+eventually take and asks whether the size of that change predicts the
+pre-event path, which is strong parallel trends and is what a continuous
+treatment requires
 \citep{callawayDifferenceindifferencesContinuousTreatment2024}. The second
 is the stricter of the two and the one this design has to satisfy, so
 where they disagree the stricter verdict is the one I report.
+Section~\ref{subsec:rob-acr} takes the comparison up in full.
 
 Taken together the results support three claims. First, municipalities
 that raise the earned income tax lose resident workers, and at the average
