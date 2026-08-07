@@ -950,28 +950,26 @@ I report the results in three components. First,
 Section~\ref{subsec:results-pooled} presents the pooled Inc model, which estimates the effect of a rate-increase on worker migration without
 distinguishing whether the tax change binds. Second,
 Section~\ref{subsec:results-decomp} reports the results of the increase through binding
-decomposition model at the municipality level. Third, I present the results of the event study for the pooled and binding decomposition models.
-Dec cells are not estimated because of too thin of a sample.
+decomposition model at the municipality level. Third, Section~\ref{subsec:results-es} present the results of the event study for the pooled and binding decomposition models.
+Dec cells are not estimated because they are too thin of a sample.
 
 \subsection{Pooled Results}
 \label{subsec:results-pooled}
 
 I first report the pooled-Increase specification. The pooled coefficients estimate the average per-pp dose-response of a
-municipality-rate change and an SD-rate change without
-distinguishing whether the rate change is binding.
+municipality-rate change and an SD-rate change.
 
 Table~\ref{tab:pooled_per_pp_cousub} reports the per-pp pooled
-coefficients at the municipality level. The table reports the two
-coefficients of interest per outcome: the municipality resident-rate
+coefficients. The table reports the set of tax rate variables such as the municipality resident-rate
 Inc effect $\beta^M_{\text{Inc}}$ and the school-district-rate Inc
-effect $\beta^{SD}_{\text{Inc}}$.
+effect $\beta^{SD}_{\text{Inc}}$. It also reports the fiscal controls such as shares of expenses and property tax rates.
 
 \input{../tables/pooled_per_pp_cousub.tex}
 
-Each coefficient is interpreted as a one percentage point increase in the tax rate. A one point increase reduces the count of workers who both
+A one point increase reduces the count of workers who both
 live and work in the municipality by $0.284$ log points, a decline of
 $24.8$ percent ($e^{-0.284}-1$). In-commuters fall by $19.7$ percent and
-total jobs by $22.0$ percent, each statistically significant to $0.01$. The live-and-work
+total jobs by $22.0$ percent, each statistically significant to the one percent level. The live-and-work
 share is not a logged outcome but instead a percentage. The coefficient of the live-and-work
 share is
 $-0.021$ and is interpreted as a fall of $2.11$ percentage points, significant only
@@ -985,35 +983,24 @@ after the first event is $0.34$
 average increase, the resident workforce falls by $9.2$ percent
 ($e^{\hat\beta \times \bar d} - 1 = e^{-0.284 \times 0.34} - 1 = -0.092$),
 in-commuters by $7.2$ percent, total jobs by $8.1$ percent, and the share
-by $0.72$ points. I report both interpretations because the first is the
-coefficient and the second is the policy change municipalities actually
+by $0.72$ points. I report both interpretations because the first is the direct interpretation of the
+coefficients and the second is a weighted estimate by the tax change municipalities actually
 made.
 
 School-district rate increases carry small positive coefficients on every
-outcome and none is distinguishable from zero. The municipal effect is
-therefore not an artifact of school districts moving their own rates in
-the same years, which matters because both governments tax the same
-paycheck and often act together.
+outcome. Only the logged total jobs is statistically significant to the ten percent level. The standard errors indicate I cannot be confident in the estimated coefficient, however the estimates' direction (positive) points to two possible reasons: first, schools are seen as positive institutions and it is well understood that families and individuals want to sort into good school districts. Raising the school district tax may create a positive loop whereby it signals that further investment into an already well sought after amenity further incentivizes migration into those districts.
 
-The property-tax controls move in a way that supports the reading of the
-income-tax coefficient, though they are controls rather than objects of
-the design and carry no event study or pre-trend test behind them. A one
+The property-tax estimates vary in sign depending on the level of government levying it. They are control variables and are not to be interpreted as causal estimates. A one
 percentage point higher municipal effective property rate is associated
-with $0.213$ fewer log points of resident workforce, the same direction
-as the earned income tax and precisely estimated, and with a $1.25$
-percentage point lower live-and-work share. The school-district property
-rate runs the other way at $+0.017$ and the county rate is null. The four
+with $0.213$ fewer log points of those who live and work in the same municipality and a $0.013$ decline in live-and-work share, the same direction
+as the earned income tax and statistically significant. The school-district property
+rate is also positive, similar to the income tax effect above, and is only statistically significant for the live and work outcome with an estimate of $0.017$. The county rate is null in all four outcomes but also positive signed. The property tax effects are also all smaller than the EIT estimates, possibly indicating that property taxes increases induce smaller migration effects, while EIT adjustments do not. The four
 fiscal spending shares are individually indistinguishable from zero on
-both outcomes. Section~\ref{subsec:results-decomp} returns to the
+all outcomes. Section~\ref{subsec:results-decomp} returns to the
 property coefficients, where the same pattern appears in the
 decomposition.
 
-These are the numbers a conventional design would report. Their weakness
-is visible in Figure~\ref{fig:spline_pooled}: the dose axis runs over
-increases that reached the worker's bill in full, increases that reached
-it only in part, and increases that never reached it at all. The curve
-averages three different treatments rather than tracing the response to
-one. The decomposition separates them.
+Figure~\ref{fig:spline_pooled} illustrates the dose response curve and the ACR found in results table~\ref{tab:pooled_per_pp_cousub} above. The figure is estimating the effects using a spline as a illustrative example of how the effects may attenuate or change over increases in the dosage. While my results are from a linear estimation I do not expect that the coefficients are biased because when using a polynomial estimate the lines in the figure are nearly straight lines. If I were produce figure~\ref{fig:spline_pooled} using the linear estimator the ATTs on the lefthand side would be a straight downward sloping line to from left to right, the ACRT (green curve on the righthand side of the figure) would be equal to the ATTs, and the ACR would be the same. Figure~\ref{fig:spline_pooled} is showing a dramatized version of what the linear model produced which is to say that as the rate of taxation increases the amount of people that move quickly increases but as a municipality reaches around a $0.6$ pp-increase the number of workers moving out plateaus. This indicates that municipalities that have made the largest increases have taxed away the last marginal mover and those that remain in the tax base are those that will not move for any reason such as lower incomes, family connections, may value the tax increase given what it is spent on, etc. These curves like the estimates above are from the pooled sample. Below in Section~\ref{subsec:results-decomp} I estimate the tax increases by utilizing the binding mechanism. 
 
 \begin{figure}[H]
   \centering
@@ -1034,67 +1021,83 @@ one. The decomposition separates them.
 \label{subsec:results-decomp}
 \label{subsec:results-headline}
 
-The decomposition is estimated at the municipality level. Both
-rate-setter treatments enter the same joint regression: each
-muni-year is assigned its own resident rate $\tau^M$ at local
-level and $\max(\tau^{SD})$ across the school districts the muni
-reports to. Table~\ref{tab:headline_muni_combined}
-reports both sets of cell coefficients from the same joint
-regression in a single panel: the muni resident-rate cells (top
-panel) are the headline causal claim, and the SD resident-rate
-cells (bottom panel) are reported alongside as co-treatment from
-the identical specification.
+Table~\ref{tab:headline_muni_combined}
+reports the estimates from the binding decomposition model. This model is slightly different than the pooled specification estimated above. This model instead breaks down the pooled model by whether the municipal or school district rate increase was non-binding, becomes binding, or was already binding.
 
 \input{../tables/headline_muni_combined.tex}
 
-Table~\ref{tab:headline_muni_combined} splits the pooled coefficient by
-binding state. The ordering the institutional rule predicts appears in
-every outcome, and it appears in the right size order.
+% muni level first
+% Start with inc bind and do othe four outcomes highlighting the two most important ones
+% Then do income-becomes
+% then mention inc-nobind is not stat sig and that's okay
+  % for muni level do the conversion using the dose average like above
+% then do the sd version
+% then do the fiscal controls interpretation
 
-Where the increase passed through to the worker's bill in full, a one
-point increase reduces the count of workers who live and work in the
-municipality by $0.537$ log points, or $41.6$ percent. Where it passed
-through only in part the coefficient is $0.250$, or $22.1$ percent. Where
-it never reached the bill it is $-0.110$, with a $p$-value of $0.466$. The
-force of that null is not that the point estimate is small but that its
-confidence interval, roughly $[-0.41, 0.19]$, excludes a response the size
-of the binding cell's. The placebo does not merely fail to find an effect,
-it rules out the effect the design attributes to a moving bill.
+Start with the municipal panel and the cell where the home stack already
+set the bill. A one point increase there reduces the count of workers who
+live and work in the municipality by $0.537$ log points, or $41.6$
+percent, and reduces their share of local jobs by $5.84$ percentage
+points. Both are significant at one percent and both are the outcomes the
+paper leans on, because they describe residents rather than the workforce
+at large. The two commuter-side outcomes move in the same direction and
+by less, in-commuters by $0.345$ log points and total jobs by $0.423$.
+That ordering is what a residence-side tax should produce. The municipal
+resident rate reaches the bill of someone who lives and works in the
+municipality and never reaches the bill of someone who commutes in, so
+the outcome that mixes the two should land between them, and it does.
 
-The per-point figures extrapolate further here than in the pooled
-specification, because the binding group's largest cumulative increase is
-only $0.50$ points. Evaluated instead at each group's own average
-increase five years after the event, taken from
-Table~\ref{tab:cell_counts_summary}, the binding group's resident
-workforce falls by $12.2$ percent at an increase of $0.24$ points, and
-the partial-pass-through group's falls by $9.2$ percent at a larger
-increase of $0.38$ points. The two reach similar totals by opposite routes, a larger
-response to a smaller rate change against a smaller response to a larger
-one, which is what partial pass-through implies.
-The same ordering holds on in-commuters, at $-0.345$, $-0.212$ and
-$+0.145$, and on total jobs, at $-0.423$, $-0.233$ and $+0.114$. On the live-and-work share only the binding
-group is distinguishable from zero, where the share falls by $1.42$
-percentage points. That the share moves proportionally more than the count
-is what a sorting response implies: residents leave faster than the local
-job base shrinks, so the fraction of local jobs held by residents falls
-on both margins.
+The share falling faster in proportional terms than the count is itself
+informative. Residents leave more quickly than the local job base
+contracts, so the fraction of local jobs held by residents falls on both
+margins at once, which is what sorting implies and what a general
+decline in local employment would not.
 
-The null in the non-binding group is the sharpest result in the table
-because it cannot be explained by those municipalities having done less.
-They raised their rates by more than either other group, $0.43$
-percentage points on average against $0.24$ for the binding group, and
-show no response on any of the four outcomes. They behaved like
-tax-raising municipalities in every respect except the one the
-institutional rule says should matter, which is whether anyone's bill
+A one point increase is larger than anything this cell contains, since
+its largest cumulative increase is $0.50$ points. Evaluated at the
+increase these municipalities actually took, an average of $0.24$ points
+five years after the event, the resident workforce falls by $12.2$
+percent, the live-and-work share by $1.42$ percentage points, total jobs
+by $9.8$ percent and in-commuters by $8.0$ percent.
+
+The partial-pass-through cell, where the increase newly pushed the home
+stack above the work rate, gives about half the response. The resident
+workforce falls by $0.250$ log points per point, or $22.1$ percent, with
+in-commuters at $0.212$ and total jobs at $0.233$, all significant at one
+percent. The live-and-work share is the exception and cannot be
+distinguished from zero. These municipalities raised rates by more than
+the binding group, $0.38$ points on average against $0.24$, so at their
+own average increase the resident workforce falls by $9.2$ percent and
+total jobs by $8.5$ percent. The two cells therefore arrive at similar
+totals by opposite routes, a larger response to a smaller rate change
+against a smaller response to a larger one, which is what partial pass
+through implies.
+
+The third cell is not statistically significant on any outcome, and that
+is the point of it. Where the rate rose but the home stack stayed below
+the work rate, the resident workforce coefficient is $-0.110$ with a
+$p$-value of $0.466$, the share is $-0.028$ at $0.295$, and the two
+commuter outcomes are positive and nowhere near conventional levels. The
+force of that null is not that the point estimates are small but that the
+resident-workforce interval, roughly $[-0.41, 0.19]$, excludes a response
+of the size the binding cell displays. The cell also cannot be dismissed
+as municipalities that did less. They raised their rates by more than
+either other group, $0.43$ points on average, and show nothing. They
+behaved like tax-raising municipalities in every respect except the one
+the institutional rule says should matter, which is whether anyone's bill
 moved.
 
 The school-district cells in the lower panel come from the same
-regression and are uniformly small and positive. They are reported so the
-municipal coefficients can be read as net of school-district rate setting
-rather than as absorbing it.
+regression and tell a weaker story. Every coefficient is positive, none
+reaches five percent, and only total jobs and in-commuters in the binding
+cell reach ten. They are not identified the way the municipal cells are,
+since a district rate change treats every municipality in the district at
+once and escaping it requires a longer move than escaping a municipal
+rate. The sign is discussed in Section~\ref{subsec:results-pooled}, where
+the same pattern appears in the pooled specification.
 
 The property-tax controls are worth reading even though they are not the
-object of the design. They enter as controls, with no event-study, no
+object of the design. They enter as controls, with no event study, no
 cohort structure and no pre-trend test behind them, so what follows is
 correlational and should not be read as a causal estimate of the property
 tax. Taken that way it is a useful plausibility check, because a
@@ -1104,8 +1107,8 @@ recover something similar for the other local tax on the same households.
 It does, for the layer the municipality sets. A one percentage point
 higher municipal effective property rate is associated with $0.213$ fewer
 log points of resident workforce, the same direction as the earned income
-tax and precisely estimated. The magnitude is roughly two and a half times
-smaller than the binding-cell EIT response per point of rate. Two
+tax and precisely estimated. The magnitude is roughly two and a half
+times smaller than the binding-cell EIT response per point of rate. Two
 explanations are consistent with that ordering. Property taxes capitalise
 into house prices, so a household buying into a high-rate municipality is
 partly compensated at purchase and the ongoing burden it faces is smaller
@@ -1113,14 +1116,18 @@ than the statutory rate implies. Earned income taxes do not capitalise the
 same way, since they fall on a flow that follows the worker, and
 relocation is one of the few margins available for avoiding them.
 
-The school-district layer runs the other way, at $+0.017$ and marginally
-significant, and the county layer is null. A positive coefficient on
-school-district property taxes is what a Tiebout account would predict.
-School districts are the level at which the tax most visibly buys a
-service households sort toward, so a higher rate is bundled with better
-schools in a way that a higher municipal rate is not. I note the pattern
-because it is consistent with the mechanism the paper appeals to, not
-because the design identifies it.
+The other two layers run the other way and shrink as the taxing
+jurisdiction grows. The school-district rate is $+0.017$ and marginally
+significant, and the county rate is $+0.031$ and null. That ordering
+across municipal, district and county is what the geography predicts,
+since a county contains roughly thirty-eight municipalities and a
+district about five, and avoiding a tax requires leaving the jurisdiction
+that levies it. A positive coefficient on school-district property taxes
+is also what a Tiebout account would predict, since districts are the
+level at which a local tax most visibly buys a service households sort
+toward and property taxes are the dominant source of school funding in
+Pennsylvania. I note the pattern because it is consistent with the
+mechanism the paper appeals to, not because the design identifies it.
 
 
 Figures~\ref{fig:spline_incbind} and~\ref{fig:spline_incbecomes} trace
