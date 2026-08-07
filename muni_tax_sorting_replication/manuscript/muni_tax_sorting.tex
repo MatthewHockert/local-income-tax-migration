@@ -541,6 +541,16 @@ considering an EIT change is therefore weighing the adjustment of other
 local taxes on that are levied on same household, which is why the property rates
 enter as controls.
 
+All four outcomes are built from the same LODES origin-destination
+primitive, a count of jobs located in a municipality classified by where
+the worker lives. Total jobs is every job located in the municipality.
+Work in own municipality (jobs in the municipality whose holder also
+lives there) is the count of workers who both live and work in it.
+In-commuters (jobs in the municipality whose holder lives elsewhere) is
+the complement, so total jobs is exactly the sum of the two. The share
+live in municipality (work in own municipality divided by total jobs) is
+the fraction of local jobs held by residents.
+
 The two outcomes the paper leans on are the count of workers who both
 live and work in the municipality and that count as a share of local
 jobs. The average municipality has $207$ such workers, but the
@@ -552,6 +562,17 @@ sorting therefore operates on a thin margin. The remaining two outcomes are prox
 than sorting. In-commuters average $1{,}682$ per municipality
 and total jobs $1{,}889$. Both are reported because a change in the share is now
 interpretable alongside the flows that generate it. They are also valuable to include because they may indicate an economy in decline even if there is a statistically significant effect on the primary two outcome variables.
+
+Two consequences of this construction matter for reading the results.
+The four outcomes are not four independent measurements. In-commuters
+make up roughly nine tenths of total jobs, so the total-jobs coefficient
+is close to a restatement of the in-commuter one, and the share carries
+total jobs in its denominator. A response that moved residents and
+in-commuters by the same proportion would leave the share unchanged, so
+the share only moves when the two counts move differently. Separately,
+the logged outcomes are undefined where a count is zero, so the log
+regressions run on slightly smaller samples than the share regression,
+which keeps those municipality-years.
 
 The fiscal controls describe how a municipality spends and funds
 itself. Streets are the largest single expenditure category at $32.9\%$
@@ -1042,9 +1063,7 @@ points. Both are significant at one percent and both are the outcomes the
 paper leans on, because they describe residents rather than changes to the local labor market. The two commuter-side outcomes move in the same direction but are generally smaller, in-commuters by $0.345$ log points and total jobs by $0.423$. While these estimates show the labor market is declining while the EIT is raised, the ordering of the effect sizes match what is expected. When the municipal
 resident rate effects the tax bill of someone who lives and works in the
 municipality and never reaches the bill of someone who commutes in,
-the outcome that mixes the two (logged in-commuters) should land between them, and it does.
-
-The share falls because the two counts do not fall together. The resident
+the outcome that mixes the two (logged in-commuters) should land between them, and it does. Another implications of the decline in both jobs and those who live and work in the municipality is that the share falls because the two counts do not fall together. The share of those that live and work in the community is defined The resident
 workforce drops by $41.6$ percent per point of rate and total jobs by
 $34.5$ percent, so residents leave faster than the job base contracts and
 the fraction of local jobs held by residents falls with them. A general
