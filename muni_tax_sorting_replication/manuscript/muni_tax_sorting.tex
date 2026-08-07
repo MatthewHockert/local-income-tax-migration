@@ -1079,7 +1079,7 @@ workforce falls by $0.250$ log points per point, or $22.1$ percent, with
 in-commuters at $0.212$ and total jobs at $0.233$, all significant at one
 percent. The live-and-work share is the exception and is not statistically significant. This effect highlights that the tax increase when it becomes binding has yet to have the disproportionate impact on those that live and work in the municipality. The EIT increase may drive out those that live and work given the effect on the share that lives and works in the municipality is negative, I cannot be fully confident on the magnitude. 
 These municipalities raised rates by more than
-the binding group, $0.38$ points on average against $0.24$, so at their
+Inc-bind, $0.38$ points on average against $0.24$, so at their
 own average increase the resident workforce falls by $9.2$ percent and
 total jobs by $8.5$ percent. 
 
@@ -1126,19 +1126,6 @@ more than about four tenths of a point had already lost the residents
 willing to move, and the households remaining are the ones that will not
 move at any rate in this range.
 
-Figure~\ref{fig:spline_incbecomes} does the same for the Inc-becomes
-cell, where the increase newly pushed the home stack above the work rate.
-The shape is the same but stretched. The steepest part of the response
-arrives between roughly $0.3$ and $0.65$ points rather than between
-$0.15$ and $0.35$, and the total effect does not level off until about
-$0.65$ points against roughly $0.40$ in the binding cell. That is what
-partial pass through implies. Only the portion of the increase that
-carries the home stack above the work rate reaches anybody's bill, so a
-larger statutory increase is needed to move liability by the same amount,
-and the point at which the cell has exhausted its movers arrives
-correspondingly later. The Inc-nobind cell has no counterpart figure. Its
-estimates are not distinguishable from zero and it shows none of the
-declining relationship these two figures trace.
 
 \begin{figure}[H]
   \centering
@@ -1156,7 +1143,20 @@ declining relationship these two figures trace.
 \end{figure}
 
 
-% separate paragraph explaining what's happening in this figure
+Figure~\ref{fig:spline_incbecomes} does the same for the Inc-becomes
+cell, where the increase newly pushed the home stack above the work rate.
+The shape is the same but stretched. The steepest part of the response
+arrives between roughly $0.3$ and $0.65$ points rather than between
+$0.15$ and $0.35$, and the total effect does not level off until about
+$0.65$ points against roughly $0.40$ in the binding cell. That is what
+partial pass through implies. Only the portion of the increase that
+carries the home stack above the work rate reaches anybody's bill, so a
+larger statutory increase is needed to move liability by the same amount,
+and the point at which the cell has exhausted its movers arrives
+correspondingly later. The Inc-nobind cell has no counterpart figure. Its
+estimates are not distinguishable from zero and it shows none of the
+declining relationship these two figures trace.
+
 \begin{figure}[H]
   \centering
   \caption{Dose-response: ATT$(d)$ and ACRT$(d)$ with the linear ACR (Inc-becomes cell).}
@@ -1223,81 +1223,98 @@ declining relationship these two figures trace.
 %
 % %==========================================================
 %
+% Link to the appendix where they can inspect the tables for the grpahs below and find the numbers mentioned.
+% what is a "partial-pass-through"? - use the terms inc-binds, inc-becomes, inc-nobinds, etc.
+% state early what metrics we'll be relying on here and define them such as what does passing or noto passing mean?
+% this section should tie back to our whole conversation around passing pretrends and noot passing and whether a single variable actually tells us its causal or not.
+
 The event study asks two things of the decomposition. Whether the response
 appears when the rate changes rather than before it, and whether
 municipalities that eventually take large increases were already moving
 differently from those that take small ones.
+Figure~\ref{fig:feols_es_bycell} plots the event-time paths, and the full
+set of leads and lags behind it is reported cell by cell in
+Tables~\ref{tab:es_full_pooled} through~\ref{tab:es_full_incnobind}.
 
-In the binding group the resident workforce is flat through the pre-event
-window and then declines steadily, reaching $-0.789$ per percentage point
-by the fifth year. The four pre-event coefficients average $-0.116$ and
-the joint Wald test does not reject their being zero ($p = 0.053$). The
-margin is narrow enough that this reads as a pass rather than a clean one.
-The partial-pass-through group rejects on the resident workforce
-($p < 0.001$) despite a well-behaved post-event path, the non-binding
-group rejects as well, and the binding group itself rejects on the
-live-and-work share ($p = 0.005$) even while passing on the count.
+Two quantities carry this section. The leads are the coefficients at event
+times $-5$ through $-2$, each measuring how far apart large-dose and
+small-dose municipalities already were in that year relative to the year
+before the rate changed. The joint Wald test asks whether all four leads
+are zero at the same time. A large $p$-value means the test cannot detect
+a pre-existing divergence, which is the favourable outcome, and a small
+one means it can. It is worth being exact about what a large $p$-value
+buys. It says the data cannot detect a pre-trend, not that none exists,
+and on cohorts of thirteen to thirty-nine municipalities the test has
+limited power to find one. Passing is therefore an absence of evidence
+against the design rather than evidence for it.
 
-Two pre-trend tests appear in this paper and they do not agree, which is
-worth resolving rather than leaving to the reader. The de Chaisemartin and
-D'Haultf\oe uille placebo in Section~\ref{subsec:rob-acr} fails to reject
-on all four outcomes, with $p$-values between $0.23$ and $0.69$. The
-realized-dose test here rejects on one of the four for the pooled
-specification. They are testing different conditions. The placebo compares
-the outcome path of municipalities that switch against those that have not
-yet switched, which is average parallel trends and is what a binary design
-requires. The realized-dose test tags each municipality with the rate
-change it will eventually take and asks whether the size of that eventual
-change predicts the pre-event slope, which is strong parallel trends and
-is what a continuous treatment requires
-\citep{callawayDifferenceindifferencesContinuousTreatment2024}. Passing
-the first and failing the second is the signature of dose magnitude being
-correlated with pre-existing trajectories, which is precisely the failure
-mode a continuous design has to rule out and a binary one never
-encounters. The stricter test is the relevant one here. The pooled
-specification survives it on three of the four outcomes and fails on the
-count of resident workers, which is the outcome the paper leans on most.
+In the Inc-bind cell the resident workforce is flat across the pre-event
+window, at $-0.223$, $-0.043$, $+0.048$ and $-0.245$, and then declines
+steadily once the rate changes, reaching $-0.789$ per percentage point by
+the fifth year. The four leads average $-0.116$ and the joint Wald returns
+$p = 0.053$. That is a pass, and a narrow one.
 
-The realized-dose test is also not the only reading of the pre-period, and
-the battery in Section~\ref{subsec:rob-battery} separates two failures
-that the joint Wald reports identically. A joint Wald rejects on any
-departure of any shape. A linear pre-slope targets the alternative that
-actually threatens the design, treated and control municipalities drifting
-apart at a steady rate before the tax changes. Applying both to all
-sixteen cell-by-outcome rows, the Wald rejects on nine and the slope on
-three.
+The other cells do not pass on the same outcome. Inc-becomes rejects at
+$p < 0.001$ despite a well behaved post-event path, and Inc-nobind rejects
+at $p < 0.001$ as well. Inc-bind itself rejects on the live-and-work share
+($p = 0.005$) while passing on the count. A reader who stopped here would
+conclude that most of the decomposition fails its pre-trend test.
 
-Where both reject, the pre-trend is a trend and the estimate should not be
-read causally. That is true of exactly two rows, in-commuters and total
-jobs in the partial-pass-through cell, and it is reinforced by the
-fake-timing placebo, which fails on the same cell. Where the Wald rejects
-and the slope does not, the departure is in shape rather than in
-direction, and four of those seven rows are the entire non-binding cell,
-whose thirteen municipalities are too few for the Wald statistic's
-covariance matrix to be estimated reliably.
+That conclusion would be too quick, because a single test cannot separate
+two very different failures. The battery in
+Section~\ref{subsec:rob-battery} runs the joint Wald alongside a linear
+pre-slope, which tests the alternative that actually threatens the design,
+namely treated and control municipalities drifting apart at a steady rate
+before the tax changes. The joint Wald rejects on any departure in any
+shape, including one stray year. Across the sixteen cell-by-outcome rows
+the Wald rejects on nine and the slope on three. Where both reject the
+pre-trend is a trend and the estimate should not be read causally, which
+is the case for in-commuters and total jobs in Inc-becomes. Where only the
+Wald rejects the departure is in shape rather than in direction, and four
+of those rows are the whole of Inc-nobind, whose thirteen municipalities
+are too few for the Wald statistic's covariance matrix to be estimated
+reliably.
 
-For the binding cell's resident workforce this distinction matters most.
-No lead is individually significant, the linear pre-slope is $+0.024$ and
-indistinguishable from zero ($p = 0.47$), and the joint Wald sits at
-$p = 0.053$. The right statement is that the pre-trend diagnostics do not
+For Inc-bind on the resident workforce no lead is individually
+significant, the linear pre-slope is $+0.024$ and indistinguishable from
+zero ($p = 0.47$), and the joint Wald sits at $p = 0.053$. Extrapolated
+forward its pre-period predicts a mild increase rather than the decline
+that follows. The right statement is that the pre-trend diagnostics do not
 undermine the estimate, which is weaker than saying they support it. A
-pre-test that fails to reject is not evidence that parallel trends hold,
-and conditioning on having passed one carries its own bias. The estimate
-is offered as evidence
-of a large response rather than as a tightly bounded one.
+test that fails to detect a pre-trend is not evidence that parallel trends
+hold, and conditioning on having passed one carries its own bias. No
+single diagnostic makes an estimate causal. What the battery establishes
+is which estimates survive being looked at from several directions, and
+the Inc-bind effect on the resident workforce is the one that does.
+
+A second pre-trend test appears in Section~\ref{subsec:rob-acr} and
+reaches a friendlier verdict, so the disagreement is worth naming here
+rather than leaving to the reader. The de Chaisemartin and
+D'Haultf\oe uille placebo detects no pre-trend on any of the four
+outcomes, with $p$-values between $0.23$ and $0.69$, where again the large
+values are the favourable ones. The two tests ask different questions. The
+placebo compares municipalities that switch against those that have not
+switched yet, which is average parallel trends and is what a binary design
+requires. The realized-dose test tags each municipality with the rate
+change it will eventually take and asks whether the size of that change
+predicts the pre-event path, which is strong parallel trends and is what a
+continuous treatment requires
+\citep{callawayDifferenceindifferencesContinuousTreatment2024}. The second
+is the stricter of the two and the one this design has to satisfy, so
+where they disagree the stricter verdict is the one I report.
 
 Taken together the results support three claims. First, municipalities
 that raise the earned income tax lose resident workers, and at the average
 increase the loss is on the order of nine to twelve percent depending on
 whether the increase reaches the bill. Second, the response tracks the tax
-liability rather than the statutory rate, since the group whose rates rose
-most and whose bills did not move shows nothing. Third, the identification
-is secure for one group and one outcome and weaker elsewhere. The binding
-group's effect on the count of workers who live and work in the
-municipality passes every diagnostic applied to it. The remaining cells
-and outcomes carry pre-trends that the design cannot rule out, and I read
-them as corroborating the direction of the effect rather than as
-independent estimates of its size.
+liability rather than the statutory rate, since Inc-nobind raised rates by
+more than either other cell and shows nothing. Third, the identification
+is secure for one cell and one outcome and weaker elsewhere. The Inc-bind
+effect on the count of workers who live and work in the municipality
+survives every diagnostic applied to it, though the joint Wald only
+narrowly. The remaining cells and outcomes carry pre-trends the design
+cannot rule out, and I read them as corroborating the direction of the
+effect rather than as independent estimates of its size.
 
 \begin{figure}[H]
   \centering
@@ -1415,8 +1432,8 @@ employer withholding
 
 It does not. The binding cell returns $-0.544$ before the break and
 $-0.531$ after, a difference far inside either standard error, and both
-periods are significant at the one percent level. The partial-pass-through
-cell moves in the same undramatic way, from $-0.296$ to $-0.222$. On the
+periods are significant at the one percent level. Inc-becomes moves in the
+same undramatic way, from $-0.296$ to $-0.222$. On the
 live-and-work share the binding cell reads $-0.068$ before and $-0.043$
 after.
 
@@ -1497,7 +1514,7 @@ The three disagree, and the pattern of disagreement is informative. The
 joint Wald rejects on nine of the sixteen cell-by-outcome rows, the linear
 pre-slope on three, and only five rows carry any individually significant
 lead. Two rows fail on both the Wald and the slope, and both are
-partial-pass-through commuter outcomes: in-commuters ($p = 0.0003$ joint,
+Inc-becomes commuter outcomes: in-commuters ($p = 0.0003$ joint,
 $p = 0.001$ slope) and total jobs ($p = 0.0004$ and $p = 0.001$). Those
 are genuine differential trends and the corresponding estimates should not
 be read causally.
@@ -1506,8 +1523,8 @@ The remaining seven Wald rejections have the opposite signature. Four are
 the entire non-binding cell, where no lead is individually significant and
 the slope rejects on none of the four outcomes, on a cohort of thirteen
 municipalities whose covariance matrix the Wald statistic must invert. The
-other three are the binding cell's share, the partial-pass-through cell's
-resident workforce, and the pooled resident workforce, each with a flat
+other three are the Inc-bind share, the Inc-becomes resident workforce,
+and the pooled resident workforce, each with a flat
 slope. These are departures in shape rather than in trend.
 
 The binding cell's resident workforce, the paper's primary outcome, has no
@@ -1557,7 +1574,7 @@ three shifts, none distinguishable from zero, and its share coefficients
 are $0.000$, $+0.020$ and $+0.002$. The estimated response is not a
 pre-existing drift relabelled as a reaction to the tax.
 
-The partial-pass-through cell does not pass. Its live-and-work placebo is
+Inc-becomes does not pass. Its live-and-work placebo is
 $-0.174$ at the three-year shift ($p = 0.013$) and $-0.180$ at five years
 ($p = 0.053$), the same sign and roughly two thirds the size of its real
 estimate. Read together with that cell's failure on both pre-trend tests
@@ -1695,12 +1712,12 @@ binding rate lose resident workers at $0.537$ log points per percentage
 point, that municipalities whose increase newly becomes binding lose
 $0.250$, and that municipalities whose rate rises without touching any
 bill show no response the data can distinguish from zero. At the average
-increase actually observed the binding group loses about twelve percent of
+increase actually observed Inc-bind loses about twelve percent of
 the workers who live and work there.
 
 The third group is what makes the first two interpretable. It is a placebo
 the statute generates rather than one the researcher constructs, and its
-interval excludes a response of the size the binding group displays. A
+interval excludes a response of the size Inc-bind displays. A
 design that could not separate these municipalities would report their
 average, which is roughly half the binding-cell estimate and close to what
 the existing literature on local income taxes has found.
