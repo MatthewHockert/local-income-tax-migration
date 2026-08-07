@@ -665,11 +665,11 @@ sig_stars <- function(p) {
   out[!is.na(p) & p < 0.01] <- "***"
   out
 }
-fmt_est <- function(x, digits = 2) {
+fmt_est <- function(x, digits = 3) {
   if (is.null(x) || length(x) == 0) return("")
   ifelse(is.na(x), "---", formatC(x, format = "f", digits = digits))
 }
-fmt_se <- function(x, digits = 2) {
+fmt_se <- function(x, digits = 3) {
   if (is.null(x) || length(x) == 0) return("")
   ifelse(is.na(x), "", sprintf("(%s)", formatC(x, format = "f", digits = digits)))
 }
@@ -824,7 +824,7 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   }
 
   # Per-outcome diagnostics block
-  diag_rows <- function(field, label_text, fmt = function(x) formatC(x, format = "f", digits = 2)) {
+  diag_rows <- function(field, label_text, fmt = function(x) formatC(x, format = "f", digits = 3)) {
     vals <- character(length(outcomes))
     for (j in seq_along(outcomes)) {
       o <- outcomes[j]
@@ -838,10 +838,10 @@ build_pub_table <- function(coefs_dt, diag_dt, outcomes, cells,
   }
   diag_lookup <- list(
     n        = list(field = "n",        label = "$N$",         fmt = fmt_n),
-    r2       = list(field = "r2",       label = "$R^2$",       fmt = function(x) formatC(x, format = "f", digits = 2)),
-    wr2      = list(field = "wr2",      label = "Within $R^2$",fmt = function(x) formatC(x, format = "f", digits = 2)),
-    dep_mean = list(field = "dep_mean", label = "Dep.\\ mean", fmt = function(x) formatC(x, format = "f", digits = 2)),
-    dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 2)),
+    r2       = list(field = "r2",       label = "$R^2$",       fmt = function(x) formatC(x, format = "f", digits = 3)),
+    wr2      = list(field = "wr2",      label = "Within $R^2$",fmt = function(x) formatC(x, format = "f", digits = 3)),
+    dep_mean = list(field = "dep_mean", label = "Dep.\\ mean", fmt = function(x) formatC(x, format = "f", digits = 3)),
+    dep_sd   = list(field = "dep_sd",   label = "Dep.\\ SD",   fmt = function(x) formatC(x, format = "f", digits = 3)),
     pre_baseline = list(field = "pre_baseline",
                     label = "Treated pre-period baseline",
                     fmt = function(x) formatC(x, format = "f",

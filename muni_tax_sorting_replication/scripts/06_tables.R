@@ -241,7 +241,7 @@ if (RUN_PAPER_TABLES) local({
           v <- r[[field]][1]
           if (is.na(v)) { out[j] <- "---"; next }
           out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
-                     else formatC(v, format = "f", digits = 2)
+                     else formatC(v, format = "f", digits = 3)
         }
         out
       }
@@ -354,7 +354,7 @@ if (RUN_PAPER_TABLES) local({
           r <- diag[outcome == outcomes[j]]
           if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
           v <- r[[field]][1]; if (is.na(v)) { out[j] <- "---"; next }
-          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",") else formatC(v, format = "f", digits = 2)
+          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",") else formatC(v, format = "f", digits = 3)
         }
         out
       }
@@ -580,7 +580,7 @@ if (RUN_PAPER_TABLES) local({
             x <- row[[field]][1]
             vals[j] <- if (is.na(x)) "---"
                        else if (field == "n") formatC(as.numeric(x), format = "d", big.mark = ",")
-                       else formatC(x, format = "f", digits = 2)
+                       else formatC(x, format = "f", digits = 3)
           }
           diag_block <- c(diag_block,
                           paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
@@ -726,7 +726,7 @@ if (RUN_PAPER_TABLES) local({
           x <- row[[field]][1]
           vals[j] <- if (is.na(x)) "---"
                      else if (field == "n") formatC(as.numeric(x), format = "d", big.mark = ",")
-                     else formatC(x, format = "f", digits = 2)
+                     else formatC(x, format = "f", digits = 3)
         }
         diag_block <- c(diag_block,
                         paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
@@ -868,7 +868,7 @@ if (RUN_PAPER_TABLES) local({
           v <- r[[field]][1]
           if (is.na(v)) { out[j] <- "---"; next }
           out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
-                     else formatC(v, format = "f", digits = 2)
+                     else formatC(v, format = "f", digits = 3)
         }
         out
       }
