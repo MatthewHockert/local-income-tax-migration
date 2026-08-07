@@ -430,15 +430,10 @@ if (RUN_PAPER_TABLES) local({
   )
 
   # Combined muni + SD coefficients from the same joint regression in one FULL
-  # table: cells + fiscal controls + diagnostics (no dep-SD row) + the Inc-bind
-  # realized-dose joint-Wald p per outcome.
-  wald_headline <- {
-    ea_path <- file.path(in_dir, "headline_es_att.csv")
-    if (file.exists(ea_path)) {
-      ea <- fread(ea_path)
-      ea[cell == "Inc-bind", .(outcome, wald_p = wald_pre_p)]
-    } else NULL
-  }
+  # table: cells + fiscal controls + diagnostics (no dep-SD row).
+  # No Wald row: the table carries six coefficient rows and the test covers only
+  # the Inc-bind cell, so a single row under all six invites a misreading. All
+  # cells and outcomes are in the pre-trend battery, Table~\\ref{tab:pretrend_battery}.
   write_merged_full_spec_table(
     coef_csv = file.path(in_dir, "headline_full_table.csv"),
     diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
@@ -449,8 +444,7 @@ if (RUN_PAPER_TABLES) local({
     label_id = "tab:headline_muni_combined",
     out_name = "headline_muni_combined.tex",
     notes    = c(muni_notes,
-                 "Joint Wald $p$ is the realized-dose pre-trend test for the Inc-bind cell."),
-    wald_dt  = wald_headline
+                 "Realized-dose pre-trend tests for every cell and outcome are reported in the pre-trend battery.")
   )
 
   # Act 47 exclusion, main-results format: full coeftable on the sample that
