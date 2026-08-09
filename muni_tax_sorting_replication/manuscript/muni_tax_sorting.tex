@@ -1340,30 +1340,29 @@ cannot rule out, and I read them further validating evidence.
 \label{sec:robustness}
 %==========================================================
 
-This section summarizes the robustness checks behind the headline
-muni-level dose-response. The realized-dose event-study pre-trend
-diagnostic was discussed alongside the headline in
-Section~\ref{subsec:results-es}. Full tables behind the
-robustness summaries are in Appendix~\ref{app:robustness}.
+This section summarizes the robustness checks. It carries on as follows.
+Section~\ref{subsec:rob-acr} re-estimates the response with an estimator
+that assigns no negative weights and imposes no functional form on the
+dose. Section~\ref{subsec:rob-act32} splits the sample at the Act~32
+enforcement break. Section~\ref{subsec:rob-act47} drops the municipality
+that was under state-supervised financial recovery.
+Section~\ref{subsec:rob-battery} runs three pre-trend tests on every cell
+and outcome, and Section~\ref{subsec:rob-faketiming} assigns placebo event
+dates that precede the real ones. Full tables sit in
+Appendix~\ref{app:robustness}, and the pooled counterpart of each check is
+in Appendix~\ref{app:pooled-robustness}.
 
 \subsection{de Chaisemartin and D'Haultfœuille Estimator}
 \label{subsec:rob-acr}
 
-Each headline $\beta^M_k$ is an ACR, and a linear-in-dose stacked
-specification recovers it cleanly only if the implicit weights are
+Each headline estimate is assumed to be the ACR, and because I rely on a continuous stacked difference design, two issues may cause biased estimates. First, the design uses two-way fixed effects which in a continuous model potentially generates negative weights. Second, the design is linear in nature, and could potentially bias the estimate across dosages as the linear fit may over or underestimate the relationship of the dose to the outcome variable as shown in Figures~\ref{fig:spline_pooled},~\ref{fig:spline_incbind} and~\ref{fig:spline_incbecomes}. 
+The linear-in-dose stacked
+specification recovers it cleanly only if the weights are
 non-negative and the dose-response is not strongly curved
 \citep{dechaisemartin2024}. I test both concerns by re-estimating the
 muni-side increase response on the same sample with the non-negative-weight
 continuous-treatment estimator of
-\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}.\footnote{The
-estimator is run with the \texttt{continuous} option, which handles a
-period-one treatment that takes many distinct values by approximating
-the status-quo outcome evolution as a polynomial in the baseline rate.
-Standard errors are the analytical ones. The package documentation
-recommends bootstrapped standard errors alongside this option, on the
-grounds that the analytical ones can be liberal, so the standard errors
-reported here should be read as a lower bound on sampling uncertainty.
-The point estimates are unaffected.}
+\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}.
 
 On the pooled specification the two estimators agree closely. At five
 years after the event the alternative estimator returns $-0.092$ on the
