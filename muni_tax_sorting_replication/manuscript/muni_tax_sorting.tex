@@ -1364,20 +1364,43 @@ muni-side increase response on the same sample with the non-negative-weight
 continuous-treatment estimator of
 \citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}.
 
-On the pooled specification the two estimators agree closely. At five
-years after the event the alternative estimator returns $-0.092$ on the
-count of workers who live and work in the municipality, against $-0.097$
-implied by the linear coefficient applied to the average cumulative rate
-change of $0.34$ percentage points. On the live-and-work share the figures
-are $-0.005$ and $-0.007$. The gaps are a few thousandths of a log point
-and far inside the sampling error of either estimate. Agreement on the two
-commuter-flow outcomes is looser, at $-0.115$ against $-0.085$ on total
-jobs and $-0.111$ against $-0.075$ on in-commuters.
+% first need to tell people how to read the table before we say this: "At five years after the event the alternative estimator returns $-0.092$ on the count of workers who live and work in the municipality, against $-0.097" - such as Effects are levels at the realized dose, not per-point slopes, so compare them to the linear ACR times the group's mean
+% I'm lost on the $-0.097$
+% where is $-0.007$ from?
+
+\input{../tables/dcdh_results.tex}
+
+Table~\ref{tab:dcdh_results} reports effects as levels at the realized
+dose rather than as per-point slopes, so the comparable figure from the
+headline specification is that specification's coefficient multiplied by
+the group's mean dose. Every comparison below is built that way. For the
+pooled specification the mean cumulative rate change is $0.34$ percentage
+points, so the headline coefficient of $-0.284$ on the count of workers
+who live and work in the municipality implies $-0.284 \times 0.34 =
+-0.097$, and the coefficient of $-0.021$ on their share of local jobs
+implies $-0.007$.
+
+The remaining columns of Table~\ref{tab:dcdh_results} carry the
+dose-normalized average, which sits on the same per-percentage-point scale
+as the headline coefficient and can be compared to it directly, the joint
+placebo $p$, where larger values mean treated and control municipalities
+were on similar paths before the change, and counts of the observations
+and treated municipalities identifying the $k=+5$ effect.
+
+Against those two figures the alternative estimator returns $-0.092$ and
+$-0.005$. The gaps are a few thousandths of a log point and far inside the
+sampling error of either estimate. Agreement on the commuter-flow outcomes
+is looser. There the headline coefficients of $-0.248$ on total jobs and
+$-0.220$ on in-commuters imply $-0.085$ and $-0.075$, against $-0.115$ and
+$-0.111$ from the alternative estimator, so the alternative estimator
+finds the larger effect on both.
 
 Agreement is weaker once the sample is split by binding state, and in both
-directions. On the resident workforce the alternative estimator returns
-$-0.052$ for Inc-bind against $-0.131$ implied by the linear coefficient
-at that cell's mean dose, and $-0.158$ for Inc-becomes against $-0.096$.
+directions. Each cell has its own mean dose, so Inc-bind's headline
+coefficient of $-0.537$ implies $-0.537 \times 0.243 = -0.131$ on the
+resident workforce and Inc-becomes' $-0.250$ implies $-0.096$. Against
+those the alternative estimator returns $-0.052$ and $-0.158$, smaller in
+the first case and larger in the second.
 The signs and the pre-trend verdicts survive the split but the magnitudes
 do not line up cell by cell. The likely reason is that the binding
 classification is a discrete rule applied to each rate change, while the
@@ -1398,21 +1421,6 @@ not losing much to curvature over the range of rate changes
 municipalities actually chose. The estimator's own joint placebo test
 detects no pre-trend on any of the four outcomes, with $p$-values between
 $0.23$ and $0.69$, where large values are the favourable ones.
-
-\input{../tables/dcdh_results.tex}
-
-Table~\ref{tab:dcdh_results} reports the effect at $k=+5$ with its
-standard error, which is the total change in the outcome five years after
-the rate change at the doses municipalities actually took. Because that is
-a level rather than a rate, the comparable figure from the headline
-specification is the linear ACR multiplied by the group's mean dose, which
-is how the numbers above were constructed. The dose-normalized average
-alongside it sits on the same per-percentage-point scale as the headline
-ACR and can be compared to it directly. The joint placebo $p$ is the
-pre-trend test, where larger values mean treated and control
-municipalities were on similar paths before the change, and the final two
-columns count the observations and the treated municipalities identifying
-the $k=+5$ effect.
 
 \begin{figure}[H]
   \centering
