@@ -1370,57 +1370,57 @@ continuous-treatment estimator of
 
 \input{../tables/dcdh_results.tex}
 
-Table~\ref{tab:dcdh_results} reports effects as levels at the realized
-dose rather than as per-point slopes, so the comparable figure from the
-headline specification is that specification's coefficient multiplied by
-the group's mean dose. Every comparison below is built that way. For the
-pooled specification the mean cumulative rate change is $0.34$ percentage
-points, so the headline coefficient of $-0.284$ on the count of workers
-who live and work in the municipality implies $-0.284 \times 0.34 =
--0.097$, and the coefficient of $-0.021$ on their share of local jobs
-implies $-0.007$.
+Table~\ref{tab:dcdh_results} reports each group in a block of rows. The
+bold row is the cumulative effect at $k=+5$ with its standard error
+beneath, which is the total change in the outcome five years after the
+rate change at the doses municipalities actually took. Because that is a
+level rather than a rate it is not comparable to the headline
+coefficients, which are per percentage point. The row below it, the
+average total effect per pp, is the estimator's own dose-normalized
+figure, and that one is on the headline scale and can be read against it
+directly. The three rows beneath report the joint placebo test, where
+larger values mean treated and control municipalities were on similar
+paths beforehand, and the observations and treated municipalities
+identifying the $k=+5$ effect.
 
-The remaining columns of Table~\ref{tab:dcdh_results} carry the
-dose-normalized average, which sits on the same per-percentage-point scale
-as the headline coefficient and can be compared to it directly, the joint
-placebo $p$, where larger values mean treated and control municipalities
-were on similar paths before the change, and counts of the observations
-and treated municipalities identifying the $k=+5$ effect.
+On the pooled specification the two estimators are close on the outcomes
+the paper rests on. Reading the per-pp row against
+Table~\ref{tab:pooled_per_pp_cousub}, the share of local jobs held by
+residents is $-0.019$ against $-0.021$, and the count of workers who live
+and work in the municipality is $-0.197$ against $-0.284$. In-commuters
+are $-0.183$ against $-0.220$ and total jobs $-0.206$ against $-0.248$.
+The alternative estimator is the smaller of the two on every outcome
+except the share, by between fifteen and thirty percent, which is the
+direction a non-negative-weight estimator moves when the linear
+specification is putting weight on the largest doses.
 
-Against those two figures the alternative estimator returns $-0.092$ and
-$-0.005$. The gaps are a few thousandths of a log point and far inside the
-sampling error of either estimate. Agreement on the commuter-flow outcomes
-is looser. There the headline coefficients of $-0.248$ on total jobs and
-$-0.220$ on in-commuters imply $-0.085$ and $-0.075$, against $-0.115$ and
-$-0.111$ from the alternative estimator, so the alternative estimator
-finds the larger effect on both.
-
-Agreement is weaker once the sample is split by binding state, and in both
-directions. Each cell has its own mean dose, so Inc-bind's headline
-coefficient of $-0.537$ implies $-0.537 \times 0.243 = -0.131$ on the
-resident workforce and Inc-becomes' $-0.250$ implies $-0.096$. Against
-those the alternative estimator returns $-0.052$ and $-0.158$, smaller in
-the first case and larger in the second.
-The signs and the pre-trend verdicts survive the split but the magnitudes
-do not line up cell by cell. The likely reason is that the binding
+Split by binding state the picture divides. Inc-becomes agrees closely,
+at $-0.278$ against the headline $-0.250$ on the resident workforce and
+$-0.243$ against $-0.233$ on total jobs. Inc-bind does not, at $-0.092$
+against $-0.537$. The signs and the pre-trend verdicts survive the split
+but that magnitude does not. The likely reason is that the binding
 classification is a discrete rule applied to each rate change, while the
 alternative estimator treats the dose as a continuous quantity and
 approximates the status-quo path as a polynomial in the baseline rate. It
-has no way to represent a threshold that a municipality crosses. The
-pooled comparison is therefore the one this check licenses, and it is
-reported as corroboration of the pooled magnitude rather than of each
-cell's.
+has no way to represent a threshold that a municipality crosses, so the
+cell defined by crossing one is the cell it should reproduce worst. The
+check is therefore reported as corroborating the pooled and Inc-becomes
+magnitudes rather than every cell's.
 
-That agreement carries the two things this section is for. Because the
-estimator assigns no negative weight to any municipality-year, matching
-its answer means the linear specification is not being distorted by the
-weighting problem that heterogeneous effects can create in a two-way
-fixed effects regression. And because the estimator imposes no functional
-form on the dose, matching its answer means the linear approximation is
-not losing much to curvature over the range of rate changes
-municipalities actually chose. The estimator's own joint placebo test
-detects no pre-trend on any of the four outcomes, with $p$-values between
-$0.23$ and $0.69$, where large values are the favourable ones.
+This bears on the two concerns the section opened with. Because the
+alternative estimator assigns no negative weight to any
+municipality-year, its landing within fifteen to thirty percent of the
+pooled coefficients says the linear specification is not being seriously
+distorted by the weighting problem that heterogeneous effects can create
+in a two-way fixed effects regression. It is consistently the smaller of
+the two, which is what a re-weighting toward the smaller doses would
+produce, so the linear coefficient is likely at the generous end rather
+than being wrong in sign or order of magnitude. And because the estimator
+imposes no functional form on the dose, the same closeness says the linear
+approximation is not losing much to curvature over the range of rate
+changes municipalities actually chose. Its joint placebo test detects no
+pre-trend on any of the four outcomes at the pooled level, with $p$-values
+between $0.23$ and $0.69$, where large values are the favourable ones.
 
 \begin{figure}[H]
   \centering
