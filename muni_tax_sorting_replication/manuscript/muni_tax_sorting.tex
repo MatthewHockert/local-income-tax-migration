@@ -1230,8 +1230,8 @@ declining relationship these two figures trace.
 
 This section describes the event study results. The event study was modeled using the realized dose over the sample period. I elected for this event study design over a binary because it is able to answer whether the response
 appears when the rate changes rather than before it and whether
-municipalities that eventually take large increases were already moving
-differently from those that take small ones.
+municipalities that eventually make large increases were already moving
+differently from those that make small ones.
 Figure~\ref{fig:feols_es_bycell} plots the event-time paths, and the full
 set of leads and lags behind it is reported cell by cell in
 Tables~\ref{tab:es_full_pooled} through~\ref{tab:es_full_incnobind}.
@@ -1248,99 +1248,71 @@ a pre-existing divergence, which is the desired outcome, and a small $p$-value i
   % what do they mean with the wald test.
 
 
-Start with the count of workers who live and work in the municipality,
-the outcome the paper leans on most. In Inc-bind it is flat across the
+Start with the count of workers who live and work in the municipality. In Inc-bind it is flat across the
 pre-event window and then declines steadily once the rate changes,
 reaching $-0.789$ per percentage point by the fifth year. Its four leads
-average $-0.116$ and the joint Wald returns $p = 0.053$, which is a pass
-and a narrow one. Inc-becomes shows the same post-event shape at roughly a
+average $-0.116$ and the joint Wald returns $p = 0.053$, which is a narrow pass. Inc-becomes shows the same post-event shape at roughly a
 third the size, $-0.242$ by the fifth year, but its leads average $+0.045$
-and the Wald rejects at $p = 0.001$. Inc-nobind has no post-event decline
-to speak of and rejects hardest of all, with leads averaging $+0.207$ and
-a Wald below $0.001$. The pooled specification, which mixes all three,
+and the Wald rejects at $p = 0.001$. Inc-nobind is not shown in the figure and fails the pre-trends test with a Wald value below $0.001$. The pooled specification, which mixes all three,
 rejects at $p = 0.029$. Only the cell where the bill was already moving
-clears the test on this outcome.
+passes the test.
 
-The share of local jobs held by residents behaves differently, and the
-pattern almost inverts. Here Inc-bind is the cell that rejects, at
+The share of local jobs held by residents behaves differently. Here Inc-bind is the cell that rejects, at
 $p = 0.005$, even though its post-event path is the largest and most
 precisely estimated of the four. Inc-becomes does not reject
 ($p = 0.293$), nor does the pooled specification ($p = 0.259$), while
-Inc-nobind again rejects below $0.001$. So the two residence-side
-outcomes disagree about which cell is clean, and no reading of the Wald
-alone reconciles them.
+Inc-nobind again rejects below $0.001$.
 
-The two commuter-side outcomes reverse the picture once more. On
-in-commuters and total jobs Inc-bind is the cleanest cell in the table,
+The two commuter-side outcomes present a different set of results. In-commuters and total jobs Inc-bind is the cleanest cell in the table,
 with Wald values of $0.775$ and $0.783$, while Inc-becomes rejects on both
 at $p < 0.001$ and Inc-nobind at $0.005$ and $0.001$. Inc-bind's leads on
-these outcomes are positive and imprecise rather than small, so the
-comfortable $p$-values reflect noise as much as flatness. These were the
-weaker tests to begin with, since the municipal resident rate never
-reaches an in-commuter's bill.
+these outcomes are positive and imprecise and should be noted that in figure~\ref{fig:feols_es_bycell} the commuter-side shows a general decline over the entire sample from $-5$ to $+5$.
 
-Read across the four outcomes, then, the Wald test does not deliver a
-single verdict. It clears Inc-bind on three outcomes and rejects it on the
-fourth, rejects Inc-becomes on three and clears it on one, and rejects
-Inc-nobind everywhere. A reader who stopped here would conclude that most
-of the decomposition fails its pre-trend test, and that conclusion would
-be too quick, because a single test cannot separate two very different
-failures. The battery in Section~\ref{subsec:rob-battery} runs the joint
+Across the four outcomes the Wald test does not provide a single verdict on whether the strong parallel trends assumption is satisfied or not. Visually, the pre-tends do look to satisfy the assumption as well as looking at the pre-period coefficients where only a few a statistically significant across outcome variables. In Section~\ref{subsec:rob-battery} runs the joint
 Wald alongside a linear pre-slope, which tests the alternative that
 actually threatens the design, namely treated and control municipalities
 drifting apart at a steady rate before the tax changes. The joint Wald
 rejects on any departure in any shape, including one stray year. Across
-the sixteen cell-by-outcome rows the Wald rejects on nine and the slope on
-three. Where both reject the pre-trend is a trend and the estimate should
-not be read causally, which is the case for in-commuters and total jobs in
-Inc-becomes. Where only the Wald rejects the departure is in shape rather
-than in direction, and four of those rows are the whole of Inc-nobind,
-whose thirteen municipalities are too few for the Wald statistic's
-covariance matrix to be estimated reliably.
+the sixteen cell-by-outcome rows the Wald rejects on nine, and in the slope test on only
+three. Where both the Wald and the linear pre-slope reject, the estimate should be interpreted cautiously and 
+not causally, which is the case for in-commuters and total jobs in
+Inc-becomes.
 
 For Inc-bind on the resident workforce no lead is individually
 significant, the linear pre-slope is $+0.024$ and indistinguishable from
 zero ($p = 0.47$), and the joint Wald sits at $p = 0.053$. Extrapolated
 forward its pre-period predicts a mild increase rather than the decline
-that follows. The right statement is that the pre-trend diagnostics do not
-undermine the estimate, which is weaker than saying they support it. A
-test that fails to detect a pre-trend is not evidence that parallel trends
-hold, and on cohorts of thirteen to thirty-nine municipalities it has
-limited power to find one. No single diagnostic makes an estimate causal.
+that follows.
 What the battery establishes is which estimates survive being looked at
 from several directions, and the Inc-bind effect on the resident workforce
 is the one that does.
 
 The de Chaisemartin and D'Haultf\oe uille estimator in
-Section~\ref{subsec:rob-acr} supports these results on both counts that
-matter here. Its effect estimates line up with the ones above once the two
+Section~\ref{subsec:rob-acr} supports these results on both counts. Its effect estimates line up with the ones above once the two
 are put on the same scale, and its placebo detects no pre-trend on any of
 the four outcomes, with $p$-values between $0.23$ and $0.69$. That is a
-friendlier verdict than the one this section reports, and the reason is
-that the two tests ask different questions. The placebo compares
+friendlier outcome than the one this section reports, and the reason is
+that the two tests ask different questions and therefore estimate differently. The placebo compares
 municipalities that switch against those that have not switched yet, which
 is average parallel trends and is what a binary design requires. The
 realized-dose test tags each municipality with the rate change it will
 eventually take and asks whether the size of that change predicts the
 pre-event path, which is strong parallel trends and is what a continuous
 treatment requires
-\citep{callawayDifferenceindifferencesContinuousTreatment2024}. The second
-is the stricter of the two and the one this design has to satisfy, so
-where they disagree the stricter verdict is the one I report.
+\citep{callawayDifferenceindifferencesContinuousTreatment2024}. Strong parallel trends is stricter than average parallel trends, and is the one required for this design.
 Section~\ref{subsec:rob-acr} takes the comparison up in full.
 
 Taken together the results support three claims. First, municipalities
 that raise the earned income tax lose resident workers, and at the average
 increase the loss is on the order of nine to twelve percent depending on
-whether the increase reaches the bill. Second, the response tracks the tax
-liability rather than the statutory rate, since Inc-nobind raised rates by
-more than either other cell and shows nothing. Third, the identification
+whether the increase is already binding (inc-bind). Second, the response increases in size as the tax
+liability increases which is a stronger predicter than the rate increase itself, for example, Inc-nobind raised rates by
+more than any other cell and shows no statistically significant effect. Third, the identification
 is secure for one cell and one outcome and weaker elsewhere. The Inc-bind
 effect on the count of workers who live and work in the municipality
 survives every diagnostic applied to it, though the joint Wald only
 narrowly. The remaining cells and outcomes carry pre-trends the design
-cannot rule out, and I read them as corroborating the direction of the
-effect rather than as independent estimates of its size.
+cannot rule out, and I read them further validating evidence.
 
 \begin{figure}[H]
   \centering
@@ -1392,17 +1364,30 @@ recommends bootstrapped standard errors alongside this option, on the
 grounds that the analytical ones can be liberal, so the standard errors
 reported here should be read as a lower bound on sampling uncertainty.
 The point estimates are unaffected.}
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
 
-The two estimators agree closely on the outcomes the paper rests on. At
-five years after the event the estimator returns $-0.092$ on the count of
-workers who live and work in the municipality, against $-0.097$ implied
-by the linear coefficient applied to the average cumulative rate change
-of $0.34$ percentage points. On the live-and-work share the figures are
-$-0.005$ and $-0.007$. The gaps are a few thousandths of a log point and
-far inside the sampling error of either estimate. Agreement on the two
+On the pooled specification the two estimators agree closely. At five
+years after the event the alternative estimator returns $-0.092$ on the
+count of workers who live and work in the municipality, against $-0.097$
+implied by the linear coefficient applied to the average cumulative rate
+change of $0.34$ percentage points. On the live-and-work share the figures
+are $-0.005$ and $-0.007$. The gaps are a few thousandths of a log point
+and far inside the sampling error of either estimate. Agreement on the two
 commuter-flow outcomes is looser, at $-0.115$ against $-0.085$ on total
 jobs and $-0.111$ against $-0.075$ on in-commuters.
+
+Agreement is weaker once the sample is split by binding state, and in both
+directions. On the resident workforce the alternative estimator returns
+$-0.052$ for Inc-bind against $-0.131$ implied by the linear coefficient
+at that cell's mean dose, and $-0.158$ for Inc-becomes against $-0.096$.
+The signs and the pre-trend verdicts survive the split but the magnitudes
+do not line up cell by cell. The likely reason is that the binding
+classification is a discrete rule applied to each rate change, while the
+alternative estimator treats the dose as a continuous quantity and
+approximates the status-quo path as a polynomial in the baseline rate. It
+has no way to represent a threshold that a municipality crosses. The
+pooled comparison is therefore the one this check licenses, and it is
+reported as corroboration of the pooled magnitude rather than of each
+cell's.
 
 That agreement carries the two things this section is for. Because the
 estimator assigns no negative weight to any municipality-year, matching
@@ -1412,37 +1397,36 @@ fixed effects regression. And because the estimator imposes no functional
 form on the dose, matching its answer means the linear approximation is
 not losing much to curvature over the range of rate changes
 municipalities actually chose. The estimator's own joint placebo test
-also fails to reject on all four outcomes, with $p$-values between $0.23$
-and $0.69$.
+detects no pre-trend on any of the four outcomes, with $p$-values between
+$0.23$ and $0.69$, where large values are the favourable ones.
 
 \input{../tables/dcdh_results.tex}
 
-\noindent Reading Table~\ref{tab:dcdh_results}, per group:
-\begin{itemize}
-  \item The first two rows are the estimated effect at $k=+5$ and its
-  standard error: the total change in the outcome five years after the
-  rate change, at the doses municipalities actually took. These are level
-  effects, so compare them to the linear ACR times the group's mean dose.
-  \item Dep.\ mean is the average outcome level in that group's
-  estimation sample, and it converts effects into head counts. A log
-  live-and-work mean of $3.7$ is roughly $41$ workers, so an effect of
-  $-0.07$ log points (about a $7\%$ decline) is roughly three fewer
-  live-and-work workers in the typical municipality.
-  \item Avg total effect per pp is the estimator's dose-normalized
-  average. It sits on the same per-pp scale as the headline ACR, so the
-  two numbers can be compared directly.
-  \item Joint placebo $p$ tests for pre-trends. Values above conventional
-  levels mean treated and control municipalities were on similar paths
-  before the change, so larger is better.
-  \item $N$ and Switchers count the observations and treated
-  municipalities identifying the $k=+5$ effect.
-\end{itemize}
+Table~\ref{tab:dcdh_results} reports the effect at $k=+5$ with its
+standard error, which is the total change in the outcome five years after
+the rate change at the doses municipalities actually took. Because that is
+a level rather than a rate, the comparable figure from the headline
+specification is the linear ACR multiplied by the group's mean dose, which
+is how the numbers above were constructed. The dose-normalized average
+alongside it sits on the same per-percentage-point scale as the headline
+ACR and can be compared to it directly. The joint placebo $p$ is the
+pre-trend test, where larger values mean treated and control
+municipalities were on similar paths before the change, and the final two
+columns count the observations and the treated municipalities identifying
+the $k=+5$ effect.
 
 \begin{figure}[H]
   \centering
   \caption{dCDH event study by group (non-negative weights): pooled, Inc-bind, Inc-becomes.}
   \label{fig:dcdh_bycell}
   \includegraphics[width=0.95\textwidth]{../figures/dcdh_bycell_es.png}
+  \begin{minipage}{0.95\textwidth}
+    \footnotesize\textit{Notes:} Effects are levels at the doses municipalities
+    actually took, not per percentage point, so they are not comparable to the
+    per-point coefficients in Table~\ref{tab:headline_muni_combined} without
+    multiplying the latter by the group's mean dose. The reference period is
+    $k=0$ rather than the $k=-1$ used by the realized-dose event study.
+  \end{minipage}
 \end{figure}
 
 
@@ -1510,8 +1494,6 @@ municipalities, which removes a single unit and is close to mechanical.
 % \input{../tables/act47_robustness.tex}  % concise 2-col version
 \input{../tables/act47_full_results.tex}
 
-% [Results prose removed 2026-07-02 pending property-controls re-run.]
-
 \subsection{Pre-Trend Battery}
 \label{subsec:rob-battery}
 
@@ -1536,28 +1518,17 @@ namely treated and control municipalities drifting apart at a steady rate
 before the tax changes. A clean result is a slope indistinguishable from
 zero.
 
-The three disagree, and the pattern of disagreement is informative. The
+The three tests disagree, and Section~\ref{subsec:results-es} draws the
+distinction that the disagreement supports. The counts are these. The
 joint Wald rejects on nine of the sixteen cell-by-outcome rows, the linear
 pre-slope on three, and only five rows carry any individually significant
-lead. Two rows fail on both the Wald and the slope, and both are
-Inc-becomes commuter outcomes: in-commuters ($p = 0.0003$ joint,
-$p = 0.001$ slope) and total jobs ($p = 0.0004$ and $p = 0.001$). Those
-are genuine differential trends and the corresponding estimates should not
-be read causally.
-
-The remaining seven Wald rejections have the opposite signature. Four are
-the entire non-binding cell, where no lead is individually significant and
-the slope rejects on none of the four outcomes, on a cohort of thirteen
-municipalities whose covariance matrix the Wald statistic must invert. The
-other three are the Inc-bind share, the Inc-becomes resident workforce,
-and the pooled resident workforce, each with a flat
-slope. These are departures in shape rather than in trend.
-
-The binding cell's resident workforce, the paper's primary outcome, has no
-individually significant lead, a linear pre-slope of $+0.024$ that the
-data cannot distinguish from zero ($p = 0.47$), and a joint Wald of
-$p = 0.053$. Extrapolated forward, its pre-period predicts a mild increase
-rather than the decline that follows.
+lead. Two rows fail on both the Wald and the slope, in-commuters
+($p = 0.0003$ joint, $p = 0.001$ slope) and total jobs ($p = 0.0004$ and
+$p = 0.001$), both in Inc-becomes. Of the remaining seven Wald rejections,
+four are the whole of Inc-nobind, where no lead is individually
+significant and the slope rejects on none of the four outcomes, and the
+other three are the Inc-bind share, the Inc-becomes resident workforce and
+the pooled resident workforce, each with a flat slope.
 
 \input{../tables/pretrend_battery.tex}
 
