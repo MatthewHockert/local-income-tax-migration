@@ -458,10 +458,10 @@ if (RUN_PAPER_TABLES) local({
       ctrl_csv = a47_path,
       ctrl_labels = muni_ctrl_labels,
       outcomes = muni_outcomes, cells = cells_main,
-      caption  = "Act 47 exclusion: full specification on the sample dropping Act 47 Inc-bind municipalities",
+      caption  = "Act 47 exclusion: headline specification dropping the one designated Inc-bind municipality",
       label_id = "tab:act47_full_results",
       out_name = "act47_full_results.tex",
-      notes    = c(muni_notes, "Identical specification to the headline table; the two Act 47 Inc-bind municipalities (Carbondale, Hazleton) are dropped."),
+      notes    = c(muni_notes, "Identical specification to the headline table, dropping the one Act 47 Inc-bind municipality (Hazleton)."),
       diag_dt_override = a47_diag
     )
   }
@@ -998,10 +998,9 @@ if (RUN_PAPER_TABLES) local({
       "  \\label{tab:pretrend_battery}", "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} Joint Wald and linear pre-slope test the realized-dose leads; larger $p$ means no detectable pre-trends. ",
-             "Leads significant counts individually significant pre-event coefficients. ",
-             "Robust clean requires no significant individual leads and a flat linear pre-slope; the joint Wald over-rejects on thin cohorts and does not drive the verdict. ",
-             "The pooled row is shown for comparison, since Inc-becomes and Inc-nobind selection is the reason the decomposition exists."),
+      paste0("    \\footnotesize \\textit{Notes:} All three tests are run on the realized-dose leads, and larger $p$ means no detectable pre-trend. ",
+             "Leads significant counts individually significant pre-event coefficients. Robust clean requires no significant lead and a flat slope. ",
+             "The joint Wald over-rejects on thin cohorts and does not drive the verdict. The pooled row is shown for comparison."),
       "  \\end{minipage}", "\\end{table}")
     writeLines(out, file.path(out_dir, "pretrend_battery.tex"))
   }
@@ -1073,10 +1072,8 @@ if (RUN_PAPER_TABLES) local({
       "  \\label{tab:fake_timing}", "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} Each treated municipality is assigned a placebo event 3, 4, or 5 years before its real one and only data from before the real event enter, so every coefficient should be null. ",
-             "The three panels share municipalities and overlapping windows; they are consistency checks, not independent tests. ",
-             "Eligibility (at least two placebo pre-years) varies with the shift. ",
-             "Underpowered by construction; read alongside the permutation test. SE in parens. ",
+      paste0("    \\footnotesize \\textit{Notes:} Each treated municipality is assigned a placebo event 3, 4 or 5 years before its real one and only data preceding the real event enter, so every coefficient should be null. ",
+             "The three panels share municipalities and overlapping windows, so they are consistency checks rather than independent tests, and eligibility varies with the shift. SE in parens. ",
              "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
       "  \\end{minipage}", "\\end{table}")
     writeLines(out, file.path(out_dir, "fake_timing.tex"))
@@ -1152,15 +1149,13 @@ if (RUN_PAPER_TABLES) local({
       "    \\bottomrule", "  \\end{tabular}")
     if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
     out <- c("\\begin{table}[H]", "  \\centering",
-      "  \\caption{dCDH (non-negative weights): cumulative effect at $k=+5$ by group}",
+      "  \\caption{Cumulative effect at $k=+5$ by group, de Chaisemartin and D'Haultf\\oe uille estimator}",
       "  \\label{tab:dcdh_results}", "  \\footnotesize",
       "  \\renewcommand{\\arraystretch}{0.9}", tabular,
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} Effect rows are per-event level effects at the realized dose, not per-pp slopes; ",
-             "they are comparable to the linear ACR times the group mean dose. ",
-             "The avg total effect per pp row is the estimator's dose-normalized average and is directly comparable to the linear ACR. ",
-             "Joint placebo $p$ is the dCDH pre-trend test. Values above conventional levels mean no detectable pre-trends. ",
-             "The fiscal controls (spending shares and property effective rates) enter the estimator but are partialled out of the outcome first-differences within baseline-dose groups, so no control coefficients exist to report. ",
+      paste0("    \\footnotesize \\textit{Notes:} Effects are levels at the realized dose, not per-point slopes, so compare them to the linear ACR times the group's mean dose. The per-pp row is already dose-normalized. Larger placebo $p$ means no detectable pre-trend. ",
+             "Estimated with the \\texttt{continuous} option and analytical standard errors, which the package documentation notes can be liberal, so the standard errors are a lower bound. ",
+             "Controls are partialled out within baseline-dose groups, so no control coefficients exist to report. ",
              "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$ (normal approximation)."),
       "  \\end{minipage}", "\\end{table}")
     writeLines(out, file.path(out_dir, "dcdh_results.tex"))
