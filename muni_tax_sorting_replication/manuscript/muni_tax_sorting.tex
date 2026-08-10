@@ -1615,36 +1615,27 @@ suggest.
 \subsection{Fake-Timing Placebo}
 \label{subsec:rob-faketiming}
 
-Every test in Section~\ref{subsec:rob-battery} reads the same pre-event
-coefficients, so three tests that agree there are three readings of one
-piece of evidence. This check uses a different one. Each treated
-municipality is assigned a placebo event three, four or five years before
-its real one, and only data from before the real event enter the
-estimation, so the design is asked to estimate an effect where no rate
-changed at all. Nothing happened at the placebo dates, so the coefficients
-should be null. A failure here means the specification manufactures an
-effect out of a quiet pre-period, which is a different fault from treated
-and control municipalities drifting apart, and one the leads cannot
-detect.
+Every test in Section~\ref{subsec:rob-battery} tests the same sample of pre-event
+coefficients. This check is different in that each treated
+municipality is assigned a placebo event three, four, and five years before
+its real one, and only data from before the real event occurs is allowed in the
+estimation. The design then estimates an effect where no rate
+changed at all, meaning the coefficients
+should be null. A failure here means the specification finds an
+effect out of a pre-period where there should not be one, which is a different issue from treated
+and control municipalities moving in different direction in the pre-period.
 
-The two cells the battery separated separate again, which is the reason
-this check earns its place. The binding cell passes on both outcomes the
-paper rests on. Its
+The Inc-bind cell passes on both live-and-work and share of residents working in a municipality. Its
 live-and-work coefficients are $+0.053$, $+0.071$ and $-0.033$ across the
 three shifts, none distinguishable from zero, and its share coefficients
-are $0.000$, $+0.020$ and $+0.003$. The estimated response is not a
-pre-existing drift relabelled as a reaction to the tax.
+are $0.000$, $+0.020$ and $+0.003$.
 
 Inc-becomes does not pass. Its live-and-work placebo is
 $-0.173$ at the three-year shift ($p = 0.013$) and $-0.179$ at five years
-($p = 0.055$), the same sign and roughly two thirds the size of its real
-estimate. Read together with that cell's failure on both pre-trend tests
+($p = 0.055$). Read together with that cell's failure on both pre-trend tests
 in Section~\ref{subsec:rob-battery}, its coefficients carry the weakest
-causal warrant in the paper.
-
-The non-binding cell's share fails at the four- and five-year shifts
-($-0.074$ and $-0.065$), which is a further reason to treat that cell as
-uninformative rather than as a clean placebo.
+causal warrant in the paper. The non-binding cell's share fails at the four- and five-year shifts
+($-0.074$ and $-0.065$).
 
 The three panels overlap heavily and are consistency checks rather than
 independent tests, and eligibility requires two placebo pre-years inside
