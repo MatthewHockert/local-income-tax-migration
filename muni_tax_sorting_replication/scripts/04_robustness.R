@@ -507,6 +507,7 @@ if (RUN_ACT47) local({
                                         treat_cell = treat_cell,
                                         stack = cy, rel = year - cy,
                                         dose_muni = dose_muni, dose_sd = dose_sd,
+                                        resident_eit = resident_eit,
                                         dose_nr = dose_nr,
                                         cell_sd = cell_sd, cell_nr = cell_nr,
                                         log_live_and_work = log_live_and_work,
@@ -533,14 +534,14 @@ if (RUN_ACT47) local({
                     "Dec-bind", "Dec-becomes-non", "Dec-nobind"))]
     s[is.na(dose_sd), dose_sd := 0]
     s[is.na(dose_nr), dose_nr := 0]
-    # Re-baseline the dose WITHIN each stack window, mirroring build_stack()
-    # in _helpers.R. Without this the regressor is the global dose_muni and
-    # the table is not the headline specification, which is why this table
-    # used to report a different Inc-bind coefficient from Table
-    # headline_muni_cell_results on an identical N (fixed 2026-07-30).
-    s[, base_rate := mean(dose_muni[rel < 0], na.rm = TRUE), by = .(stack, muni)]
-    s[!is.finite(base_rate), base_rate := 0]
-    s[, dose_stack := dose_muni - base_rate]
+    # Take the regressor from the SAME source column build_stack() in
+    # _helpers.R uses, which is the resident rate level. Building it from
+    # dose_muni instead admitted 1,972 stacked rows where resident_eit is
+    # missing but dose_muni is not, roughly 1,350 of them surviving listwise
+    # deletion. The cells with real data barely moved, but Inc-nobind has 14
+    # municipalities and SEs near 0.3, so its in-commuter coefficient read
+    # +0.357 against the headline's +0.145 (fixed 2026-08-07).
+    s[, dose_stack := resident_eit]
   }
 
   # Returns TWO tables per model: the Inc-bind summary row (concise CSV, as

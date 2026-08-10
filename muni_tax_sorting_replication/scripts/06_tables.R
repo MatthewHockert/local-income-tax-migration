@@ -461,7 +461,7 @@ if (RUN_PAPER_TABLES) local({
       caption  = "Inc-bind effect excluding Hazleton, the one Act 47 designated municipality",
       label_id = "tab:act47_full_results",
       out_name = "act47_full_results.tex",
-      notes    = c(muni_notes, "Leave-one-out on the Inc-bind cell, dropping Hazleton. This block builds the treatment as a change from the pre-event mean rather than as a level, so it runs on a slightly larger sample than the headline table and its baseline reads $-0.539$ against the headline $-0.537$."),
+      notes    = c(muni_notes, "Leave-one-out on the Inc-bind cell, dropping Hazleton. Identical specification and dose source to the headline table, so the cells other than Inc-bind reproduce it."),
       diag_dt_override = a47_diag
     )
   }
