@@ -1396,23 +1396,25 @@ diverge on every outcome. On the share of workers who live and work in the
 municipality I find $-0.012$ against the headline $-0.058$, on the count
 of those workers $-0.092$ against $-0.537$, on in-commuters $-0.139$
 against $-0.345$, and on total jobs $-0.155$ against $-0.423$. The
-alternative estimator is three to six times smaller in every column.
+dCDH estimator is three to six times smaller in every column.
 Inc-becomes behaves the opposite way and lands close on all four, at
 $-0.022$ against $-0.015$ on the share, $-0.278$ against $-0.250$ on the
 resident workforce, $-0.218$ against $-0.212$ on in-commuters and $-0.243$
 against $-0.233$ on total jobs, slightly larger each time rather than
 smaller.
 
-The likely reason the two cells behave differently is that the binding
-classification is a discrete rule applied to each rate change, while the
-alternative estimator treats the dose as a continuous quantity and
-approximates the status-quo path as a polynomial in the baseline rate. It
-has no way to represent a threshold that a municipality crosses. Inc-bind
-is the cell defined by a rate change landing on the far side of one, so it
-is the cell this estimator should reproduce worst, and it does. Inc-becomes
-is defined by a crossing too, but its municipalities take larger rate
-changes, so more of the variation the estimator can see is ordinary
-movement in the dose.
+I do not have an account of why the two cells behave differently. Each is
+run on its own subsample of never-changers plus the cell in question, so
+both are handed their binding classification rather than having to recover
+it, and the two are alike in that respect. What separates them has to lie
+in the several ways the two designs differ. The headline is stacked, with
+repeated never-changer copies and stack-interacted fixed effects, while
+this estimator runs on the unstacked panel. The headline coefficient is an
+average post-treatment level shift per unit of rate, while the figure here
+cumulates effects across periods before normalizing by the treatment
+received. And the two do not use the same units, since Inc-bind is
+identified off $17$ switchers here against $24$ municipalities in the
+headline. I report the gap without attributing it.
 
 The joint placebo test in the table is this estimator's own pre-trend
 check. It estimates effects for periods before the rate changed, where
@@ -1439,7 +1441,9 @@ test does.
 
 Taken together the check corroborates the pooled and Inc-becomes
 magnitudes rather than every cell's, and it corroborates the pre-trend
-concerns the paper already reports rather than dissolving them.
+concerns the paper already reports rather than dissolving them. The
+Inc-bind magnitude is the one it does not reproduce, and that is stated
+as a limit of the cross-check rather than resolved.
 
 This bears on the two concerns the section opened with. Because the
 alternative estimator assigns no negative weight to any
