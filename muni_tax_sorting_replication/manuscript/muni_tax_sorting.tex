@@ -1362,7 +1362,7 @@ non-negative and the dose-response is not strongly curved
 \citep{dechaisemartin2024}. I test both concerns by re-estimating the
 muni-side increase response on the same sample with the non-negative-weight
 continuous-treatment estimator of
-\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025}.
+\citet{chaisemartinUsingDid_multiplegt_dynEstimate2025} (dCDH estimator).
 
 % first need to tell people how to read the table before we say this: "At five years after the event the alternative estimator returns $-0.092$ on the count of workers who live and work in the municipality, against $-0.097" - such as Effects are levels at the realized dose, not per-point slopes, so compare them to the linear ACR times the group's mean
 % I'm lost on the $-0.097$
@@ -1373,50 +1373,73 @@ continuous-treatment estimator of
 Table~\ref{tab:dcdh_results} reports each group in a set of rows. The
 bold top row is the cumulative effect at $k=+5$ with its standard error
 beneath, which is interpreted as the total change in the outcome five years after the
-rate change at the doses municipalities actually took. Because that is a
-level rather than a rate it is not comparable to the headline
-coefficients, which are per percentage point. The row below it, the
+rate change. Because that is interpreted as a
+level change rather than a rate change it is not comparable to the headline
+coefficients. The row below it, the
 average total effect per pp, is the estimator's own dose-normalized
-figure, and that one is comparable to headline coefficients. The three rows beneath report the joint placebo test, where
-larger values mean treated and control municipalities were on similar
+figure, and that one is comparable to headline coefficients. I will be focusing on the effect in this row and acknowledging the statistical significance in the first row. The three rows beneath report the joint placebo test, where
+larger values mean treated, and control municipalities were on similar
 paths before treatment. The last two rows are the number of observations and treated municipalities (switchers).
 
 % Give me a the share of local jobs held by residents is $-0.019$ (-0.005*x = -0.019) On the first one so that everyone understands what happens for all the next ones.
 
-The per-pp row averages the effect across the five post-event years and
-divides by the average cumulative rate change, which for the pooled group
-is about $0.35$ percentage points. It is built from the whole post-event
-path rather than from the endpoint the bold row reports, so the two are
-not a fixed multiple of each other. On the share of local jobs held by
-residents that path runs $0.000$, $-0.011$, $-0.012$, $-0.007$ and
-$-0.005$, so the $-0.005$ in the bold row is the smallest of the five.
-Their average of $-0.007$ divided by $0.35$ gives the $-0.019$ the per-pp
-row reports. Figure~\ref{fig:dcdh_bycell} plots these paths, and every
-per-pp figure below is built the same way.
-
-On the pooled specification the two estimators are close on the outcomes
-the paper rests on. Reading the per-pp row against
+In the pooled specification the two estimators are nearly identical on outcomes. Reading the Avg total effect per pp row against
 Table~\ref{tab:pooled_per_pp_cousub}, the share of local jobs held by
 residents is $-0.019$ against $-0.021$, and the count of workers who live
 and work in the municipality is $-0.197$ against $-0.284$. In-commuters
 are $-0.183$ against $-0.220$ and total jobs $-0.206$ against $-0.248$.
-The alternative estimator is the smaller of the two on every outcome
-except the share, by between fifteen and thirty percent, which is the
-direction a non-negative-weight estimator moves when the linear
-specification is putting weight on the largest doses.
+The dCDH estimator is the smaller of the two on every outcome, indicating a slight change when adjusting for linearity and negative weights. 
 
-Split by binding state the picture divides. Inc-becomes agrees closely,
-at $-0.278$ against the headline $-0.250$ on the resident workforce and
-$-0.243$ against $-0.233$ on total jobs. Inc-bind does not, at $-0.092$
-against $-0.537$. The signs and the pre-trend verdicts survive the split
-but that magnitude does not. The likely reason is that the binding
+Looking at the binding decomposition rows the estimates show the same sign
+as the headline results but the magnitudes change. The Inc-bind estimates
+diverge on every outcome. On the share of workers who live and work in the
+municipality I find $-0.012$ against the headline $-0.058$, on the count
+of those workers $-0.092$ against $-0.537$, on in-commuters $-0.139$
+against $-0.345$, and on total jobs $-0.155$ against $-0.423$. The
+alternative estimator is three to six times smaller in every column.
+Inc-becomes behaves the opposite way and lands close on all four, at
+$-0.022$ against $-0.015$ on the share, $-0.278$ against $-0.250$ on the
+resident workforce, $-0.218$ against $-0.212$ on in-commuters and $-0.243$
+against $-0.233$ on total jobs, slightly larger each time rather than
+smaller.
+
+The likely reason the two cells behave differently is that the binding
 classification is a discrete rule applied to each rate change, while the
 alternative estimator treats the dose as a continuous quantity and
 approximates the status-quo path as a polynomial in the baseline rate. It
-has no way to represent a threshold that a municipality crosses, so the
-cell defined by crossing one is the cell it should reproduce worst. The
-check is therefore reported as corroborating the pooled and Inc-becomes
-magnitudes rather than every cell's.
+has no way to represent a threshold that a municipality crosses. Inc-bind
+is the cell defined by a rate change landing on the far side of one, so it
+is the cell this estimator should reproduce worst, and it does. Inc-becomes
+is defined by a crossing too, but its municipalities take larger rate
+changes, so more of the variation the estimator can see is ordinary
+movement in the dose.
+
+The joint placebo test in the table is this estimator's own pre-trend
+check. It estimates effects for periods before the rate changed, where
+nothing should have happened yet, and tests whether they are jointly zero.
+A large $p$-value means it cannot detect a divergence and is the
+favourable outcome. Inc-bind passes on the three count outcomes, at
+$0.553$ on the resident workforce, $0.218$ on in-commuters and $0.296$ on
+total jobs, and fails on the share at $0.000$. Inc-becomes passes on the
+resident workforce at $0.445$ and fails on the other three, at $0.000$ on
+the share, $0.037$ on in-commuters and $0.005$ on total jobs.
+
+Those verdicts are worth setting beside the realized-dose test of
+Section~\ref{subsec:results-es}, because the two disagree at the pooled
+level and agree on the rows that matter most. Both reject on the Inc-bind
+share, at $0.000$ here against $0.005$ there. Both reject on the Inc-becomes
+commuter outcomes, at $0.037$ and $0.005$ here against $0.000$ and $0.000$
+there, which are the two rows Section~\ref{subsec:rob-battery} already
+identifies as carrying genuine differential trends. Two tests built on
+different comparisons and different parallel-trends assumptions flag the
+same three rows. Where they part company is the resident workforce, which
+the realized-dose test rejects for Inc-becomes and this one does not, and
+which this test clears for Inc-bind more comfortably than the realized-dose
+test does.
+
+Taken together the check corroborates the pooled and Inc-becomes
+magnitudes rather than every cell's, and it corroborates the pre-trend
+concerns the paper already reports rather than dissolving them.
 
 This bears on the two concerns the section opened with. Because the
 alternative estimator assigns no negative weight to any
