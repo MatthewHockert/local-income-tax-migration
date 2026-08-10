@@ -1403,22 +1403,18 @@ resident workforce, $-0.218$ against $-0.212$ on in-commuters and $-0.243$
 against $-0.233$ on total jobs, slightly larger each time rather than
 smaller.
 
-I do not have an account of why the two cells behave differently. Each is
-run on its own subsample of never-changers plus the cell in question, so
-both are handed their binding classification rather than having to recover
-it, and the two are alike in that respect. What separates them has to lie
-in the several ways the two designs differ. The headline is stacked, with
-repeated never-changer copies and stack-interacted fixed effects, while
-this estimator runs on the unstacked panel. The headline coefficient is an
+I do not have a clear understanding of why the inc-bind estimates are vastly different. Some possible reasons are that each model is
+run on its own subsample of never-changers, the headline is stacked, with
+repeated never-changer copied and stack-interacted fixed effects, while
+the dCDH estimator runs on the unstacked panel. The headline coefficient is an
 average post-treatment level shift per unit of rate, while the figure here
-cumulates effects across periods before normalizing by the treatment
-received. And the two do not use the same units, since Inc-bind is
-identified off $17$ switchers here against $24$ municipalities in the
-headline. I report the gap without attributing it.
+accumulates effects across periods before normalizing by the treatment
+received. Additionally, the two do not use the same number of units, since Inc-bind is
+identified off $17$ municipalities (switchers) here against $24$ municipalities in the
+headline.
 
 The joint placebo test in the table is this estimator's own pre-trend
-check. It estimates effects for periods before the rate changed, where
-nothing should have happened yet, and tests whether they are jointly zero.
+check. It estimates how the periods before the treatment were either similar or moving independently, and tests whether they are jointly zero.
 A large $p$-value means it cannot detect a divergence and is the
 favourable outcome. Inc-bind passes on the three count outcomes, at
 $0.553$ on the resident workforce, $0.218$ on in-commuters and $0.296$ on
@@ -1426,39 +1422,23 @@ total jobs, and fails on the share at $0.000$. Inc-becomes passes on the
 resident workforce at $0.445$ and fails on the other three, at $0.000$ on
 the share, $0.037$ on in-commuters and $0.005$ on total jobs.
 
-Those verdicts are worth setting beside the realized-dose test of
-Section~\ref{subsec:results-es}, because the two disagree at the pooled
-level and agree on the rows that matter most. Both reject on the Inc-bind
-share, at $0.000$ here against $0.005$ there. Both reject on the Inc-becomes
-commuter outcomes, at $0.037$ and $0.005$ here against $0.000$ and $0.000$
-there, which are the two rows Section~\ref{subsec:rob-battery} already
-identifies as carrying genuine differential trends. Two tests built on
-different comparisons and different parallel-trends assumptions flag the
-same three rows. Where they part company is the resident workforce, which
-the realized-dose test rejects for Inc-becomes and this one does not, and
-which this test clears for Inc-bind more comfortably than the realized-dose
-test does.
+Figure~\ref{fig:dcdh_bycell} plots these paths, and the placebo test
+summarizes the portion of each panel to the left of the event. The two do
+not line up the way an eye would guess. On the share the Inc-bind
+pre-event coefficients are the smallest quantities in the figure, running
+$+0.003$, $-0.009$, $+0.002$, $+0.004$ and $+0.009$, and that is the panel
+the test rejects hardest. On the resident workforce the same cell's
+pre-event coefficients are an order of magnitude larger, at $+0.057$,
+$+0.001$, $+0.040$, $+0.067$ and $-0.032$, and the test does not reject at
+all. The share is measured far more precisely than the logged counts, so a
+movement too small to see is large against its own standard error while a
+visible wobble in a log panel is not. Where the figure and the test agree
+is Inc-becomes on the commuter outcomes, which run positive through the
+early leads and then swing negative, $+0.147$, $+0.055$, $+0.172$,
+$-0.164$ and $-0.107$ on in-commuters, and reject at $0.037$. That is the
+one pre-event pattern in the figure large enough to see and precise enough
+to matter.
 
-Taken together the check corroborates the pooled and Inc-becomes
-magnitudes rather than every cell's, and it corroborates the pre-trend
-concerns the paper already reports rather than dissolving them. The
-Inc-bind magnitude is the one it does not reproduce, and that is stated
-as a limit of the cross-check rather than resolved.
-
-This bears on the two concerns the section opened with. Because the
-alternative estimator assigns no negative weight to any
-municipality-year, its landing within fifteen to thirty percent of the
-pooled coefficients says the linear specification is not being seriously
-distorted by the weighting problem that heterogeneous effects can create
-in a two-way fixed effects regression. It is consistently the smaller of
-the two, which is what a re-weighting toward the smaller doses would
-produce, so the linear coefficient is likely at the generous end rather
-than being wrong in sign or order of magnitude. And because the estimator
-imposes no functional form on the dose, the same closeness says the linear
-approximation is not losing much to curvature over the range of rate
-changes municipalities actually chose. Its joint placebo test detects no
-pre-trend on any of the four outcomes at the pooled level, with $p$-values
-between $0.23$ and $0.69$, where large values are the favourable ones.
 
 \begin{figure}[H]
   \centering
@@ -1471,7 +1451,29 @@ between $0.23$ and $0.69$, where large values are the favourable ones.
   \end{minipage}
 \end{figure}
 
+Those verdicts are worth setting beside the realized-dose test of
+Section~\ref{subsec:results-es}, because the two disagree at the pooled
+level and agree on the rows that matter most. Both reject on the Inc-bind
+share, at $0.000$ here against $0.005$ there. Both reject on the Inc-becomes
+commuter outcomes, at $0.037$ and $0.005$ here against $0.000$ and $0.000$
+there. Two tests built on
+different comparisons and different parallel-trends assumptions flag the
+same three rows. Where they do not agree is the resident outcomes, which
+the realized-dose test rejects for Inc-becomes and this one does not, and
+which this test clears for Inc-bind more than the realized-dose
+test does.
 
+Because the
+dCDH estimator corrects for negative weighting that may occur in the two-way fixed effects model and the
+pooled coefficients in the stacked DiD model are similar to one another, the estimates indicate that the linear specification is not seriously
+distorted by the weighting problem that heterogeneous effects can create
+in a two-way fixed effects regression. The linear results are generally smaller of
+the two,  so the linear coefficient is likely 
+not biased by producing the wrong sign or order of magnitude. Also the estimator
+imposes no functional form on the dose, and given the coefficients the linear
+approximation is not losing much to possible decreasing returns over higher changes in the rate. Its joint placebo test detects no
+pre-trend on any of the four outcomes at the pooled level, with $p$-values
+between $0.23$ and $0.69$.
 
 \subsection{Pre/Post Act 32 Decomposition}
 \label{subsec:rob-act32}
