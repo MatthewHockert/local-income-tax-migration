@@ -671,6 +671,10 @@ if (RUN_CURVATURE) local({
   # copy(): this section adds columns (inc/dose/dose2/ia*/cc*) by reference and
   # must not mutate the shared stacked panel.
   stk <- copy(stk_muni); cs <- ctrls_str
+  # Carry the SD co-treatment, as the headline does. Without it this block
+  # estimated a different specification from the one it diagnoses.
+  stk[is.na(dose_sd), dose_sd := 0]
+  sdt <- "i(cell_sd, dose_sd, ref='NC')" 
   stk[, inc := as.integer(as.character(treat_cell) %in% c("Inc-bind", "Inc-becomes", "Inc-nobind"))]
   # dose_change, NOT dose_stack -- see the note in 05_figures.R. The curvature
   # test needs the actual dose magnitude, not the rate level.
@@ -681,9 +685,9 @@ if (RUN_CURVATURE) local({
   ## PART A: feols ACRT(d) curve
   acrt <- list(); qsig <- list(); att <- list()
   for (o in outcomes) {
-    cols <- c("muni", "dose", "dose2", "stack_muni", "stack_year", o, ctrls)
+    cols <- c("muni", "dose", "dose2", "cell_sd", "dose_sd", "stack_muni", "stack_year", o, ctrls)
     d <- stk[, ..cols][complete.cases(stk[, ..cols])]
-    m <- feols(as.formula(paste0(o, " ~ dose + dose2 + ", cs, " | stack_muni + stack_year")),
+    m <- feols(as.formula(paste0(o, " ~ dose + dose2 + ", sdt, " + ", cs, " | stack_muni + stack_year")),
                d, cluster = ~muni)
     b <- coef(m)[c("dose", "dose2")]; V <- vcov(m)[c("dose", "dose2"), c("dose", "dose2")]
     # Lay explanation: with a squared-dose term in the model, the damage done
@@ -752,15 +756,15 @@ if (RUN_CURVATURE) local({
   mat <- list()
   for (o in outcomes) for (deg in c(2, 3)) {
     for (k in 1:deg) stk[[paste0("ia", k)]] <- stk$id1^k
-    tn <- paste0("ia", 1:deg); cols <- c("muni", tn, "stack_muni", "stack_year", o, ctrls)
+    tn <- paste0("ia", 1:deg); cols <- c("muni", tn, "cell_sd", "dose_sd", "stack_muni", "stack_year", o, ctrls)
     da <- stk[, ..cols][complete.cases(stk[, ..cols])]
-    ma <- feols(as.formula(paste0(o, " ~ ", paste(tn, collapse = " + "), " + ", cs, " | stack_muni + stack_year")), da, cluster = ~muni)
+    ma <- feols(as.formula(paste0(o, " ~ ", paste(tn, collapse = " + "), " + ", sdt, " + ", cs, " | stack_muni + stack_year")), da, cluster = ~muni)
     ca <- acrt_poly(coef(ma)[tn], vcov(ma)[tn, tn], deg, dg)
     ca[, `:=`(outcome = o, group = "Aggregate", degree = paste0("deg ", deg))]; mat[[length(mat) + 1L]] <- ca
     for (k in 1:deg) stk[[paste0("cc", k)]] <- stk$dose^k
-    tn2 <- paste0("cc", 1:deg); cols <- c("muni", "treat_cell", tn2, "stack_muni", "stack_year", o, ctrls)
+    tn2 <- paste0("cc", 1:deg); cols <- c("muni", "treat_cell", tn2, "cell_sd", "dose_sd", "stack_muni", "stack_year", o, ctrls)
     dc <- stk[, ..cols][complete.cases(stk[, ..cols])]
-    fc <- paste0(o, " ~ ", paste(sprintf("i(treat_cell,%s,ref='NC')", tn2), collapse = " + "), " + ", cs, " | stack_muni + stack_year")
+    fc <- paste0(o, " ~ ", paste(sprintf("i(treat_cell,%s,ref='NC')", tn2), collapse = " + "), " + ", sdt, " + ", cs, " | stack_muni + stack_year")
     mc <- feols(as.formula(fc), dc, cluster = ~muni); V <- vcov(mc); cn <- names(coef(mc))
     for (g in c("Inc-bind", "Inc-becomes")) {
       nm <- paste0("treat_cell::", g, ":", tn2); if (!all(nm %in% cn)) next
@@ -1071,13 +1075,14 @@ if (RUN_FAKE_TIMING) local({
     # placebo dose: the muni's TRUE realized magnitude, switched on at the
     # FAKE event date
     stk_fake[, dose_fake := fifelse(rel >= 0, dtag, 0)]
+    stk_fake[is.na(dose_sd), dose_sd := 0]
     for (o in outcomes) {
       cols <- c("muni", "rel", "stack_muni", "stack_year", "cell_fake",
-                "dose_fake", o, ctrls)
+                "dose_fake", "cell_sd", "dose_sd", o, ctrls)
       dd <- stk_fake[, ..cols][complete.cases(stk_fake[, ..cols])]
       if (!nrow(dd)) next
       m <- tryCatch(feols(as.formula(paste0(o,
-            " ~ i(cell_fake, dose_fake, ref = 'NC') + ", ctrls_str,
+            " ~ i(cell_fake, dose_fake, ref = 'NC') + i(cell_sd, dose_sd, ref = 'NC') + ", ctrls_str,
             " | stack_muni + stack_year")), dd, cluster = ~muni),
             error = function(e) NULL)
       if (is.null(m)) next
