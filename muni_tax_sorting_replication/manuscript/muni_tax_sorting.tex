@@ -1521,33 +1521,20 @@ lets a municipality exceed the $0.5\%$ statutory municipality-EIT
 cap meaning there may be a selection confounder \citep{paAct47_1987}. An
 Act~47 designation may come from a period of population
 decline, economic decline, changes in the labor force, and service cuts. Matched against DCED's own register of
-distressed determinations and rescissions, exactly $1$ of the $24$
-Inc-bind municipalities has ever carried the designation, Hazleton, and
-Hazleton was designated in $2017$, seven years after the $2010$ rate
-increase that places it in the cell. No Inc-bind municipality was
-therefore in recovery at the time of its rate change, so the confounder
-this exclusion is built to address does not arise in this sample. Other
-historically designated cities do not reach the Inc-bind cell because the
+distressed determinations and rescissions, exactly $1$ municipalities has ever carried the designation, Hazleton, and was designated in $2017$, seven years after the $2010$ rate
+increase that places it in the cell \citep{Act47Financial}. Hazleton is an Inc-bind municipality.  Other
+historically designated cities do are not in the sample or other cells because the
 reversal test in Section~\ref{subsec:stacked-continuous} removes them, and
 of the sixteen register entries absent from the estimation panel seven are
-removed on their nonresident rate rather than on their own resident
-trajectory. The check therefore speaks only to the municipalities the paper estimates
-on. It cannot establish that the estimates are robust to municipal
-distress, because most designated cities sit outside the sample for
-reasons unconnected to distress.
+removed on because the nonresident rate is missing and dropped from the sample. 
 
 Table~\ref{tab:act47_full_results} re-estimates the Inc-bind coefficients
-without Hazleton, and the result is not the non-event a count of one
-suggests. The resident workforce falls from $-0.537$ to $-0.439$,
+without Hazleton. The resident workforce outcome variable falls from $-0.537$ to $-0.439$,
 in-commuters from $-0.345$ to $-0.283$, total jobs from $-0.423$ to
 $-0.345$, and the live-and-work share from $-0.058$ to $-0.048$. Every
-outcome loses about eighteen percent of its magnitude and every one stays
-significant at five percent. Read as a leave-one-out rather than as a
-distress check, which is closer to what it is, the exercise says that one
-municipality of twenty-four carries close to a fifth of the Inc-bind
-effect. That is the concentration a cohort this small invites, and it is
-worth stating alongside the coefficients rather than leaving to a reader
-to discover.
+outcome loses a noticeable magnitude, but every one stays
+statistically significant at five percent. This model says that one
+municipality of twenty-four carries a large share in the effect size for Inc-bind cell, but still accurately predicted sizes.
 
 % \input{../tables/act47_robustness.tex}  % concise 2-col version
 \input{../tables/act47_full_results.tex}
@@ -1555,11 +1542,8 @@ to discover.
 \subsection{Pre-Trend Battery}
 \label{subsec:rob-battery}
 
-No single pre-trend test is decisive on cohorts of 13 to 39 treated
-municipalities, so Table~\ref{tab:pretrend_battery} reports three, each
-sensitive to a different kind of failure.
-
-The joint Wald tests all four pre-event leads against zero
+Table~\ref{tab:pretrend_battery} reports three pre-trend tests, each
+sensitive to a different kind of failure. The joint Wald tests all four pre-event leads against zero
 simultaneously. It rejects on any departure of any shape, which makes it
 the most demanding of the three and also the one most easily upset by a
 single stray coefficient or by a poorly estimated covariance matrix on a
@@ -1570,14 +1554,13 @@ any one pre-event coefficient distinguishable from zero at five percent.
 A clean result is zero of four.
 
 The linear pre-slope fits a single trend through the pre-event window and
-tests its slope, one degree of freedom. It is insensitive to an isolated
-spike and targets the alternative that actually threatens the design,
-namely treated and control municipalities drifting apart at a steady rate
-before the tax changes. A clean result is a slope indistinguishable from
+tests its slope on one degree of freedom. It is insensitive to an isolated
+spike and identifies treated and control municipalities drifting apart at a steady rate
+before the treatment event. A clean result is a slope indistinguishable from
 zero.
 
-The three tests disagree, and Section~\ref{subsec:results-es} draws the
-distinction that the disagreement supports. The counts are these. The
+The three tests do not all agree and drawing from the
+distinction that the disagreement supports in Section~\ref{subsec:results-es}. The
 joint Wald rejects on nine of the sixteen cell-by-outcome rows, the linear
 pre-slope on three, and only five rows carry any individually significant
 lead. Two rows fail on both the Wald and the slope, in-commuters
@@ -1587,6 +1570,20 @@ four are the whole of Inc-nobind, where no lead is individually
 significant and the slope rejects on none of the four outcomes, and the
 other three are the Inc-bind share, the Inc-becomes resident workforce and
 the pooled resident workforce, each with a flat slope.
+
+The table is not a certificate and is not built as one. It is a sorting
+device, and what it sorts to the top is Inc-bind, which clears all three
+tests on three of its four outcomes and fails the joint Wald only on the
+share. What it sorts to the bottom is the pair of Inc-becomes commuter
+outcomes, which fail all three and should be read as descriptive rather
+than causal. Inc-nobind sits outside the sort, failing the joint Wald on
+everything while passing the other two on everything, which is what
+thirteen municipalities produce and is why the cell is treated as
+uninformative rather than clean. The short version for a reader is that
+the design supports a causal reading for one cell and corroborating
+evidence elsewhere, which is a narrower claim than the count of
+significant coefficients in Table~\ref{tab:headline_muni_combined} would
+suggest.
 
 \input{../tables/pretrend_battery.tex}
 
