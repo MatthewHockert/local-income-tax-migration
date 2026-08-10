@@ -1420,25 +1420,26 @@ favourable outcome. Inc-bind passes on the three count outcomes, at
 $0.553$ on the resident workforce, $0.218$ on in-commuters and $0.296$ on
 total jobs, and fails on the share at $0.000$. Inc-becomes passes on the
 resident workforce at $0.445$ and fails on the other three, at $0.000$ on
-the share, $0.037$ on in-commuters and $0.005$ on total jobs.
+the share, $0.037$ on in-commuters and $0.005$ on total jobs. Figure~\ref{fig:dcdh_bycell}
+plots the paths these tests summarize. Not all of them read by eye, since
+the share is estimated far more precisely than the logged counts, so its
+small pre-event movements weigh more than the larger swings in the count
+panels.
 
-Figure~\ref{fig:dcdh_bycell} plots these paths, and the placebo test
-summarizes the portion of each panel to the left of the event. The two do
-not line up the way an eye would guess. On the share the Inc-bind
-pre-event coefficients are the smallest quantities in the figure, running
-$+0.003$, $-0.009$, $+0.002$, $+0.004$ and $+0.009$, and that is the panel
-the test rejects hardest. On the resident workforce the same cell's
-pre-event coefficients are an order of magnitude larger, at $+0.057$,
-$+0.001$, $+0.040$, $+0.067$ and $-0.032$, and the test does not reject at
-all. The share is measured far more precisely than the logged counts, so a
-movement too small to see is large against its own standard error while a
-visible wobble in a log panel is not. Where the figure and the test agree
-is Inc-becomes on the commuter outcomes, which run positive through the
-early leads and then swing negative, $+0.147$, $+0.055$, $+0.172$,
-$-0.164$ and $-0.107$ on in-commuters, and reject at $0.037$. That is the
-one pre-event pattern in the figure large enough to see and precise enough
-to matter.
-
+Those verdicts are worth setting beside the realized-dose test of
+Section~\ref{subsec:results-es}, because the two disagree at the pooled
+level and agree on the rows that matter most. Both reject on the Inc-bind
+share, at $0.000$ here against $0.005$ there. Both reject on the Inc-becomes
+commuter outcomes, at $0.037$ and $0.005$ here against $0.000$ and $0.000$
+there. Two tests built on
+different comparisons and different parallel-trends assumptions flag the
+same three rows. Where they do not agree is the resident outcomes, which
+the realized-dose test rejects for Inc-becomes and this one does not, and
+which this test clears for Inc-bind more than the realized-dose
+test does. Only one of the two agreements is
+visible in the figure. The Inc-becomes commuter panels climb through the
+early leads and then swing negative, which is a trend an eye can find. The
+Inc-bind share is flat on the page and rejects on precision alone.
 
 \begin{figure}[H]
   \centering
@@ -1451,17 +1452,7 @@ to matter.
   \end{minipage}
 \end{figure}
 
-Those verdicts are worth setting beside the realized-dose test of
-Section~\ref{subsec:results-es}, because the two disagree at the pooled
-level and agree on the rows that matter most. Both reject on the Inc-bind
-share, at $0.000$ here against $0.005$ there. Both reject on the Inc-becomes
-commuter outcomes, at $0.037$ and $0.005$ here against $0.000$ and $0.000$
-there. Two tests built on
-different comparisons and different parallel-trends assumptions flag the
-same three rows. Where they do not agree is the resident outcomes, which
-the realized-dose test rejects for Inc-becomes and this one does not, and
-which this test clears for Inc-bind more than the realized-dose
-test does.
+
 
 Because the
 dCDH estimator corrects for negative weighting that may occur in the two-way fixed effects model and the
