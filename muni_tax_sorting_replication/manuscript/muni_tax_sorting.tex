@@ -1615,12 +1615,21 @@ suggest.
 \subsection{Fake-Timing Placebo}
 \label{subsec:rob-faketiming}
 
-Each treated municipality is assigned a placebo event three, four or five
-years before its real one, and only data from before the real event enter
-the estimation. Nothing happened at the placebo dates, so the coefficients
-should be null.
+Every test in Section~\ref{subsec:rob-battery} reads the same pre-event
+coefficients, so three tests that agree there are three readings of one
+piece of evidence. This check uses a different one. Each treated
+municipality is assigned a placebo event three, four or five years before
+its real one, and only data from before the real event enter the
+estimation, so the design is asked to estimate an effect where no rate
+changed at all. Nothing happened at the placebo dates, so the coefficients
+should be null. A failure here means the specification manufactures an
+effect out of a quiet pre-period, which is a different fault from treated
+and control municipalities drifting apart, and one the leads cannot
+detect.
 
-The binding cell passes on both outcomes the paper rests on. Its
+The two cells the battery separated separate again, which is the reason
+this check earns its place. The binding cell passes on both outcomes the
+paper rests on. Its
 live-and-work coefficients are $+0.053$, $+0.071$ and $-0.033$ across the
 three shifts, none distinguishable from zero, and its share coefficients
 are $0.000$, $+0.020$ and $+0.003$. The estimated response is not a
