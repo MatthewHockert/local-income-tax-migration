@@ -1482,22 +1482,41 @@ tests whether the binding-cell effect strengthens under consolidated
 employer withholding
 (\hyperref[app:rob-act32]{see Appendix~\ref{app:rob-act32}}).
 
-It does not. The binding cell returns $-0.544$ before the break and
-$-0.531$ after, a difference far inside either standard error, and both
-periods are significant at the one percent level. Inc-becomes moves in the
-same undramatic way, from $-0.296$ to $-0.222$. On the
-live-and-work share the binding cell reads $-0.068$ before and $-0.043$
-after.
+It does not. Inc-bind is essentially unchanged on three of the four
+outcomes, at $-0.544$ before the break against $-0.531$ after on the
+resident workforce, $-0.337$ against $-0.362$ on in-commuters and $-0.432$
+against $-0.415$ on total jobs. Each of those differences sits well inside
+either standard error and every one of the six coefficients is significant
+at five percent. The exception is the live-and-work share, which halves
+from $-0.068$ to $-0.043$ while remaining significant on both sides.
+
+Inc-becomes attenuates modestly across the board, from $-0.296$ to
+$-0.222$ on the resident workforce, $-0.218$ to $-0.209$ on in-commuters
+and $-0.276$ to $-0.203$ on total jobs. Its share is the one coefficient
+that changes sign, from $-0.043$ before to $+0.004$ after, though neither
+is distinguishable from zero at five percent. Inc-nobind has no pre-2012
+estimate at all. Eleven of its municipalities fall on that side of the
+break but their dose term is collinear with the stack fixed effects on the
+thin pre-enforcement subsample, so the estimator drops it.
 
 The natural reading was that consolidated withholding made the tax harder
 to avoid and should therefore sharpen the response. The data decline that
-reading. Two explanations fit. Act~32 changed collection rather than
-liability, so a household already paying its home rate faced the same bill
-before and after and had the same reason to move. And the pre-2012 cohorts
-carry most of the identifying variation, so the post-2012 estimate rests
-on few enough events that a moderate change would not be detectable. The
-check is therefore best read as showing the effect is not an artifact of
-the enforcement regime, rather than as evidence about enforcement itself.
+reading, and one obvious escape is closed off. The post-2012 estimates are
+not too imprecise to have detected a change, since their standard errors
+are the smaller of the two throughout, $0.162$ against $0.201$ on the
+Inc-bind resident workforce and $0.047$ against $0.107$ on the Inc-becomes
+one. What remains is that Act~32 changed collection rather than liability,
+so a household already paying its home rate faced the same bill before and
+after and had the same reason to move. The check is therefore best read as
+showing the effect is not an artifact of the enforcement regime, rather
+than as evidence about enforcement itself.
+
+One difference from the headline is worth recording. This split estimates
+the municipal cell $\times$ dose terms without the school-district
+co-treatment that the headline carries, so the coefficients above are not
+the headline coefficients re-estimated on two subsamples. Given that
+municipal and district rates almost never move in the same year, the
+omission should matter little, but the specifications are not identical.
 
 % \input{../tables/act32_cousub.tex}  % concise version
 \input{../tables/act32_full_pre.tex}
