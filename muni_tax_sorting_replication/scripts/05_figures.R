@@ -1099,6 +1099,25 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   # 2026-07-01); the subset approach is the working equivalent. Knots at the
   # group's own dose terciles; boundary at [0, max dose] so the basis is
   # linear beyond the observed range (ns property).
+
+  # The blue dashed line is the paper's OWN estimate, read from the headline
+  # and pooled result files rather than refitted here. Refitting on this
+  # block's sample gave the same number to three or four decimals but not
+  # always to the digit printed on the figure, so a reader checking the label
+  # against Table 3 or Table 4 could find -0.285 against -0.284.
+  .hl_pool <- tryCatch(fread(file.path(RESULTS_DIR, "pooled_results.csv")), error = function(e) NULL)
+  .hl_cell <- tryCatch(fread(file.path(RESULTS_DIR, "headline_full_table.csv")), error = function(e) NULL)
+  headline_acr <- function(treated_cells, o) {
+    if (length(treated_cells) > 1L) {
+      if (is.null(.hl_pool)) return(NA_real_)
+      v <- .hl_pool[grepl("direction_muni::Inc", term) & outcome == o, est]
+    } else {
+      if (is.null(.hl_cell)) return(NA_real_)
+      v <- .hl_cell[term == sprintf("treat_cell::%s:dose_stack", treated_cells) & outcome == o, est]
+    }
+    if (length(v)) as.numeric(v[1]) else NA_real_
+  }
+
   fit_group <- function(treated_cells) {
     ATT <- list(); ACRT <- list(); BAS <- list(); QUA <- list(); keep <- c(treated_cells, "NC")
     dmax_g <- quantile(stk[as.character(treat_cell) %in% treated_cells & dose > 0, dose],
@@ -1127,7 +1146,9 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       fQ <- feols(as.formula(paste0(o," ~ dose + dose2 + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
       bq <- coef(fQ)[c("dose","dose2")]; Vq <- vcov(fQ)[c("dose","dose2"), c("dose","dose2")]
       q_p <- fQ$coeftable["dose2", "Pr(>|t|)"]
-      csp <- coef(fS)[bn]; Vsp <- vcov(fS)[bn, bn]; acr <- as.numeric(coef(fL)["dose"])
+      csp <- coef(fS)[bn]; Vsp <- vcov(fS)[bn, bn]
+      acr <- headline_acr(treated_cells, o)
+      if (is.na(acr)) acr <- as.numeric(coef(fL)["dose"])
       # ATT(d) = B(d)'b - B(0)'b  (effect of dose d relative to dose 0); the
       # G %*% Vsp %*% G' diagonal gives delta-method variances for the curve.
       # Lay explanation: to read the fitted curve at each dose, evaluate the
