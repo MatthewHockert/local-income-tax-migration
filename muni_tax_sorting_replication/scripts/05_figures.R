@@ -1107,13 +1107,13 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   # against Table 3 or Table 4 could find -0.285 against -0.284.
   .hl_pool <- tryCatch(fread(file.path(RESULTS_DIR, "pooled_results.csv")), error = function(e) NULL)
   .hl_cell <- tryCatch(fread(file.path(RESULTS_DIR, "headline_full_table.csv")), error = function(e) NULL)
-  headline_acr <- function(treated_cells, o) {
+  headline_acr <- function(treated_cells, o, what = "est") {
     if (length(treated_cells) > 1L) {
       if (is.null(.hl_pool)) return(NA_real_)
-      v <- .hl_pool[grepl("direction_muni::Inc", term) & outcome == o, est]
+      v <- .hl_pool[grepl("direction_muni::Inc", term) & outcome == o][[what]]
     } else {
       if (is.null(.hl_cell)) return(NA_real_)
-      v <- .hl_cell[term == sprintf("treat_cell::%s:dose_stack", treated_cells) & outcome == o, est]
+      v <- .hl_cell[term == sprintf("treat_cell::%s:dose_stack", treated_cells) & outcome == o][[what]]
     }
     if (length(v)) as.numeric(v[1]) else NA_real_
   }
@@ -1184,7 +1184,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
         acr_s <- as.numeric(colMeans(Bp) %*% csp)
       }
       acr <- headline_acr(treated_cells, o)
-      if (is.na(acr)) acr <- as.numeric(coef(fL)["dose"])
+      acr_se <- headline_acr(treated_cells, o, "se")
+      if (is.na(acr)) { acr <- as.numeric(coef(fL)["dose"]); acr_se <- as.numeric(se(fL)["dose"]) }
       # ATT(d) = B(d)'b - B(0)'b  (effect of dose d relative to dose 0); the
       # G %*% Vsp %*% G' diagonal gives delta-method variances for the curve.
       # Lay explanation: to read the fitted curve at each dose, evaluate the
@@ -1199,7 +1200,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       h <- 1e-4; Bp <- (predict(B, dg + h) - predict(B, dg - h)) / (2*h)
       acrt_s <- as.numeric(Bp %*% csp); se_a <- sqrt(pmax(rowSums((Bp %*% Vsp) * Bp), 0))
       ATT[[o]]  <- data.table(outcome=lab[o], dose=dg, y=att_s,  lo=att_s-1.96*se_s,  hi=att_s+1.96*se_s)
-      ACRT[[o]] <- data.table(outcome=lab[o], dose=dg, y=acrt_s, lo=acrt_s-1.96*se_a, hi=acrt_s+1.96*se_a, acr=acr)
+      ACRT[[o]] <- data.table(outcome=lab[o], dose=dg, y=acrt_s, lo=acrt_s-1.96*se_a, hi=acrt_s+1.96*se_a,
+                              acr=acr, acr_se=acr_se)
       # Basis parameters, so the interactive explorer can rebuild B(d) and show
       # the decomposition b_j * B_j(d) that sums to ATT(d).
       BAS[[o]] <- data.table(outcome=lab[o], knot1=kk[1], knot2=kk[2],
@@ -1220,6 +1222,76 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     }
     list(ATT = rbindlist(ATT), ACRT = rbindlist(ACRT),
          BASIS = rbindlist(BAS), QUAD = rbindlist(QUA), PTS = rbindlist(PTS))
+  }
+
+  # BODY figure: the linear model only. ATT(d) = ACR x d with a delta-method
+  # band, over the municipalities the estimate averages. ACRT is omitted
+  # because under linearity it is constant and equal to the ACR, so a second
+  # panel would draw one number already in the headline table.
+  plot_linear <- function(res, ttl, outfile) {
+    a <- unique(res$ACRT[, .(outcome, acr, acr_se)])
+    dm <- res$ATT[, .(dmax = max(dose)), by = outcome]
+    a  <- merge(a, dm, by = "outcome")
+    ln <- a[, .(dose = seq(0, dmax, length.out = 60)), by = .(outcome, acr, acr_se)]
+    ln[, `:=`(y = acr * dose, lo = (acr - 1.96 * acr_se) * dose,
+              hi = (acr + 1.96 * acr_se) * dose)]
+    ln[, ol := factor(outcome, levels = lab[outs])]
+    pts <- copy(res$PTS); if (nrow(pts)) pts[, ol := factor(outcome, levels = lab[outs])]
+    lb  <- a[, .(outcome, ltxt = sprintf("ACR = %.3f (%.3f)", acr, acr_se), dmax, acr)]
+    lb[, ol := factor(outcome, levels = lab[outs])]
+    g <- ggplot() +
+      geom_hline(yintercept = 0, colour = "black", linewidth = 0.7)
+    if (nrow(pts)) g <- g +
+      geom_point(data = pts, aes(dose, y), colour = "grey72", size = 1.5, alpha = 0.85)
+    g <- g +
+      geom_ribbon(data = ln, aes(dose, ymin = lo, ymax = hi), fill = "#2166ac", alpha = 0.15) +
+      geom_line(data = ln, aes(dose, y), colour = "#2166ac", linewidth = 1.0) +
+      geom_text(data = lb, aes(x = 0, y = acr * dmax, label = ltxt), colour = "#2166ac",
+                hjust = 0, vjust = 1.6, size = 3) +
+      facet_wrap(~ ol, scales = "free_y", ncol = 2) +
+      labs(title = ttl,
+           subtitle = paste("ATT(d) = ACR x d from the headline specification, with a 95% band.",
+                            "Grey points: one treated municipality each, its own pre/post change",
+                            "less the never-changers', at the dose it took."),
+           x = "dose (cumulative muni rate change, pp)", y = "ATT(d): total effect") +
+      theme_bw(base_size = 10) + theme(plot.subtitle = element_text(size = 8))
+    ggsave(file.path(fig_dir, outfile), g, width = 10, height = 7, dpi = 300)
+  }
+
+  # APPENDIX figure: the two flexible fits, with the linear model kept as a
+  # dashed reference. Without it the reader cannot see what the curve is being
+  # compared against, which is the only question these figures answer.
+  plot_flex <- function(res, ttl, outfile) {
+    P_ATT <- "ATT(d): total effect"; P_AC <- "ACRT(d): marginal effect"
+    a <- unique(res$ACRT[, .(outcome, acr)])
+    sp_att <- res$ATT[,  .(outcome, dose, y, lo, hi)][, `:=`(m = "Spline",    panel = P_ATT)]
+    sp_ac  <- res$ACRT[, .(outcome, dose, y, lo, hi)][, `:=`(m = "Spline",    panel = P_AC)]
+    qd_att <- res$QUAD[curve == "ATT_quad",  .(outcome, dose, y, lo, hi)][, `:=`(m = "Quadratic", panel = P_ATT)]
+    qd_ac  <- res$QUAD[curve == "ACRT_quad", .(outcome, dose, y, lo, hi)][, `:=`(m = "Quadratic", panel = P_AC)]
+    cur <- rbindlist(list(sp_att, sp_ac, qd_att, qd_ac), use.names = TRUE)
+    lin_att <- merge(res$ATT[, .(dmax = max(dose)), by = outcome], a, by = "outcome")[
+      , .(dose = c(0, dmax), y = c(0, acr * dmax), panel = P_ATT), by = outcome]
+    lin_ac  <- merge(res$ACRT[, .(dmax = max(dose)), by = outcome], a, by = "outcome")[
+      , .(dose = c(0, dmax), y = c(acr, acr), panel = P_AC), by = outcome]
+    lin <- rbind(lin_att, lin_ac)
+    ord <- as.vector(t(outer(lab[outs], c(P_ATT, P_AC), paste, sep = " — ")))
+    for (d in list(cur, lin)) d[, fc := factor(paste(outcome, panel, sep = " — "), levels = ord)]
+    ggplot() +
+      geom_hline(yintercept = 0, colour = "black", linewidth = 0.7) +
+      geom_ribbon(data = cur, aes(dose, ymin = lo, ymax = hi, fill = m), alpha = 0.12, colour = NA) +
+      geom_line(data = lin, aes(dose, y), colour = "#2166ac", linetype = "longdash", linewidth = 0.6) +
+      geom_line(data = cur, aes(dose, y, colour = m), linewidth = 0.9) +
+      facet_wrap(~ fc, scales = "free_y", ncol = 2) +
+      scale_colour_manual(values = c(Quadratic = "#7b3294", Spline = "#1b7837"), name = NULL) +
+      scale_fill_manual(values   = c(Quadratic = "#7b3294", Spline = "#1b7837"), guide = "none") +
+      labs(title = ttl,
+           subtitle = paste("Quadratic and natural-spline dose-response, 95% bands.",
+                            "Blue dashed: the linear model of the body, ACR x d on the left and a constant ACR on the right.",
+                            "\nSame sample, controls, fixed effects and clustering as the headline."),
+           x = "dose (cumulative muni rate change, pp)", y = NULL) +
+      theme_bw(base_size = 9) +
+      theme(legend.position = "bottom", plot.subtitle = element_text(size = 8))
+    ggsave(file.path(fig_dir, outfile), width = 10, height = 11, dpi = 300)
   }
 
   plot_group <- function(res, ttl, outfile) {
@@ -1310,6 +1382,12 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   res_pooled     <- fit_group(c("Inc-bind","Inc-becomes","Inc-nobind"))
   res_incbind    <- fit_group("Inc-bind")
   res_incbecomes <- fit_group("Inc-becomes")
+  plot_linear(res_pooled,     "Dose-response, linear specification — Pooled Increase",  "att_linear_pooled.png")
+  plot_linear(res_incbind,    "Dose-response, linear specification — Inc-bind",         "att_linear_incbind.png")
+  plot_linear(res_incbecomes, "Dose-response, linear specification — Inc-becomes",      "att_linear_incbecomes.png")
+  plot_flex(res_pooled,     "Flexible dose-response — Pooled Increase",  "att_flex_pooled.png")
+  plot_flex(res_incbind,    "Flexible dose-response — Inc-bind",         "att_flex_incbind.png")
+  plot_flex(res_incbecomes, "Flexible dose-response — Inc-becomes",      "att_flex_incbecomes.png")
   plot_group(res_pooled,     "Muni dose-response (spline) — POOLED Increase",  "acr_acrt_att_spline_pooled.png")
   plot_group(res_incbind,    "Muni dose-response (spline) — Inc-bind cell",    "acr_acrt_att_spline_incbind.png")
   plot_group(res_incbecomes, "Muni dose-response (spline) — Inc-becomes cell", "acr_acrt_att_spline_incbecomes.png")
