@@ -54,6 +54,7 @@ ui <- fluidPage(
                    choices = c("Dose-response" = "curve",
                                "Spline basis"  = "basis"),
                    selected = "curve"),
+      checkboxInput("show_acrt", "ACRT curves (right axis)", TRUE),
       checkboxInput("show_ci", "Confidence bands", TRUE),
       checkboxInput("show_tangent", "Tangent at d", TRUE),
       hr(),
@@ -230,13 +231,16 @@ server <- function(input, output, session) {
     s <- sel(); cv <- cur(); v <- at_d(); req(s, cv, v)
     validate(need(nrow(cv$att) > 0, "Tick at least one model."))
 
+    show_acrt <- isTRUE(input$show_acrt)
     ra <- range(c(cv$att$lo, cv$att$hi, cv$att$y), na.rm = TRUE)
     rc <- range(c(cv$acrt$lo, cv$acrt$hi, cv$acrt$y, cv$acr), na.rm = TRUE)
     if (diff(ra) < 1e-9) ra <- ra + c(-1, 1) * 0.1
     if (diff(rc) < 1e-9) rc <- rc + c(-1, 1) * 0.5
-    sc  <- diff(ra) / diff(rc)
-    f   <- function(y) (y - rc[1]) * sc + ra[1]
-    inv <- function(y) (y - ra[1]) / sc + rc[1]
+    # With ACRT hidden the right axis carries nothing, so the transform becomes
+    # the identity and the plot is scaled to the ATT curves alone.
+    sc  <- if (show_acrt) diff(ra) / diff(rc) else 1
+    f   <- if (show_acrt) function(y) (y - rc[1]) * sc + ra[1] else function(y) y
+    inv <- if (show_acrt) function(y) (y - ra[1]) / sc + rc[1] else function(y) y
 
     acrt <- copy(cv$acrt)[, `:=`(y2 = f(y), lo2 = f(lo), hi2 = f(hi))]
     tang <- data.table(x = c(max(0, v$d - s$dmax * 0.18),
@@ -254,32 +258,40 @@ server <- function(input, output, session) {
       sa <- acrt[model == "Spline (visual)" & !is.na(lo2)]
       if (nrow(sp)) g <- g + geom_ribbon(data = sp, aes(dose, ymin = lo, ymax = hi),
                                           fill = "#1b7837", alpha = 0.10)
-      if (nrow(sa)) g <- g + geom_ribbon(data = sa, aes(dose, ymin = lo2, ymax = hi2),
+      if (show_acrt && nrow(sa)) g <- g + geom_ribbon(data = sa, aes(dose, ymin = lo2, ymax = hi2),
                                           fill = "#1b7837", alpha = 0.08)
     }
-    if (isTRUE(input$show_tangent)) g <- g +
+    if (isTRUE(input$show_tangent) && show_acrt) g <- g +
       geom_line(data = tang, aes(x, y), colour = "grey35",
                 linewidth = 1.0, alpha = 0.7)
 
-    g +
-      geom_line(data = cv$att, aes(dose, y, colour = model),
-                linewidth = 1.05) +
+    g <- g +
+      geom_line(data = cv$att, aes(dose, y, colour = model), linewidth = 1.05) +
+      geom_vline(xintercept = v$d, colour = "grey35", linetype = "dashed") +
+      geom_point(data = pts, aes(v$d, att, colour = model), size = 3.4)
+    if (show_acrt) g <- g +
       geom_line(data = acrt, aes(dose, y2, colour = model),
                 linewidth = 0.85, linetype = "42") +
-      geom_vline(xintercept = v$d, colour = "grey35", linetype = "dashed") +
-      geom_point(data = pts, aes(v$d, att, colour = model), size = 3.4) +
       geom_point(data = pts, aes(v$d, f(acrt), colour = model), size = 3.4,
-                 shape = 17) +
+                 shape = 17)
+    g +
       scale_colour_manual(values = MODCOL, name = NULL, drop = FALSE) +
       scale_x_continuous(limits = c(0, s$dmax)) +
-      scale_y_continuous(name = "ATT(d): total effect",
-                         sec.axis = sec_axis(~ inv(.), name = "ACRT(d): marginal effect")) +
+      (if (show_acrt)
+         scale_y_continuous(name = "ATT(d): total effect",
+                            sec.axis = sec_axis(~ inv(.), name = "ACRT(d): marginal effect"))
+       else scale_y_continuous(name = "ATT(d): total effect")) +
       labs(x = "dose d (cumulative muni rate change, pp)",
            title = sprintf("%s  |  %s", input$outcome, input$group),
-           subtitle = paste(
+           subtitle = if (show_acrt) paste(
              "Solid = ATT(d), read on the left axis. Dashed = ACRT(d), read on the right.",
              "Circles mark ATT at the chosen dose, triangles mark ACRT.",
              "\nThe blue linear fit is what the paper estimates: its ATT is a straight ray and its ACRT is flat at the ACR.",
+             "Green band is the spline confidence interval.")
+             else paste(
+             "ATT(d), the total effect of a dose-d increase relative to a never-changer.",
+             "Circles mark the chosen dose.",
+             "\nThe blue linear fit is what the paper estimates, a straight ray of slope ACR.",
              "Green band is the spline confidence interval.")) +
       theme_bw(base_size = 13) +
       theme(legend.position = "bottom",
