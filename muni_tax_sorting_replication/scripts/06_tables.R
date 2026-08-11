@@ -1324,9 +1324,9 @@ local({
                   list("decomp", "Inc-bind", "\\textbf{Inc-bind}"),
                   list("decomp", "Inc-becomes", "\\textbf{Inc-becomes}"),
                   list("decomp", "Inc-nobind", "\\textbf{Inc-nobind}"))
-  modspec <- list(c("acr_linear","se_linear","\\quad Linear (headline)"),
-                  c("acr_quad","se_quad","\\quad Quadratic"),
-                  c("acr_spline","se_spline","\\quad Natural spline"))
+  modspec <- list(c("acr_linear","se_linear","p_linear","\\quad Linear (headline)"),
+                  c("acr_quad","se_quad","p_quad","\\quad Quadratic"),
+                  c("acr_spline","se_spline","p_spline","\\quad Natural spline"))
   cell <- function(v, se) if (is.na(v)) "---" else
     sprintf("%s", fmt_est(v))
   body <- character(0); dosenote <- character(0)
@@ -1336,10 +1336,13 @@ local({
     body <- c(body, paste0("    ", rs[[3]], " & & & & \\\\"))
     for (ms in modspec) {
       est <- vapply(o4, function(o) { r <- sub[outcome == o]
-        if (!nrow(r) || is.na(r[[ms[1]]][1])) "---" else fmt_est(r[[ms[1]]][1]) }, character(1))
+        if (!nrow(r) || is.na(r[[ms[1]]][1])) "---" else {
+          st <- sig_stars(r[[ms[3]]][1])
+          paste0(fmt_est(r[[ms[1]]][1]), if (nchar(st)) paste0("\\sym{", st, "}") else "") } },
+        character(1))
       se  <- vapply(o4, function(o) { r <- sub[outcome == o]
         if (!nrow(r) || is.na(r[[ms[2]]][1])) "" else fmt_se(r[[ms[2]]][1]) }, character(1))
-      body <- c(body, paste0("    ", ms[3], " & ", paste(est, collapse = " & "), " \\\\"),
+      body <- c(body, paste0("    ", ms[4], " & ", paste(est, collapse = " & "), " \\\\"),
                       paste0("        & ", paste(se, collapse = " & "), " \\\\"))
     }
     dosenote <- c(dosenote, sprintf("%s %.3f (%d municipalities)",
@@ -1364,7 +1367,7 @@ local({
            "Sample, fiscal controls, school-district co-treatment, stacked muni$\\times$stack and year$\\times$stack fixed effects and clustering at the municipality are the headline's throughout, and all three share one complete-cases set. ",
            sprintf("$N = %s$ in every column. ", formatC(nrow_n, format = "d", big.mark = ",")),
            "Inc-nobind has 14 treated municipalities: its quadratic is not interpretable and its spline is not identified, which the entries record rather than hide. ",
-           "SE in parens."),
+           "SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
     "  \\end{minipage}", "\\end{table}")
   writeLines(out, file.path(TABLE_DIR, "flex_dose_acr.tex"))
   message("Saved flex_dose_acr.tex")

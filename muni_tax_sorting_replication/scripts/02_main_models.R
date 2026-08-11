@@ -897,10 +897,15 @@ if (RUN_FLEX_DOSE) local({
     (predict(B, hi) - predict(B, lo)) / (hi - lo)
   }
   # ACR is a linear combination w'b in every case, so the SE is sqrt(w'Vw).
+  # Returns estimate, SE and a two-sided p-value. The ACR is a linear
+  # combination of the fitted coefficients, so its variance is w'Vw and the
+  # test is the usual one on est/SE, referred to the cluster count.
   lincom <- function(m, nm, w) {
-    if (!all(nm %in% names(coef(m)))) return(c(NA_real_, NA_real_))
+    if (!all(nm %in% names(coef(m)))) return(c(NA_real_, NA_real_, NA_real_))
     b <- coef(m)[nm]; V <- vcov(m)[nm, nm, drop = FALSE]
-    c(as.numeric(w %*% b), sqrt(as.numeric(t(w) %*% V %*% w)))
+    est <- as.numeric(w %*% b); se <- sqrt(as.numeric(t(w) %*% V %*% w))
+    dfree <- tryCatch(fixest::degrees_freedom(m, "t"), error = function(e) Inf)
+    c(est, se, 2 * stats::pt(-abs(est / se), df = dfree))
   }
 
   rows <- list()
@@ -935,9 +940,9 @@ if (RUN_FLEX_DOSE) local({
         sp  <- lincom(mS, sprintf("%s::%s:%s", cellv, g, bn), colMeans(Bprime(wd)))
         rows[[length(rows) + 1L]] <- data.table(
           spec = spec, cell = g, outcome = o,
-          acr_linear = lin[1], se_linear = lin[2],
-          acr_quad   = qd[1],  se_quad   = qd[2],
-          acr_spline = sp[1],  se_spline = sp[2],
+          acr_linear = lin[1], se_linear = lin[2], p_linear = lin[3],
+          acr_quad   = qd[1],  se_quad   = qd[2],  p_quad   = qd[3],
+          acr_spline = sp[1],  se_spline = sp[2],  p_spline = sp[3],
           n = nobs(mL), n_treated = length(wd), mean_dose = mean(wd))
       }
     }
