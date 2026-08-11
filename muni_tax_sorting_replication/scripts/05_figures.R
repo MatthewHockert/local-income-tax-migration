@@ -1224,38 +1224,36 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
          BASIS = rbindlist(BAS), QUAD = rbindlist(QUA), PTS = rbindlist(PTS))
   }
 
-  # BODY figure: the linear model only. ATT(d) = ACR x d with a delta-method
-  # band, over the municipalities the estimate averages. ACRT is omitted
-  # because under linearity it is constant and equal to the ACR, so a second
-  # panel would draw one number already in the headline table.
+  # BODY figure: the linear model only, laid out exactly as plot_group() lays
+  # out the spline, minus the ACRT column. Under linearity the marginal effect
+  # is constant and equal to the ACR, so a second column would draw one number
+  # the headline table already reports.
   plot_linear <- function(res, ttl, outfile) {
-    a <- unique(res$ACRT[, .(outcome, acr, acr_se)])
+    P_ATT <- "ATT(d): total effect"
+    a  <- unique(res$ACRT[, .(outcome, acr, acr_se)])
     dm <- res$ATT[, .(dmax = max(dose)), by = outcome]
     a  <- merge(a, dm, by = "outcome")
+    ord <- paste(lab[outs], P_ATT, sep = " — ")
+    fc  <- function(d) d[, fc := factor(paste(outcome, P_ATT, sep = " — "), levels = ord)]
     ln <- a[, .(dose = seq(0, dmax, length.out = 60)), by = .(outcome, acr, acr_se)]
     ln[, `:=`(y = acr * dose, lo = (acr - 1.96 * acr_se) * dose,
-              hi = (acr + 1.96 * acr_se) * dose)]
-    ln[, ol := factor(outcome, levels = lab[outs])]
-    pts <- copy(res$PTS); if (nrow(pts)) pts[, ol := factor(outcome, levels = lab[outs])]
-    lb  <- a[, .(outcome, ltxt = sprintf("ACR = %.3f (%.3f)", acr, acr_se), dmax, acr)]
-    lb[, ol := factor(outcome, levels = lab[outs])]
+              hi = (acr + 1.96 * acr_se) * dose)]; fc(ln)
+    lb  <- copy(a)[, ltxt := sprintf("ACR = %.3f (%.3f)", acr, acr_se)]; fc(lb)
     g <- ggplot() +
-      geom_hline(yintercept = 0, colour = "black", linewidth = 0.7)
-    if (nrow(pts)) g <- g +
-      geom_point(data = pts, aes(dose, y), colour = "grey72", size = 1.5, alpha = 0.85)
-    g <- g +
-      geom_ribbon(data = ln, aes(dose, ymin = lo, ymax = hi), fill = "#2166ac", alpha = 0.15) +
-      geom_line(data = ln, aes(dose, y), colour = "#2166ac", linewidth = 1.0) +
-      geom_text(data = lb, aes(x = 0, y = acr * dmax, label = ltxt), colour = "#2166ac",
-                hjust = 0, vjust = 1.6, size = 3) +
-      facet_wrap(~ ol, scales = "free_y", ncol = 2) +
+      geom_hline(yintercept = 0, linetype = "dotted", color = "grey70") +
+      geom_ribbon(data = ln, aes(dose, ymin = lo, ymax = hi), fill = "#2166ac",
+                  alpha = 0.13, color = NA) +
+      geom_line(data = ln, aes(dose, y), color = "#2166ac", linewidth = 0.7) +
+      geom_text(data = lb, aes(x = dmax * 0.45, y = acr * dmax, label = ltxt),
+                color = "#2166ac", vjust = -0.5, size = 2.6) +
+      facet_wrap(~ fc, scales = "free_y", ncol = 1) +
       labs(title = ttl,
-           subtitle = paste("ATT(d) = ACR x d from the headline specification, with a 95% band.",
-                            "Grey points: one treated municipality each, its own pre/post change",
-                            "less the never-changers', at the dose it took."),
-           x = "dose (cumulative muni rate change, pp)", y = "ATT(d): total effect") +
-      theme_bw(base_size = 10) + theme(plot.subtitle = element_text(size = 8))
-    ggsave(file.path(fig_dir, outfile), g, width = 10, height = 7, dpi = 300)
+           subtitle = paste0("Linear specification, net of SD rate changes.\n",
+                             "ATT(d) = ACR x d with a 95% band. No ACRT panel, since under the\n",
+                             "linear model the marginal effect is constant and equal to the ACR."),
+           x = "dose (cumulative muni rate change, pp)", y = NULL) +
+      theme_bw(base_size = 9) + theme(plot.subtitle = element_text(size = 8))
+    ggsave(file.path(fig_dir, outfile), g, width = 7.5, height = 8.5, dpi = 300)
   }
 
   # APPENDIX figure: the two flexible fits, with the linear model kept as a
