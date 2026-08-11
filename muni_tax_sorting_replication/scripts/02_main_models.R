@@ -43,6 +43,7 @@ RUN_NOPROP   <- TRUE  # headline re-run WITHOUT the property effective-rate cont
 RUN_POOLED   <- TRUE  # pooled Inc/Dec per-pp + binary benchmark (cousub)
 RUN_REVENUE  <- TRUE  # log EIT revenue decomposition + ES + Laffer offset + splits
 RUN_LEVELS_COMPARE <- TRUE  # headline + pooled re-run with the treatment in LEVELS
+RUN_FLEX_DOSE <- TRUE  # headline + pooled re-run with a quadratic and a spline in the dose
 
 # Shared setup ----
 # One panel build for the whole stage: classified cousub panel + muni stack.
@@ -840,4 +841,123 @@ local({
     fwrite(dg, p)
     message("  merged pre_baseline into ", f)
   }
+})
+
+#==========================================================
+# Flexible dose: the headline specification with a quadratic and a spline
+#----------------------------------------------------------
+# The headline enters the dose linearly, so its coefficient IS the ACR by
+# construction: with ACRT(d) constant the integral of ACRT against omega
+# returns beta for any omega. This block relaxes that and computes the ACR the
+# way it is defined, as the dose-weighted average of ACRT(d).
+#
+# Everything except the dose term is the headline. Same stacked panel, same
+# {NC + Inc cells} sample, same fiscal controls, same SD co-treatment, same
+# muni x stack and year x stack fixed effects, same clustering at the
+# municipality. All three models share one complete-cases column set so the
+# samples are identical rather than merely similar.
+#
+# One deliberate departure. The headline regressor is the rate LEVEL. Under
+# unit fixed effects a linear term in the level equals a linear term in the
+# change, since level = baseline + change and the baseline is absorbed, which
+# is why the linear column below reproduces the headline exactly. That
+# equivalence fails for anything nonlinear: d^2 = b^2 + 2bc + c^2 leaves a
+# baseline-by-change cross term the fixed effects cannot remove, and fitting
+# the quadratic in levels flips both coefficients and turns the d^2 p-value
+# from 0.73 to 0.06. All three columns therefore use the CHANGE.
+# Outputs: data/results/flex_dose_acr.csv
+if (RUN_FLEX_DOSE) local({
+  suppressMessages(library(splines))
+  inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  stk <- copy(stk_muni)
+  stk[is.na(dose_sd), dose_sd := 0]
+  stk[, dose := fifelse(as.character(treat_cell) %in% inc_cells, dose_change, 0)]
+  stk[, dose2 := dose^2]
+  kk <- quantile(stk[dose > 0, dose], c(1/3, 2/3), na.rm = TRUE)
+  bb <- c(0, max(stk[dose > 0, dose], na.rm = TRUE))
+  B  <- ns(stk$dose, knots = kk, Boundary.knots = bb)
+  bn <- paste0("sp", seq_len(ncol(B)))
+  stk[, (bn) := as.data.table(unclass(B))]
+  stk[, direction_muni := factor(fcase(as.character(treat_cell) %in% inc_cells, "Inc",
+                                       as.character(treat_cell) == "NC", "NC",
+                                       default = NA_character_), levels = c("NC", "Inc"))]
+  stk[, direction_sd := factor(fcase(as.character(cell_sd) %in% inc_cells, "Inc",
+                                     as.character(cell_sd) == "NC", "NC",
+                                     default = NA_character_), levels = c("NC", "Inc"))]
+
+  outs <- c("log_live_and_work", "share_live_in", "log_in_commuters", "log_total_jobs")
+  # omega(d): one weight per treated municipality, at the dose it took.
+  wts <- function(cells) {
+    u <- unique(stk[as.character(treat_cell) %in% cells & dose > 0, .(muni, dose)])
+    u[, .(dose = max(dose)), by = muni]$dose
+  }
+  # Basis derivative at a vector of doses, for the spline ACR.
+  Bprime <- function(x, h = 1e-5) {
+    hi <- pmin(x + h, bb[2]); lo <- pmax(x - h, 0)
+    (predict(B, hi) - predict(B, lo)) / (hi - lo)
+  }
+  # ACR is a linear combination w'b in every case, so the SE is sqrt(w'Vw).
+  lincom <- function(m, nm, w) {
+    if (!all(nm %in% names(coef(m)))) return(c(NA_real_, NA_real_))
+    b <- coef(m)[nm]; V <- vcov(m)[nm, nm, drop = FALSE]
+    c(as.numeric(w %*% b), sqrt(as.numeric(t(w) %*% V %*% w)))
+  }
+
+  rows <- list()
+  for (spec in c("decomp", "pooled")) {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    sdv   <- if (spec == "decomp") "cell_sd"    else "direction_sd"
+    grps  <- if (spec == "decomp") inc_cells    else "Inc"
+    for (o in outs) {
+      # dose_stack is carried into complete.cases but NEVER enters a formula.
+      # It is the headline's regressor, and dose_change is non-missing on rows
+      # where the rate level is not, so without it this block would silently run
+      # on a larger sample than the headline and the linear column would not
+      # reproduce it. Same trap the Act 47 block fell into.
+      cols <- c("muni", cellv, sdv, "dose", "dose2", bn, "dose_sd", "dose_stack",
+                "stack_muni", "stack_year", o, ctrls)
+      d <- stk[, ..cols]; d <- d[complete.cases(d)]
+      sd_term <- sprintf("i(%s, dose_sd, ref='NC')", sdv)
+      fml <- function(rhs) as.formula(paste0(o, " ~ ", rhs, " + ", sd_term, " + ",
+                                             paste(ctrls, collapse = " + "),
+                                             " | stack_muni + stack_year"))
+      mL <- feols(fml(sprintf("i(%s, dose, ref='NC')", cellv)), d, cluster = ~muni, notes = FALSE)
+      mQ <- feols(fml(sprintf("i(%s, dose, ref='NC') + i(%s, dose2, ref='NC')", cellv, cellv)),
+                  d, cluster = ~muni, notes = FALSE)
+      mS <- feols(fml(paste(sprintf("i(%s, %s, ref='NC')", cellv, bn), collapse = " + ")),
+                  d, cluster = ~muni, notes = FALSE)
+      for (g in grps) {
+        wd <- if (spec == "decomp") wts(g) else wts(inc_cells)
+        if (!length(wd)) next
+        lin <- lincom(mL, sprintf("%s::%s:dose", cellv, g), 1)
+        qd  <- lincom(mQ, sprintf("%s::%s:%s", cellv, g, c("dose", "dose2")),
+                      c(1, 2 * mean(wd)))
+        sp  <- lincom(mS, sprintf("%s::%s:%s", cellv, g, bn), colMeans(Bprime(wd)))
+        rows[[length(rows) + 1L]] <- data.table(
+          spec = spec, cell = g, outcome = o,
+          acr_linear = lin[1], se_linear = lin[2],
+          acr_quad   = qd[1],  se_quad   = qd[2],
+          acr_spline = sp[1],  se_spline = sp[2],
+          n = nobs(mL), n_treated = length(wd), mean_dose = mean(wd))
+      }
+    }
+  }
+  out <- rbindlist(rows)
+  fwrite(out, file.path(RESULTS_DIR, "flex_dose_acr.csv"))
+  message("[flex-dose] ACR under three dose specifications:")
+  print(out[outcome == "log_live_and_work",
+            .(spec, cell, linear = round(acr_linear, 3), quad = round(acr_quad, 3),
+              spline = round(acr_spline, 3), n_treated, mean_dose = round(mean_dose, 3))])
+  # Gate: the linear column must reproduce the headline, which is the whole
+  # basis for reading the other two as the same object under a looser form.
+  hl <- fread(file.path(RESULTS_DIR, "headline_full_table.csv"))
+  chk <- merge(out[spec == "decomp", .(cell, outcome, acr_linear)],
+               hl[grepl("^treat_cell::", term),
+                  .(cell = sub(".*::(.*):dose_stack", "\\1", term), outcome, hl = est)],
+               by = c("cell", "outcome"))
+  chk[, gap := abs(acr_linear - hl)]
+  if (nrow(chk)) message(sprintf("[flex-dose] max |linear - headline| = %.6f across %d rows",
+                                 max(chk$gap), nrow(chk)))
+  stopifnot("flex-dose linear column does not reproduce the headline" = all(chk$gap < 1e-6))
+  message("Saved flex_dose_acr.csv")
 })

@@ -1312,6 +1312,64 @@ if (RUN_INTEXT_NUMBERS) local({
                 ib, pct(ib), ibec, inb_p, format(N, big.mark = ","), rev$beta_net[1], 100*off_lo))
 })
 
+
+# Flexible-dose ACR appendix table (from RUN_FLEX_DOSE in 02_main_models.R) ----
+local({
+  p <- file.path(RESULTS_DIR, "flex_dose_acr.csv")
+  if (!file.exists(p)) return(invisible())
+  x <- fread(p)
+  o4  <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
+  hdr <- c("Share live in muni", "Log(work in own muni)", "Log(in-commuters)", "Log(total jobs)")
+  rowspec <- list(list("pooled", "Inc", "\\textbf{Pooled Increase}"),
+                  list("decomp", "Inc-bind", "\\textbf{Inc-bind}"),
+                  list("decomp", "Inc-becomes", "\\textbf{Inc-becomes}"),
+                  list("decomp", "Inc-nobind", "\\textbf{Inc-nobind}"))
+  modspec <- list(c("acr_linear","se_linear","\\quad Linear (headline)"),
+                  c("acr_quad","se_quad","\\quad Quadratic"),
+                  c("acr_spline","se_spline","\\quad Natural spline"))
+  cell <- function(v, se) if (is.na(v)) "---" else
+    sprintf("%s", fmt_est(v))
+  body <- character(0); dosenote <- character(0)
+  for (rs in rowspec) {
+    sub <- x[spec == rs[[1]] & cell == rs[[2]]]
+    if (!nrow(sub)) next
+    body <- c(body, paste0("    ", rs[[3]], " & & & & \\\\"))
+    for (ms in modspec) {
+      est <- vapply(o4, function(o) { r <- sub[outcome == o]
+        if (!nrow(r) || is.na(r[[ms[1]]][1])) "---" else fmt_est(r[[ms[1]]][1]) }, character(1))
+      se  <- vapply(o4, function(o) { r <- sub[outcome == o]
+        if (!nrow(r) || is.na(r[[ms[2]]][1])) "" else fmt_se(r[[ms[2]]][1]) }, character(1))
+      body <- c(body, paste0("    ", ms[3], " & ", paste(est, collapse = " & "), " \\\\"),
+                      paste0("        & ", paste(se, collapse = " & "), " \\\\"))
+    }
+    dosenote <- c(dosenote, sprintf("%s %.3f (%d municipalities)",
+                                    gsub("\\\\textbf\\{|\\}", "", rs[[3]]),
+                                    sub$mean_dose[1], sub$n_treated[1]))
+  }
+  nrow_n <- unique(x$n)[1]
+  out <- c("\\begin{table}[H]", "  \\centering",
+    "  \\caption{ACR under three dose specifications}",
+    "  \\label{tab:flex_dose_acr}", "  \\footnotesize",
+    "  \\renewcommand{\\arraystretch}{0.9}",
+    "  \\resizebox{\\textwidth}{!}{",
+    "  \\begin{tabular}{lcccc}", "    \\toprule",
+    paste0("    & ", paste(hdr, collapse = " & "), " \\\\"), "    \\midrule",
+    body, "    \\bottomrule", "  \\end{tabular}", "  }",
+    "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+    paste0("    \\footnotesize \\textit{Notes:} Every row is the ACR, the dose-weighted average of ACRT$(d)$ over $\\omega(d)$. ",
+           "The linear row is the headline coefficient and reproduces Table~\\ref{tab:headline_muni_combined} and Table~\\ref{tab:pooled_per_pp_cousub} exactly. ",
+           "$\\omega(d)$ puts one weight on each treated municipality at the dose it took, so the ACR is evaluated at the mean dose: ",
+           paste(dosenote, collapse = "; "), ". ",
+           "The quadratic and spline rows enter the dose as the cumulative CHANGE rather than the rate level. Under unit fixed effects the two are identical for a linear term, which is why the linear row matches the headline, but not for anything nonlinear. ",
+           "Sample, fiscal controls, school-district co-treatment, stacked muni$\\times$stack and year$\\times$stack fixed effects and clustering at the municipality are the headline's throughout, and all three share one complete-cases set. ",
+           sprintf("$N = %s$ in every column. ", formatC(nrow_n, format = "d", big.mark = ",")),
+           "Inc-nobind has 14 treated municipalities: its quadratic is not interpretable and its spline is not identified, which the entries record rather than hide. ",
+           "SE in parens."),
+    "  \\end{minipage}", "\\end{table}")
+  writeLines(out, file.path(TABLE_DIR, "flex_dose_acr.tex"))
+  message("Saved flex_dose_acr.tex")
+})
+
 # Results workbook (build_results_workbook.R) ----
 # Collect the paper's result CSVs into ONE Excel workbook with an INDEX sheet and
 # one sheet per result table -- including the realized-dose and pooled EVENT-STUDY
