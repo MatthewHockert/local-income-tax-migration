@@ -1026,7 +1026,7 @@ all outcomes. Section~\ref{subsec:results-decomp} returns to the
 property coefficients, where the same pattern appears in the
 decomposition.
 
-Figure~\ref{fig:spline_pooled} draws the dose response and the ACR reported in Table~\ref{tab:pooled_per_pp_cousub} above. Under the linear specification ATT$(d)$ is a straight downward sloping line from the origin whose slope is the ACR, the marginal effect ACRT$(d)$ equals that slope at every dose, and the three quantities are one number. The shaded band is the 95\% interval, which widens with the dose because extrapolating a slope compounds its uncertainty, and the grey points are the treated municipalities at the increases they actually took. Whether the response really is straight over this range is a fair question, and Appendix~\ref{app:flex-dose} answers it by re-estimating the same specification with a quadratic and with a natural spline. Both stay within a standard error of the line, so I do not expect the linear restriction to be biasing the coefficient, though the flexible fits do suggest the marginal effect flattens at the largest increases, which would mean municipalities making the biggest increases have already taxed away the last marginal mover and those remaining will not move at any rate in this range. These estimates are from the pooled sample. Below in Section~\ref{subsec:results-decomp} I estimate the tax increases by utilizing the binding mechanism. 
+Figure~\ref{fig:spline_pooled} draws the dose response and the ACR reported in Table~\ref{tab:pooled_per_pp_cousub} above. Under the linear specification ATT$(d)$ is a straight downward sloping line from the origin whose slope is the ACR, the marginal effect ACRT$(d)$ equals that slope at every dose, and the three quantities are one number. The shaded band is the 95\% interval, which widens with the dose because extrapolating a slope compounds its uncertainty. Whether the response really is straight over this range is a fair question, and Appendix~\ref{app:flex-dose} answers it by re-estimating the same specification with a quadratic and with a natural spline. Both stay within a standard error of the line, so I do not expect the linear restriction to be biasing the coefficient, though the flexible fits do suggest the marginal effect flattens at the largest increases, which would mean municipalities making the biggest increases have already taxed away the last marginal mover and those remaining will not move at any rate in this range. These estimates are from the pooled sample. Below in Section~\ref{subsec:results-decomp} I estimate the tax increases by utilizing the binding mechanism. 
 
 \begin{figure}[H]
   \centering
@@ -1035,11 +1035,8 @@ Figure~\ref{fig:spline_pooled} draws the dose response and the ACR reported in T
   \includegraphics[width=0.95\textwidth]{../figures/att_linear_pooled.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize\textit{Notes:} ATT$(d) = \mathrm{ACR}\times d$ from the headline
-    specification, with a delta-method 95\% band. No ACRT panel appears because
-    under the linear model the marginal effect is constant and equal to the ACR.
-    Grey points are one treated municipality each, its own pre/post change in the
-    outcome less the same change for the never-changers in its stack, at the dose
-    it took.
+    specification, with a delta-method 95\% band. The marginal effect is constant
+    under the linear model, so there is no ACRT panel.
   \end{minipage}
 \end{figure}
 
@@ -1121,15 +1118,14 @@ specification ATT$(d)$ is $\mathrm{ACR}\times d$, a ray from the origin
 whose slope is the coefficient in the table, and the marginal effect is
 that same number at every dose, which is why no second panel appears.
 
-What the figure adds to the table is the band and the points. The band
-widens with the dose because the uncertainty in a slope compounds as it is
-extrapolated, so the effect at half a percentage point is far less pinned
-down than the effect at a tenth. That matters here, since half a point is
-the largest cumulative increase this cell contains and the per-point
-coefficient is being read at a dose no municipality reached. The grey
-points are the twenty-four treated municipalities, each at the increase it
-took, and they run from roughly $+0.27$ to $-0.44$. The estimate is an
-average over that spread, not a description of any one place.
+What the figure adds to the table is the band. It widens with the dose
+because the uncertainty in a slope compounds as it is extrapolated, so the
+effect at half a percentage point is far less pinned down than the effect
+at a tenth. That matters here, since half a point is the largest
+cumulative increase this cell contains and the per-point coefficient is
+being read at a dose no municipality reached.
+Appendix~\ref{app:flex-dose} re-estimates the same specification with a
+quadratic and with a natural spline in the dose.
 
 
 \begin{figure}[H]
@@ -1139,11 +1135,8 @@ average over that spread, not a description of any one place.
   \includegraphics[width=0.95\textwidth]{../figures/att_linear_incbind.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize\textit{Notes:} ATT$(d) = \mathrm{ACR}\times d$ from the headline
-    specification, with a delta-method 95\% band. No ACRT panel appears because
-    under the linear model the marginal effect is constant and equal to the ACR.
-    Grey points are one treated municipality each, its own pre/post change in the
-    outcome less the same change for the never-changers in its stack, at the dose
-    it took.
+    specification, with a delta-method 95\% band. The marginal effect is constant
+    under the linear model, so there is no ACRT panel.
   \end{minipage}
 \end{figure}
 
@@ -1168,11 +1161,8 @@ re-estimating both cells with a quadratic and with a natural spline.
   \includegraphics[width=0.95\textwidth]{../figures/att_linear_incbecomes.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize\textit{Notes:} ATT$(d) = \mathrm{ACR}\times d$ from the headline
-    specification, with a delta-method 95\% band. No ACRT panel appears because
-    under the linear model the marginal effect is constant and equal to the ACR.
-    Grey points are one treated municipality each, its own pre/post change in the
-    outcome less the same change for the never-changers in its stack, at the dose
-    it took.
+    specification, with a delta-method 95\% band. The marginal effect is constant
+    under the linear model, so there is no ACRT panel.
   \end{minipage}
 \end{figure}
 
@@ -1797,10 +1787,9 @@ mean anything.
 \label{app:flex-dose}
 
 The headline enters the dose linearly, so its coefficient is the ACR by
-construction. With $\mathrm{ACRT}(d)$ constant the definition
-$\mathrm{ACR} = \int \mathrm{ACRT}(d)\,\omega(d)\,\mathrm{d}d$ returns
-$\hat\beta$ for any weighting whatever, and the integral does no work. This
-appendix relaxes the functional form and computes the ACR as defined.
+construction. With $\mathrm{ACRT}(d)$ constant, the weights in
+$\mathrm{ACR} = \int \mathrm{ACRT}(d)\,\omega(d)\,\mathrm{d}d$ do no work.
+This appendix relaxes that restriction and computes the ACR as defined.
 
 Three specifications are estimated. They differ in the dose term and in
 nothing else:
@@ -1823,25 +1812,34 @@ year fixed effects and the clustering are the headline's, and all three
 share one complete-cases set, so $N$ is identical across every column.
 
 One departure is deliberate. The headline regressor is the rate level,
-while these enter the cumulative change. Under municipality fixed effects
-the two coincide for a linear term, since the level is the baseline plus
-the change and the baseline is absorbed, which is why the linear row of
-Table~\ref{tab:flex_dose_acr} reproduces the headline to eight decimals.
-The equivalence fails for anything nonlinear, because
+while these enter the cumulative change. For a linear term the two are the
+same once municipality fixed effects absorb the baseline rate, which is
+why the linear row of Table~\ref{tab:flex_dose_acr} reproduces the
+headline exactly. That equivalence fails for anything nonlinear, since
 $d^2 = b_i^2 + 2b_i c_{it} + c_{it}^2$ leaves a baseline-by-change term
-the fixed effects cannot remove. Fitting the quadratic in levels rather
-than changes reverses the sign of both coefficients and moves the
-squared-term $p$-value from $0.73$ to $0.06$, so the choice is not
-cosmetic. The change is the object the paper's dose-response describes.
+the fixed effects cannot remove. Fitting the quadratic in levels instead
+flips the sign of both coefficients, so the choice matters, and the change
+is what the paper's dose-response describes.
 
 \input{../tables/flex_dose_acr.tex}
 
 Figures~\ref{fig:flex_pooled} to~\ref{fig:flex_incbecomes} draw the two
 flexible fits against the linear model of the body. The left panels are
 ATT$(d)$ and the right panels the marginal effect ACRT$(d)$, which is where
-the three specifications differ: it is constant by construction under the
-line, a straight tilt under the quadratic, and free to wander under the
-spline.
+the three specifications differ. ACRT$(d)$ is constant by construction
+under the line, a straight tilt under the quadratic, and free to wander
+under the spline.
+
+Both flexible fits bend the same way. ATT$(d)$ falls through the middle of
+the dose range and then flattens, so ACRT$(d)$ shrinks toward zero at the
+largest increases. The pattern is clearest in Inc-becomes, the cell that
+spans the widest range of doses, where both fits have ATT$(d)$ level off
+past roughly three quarters of a percentage point. Read literally, the
+early tenths of a point do most of the work and each further increase
+moves fewer households, because the households most willing to leave over
+the tax have already left. The trade-off a municipality faces is therefore
+steepest at low rates and shallower at high ones. The bands are wide, so
+this is a shape worth noting rather than a result the paper rests on.
 
 \begin{figure}[H]
   \centering
@@ -1850,9 +1848,9 @@ spline.
   \includegraphics[width=0.95\textwidth]{../figures/att_flex_pooled.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize\textit{Notes:} Quadratic and natural-spline dose-response with
-    95\% bands. Blue dashed is the linear model of Figure~\ref{fig:spline_pooled},
-    $\mathrm{ACR}\times d$ on the left and a constant ACR on the right. Sample,
-    controls, fixed effects and clustering are the headline's.
+    95\% bands. Blue dashed is the linear model of
+    Figure~\ref{fig:spline_pooled}. Sample, controls, fixed effects and
+    clustering are the headline's.
   \end{minipage}
 \end{figure}
 
@@ -1863,9 +1861,9 @@ spline.
   \includegraphics[width=0.95\textwidth]{../figures/att_flex_incbind.png}
   \begin{minipage}{0.95\textwidth}
     \footnotesize\textit{Notes:} As Figure~\ref{fig:flex_pooled}, against the
-    linear model of Figure~\ref{fig:spline_incbind}. The spline bands span most
-    of each panel, which is what three basis columns on twenty-four treated
-    municipalities buys.
+    linear model of Figure~\ref{fig:spline_incbind}. The spline bands are wide
+    because three basis columns are being fit on twenty-four treated
+    municipalities.
   \end{minipage}
 \end{figure}
 
@@ -1885,25 +1883,24 @@ The headline survives. On the count of workers who live and work in the
 municipality the Inc-bind ACR reads $-0.537$ linear, $-0.507$ quadratic
 and $-0.376$ under the spline, all within one standard error of each
 other, and the same ordering holds on the live-and-work share. The
-flexible fits buy nothing in explanatory power: $R^2$ is $0.9633$ and
-within $R^2$ is $0.0021$ in all three, going from three dose parameters to
-eight.
+flexible fits also buy nothing in fit. $R^2$ is $0.9633$ and within $R^2$
+is $0.0021$ in all three, going from three dose parameters to eight.
 
-The reason is visible in the underlying coefficients. In Inc-bind not one
-flexible term is distinguishable from zero, and the standard errors run
-from $0.14$ on the linear coefficient to $0.49$, $3.17$ and $5.74$ on the
-three spline terms. Twenty-four municipalities cannot identify a curve.
-Inc-becomes is the exception, with a squared term significant at
-$p = 0.012$ and all three spline terms significant, and the pooled
-specification inherits that: its squared term is significant at
-$p = 0.004$ even though Inc-bind's is not. Pooled curvature is therefore
-at least as much a consequence of mixing cells whose linear slopes differ
-as a statement about the shape of any one response, which is the reading
+The underlying coefficients say why. In Inc-bind not one flexible term is
+distinguishable from zero, with standard errors running from $0.14$ on the
+linear coefficient to $0.49$, $3.17$ and $5.74$ on the three spline terms.
+Twenty-four municipalities cannot identify a curve. Inc-becomes is the
+exception, with a squared term significant at $p = 0.012$ and all three
+spline terms significant. The pooled specification inherits that, since
+its squared term is significant at $p = 0.004$ even though Inc-bind's is
+not. Pooled curvature is therefore at least as much a consequence of
+mixing cells whose linear slopes differ as a statement about the shape of
+any one response, which is the reading
 Section~\ref{subsec:causal-params} gives it.
 
 Inc-nobind cannot support either flexible form. Its quadratic returns
 $-3.937$ with a standard error of $2.425$, and its third spline term is
-dropped for collinearity so no spline ACR exists. Fourteen municipalities
+dropped for collinearity, so no spline ACR exists. Fourteen municipalities
 are too few, and the table records that rather than omitting the row.
 
 \section{Realized-Dose Event Studies, Full Set}

@@ -1345,7 +1345,7 @@ local({
       body <- c(body, paste0("    ", ms[4], " & ", paste(est, collapse = " & "), " \\\\"),
                       paste0("        & ", paste(se, collapse = " & "), " \\\\"))
     }
-    dosenote <- c(dosenote, sprintf("%s %.3f (%d municipalities)",
+    dosenote <- c(dosenote, sprintf("%s %.3f (%d munis)",
                                     gsub("\\\\textbf\\{|\\}", "", rs[[3]]),
                                     sub$mean_dose[1], sub$n_treated[1]))
   }
@@ -1359,14 +1359,12 @@ local({
     paste0("    & ", paste(hdr, collapse = " & "), " \\\\"), "    \\midrule",
     body, "    \\bottomrule", "  \\end{tabular}", "  }",
     "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-    paste0("    \\footnotesize \\textit{Notes:} Every row is the ACR, the dose-weighted average of ACRT$(d)$ over $\\omega(d)$. ",
-           "The linear row is the headline coefficient and reproduces Table~\\ref{tab:headline_muni_combined} and Table~\\ref{tab:pooled_per_pp_cousub} exactly. ",
-           "$\\omega(d)$ puts one weight on each treated municipality at the dose it took, so the ACR is evaluated at the mean dose: ",
-           paste(dosenote, collapse = "; "), ". ",
-           "The quadratic and spline rows enter the dose as the cumulative CHANGE rather than the rate level. Under unit fixed effects the two are identical for a linear term, which is why the linear row matches the headline, but not for anything nonlinear. ",
-           "Sample, fiscal controls, school-district co-treatment, stacked muni$\\times$stack and year$\\times$stack fixed effects and clustering at the municipality are the headline's throughout, and all three share one complete-cases set. ",
-           sprintf("$N = %s$ in every column. ", formatC(nrow_n, format = "d", big.mark = ",")),
-           "Inc-nobind has 14 treated municipalities: its quadratic is not interpretable and its spline is not identified, which the entries record rather than hide. ",
+    paste0("    \\footnotesize \\textit{Notes:} Each row is the ACR, the average of ACRT$(d)$ weighted by $\\omega(d)$, which puts one weight on each treated municipality at the dose it took. ",
+           "The linear row is the headline coefficient. Mean doses: ", paste(dosenote, collapse = ", "), ". ",
+           "The quadratic and spline rows enter the dose as the cumulative change rather than the rate level, which is the same as the headline for a linear term but not for a nonlinear one. ",
+           "Sample, controls, school-district co-treatment, fixed effects and clustering are the headline's, ",
+           sprintf("$N = %s$. ", formatC(nrow_n, format = "d", big.mark = ",")),
+           "Inc-nobind's 14 treated municipalities cannot identify a spline. ",
            "SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
     "  \\end{minipage}", "\\end{table}")
   writeLines(out, file.path(TABLE_DIR, "flex_dose_acr.tex"))
