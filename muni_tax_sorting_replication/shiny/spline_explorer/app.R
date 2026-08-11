@@ -151,16 +151,16 @@ server <- function(input, output, session) {
         MODCOL[[r[["model"]]]], r[["model"]], as.numeric(r[["val"]]))), collapse = "")
     }
     HTML(sprintf(
-      "<div style='font-size:14px;line-height:1.6'>At <b>d = %%.3f pp</b>
-       <table style='width:100%%%%;margin-top:6px'>
-       <tr><th align='left'></th><th align='right'>ATT(d)</th><th align='right'>ACRT(d)</th></tr>%%s
+      "<div style='font-size:14px;line-height:1.6'>At <b>d = %.3f pp</b>
+       <table style='width:100%%;margin-top:6px'>
+       <tr><th align='left'></th><th align='right'>ATT(d)</th><th align='right'>ACRT(d)</th></tr>%s
        </table>
        <div style='margin-top:10px'><b>ACR</b>, the dose-weighted average of
        ACRT over &omega;(d)
-       <table style='width:100%%%%;margin-top:4px'>%%s</table></div>
+       <table style='width:100%%;margin-top:4px'>%s</table></div>
        <div style='margin-top:8px;font-size:12px;color:#555'>&omega;(d) is the
-       distribution of doses the %%d treated municipalities actually took, mean
-       %%.3f pp. Under the linear model ACRT is constant, so the integral
+       distribution of doses the %d treated municipalities actually took, mean
+       %.3f pp. Under the linear model ACRT is constant, so the integral
        returns &beta; for any &omega; and the linear row is its own ACR by
        construction. For the other two the average is doing real
        work.</div></div>",
