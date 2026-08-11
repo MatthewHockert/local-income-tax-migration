@@ -1174,15 +1174,25 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     acr <- unique(res$ACRT[, .(outcome, acr)])[, panel := P_ACRT]
     acr[, fc := factor(paste(outcome, panel, sep=" — "), levels=ord)]
     acr[, ltxt := sprintf("ACR = %.3f", acr)]
+    # The linear model the paper actually estimates, drawn on BOTH panels so the
+    # spline can be read against it rather than on its own. On the ATT panel the
+    # linear model implies ATT(d) = ACR x d, a ray from the origin; on the ACRT
+    # panel it implies a constant marginal effect equal to the ACR.
+    lin <- unique(res$ACRT[, .(outcome, acr)])[
+      , .(dose = c(0, dmax), y = c(0, acr * dmax)), by = .(outcome, acr)]
+    lin[, panel := P_ATT]
+    lin[, fc := factor(paste(outcome, panel, sep=" — "), levels=ord)]
     g <- ggplot(both, aes(dose, y)) +
       geom_hline(yintercept=0, linetype="dotted", color="grey70") +
       geom_ribbon(aes(ymin=lo, ymax=hi), fill="#1b7837", alpha=0.13, color=NA) +
       geom_line(color="#1b7837", linewidth=0.7) +
+      geom_line(data=lin, aes(dose, y, group=outcome), color="#2166ac",
+                linetype="longdash", linewidth=0.5, inherit.aes=FALSE) +
       geom_hline(data=acr, aes(yintercept=acr), color="#2166ac", linetype="longdash", linewidth=0.5) +
       geom_text(data=acr, aes(x=dmax*0.45, y=acr, label=ltxt), color="#2166ac", vjust=-0.5, size=2.6, inherit.aes=FALSE) +
       facet_wrap(~ fc, scales="free_y", ncol=2) +
       labs(title=ttl,
-           subtitle="Natural-spline ns(dose), net of SD rate changes. Left: ATT(d). Right: ACRT(d)=dATT/dd; blue dashed = linear ACR.",
+           subtitle="Natural-spline ns(dose), net of SD rate changes. Green = spline; blue dashed = the linear model the paper estimates (left: ACR x d; right: constant ACR).",
            x="dose (cumulative muni rate change, pp)", y=NULL) +
       theme_bw(base_size=9) + theme(plot.subtitle=element_text(size=8))
     ggsave(file.path(fig_dir, outfile), g, width=10, height=11, dpi=300)

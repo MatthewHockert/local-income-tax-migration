@@ -691,12 +691,17 @@ The dose-response figures in this paper are fit to a natural spline in the dose,
 knots at the terciles of the positive treated doses and boundary knots at
 zero and the largest observed dose. The spline is a visual device rather
 than an estimating equation, and it is deliberately more flexible than
-the data can support so that any bending is visible if it is there. It
-is. The curvature diagnostic in Appendix~\ref{app:curvature} rejects
-linearity for the count of workers who live and work in the municipality
-($p = 0.004$) and for their share of local jobs ($p = 0.020$), though not
-for total jobs or in-commuters. The marginal effect is steepest at
-moderate rate changes and flatter at either end of the observed range.
+the data can support so that any bending is visible if it is there. Some
+of it is, but not where it would matter most. A quadratic in the dose
+rejects a constant marginal effect for the pooled increase group on the
+count of workers who live and work in the municipality ($p = 0.004$) and
+on their share of local jobs ($p = 0.024$). Fitted within cells the
+rejection belongs to the partial pass-through group ($p = 0.012$) and not
+to the binding group, where the squared term is nowhere near significant
+on any outcome ($p$ between $0.60$ and $0.78$). Pooling groups whose
+linear slopes differ will produce apparent curvature even when each group
+is straight, so the pooled rejection is at least as much a statement about
+mixing binding states as about the shape of any one response.
 
 It is worth being explicit about what this means for the estimated model.
 Under a linear specification the marginal effect cannot vary, so
@@ -1724,11 +1729,10 @@ LODES worker counts carry no income detail that would let me test for one.
 More importantly, the two settings sit at very different points of the
 same dose-response. The largest cumulative increase anywhere in my sample
 is $1.25$ percentage points and the average is $0.34$, while Swiss
-municipal differentials are considerably larger. Since the curvature
-diagnostic in Appendix~\ref{app:curvature} rejects a constant marginal
-effect for the resident workforce, extrapolating a per-percentage-point
-estimate fitted on this range out to Swiss-sized differentials would be
-out of sample in a way the paper cannot defend.
+municipal differentials are considerably larger. Extrapolating a per-percentage-point estimate fitted on
+this range out to Swiss-sized differentials would be out of sample in a
+way the paper cannot defend, whatever the shape of the response turns out
+to be beyond it.
 
 Three limits deserve to be stated plainly rather than left to the
 robustness section. The estimates are not equally well identified. The
@@ -1790,28 +1794,6 @@ mean anything.
 %==========================================================
 \appendix
 
-\section{Curvature Diagnostics}
-\label{app:curvature}
-
-This appendix carries the test behind the claim in
-Section~\ref{subsec:causal-params} that the dose-response bends. It is
-what licenses reporting a spline alongside the linear estimator, and what
-the linear specification is being checked against.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{../figures/curvature_att_curve.png}
-\caption{Quadratic ATT$(d)$ dose-response by outcome (pooled Increase, headline
-sample). Each panel plots $\widehat{\mathrm{ATT}}(d)=b_1 d + b_2 d^2$, the total
-effect on $Y$ of a cumulative dose-$d$ rate increase relative to never-changers,
-with a delta-method 95\% confidence band. The $d^2$ term is significant for the
-two residence outcomes (panel headers report its $p$-value), producing a concave,
-diminishing-marginal dose-response; it is insignificant for the job-flow outcomes,
-where the response is effectively linear.}
-\label{fig:curvature_att}
-\end{figure}
-
-%==========================================================
 \section{Realized-Dose Event Studies, Full Set}
 \label{app:es-full}
 
