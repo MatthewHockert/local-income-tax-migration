@@ -1167,6 +1167,22 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       bq <- coef(fQ)[c("dose","dose2")]; Vq <- vcov(fQ)[c("dose","dose2"), c("dose","dose2")]
       q_p <- fQ$coeftable["dose2", "Pr(>|t|)"]
       csp <- coef(fS)[bn]; Vsp <- vcov(fS)[bn, bn]
+
+      # ACR from the flexible fits: the same definition the paper uses,
+      # integral of ACRT(d) against omega(d), with omega the doses treated
+      # municipalities actually took. Under the linear model ACRT is constant
+      # so the integral returns beta for any omega; here it does real work.
+      # Both are linear combinations w'b, so SEs come from w'Vw.
+      wd <- unique(pp[, .(muni, dose)])[, .(dose = max(dose)), by = muni]$dose
+      acr_q <- NA_real_; acr_s <- NA_real_
+      if (length(wd) > 1) {
+        wq <- c(1, 2 * mean(wd))
+        acr_q <- as.numeric(wq %*% bq)
+        hh <- 1e-5
+        Bp <- (predict(B, pmin(wd + hh, bb[2])) - predict(B, pmax(wd - hh, 0))) /
+              (pmin(wd + hh, bb[2]) - pmax(wd - hh, 0))
+        acr_s <- as.numeric(colMeans(Bp) %*% csp)
+      }
       acr <- headline_acr(treated_cells, o)
       if (is.na(acr)) acr <- as.numeric(coef(fL)["dose"])
       # ATT(d) = B(d)'b - B(0)'b  (effect of dose d relative to dose 0); the
@@ -1189,6 +1205,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       BAS[[o]] <- data.table(outcome=lab[o], knot1=kk[1], knot2=kk[2],
                              bk_lo=bb[1], bk_hi=bb[2],
                              b1=csp[1], b2=csp[2], b3=csp[3], acr=acr,
+                             acr_quad=acr_q, acr_spline=acr_s, mean_dose=mean(wd), n_treated=length(wd),
                              q1=bq[1], q2=bq[2], q_dose2_p=q_p)
       # Quadratic ATT(d) = b1 d + b2 d^2 and ACRT(d) = b1 + 2 b2 d, delta-method SEs.
       attq  <- bq[1]*dg + bq[2]*dg^2

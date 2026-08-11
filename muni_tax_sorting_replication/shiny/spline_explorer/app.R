@@ -138,17 +138,35 @@ server <- function(input, output, session) {
       "<tr><td style='color:%s'><b>%s</b></td><td align='right'>%+.3f</td><td align='right'>%+.3f</td></tr>",
       MODCOL[[r[["model"]]]], r[["model"]], as.numeric(r[["att"]]), as.numeric(r[["acrt"]]))),
       collapse = "")
+    bb <- if (is.null(BASIS)) NULL else
+      BASIS[group == input$group & outcome == input$outcome]
+    acr_rows <- ""
+    if (!is.null(bb) && nrow(bb) && !is.null(bb$acr_quad)) {
+      trip <- data.table(
+        model = c("Linear (estimated)", "Quadratic", "Spline (visual)"),
+        val   = c(bb$acr[1], bb$acr_quad[1], bb$acr_spline[1]))
+      trip <- trip[model %in% cur()$keep & is.finite(val)]
+      acr_rows <- paste(apply(trip, 1, function(r) sprintf(
+        "<tr><td style='color:%s'>%s</td><td align='right'><b>%+.3f</b></td></tr>",
+        MODCOL[[r[["model"]]]], r[["model"]], as.numeric(r[["val"]]))), collapse = "")
+    }
     HTML(sprintf(
-      "<div style='font-size:14px;line-height:1.6'>At <b>d = %.3f pp</b>
-       <table style='width:100%%;margin-top:6px'>
-       <tr><th align='left'></th><th align='right'>ATT(d)</th><th align='right'>ACRT(d)</th></tr>%s
+      "<div style='font-size:14px;line-height:1.6'>At <b>d = %%.3f pp</b>
+       <table style='width:100%%%%;margin-top:6px'>
+       <tr><th align='left'></th><th align='right'>ATT(d)</th><th align='right'>ACRT(d)</th></tr>%%s
        </table>
-       <div style='margin-top:8px;color:#2166ac'><b>ACR = %+.3f</b></div>
-       <div style='margin-top:8px;font-size:12px;color:#555'>The linear row is
-       flat by construction, so its ACRT equals the ACR at every dose. Where the
-       spline or quadratic sits below it, a further point of tax bites harder
-       than the sample average at this dose.</div></div>",
-      v$d, rows, v$acr))
+       <div style='margin-top:10px'><b>ACR</b>, the dose-weighted average of
+       ACRT over &omega;(d)
+       <table style='width:100%%%%;margin-top:4px'>%%s</table></div>
+       <div style='margin-top:8px;font-size:12px;color:#555'>&omega;(d) is the
+       distribution of doses the %%d treated municipalities actually took, mean
+       %%.3f pp. Under the linear model ACRT is constant, so the integral
+       returns &beta; for any &omega; and the linear row is its own ACR by
+       construction. For the other two the average is doing real
+       work.</div></div>",
+      v$d, rows, acr_rows,
+      if (!is.null(bb) && nrow(bb)) as.integer(bb$n_treated[1]) else NA_integer_,
+      if (!is.null(bb) && nrow(bb)) bb$mean_dose[1] else NA_real_))
   })
 
   # MathJax needs a SINGLE backslash in the delivered string, so each command is
