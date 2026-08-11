@@ -1119,7 +1119,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
   }
 
   fit_group <- function(treated_cells) {
-    ATT <- list(); ACRT <- list(); BAS <- list(); QUA <- list(); keep <- c(treated_cells, "NC")
+    ATT <- list(); ACRT <- list(); BAS <- list(); QUA <- list(); PTS <- list(); keep <- c(treated_cells, "NC")
     dmax_g <- quantile(stk[as.character(treat_cell) %in% treated_cells & dose > 0, dose],
                        0.95, na.rm = TRUE)
     dg <- seq(0, dmax_g, length.out = 80)
@@ -1143,6 +1143,26 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       # Quadratic on the SAME sample and controls, so the spline and the
       # polynomial are directly comparable rather than differing in setup too.
       d[, dose2 := dose^2]
+
+      # One point per treated municipality: its own pre/post change in the
+      # outcome, minus the same change for the never-changers in its stack,
+      # plotted at the dose it actually took. A crude per-unit
+      # difference-in-differences, with no controls and no fixed effects, so it
+      # shows the data rather than a second estimate. A line through these
+      # points recovers the headline coefficient closely, which is the check
+      # that they are the right points to show.
+      dd <- stk[as.character(treat_cell) %in% keep & !is.na(get(o)) & !is.na(rel)]
+      ncd <- dd[treat_cell == "NC",
+                .(nc_d = mean(get(o)[rel >= 0], na.rm = TRUE) -
+                         mean(get(o)[rel <  0], na.rm = TRUE)), by = stack]
+      tmd <- dd[as.character(treat_cell) %in% treated_cells,
+                .(t_d = mean(get(o)[rel >= 0], na.rm = TRUE) -
+                        mean(get(o)[rel <  0], na.rm = TRUE),
+                  dose = max(dose, na.rm = TRUE)), by = .(muni, stack)]
+      pp <- merge(tmd, ncd, by = "stack")[, y := t_d - nc_d]
+      pp <- pp[is.finite(y) & is.finite(dose) & dose <= dmax_g]
+      if (nrow(pp)) PTS[[o]] <- data.table(outcome = lab[o], dose = pp$dose, y = pp$y)
+
       fQ <- feols(as.formula(paste0(o," ~ dose + dose2 + ",SDT," + ",cs," | stack_muni + stack_year")), d, cluster=~muni)
       bq <- coef(fQ)[c("dose","dose2")]; Vq <- vcov(fQ)[c("dose","dose2"), c("dose","dose2")]
       q_p <- fQ$coeftable["dose2", "Pr(>|t|)"]
@@ -1182,7 +1202,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
                    lo=acrtq-1.96*sqrt(pmax(vacrq,0)), hi=acrtq+1.96*sqrt(pmax(vacrq,0)), acr=NA_real_))
     }
     list(ATT = rbindlist(ATT), ACRT = rbindlist(ACRT),
-         BASIS = rbindlist(BAS), QUAD = rbindlist(QUA))
+         BASIS = rbindlist(BAS), QUAD = rbindlist(QUA), PTS = rbindlist(PTS))
   }
 
   plot_group <- function(res, ttl, outfile) {
@@ -1291,7 +1311,11 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
                copy(res_incbind$BASIS)[,    group := "Inc-bind"],
                copy(res_incbecomes$BASIS)[, group := "Inc-becomes"]),
          file.path(RESULTS_DIR, "spline_basis.csv"))
-  message("Saved data/results/spline_curves.csv + spline_basis.csv")
+  fwrite(rbind(copy(res_pooled$PTS)[,     group := "Pooled Increase"],
+               copy(res_incbind$PTS)[,    group := "Inc-bind"],
+               copy(res_incbecomes$PTS)[, group := "Inc-becomes"]),
+         file.path(RESULTS_DIR, "spline_points.csv"))
+  message("Saved data/results/spline_curves.csv + spline_basis.csv + spline_points.csv")
 
   # (A compact 2-panel per-cell ATT figure was removed 2026-07-06: the paper
   #  uses the full per-cell plot_group() figures, same layout as the pooled one.)

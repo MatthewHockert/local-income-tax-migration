@@ -31,6 +31,11 @@ BASIS  <- local({
   p <- sub("spline_curves", "spline_basis", find_curves())
   if (file.exists(p)) fread(p) else NULL
 })
+POINTS <- local({
+  p <- sub("spline_curves", "spline_points", find_curves())
+  if (file.exists(p)) fread(p) else NULL
+})
+
 suppressMessages(library(splines))
 
 ui <- fluidPage(
@@ -54,6 +59,7 @@ ui <- fluidPage(
                    choices = c("Dose-response" = "curve",
                                "Spline basis"  = "basis"),
                    selected = "curve"),
+      checkboxInput("show_pts", "Municipality points", TRUE),
       checkboxInput("show_acrt", "ACRT curves (right axis)", TRUE),
       checkboxInput("show_ci", "Confidence bands", TRUE),
       checkboxInput("show_tangent", "Tangent at d", TRUE),
@@ -253,6 +259,11 @@ server <- function(input, output, session) {
     # baseline, a never-changer, so it gets a solid black rule.
     g <- ggplot() +
       geom_hline(yintercept = 0, colour = "black", linewidth = 0.9)
+    if (isTRUE(input$show_pts) && !is.null(POINTS)) {
+      pp <- POINTS[group == input$group & outcome == input$outcome & dose <= s$dmax]
+      if (nrow(pp)) g <- g + geom_point(data = pp, aes(dose, y), colour = "grey72",
+                                        size = 2.1, alpha = 0.85)
+    }
     if (isTRUE(input$show_ci)) {
       sp <- cv$att[model == "Spline (visual)" & !is.na(lo)]
       sa <- acrt[model == "Spline (visual)" & !is.na(lo2)]
@@ -287,7 +298,7 @@ server <- function(input, output, session) {
              "Solid = ATT(d), read on the left axis. Dashed = ACRT(d), read on the right.",
              "Circles mark ATT at the chosen dose, triangles mark ACRT.",
              "\nThe blue linear fit is what the paper estimates: its ATT is a straight ray and its ACRT is flat at the ACR.",
-             "Green band is the spline confidence interval.")
+             "Grey points: one treated municipality each, its own pre/post change less the never-changers', at the dose it took.")
              else paste(
              "ATT(d), the total effect of a dose-d increase relative to a never-changer.",
              "Circles mark the chosen dose.",
