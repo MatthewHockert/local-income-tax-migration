@@ -44,16 +44,16 @@ ui <- fluidPage(
       selectInput("group", "Estimation group",
                   choices = c("Inc-bind", "Inc-becomes", "Pooled Increase"),
                   selected = "Inc-bind"),
-      radioButtons("model", "Model",
+      checkboxGroupInput("models", "Models shown",
                    choices = c("Linear (estimated)" = "linear",
+                               "Quadratic"          = "quad",
                                "Spline (visual)"    = "spline"),
-                   selected = "spline"),
+                   selected = c("linear", "quad", "spline")),
       uiOutput("dose_ui"),
       radioButtons("view", "View",
                    choices = c("Dose-response" = "curve",
                                "Spline basis"  = "basis"),
                    selected = "curve"),
-      checkboxInput("show_quad", "Overlay quadratic", FALSE),
       checkboxInput("show_ci", "Confidence bands", TRUE),
       checkboxInput("show_tangent", "Tangent at d", TRUE),
       hr(),
@@ -78,20 +78,29 @@ server <- function(input, output, session) {
          acr = d[curve == "ACRT", acr][1], dmax = max(d$dose, na.rm = TRUE))
   })
 
-  # Curves under the selected model. Linear is the estimated object: a single
-  # slope, so ATT is acr*d and ACRT is acr everywhere.
+  # All three models on one grid, in long form, so the plot can draw whichever
+  # are ticked. Linear is the estimated object: a single slope, so ATT is acr*d
+  # and ACRT is acr everywhere. Quadratic and spline come from the CSV.
+  MODLAB <- c(linear = "Linear (estimated)", quad = "Quadratic", spline = "Spline (visual)")
+  MODCOL <- c(`Linear (estimated)` = "#2166ac", Quadratic = "#7b3294",
+              `Spline (visual)` = "#1b7837")
+
   cur <- reactive({
     s <- sel(); req(s)
-    if (input$model == "spline") {
-      list(att = s$att[, .(dose, y, lo, hi)],
-           acrt = s$acrt[, .(dose, y, lo, hi)], acr = s$acr)
-    } else {
-      g <- s$att$dose
-      list(att  = data.table(dose = g, y = s$acr * g, lo = NA_real_, hi = NA_real_),
-           acrt = data.table(dose = g, y = rep(s$acr, length(g)),
-                             lo = NA_real_, hi = NA_real_),
-           acr  = s$acr)
-    }
+    g <- s$att$dose
+    lin_att  <- data.table(dose = g, y = s$acr * g, lo = NA_real_, hi = NA_real_)
+    lin_acrt <- data.table(dose = g, y = rep(s$acr, length(g)), lo = NA_real_, hi = NA_real_)
+    bind <- function(dt, m, cv) if (is.null(dt) || !nrow(dt)) NULL else
+      copy(dt)[, .(dose, y, lo, hi, model = MODLAB[[m]], curve = cv)]
+    att <- rbindlist(list(bind(lin_att, "linear", "ATT"),
+                          bind(s$attq,  "quad",   "ATT"),
+                          bind(s$att,   "spline", "ATT")), use.names = TRUE)
+    acrt <- rbindlist(list(bind(lin_acrt, "linear", "ACRT"),
+                           bind(s$acrtq,  "quad",   "ACRT"),
+                           bind(s$acrt,   "spline", "ACRT")), use.names = TRUE)
+    keep <- MODLAB[intersect(c("linear", "quad", "spline"), input$models)]
+    list(att = att[model %in% keep], acrt = acrt[model %in% keep],
+         acr = s$acr, keep = keep)
   })
 
   # The three groups have different dose ranges (0.50 / 0.85 / 1.00), so the
@@ -107,27 +116,32 @@ server <- function(input, output, session) {
     cv <- cur(); s <- sel(); req(cv, s)
     d <- if (is.null(input$dose) || !is.finite(input$dose)) s$dmax / 2 else input$dose
     d <- max(0, min(s$dmax, d))
-    list(d = d,
-         att  = approx(cv$att$dose,  cv$att$y,  xout = d, rule = 2)$y,
-         acrt = approx(cv$acrt$dose, cv$acrt$y, xout = d, rule = 2)$y,
-         acr  = cv$acr)
+    pick <- function(dt, m) { x <- dt[model == m]
+      if (!nrow(x)) NA_real_ else approx(x$dose, x$y, xout = d, rule = 2)$y }
+    tab <- rbindlist(lapply(cv$keep, function(m)
+      data.table(model = m, att = pick(cv$att, m), acrt = pick(cv$acrt, m))))
+    list(d = d, tab = tab, acr = cv$acr,
+         att  = if (nrow(tab)) tab$att[nrow(tab)]  else NA_real_,
+         acrt = if (nrow(tab)) tab$acrt[nrow(tab)] else NA_real_)
   })
 
   output$readout <- renderUI({
     v <- at_d(); req(v)
-    extra <- if (input$model == "linear")
-      "Under the linear model ACRT is constant and equal to the ACR by construction."
-    else
-      sprintf("ACRT is %s than the ACR here, so a further percentage point at this dose bites %s than the sample average.",
-              if (v$acrt < v$acr) "steeper" else "flatter",
-              if (v$acrt < v$acr) "harder" else "less")
+    rows <- paste(apply(v$tab, 1, function(r) sprintf(
+      "<tr><td style='color:%s'><b>%s</b></td><td align='right'>%+.3f</td><td align='right'>%+.3f</td></tr>",
+      MODCOL[[r[["model"]]]], r[["model"]], as.numeric(r[["att"]]), as.numeric(r[["acrt"]]))),
+      collapse = "")
     HTML(sprintf(
-      "<div style='font-size:15px;line-height:1.7'>At <b>d = %.3f pp</b><br>
-       <span style='color:#1b7837'><b>ATT(d) = %+.3f</b></span><br>
-       <span style='color:#b2182b'><b>ACRT(d) = %+.3f</b></span><br>
-       <span style='color:#2166ac'><b>ACR = %+.3f</b></span><br><br>
-       <span style='font-size:13px;color:#555'>%s</span></div>",
-      v$d, v$att, v$acrt, v$acr, extra))
+      "<div style='font-size:14px;line-height:1.6'>At <b>d = %.3f pp</b>
+       <table style='width:100%%;margin-top:6px'>
+       <tr><th align='left'></th><th align='right'>ATT(d)</th><th align='right'>ACRT(d)</th></tr>%s
+       </table>
+       <div style='margin-top:8px;color:#2166ac'><b>ACR = %+.3f</b></div>
+       <div style='margin-top:8px;font-size:12px;color:#555'>The linear row is
+       flat by construction, so its ACRT equals the ACR at every dose. Where the
+       spline or quadratic sits below it, a further point of tax bites harder
+       than the sample average at this dose.</div></div>",
+      v$d, rows, v$acr))
   })
 
   # MathJax needs a SINGLE backslash in the delivered string, so each command is
@@ -140,23 +154,26 @@ server <- function(input, output, session) {
     eq_sp_mod <- paste0(
       "$$\\textbf{Spline:}\\quad Y_{it} = \\alpha_i + \\gamma_t + ",
       "B(d_{it})\'b + \\mathbf{X}_{it}\'\\phi + \\varepsilon_{it}$$")
+    eq_q_mod <- paste0(
+      "$$\\textbf{Quadratic:}\\quad Y_{it} = \\alpha_i + \\gamma_t + ",
+      "\\beta_1 d_{it} + \\beta_2 d_{it}^2 + \\mathbf{X}_{it}\'\\phi + \\varepsilon_{it}$$")
     eq_par <- paste0(
       "$$\\text{ATT}(d) = \\bigl(B(d) - B(0)\\bigr)\'b, \\qquad ",
       "\\text{ACRT}(d) = \\frac{\\partial\\,\\text{ATT}(d)}{\\partial d}, \\qquad ",
       "\\text{ACR} = \\int \\text{ACRT}(d)\\,\\omega(d)\\,\\mathrm{d}d$$")
-    eq_now <- if (input$model == "linear") paste0(
-      "$$B(d) = d \\;\\Rightarrow\\; \\text{ATT}(d) = \\hat\\beta d, \\quad ",
-      "\\text{ACRT}(d) = \\text{ACR} = \\hat\\beta = ",
-      sprintf("%.3f", v$acr), "$$") else paste0(
-      "$$\\text{ACRT}(d)\\ \\text{varies with } d, \\quad ",
+    eq_now <- paste0(
+      "$$\\textbf{Linear: } B(d) = d \\;\\Rightarrow\\; \\text{ATT}(d) = \\hat\\beta d, \\quad ",
+      "\\text{ACRT}(d) = \\text{ACR} = \\hat\\beta = ", sprintf("%.3f", v$acr), "$$",
+      "$$\\textbf{Quadratic and spline: } \\text{ACRT}(d)\\ \\text{varies with } d, \\quad ",
       "\\text{ACR} = ", sprintf("%.3f", v$acr),
-      "\\ \\text{is its dose-weighted average}$$")
+      "\\ \\text{remains its dose-weighted average}$$")
     withMathJax(
       div(style = "font-size:14px",
         HTML("Both fits run on the same sample, this group\'s municipalities plus
               never-changers, with the dose \\(d_{it}=0\\) for never-changers.
               They differ in one term only, how the dose enters:"),
         HTML(eq_lin_mod),
+        HTML(eq_q_mod),
         HTML(eq_sp_mod),
         HTML("The linear model is the spline with \\(B(d)=d\\), a single column.
               The causal parameters have one definition either way. ATT is the
@@ -211,6 +228,7 @@ server <- function(input, output, session) {
   output$plot <- renderPlot({
     if (identical(input$view, "basis")) { p <- basis_plot(); req(p); return(p) }
     s <- sel(); cv <- cur(); v <- at_d(); req(s, cv, v)
+    validate(need(nrow(cv$att) > 0, "Tick at least one model."))
 
     ra <- range(c(cv$att$lo, cv$att$hi, cv$att$y), na.rm = TRUE)
     rc <- range(c(cv$acrt$lo, cv$acrt$hi, cv$acrt$y, cv$acr), na.rm = TRUE)
@@ -224,50 +242,49 @@ server <- function(input, output, session) {
     tang <- data.table(x = c(max(0, v$d - s$dmax * 0.18),
                              min(s$dmax, v$d + s$dmax * 0.18)))
     tang[, y := v$att + v$acrt * (x - v$d)]
+    pts <- v$tab[!is.na(att)]
 
-    # Zero is the comparison baseline (a never-changer), so it gets a solid
-    # black rule rather than the faint dotted grey it had.
+    # Colour is the MODEL, so the three fits can be compared directly. Solid is
+    # ATT on the left axis, dashed is ACRT on the right. Zero is the comparison
+    # baseline, a never-changer, so it gets a solid black rule.
     g <- ggplot() +
       geom_hline(yintercept = 0, colour = "black", linewidth = 0.9)
-    if (isTRUE(input$show_ci) && input$model == "spline") g <- g +
-      geom_ribbon(data = cv$att, aes(dose, ymin = lo, ymax = hi),
-                  fill = "#1b7837", alpha = 0.12) +
-      geom_ribbon(data = acrt, aes(dose, ymin = lo2, ymax = hi2),
-                  fill = "#b2182b", alpha = 0.10)
-    if (isTRUE(input$show_tangent)) g <- g +
-      geom_line(data = tang, aes(x, y), colour = "#b2182b",
-                linewidth = 1.1, alpha = 0.75)
-    if (isTRUE(input$show_quad) && nrow(s$attq)) {
-      g <- g +
-        geom_line(data = s$attq, aes(dose, y), colour = "#7b3294",
-                  linewidth = 1.0, linetype = "22") +
-        geom_line(data = copy(s$acrtq)[, y2 := f(y)], aes(dose, y2),
-                  colour = "#7b3294", linewidth = 0.8, linetype = "22", alpha = 0.7)
+    if (isTRUE(input$show_ci)) {
+      sp <- cv$att[model == "Spline (visual)" & !is.na(lo)]
+      sa <- acrt[model == "Spline (visual)" & !is.na(lo2)]
+      if (nrow(sp)) g <- g + geom_ribbon(data = sp, aes(dose, ymin = lo, ymax = hi),
+                                          fill = "#1b7837", alpha = 0.10)
+      if (nrow(sa)) g <- g + geom_ribbon(data = sa, aes(dose, ymin = lo2, ymax = hi2),
+                                          fill = "#1b7837", alpha = 0.08)
     }
+    if (isTRUE(input$show_tangent)) g <- g +
+      geom_line(data = tang, aes(x, y), colour = "grey35",
+                linewidth = 1.0, alpha = 0.7)
+
     g +
-      geom_line(data = cv$att, aes(dose, y),  colour = "#1b7837", linewidth = 1.0) +
-      geom_line(data = acrt,   aes(dose, y2), colour = "#b2182b", linewidth = 0.9) +
-      geom_hline(yintercept = f(cv$acr), colour = "#2166ac",
-                 linetype = "longdash", linewidth = 0.8) +
+      geom_line(data = cv$att, aes(dose, y, colour = model),
+                linewidth = 1.05) +
+      geom_line(data = acrt, aes(dose, y2, colour = model),
+                linewidth = 0.85, linetype = "42") +
       geom_vline(xintercept = v$d, colour = "grey35", linetype = "dashed") +
-      geom_point(aes(v$d, v$att),     colour = "#1b7837", size = 3.6) +
-      geom_point(aes(v$d, f(v$acrt)), colour = "#b2182b", size = 3.6) +
-      annotate("text", x = s$dmax * 0.02, y = f(cv$acr), vjust = -0.6, hjust = 0,
-               label = sprintf("ACR = %.3f", cv$acr), colour = "#2166ac", size = 4) +
+      geom_point(data = pts, aes(v$d, att, colour = model), size = 3.4) +
+      geom_point(data = pts, aes(v$d, f(acrt), colour = model), size = 3.4,
+                 shape = 17) +
+      scale_colour_manual(values = MODCOL, name = NULL, drop = FALSE) +
       scale_x_continuous(limits = c(0, s$dmax)) +
       scale_y_continuous(name = "ATT(d): total effect",
                          sec.axis = sec_axis(~ inv(.), name = "ACRT(d): marginal effect")) +
       labs(x = "dose d (cumulative muni rate change, pp)",
-           title = sprintf("%s  |  %s  |  %s model", input$outcome, input$group,
-                           if (input$model == "linear") "linear" else "spline"),
-           subtitle = if (input$model == "linear")
-             "Green: ATT(d) = ACR x d. Red: ACRT(d), constant and equal to the ACR. This is what the paper estimates."
-           else
-             paste("Green: ATT(d), total effect (left). Red: ACRT(d), its slope (right). Blue dashed: the ACR.",
-                   if (isTRUE(input$show_quad)) "Purple dashed: the quadratic fit on the same sample." else "")) +
+           title = sprintf("%s  |  %s", input$outcome, input$group),
+           subtitle = paste(
+             "Solid = ATT(d), read on the left axis. Dashed = ACRT(d), read on the right.",
+             "Circles mark ATT at the chosen dose, triangles mark ACRT.",
+             "\nThe blue linear fit is what the paper estimates: its ATT is a straight ray and its ACRT is flat at the ACR.",
+             "Green band is the spline confidence interval.")) +
       theme_bw(base_size = 13) +
-      theme(axis.title.y.left  = element_text(colour = "#1b7837"),
-            axis.title.y.right = element_text(colour = "#b2182b"),
+      theme(legend.position = "bottom",
+            axis.title.y.left  = element_text(colour = "grey20"),
+            axis.title.y.right = element_text(colour = "grey20"),
             plot.subtitle = element_text(size = 10, colour = "grey30"))
   })
 }
