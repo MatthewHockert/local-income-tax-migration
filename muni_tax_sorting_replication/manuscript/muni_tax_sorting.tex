@@ -1647,64 +1647,57 @@ the panel, so the municipality count falls as the shift lengthens.
 \section{Discussion}
 \label{sec:discussion}
 
-In the results, I find that general tax increases drive migration out of municipalities, but that result is mostly due to the binding increases. A municipality that raises a rate where the tax is already binding loses $0.537$ log points of resident workforce per percentage point.
+In the results, I find that general tax increases drive migration out of municipalities, but that result is mostly due to the binding decomposition. A municipality that raises a rate where the tax is already binding loses $0.537$ log points of resident workforce per percentage point.
 One whose increase now pushes the home stack above the work rate (becomes binding) loses
 $0.250$ log points of resident workforce per percentage point. One whose rate rises while the tax bill stays below the work rates finds no statistically significant effect. Only
 the already binding and becomes binding changed what anyone owed, and are the only two to show a
 response.
 
-The comparison with the existing literature is not like for like, because
-no two of these papers share an outcome variable.
+The comparison with the existing literature is directly comparable, because
+no two of these papers share an outcome variable nor the same methodology.
 \citet{yangRESPONSIVENESSINCOMELOCAL2017} study county-level aggregate
 taxable income in Indiana, the total income reported on state returns filed
 in a county, and conclude that taxpayers are unresponsive to small changes
-in local rates. Taxable income falls when residents leave, but it also
-moves with wages, employment and reporting, so migration cannot be
-separated from the rest. % what are their estimates? Do they use log or pp?
-\citet{yushkovLocalIncomeTaxes2025} comes closer, using county-to-county
+in local rates. % what are their estimates? Do they use log or pp?
+\citet{yushkovLocalIncomeTaxes2025} are the most similar to my design but use county-to-county
 migration counts from IRS records, and finds inflows and outflows that are
-negatively signed but statistically insignificant in most specifications.
-% could the difference also be the LODEs data?
-
-The useful contrast is therefore significance and sign rather than
-magnitude. The binding-cell estimates are negative, which is the direction
-the mechanism predicts, and significant at the one percent level on the
-resident-side outcomes, where the earlier work returns coefficients that
-do not separate from zero. Two features of this design plausibly account
-for that. LODES counts the workers who live in a municipality, so the
-outcome is the population the resident rate actually falls on rather than
-an aggregate in which those workers are one component among many. And a
-continuous stacked difference-in-differences uses the size of each rate
-change, which keeps municipalities with small and large increases in a
-single sample without asking them to stand for the same treatment.
-
-The decomposition is a separate point. My pooled specification, which is
+negatively signed but not statistically significant in most specifications.
+While the designs and outcome variables may not be directly comparable, the useful contrast between them is the sign of their estimate and statistical significance and not necessarily the magnitude of the effect. The binding-cell estimates are negative, which is the direction
+the mechanism predicts, and in most cases statistically significant at the one percent level on the
+resident-side outcomes, where \citet{yushkovLocalIncomeTaxes2025} and \citet{yangRESPONSIVENESSINCOMELOCAL2017} work returns coefficients that are not statistically significant. Two possible reasons for the differences are that: (1) LODES counts the workers who live in a municipality, so the
+outcome variable is the population of interest that the resident rate actually falls on rather than
+an aggregate. (2) I utilize a
+continuous stacked difference-in-differences design that uses the size of each rate
+change in the model, which keeps municipalities with small and large increases in the same sample without condensing the additional variation that provides into a single treatment. My pooled specification, which is
 the closest in design to theirs, returns $-0.284$ against $-0.537$ in the
-binding cell. That gap owes nothing to outcomes or estimators, since both
-numbers come from the same regression on the same sample. It is the cost
-of averaging municipalities whose bills moved together with municipalities
-whose bills did not, and the second group contributes a zero. Coding a
-rate change as a binary indicator compounds it, because the resulting
-coefficient is the per-percentage-point response scaled by whatever
-distribution of rate changes a sample happens to contain.
+binding cell. The results show that averaging municipalities whose bills moved under binding or non-binding changes the pooled outcome.
 % you pointed out two things actually: 1 being the decomposition, 2 being the continuous treatment vs the binary
 
 The Pennsylvania setting has been studied before for compliance rather
 than for sorting. \citet{bagchiEffectsIntroducingWithholding2022} shows
 that Act~32's consolidated withholding raised compliance by about
-fourteen percent. That finding sits awkwardly beside the pre and post
-split in Section~\ref{subsec:rob-act32}, which returns $-0.544$ before the
-break and $-0.531$ after. If enforcement brought a substantially larger
-share of residents into actually paying the tax, the sorting response
-should have strengthened, and it did not. Three readings are available and
-the data do not choose between them. The households drawn into compliance
-may not be the households on the mobility margin.
-The post-2012 cohorts
-are thin enough that a moderate change would not be detectable. Or
-households respond to the posted rate rather than to the probability of
-paying it. The honest summary is that the effect is not an artifact of the
-enforcement regime, which is what the split can establish, and not that
-enforcement is irrelevant, which it cannot.
+fourteen percent. That finding does not sit perfectly with the findings in
+Section~\ref{subsec:rob-act32}, which returns $-0.544$ before the break and
+$-0.531$ after. If enforcement brought a larger share of residents into
+actually paying the tax, a rate increase would reach more bills, and the
+coefficient after the break should have been the more negative of the two.
+It was not.
+
+The institutional detail explains why. Before Act~32 employers were not
+generally required to withhold the EIT, and the one exception was
+employees who lived and worked in the same municipality, whose employers
+did have to withhold \citep{bagchiEffectsIntroducingWithholding2022}. That
+exception is the population this outcome counts. The residents whose
+compliance Act~32 changed were mostly those working somewhere other than
+where they lived, and \citet{bagchiEffectsIntroducingWithholding2022} finds
+the compliance gains largest in districts where fewest residents lived and
+worked in the same place. The enforcement shock therefore landed largely
+outside the group measured here, so a flat split is what the rule predicts
+rather than a puzzle. The two papers also do not share a unit, since his
+estimates are at the school district and mine at the municipality, so the
+comparison is directional and not arithmetic. What the split establishes
+is that the effect is not an artifact of the enforcement regime, and not
+that enforcement is irrelevant.
 
 The nearest Pennsylvania precedent is
 \citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and
