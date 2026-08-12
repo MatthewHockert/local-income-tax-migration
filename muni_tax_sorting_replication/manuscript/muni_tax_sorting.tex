@@ -67,7 +67,7 @@ jurisdictions which offer different fiscal amenities at different costs and resi
 top-income households are generally mobile and sensitive to higher rates. Some studies have looked at specific higher income groups or niche domains such as star scientists, foreign workers, or even professional athletes \citep{morettiEffectStateTaxes2017, kleven2020, agrawalStateTaxationNonresident2024}. Specifically, \citet{agrawalStateTaxationNonresident2024} look at professional golfers' response to changes in nonresident income and find that they respond to changes in state taxation of nonresident income by changing where they work rather than where they live.
 
 Few states permit local income taxes and the evidence in the United States is a handful of studies. The closest existing research comes from
-\citet{yangRESPONSIVENESSINCOMELOCAL2017} which  finds small migration effects for county-level income tax adjustments in Indiana, and \citet{yushkovLocalIncomeTaxes2025} reaches similar conclusions across Indiana and Maryland. Pennsylvania's EIT has been studied for compliance rather than for sorting \citep{bagchiEffectsIntroducingWithholding2022}, and the nearest Pennsylvania precedent is \citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and suburbanization. The strongest sub-state sorting evidence is from Switzerland, where municipalities set their own income tax rates and household location follows the resulting differences \citep{schmidheiny2012zurich, basten2017}.The imporant difference between the local level from the state level is that residence and workplace are often in different jurisdictions, meaning assigning taxation to residents or non-residents provides important variation for identifying migration effects. Municipalities may have an incentive to tax nonresidents in order to not burden their own residents but are constrained by both needed to raise revenue and not push away those who work but do not live in the municipality. Pennsylvania's municipalities often have to weigh who to tax, so a household is faced with a set of decisions in order to mitigate their tax bill such changing jobs, schools, or home.
+\citet{yangRESPONSIVENESSINCOMELOCAL2017}, which finds that county-level taxable income in Indiana does not respond to small local rate changes, and \citet{yushkovLocalIncomeTaxes2025}, who finds county migration flows in Indiana and Maryland that are signed as expected but rarely significant. Pennsylvania's EIT has been studied for compliance rather than for sorting \citep{bagchiEffectsIntroducingWithholding2022}, and the nearest Pennsylvania precedent is \citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and suburbanization. The strongest sub-state sorting evidence is from Switzerland, where municipalities set their own income tax rates and household location follows the resulting differences \citep{schmidheiny2012zurich, basten2017}.The imporant difference between the local level from the state level is that residence and workplace are often in different jurisdictions, meaning assigning taxation to residents or non-residents provides important variation for identifying migration effects. Municipalities may have an incentive to tax nonresidents in order to not burden their own residents but are constrained by both needed to raise revenue and not push away those who work but do not live in the municipality. Pennsylvania's municipalities often have to weigh who to tax, so a household is faced with a set of decisions in order to mitigate their tax bill such changing jobs, schools, or home.
 
 A survey of the literature conducted by \citet{agrawalLessonsStateLocal} highlights the current findings of state and local income taxation and identifies sub-state (county, municipality, school districts) income-tax sorting as one of the field's open questions. The consensus of the survey is that the literature on local income taxes in the United States is almost non-existent and that what evidence exists is primarily from Switzerland. That matters because Swiss municipalities tax income on a purely residential basis while local systems in the United States assign income using non-residential rules, so the Swiss estimates do easily translate to the US. The notes that whether mobility appears as households moving or as jobs moving depends on the source of the taxation itself.
 
@@ -1647,31 +1647,47 @@ the panel, so the municipality count falls as the shift lengthens.
 \section{Discussion}
 \label{sec:discussion}
 
-The result that organizes everything else is the ordering across binding
-states. A municipality that raises a rate already setting its residents'
-bill loses $0.537$ log points of resident workforce per percentage point.
-One whose increase newly pushes the home stack above the work rate loses
-$0.250$. One whose rate rises while the bill stays put loses nothing the
-data can distinguish from zero. The three groups all raised taxes. Only
-the first two changed what anyone owed, and only the first two show a
-response. That ordering is what separates a response to a tax bill from a
-response to rate-setting, and it is generated by the statute rather than
-imposed by the researcher.
+In the results, I find that general tax increases drive migration out of municipalities, but that result is mostly due to the binding increases. A municipality that raises a rate where the tax is already binding loses $0.537$ log points of resident workforce per percentage point.
+One whose increase now pushes the home stack above the work rate (becomes binding) loses
+$0.250$ log points of resident workforce per percentage point. One whose rate rises while the tax bill stays below the work rates finds no statistically significant effect. Only
+the already binding and becomes binding changed what anyone owed, and are the only two to show a
+response.
 
-This is also why the estimate here is larger than the local income tax
-literature has generally found. \citet{yangRESPONSIVENESSINCOMELOCAL2017}
-reports small migration effects for county income tax changes in Indiana,
-and \citet{yushkovLocalIncomeTaxes2025} reaches similar conclusions across
-Indiana and Maryland. My own pooled specification, which is the closest
-analogue to that design, returns $-0.284$, roughly half the binding-cell
-estimate. The gap is not a disagreement about the world. Pooling averages
-municipalities whose bills moved with municipalities whose bills did not,
-and the second group contributes a zero to the average. A binary indicator
-compounds this by scaling the per-percentage-point response by whatever
-distribution of rate changes a given sample happens to contain. Read this
-way, the small effects in the earlier literature and the larger effect
-here are the same underlying response measured with and without the
-institutional rule that determines who is actually treated.
+The comparison with the existing literature is not like for like, because
+no two of these papers share an outcome variable.
+\citet{yangRESPONSIVENESSINCOMELOCAL2017} study county-level aggregate
+taxable income in Indiana, the total income reported on state returns filed
+in a county, and conclude that taxpayers are unresponsive to small changes
+in local rates. Taxable income falls when residents leave, but it also
+moves with wages, employment and reporting, so migration cannot be
+separated from the rest. % what are their estimates? Do they use log or pp?
+\citet{yushkovLocalIncomeTaxes2025} comes closer, using county-to-county
+migration counts from IRS records, and finds inflows and outflows that are
+negatively signed but statistically insignificant in most specifications.
+% could the difference also be the LODEs data?
+
+The useful contrast is therefore significance and sign rather than
+magnitude. The binding-cell estimates are negative, which is the direction
+the mechanism predicts, and significant at the one percent level on the
+resident-side outcomes, where the earlier work returns coefficients that
+do not separate from zero. Two features of this design plausibly account
+for that. LODES counts the workers who live in a municipality, so the
+outcome is the population the resident rate actually falls on rather than
+an aggregate in which those workers are one component among many. And a
+continuous stacked difference-in-differences uses the size of each rate
+change, which keeps municipalities with small and large increases in a
+single sample without asking them to stand for the same treatment.
+
+The decomposition is a separate point. My pooled specification, which is
+the closest in design to theirs, returns $-0.284$ against $-0.537$ in the
+binding cell. That gap owes nothing to outcomes or estimators, since both
+numbers come from the same regression on the same sample. It is the cost
+of averaging municipalities whose bills moved together with municipalities
+whose bills did not, and the second group contributes a zero. Coding a
+rate change as a binary indicator compounds it, because the resulting
+coefficient is the per-percentage-point response scaled by whatever
+distribution of rate changes a sample happens to contain.
+% you pointed out two things actually: 1 being the decomposition, 2 being the continuous treatment vs the binary
 
 The Pennsylvania setting has been studied before for compliance rather
 than for sorting. \citet{bagchiEffectsIntroducingWithholding2022} shows
@@ -1682,7 +1698,8 @@ break and $-0.531$ after. If enforcement brought a substantially larger
 share of residents into actually paying the tax, the sorting response
 should have strengthened, and it did not. Three readings are available and
 the data do not choose between them. The households drawn into compliance
-may not be the households on the mobility margin. The post-2012 cohorts
+may not be the households on the mobility margin.
+The post-2012 cohorts
 are thin enough that a moderate change would not be detectable. Or
 households respond to the posted rate rather than to the probability of
 paying it. The honest summary is that the effect is not an artifact of the
@@ -1696,7 +1713,11 @@ Philadelphia's levy sits outside the Act~511 system, runs near four
 percent, and is excluded from my sample. What is estimated here is the
 response to the ordinary municipal instrument, half a percentage point at
 the median and rarely above two, across the roughly seventeen hundred
-municipalities that use it.
+municipalities that use it. The two papers are therefore neither a
+replication nor a contradiction of one another. They estimate responses to
+different instruments at different scales, and the estimate here is the one
+that describes what an ordinary Pennsylvania municipality can expect from
+an ordinary rate increase. %what does any of this actually mean?
 
 Against the Swiss evidence the comparison is more delicate, and it is
 mostly a comparison of margins. \citet{basten2017} identifies the tax
@@ -1709,19 +1730,16 @@ and the two literatures differ in which side of that equilibrium they can
 observe. My outcome is a count of workers, so I see the quantity response
 directly and say nothing about prices.
 
-Two further differences bear on whether the magnitudes can be compared at
-all. Swiss municipal income taxes are progressive, so a rate difference
-gives high-income households a stronger reason to move than low-income
-ones, which is the mechanism the sorting results turn on. Pennsylvania's
-EIT is flat, so it offers no such differential incentive by income, and
-LODES worker counts carry no income detail that would let me test for one.
-More importantly, the two settings sit at very different points of the
-same dose-response. The largest cumulative increase anywhere in my sample
-is $1.25$ percentage points and the average is $0.34$, while Swiss
-municipal differentials are considerably larger. Extrapolating a per-percentage-point estimate fitted on
-this range out to Swiss-sized differentials would be out of sample in a
-way the paper cannot defend, whatever the shape of the response turns out
-to be beyond it.
+One further difference bears on whether the two sets of estimates measure
+the same behaviour. Swiss municipal income taxes are progressive, so a
+rate difference gives high-income households a stronger reason to move
+than low-income ones, and that differential incentive is the mechanism the
+Swiss sorting results turn on \citep{schmidheiny2006}. Pennsylvania's EIT
+is a flat rate on earned income \citep{paAct511_1965, paDeskbook2025}, so
+it offers no such incentive by income, and LODES worker counts carry no
+income detail that would let me test for one. What is recovered here is an
+average response across the income distribution, not a sorting gradient
+within it.
 
 Three limits deserve to be stated plainly rather than left to the
 robustness section. The estimates are not equally well identified. The
