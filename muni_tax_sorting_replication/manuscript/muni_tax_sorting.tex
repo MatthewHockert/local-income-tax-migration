@@ -67,7 +67,7 @@ jurisdictions which offer different fiscal amenities at different costs and resi
 top-income households are generally mobile and sensitive to higher rates. Some studies have looked at specific higher income groups or niche domains such as star scientists, foreign workers, or even professional athletes \citep{morettiEffectStateTaxes2017, kleven2020, agrawalStateTaxationNonresident2024}. Specifically, \citet{agrawalStateTaxationNonresident2024} look at professional golfers' response to changes in nonresident income and find that they respond to changes in state taxation of nonresident income by changing where they work rather than where they live.
 
 Few states permit local income taxes and the evidence in the United States is a handful of studies. The closest existing research comes from
-\citet{yangRESPONSIVENESSINCOMELOCAL2017}, which finds that county-level taxable income in Indiana does not respond to small local rate changes, and \citet{yushkovLocalIncomeTaxes2025}, who finds county migration flows in Indiana and Maryland that are signed as expected but rarely significant. Pennsylvania's EIT has been studied for compliance rather than for sorting \citep{bagchiEffectsIntroducingWithholding2022}, and the nearest Pennsylvania precedent is \citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and suburbanization. The strongest sub-state sorting evidence is from Switzerland, where municipalities set their own income tax rates and household location follows the resulting differences \citep{schmidheiny2012zurich, basten2017}.The imporant difference between the local level from the state level is that residence and workplace are often in different jurisdictions, meaning assigning taxation to residents or non-residents provides important variation for identifying migration effects. Municipalities may have an incentive to tax nonresidents in order to not burden their own residents but are constrained by both needed to raise revenue and not push away those who work but do not live in the municipality. Pennsylvania's municipalities often have to weigh who to tax, so a household is faced with a set of decisions in order to mitigate their tax bill such changing jobs, schools, or home.
+\citet{yangRESPONSIVENESSINCOMELOCAL2017}, which finds that county-level taxable income in Indiana does not respond to small local rate changes, and \citet{yushkovLocalIncomeTaxes2025}, who finds county migration flows in Indiana and Maryland that are signed as expected but rarely significant. Pennsylvania's EIT has been studied for compliance rather than for sorting \citep{bagchiEffectsIntroducingWithholding2022}, and the nearest Pennsylvania precedent is \citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and suburbanization. The strongest sub-state sorting evidence is from Switzerland, where municipalities set their own income tax rates and household location follows the resulting differences \citep{schmidheiny2006, schalteggerTaxCompetitionIncome2011, basten2017}.The imporant difference between the local level from the state level is that residence and workplace are often in different jurisdictions, meaning assigning taxation to residents or non-residents provides important variation for identifying migration effects. Municipalities may have an incentive to tax nonresidents in order to not burden their own residents but are constrained by both needed to raise revenue and not push away those who work but do not live in the municipality. Pennsylvania's municipalities often have to weigh who to tax, so a household is faced with a set of decisions in order to mitigate their tax bill such changing jobs, schools, or home.
 
 A survey of the literature conducted by \citet{agrawalLessonsStateLocal} highlights the current findings of state and local income taxation and identifies sub-state (county, municipality, school districts) income-tax sorting as one of the field's open questions. The consensus of the survey is that the literature on local income taxes in the United States is almost non-existent and that what evidence exists is primarily from Switzerland. That matters because Swiss municipalities tax income on a purely residential basis while local systems in the United States assign income using non-residential rules, so the Swiss estimates do easily translate to the US. The notes that whether mobility appears as households moving or as jobs moving depends on the source of the taxation itself.
 
@@ -1676,115 +1676,75 @@ binding cell. The results show that averaging municipalities whose bills moved u
 The Pennsylvania setting has been studied before for compliance rather
 than for sorting. \citet{bagchiEffectsIntroducingWithholding2022} shows
 that Act~32's consolidated withholding raised compliance by about
-fourteen percent. That finding does not sit perfectly with the findings in
+fourteen percent. That finding does sits well with the findings in
 Section~\ref{subsec:rob-act32}, which returns $-0.544$ before the break and
 $-0.531$ after. If enforcement brought a larger share of residents into
-actually paying the tax, a rate increase would reach more bills, and the
-coefficient after the break should have been the more negative of the two.
-It was not.
-
-The institutional detail explains why. Before Act~32 employers were not
-generally required to withhold the EIT, and the one exception was
-employees who lived and worked in the same municipality, whose employers
-did have to withhold \citep{bagchiEffectsIntroducingWithholding2022}. That
-exception is the population this outcome counts. The residents whose
+actually paying the tax, a rate increase would mean a higher
+coefficient after the break compared to the pre-period. However, before Act~32 employers were not
+generally required to withhold the EIT, except
+employees who lived and worked in the same municipality \citep{bagchiEffectsIntroducingWithholding2022}. The residents whose
 compliance Act~32 changed were mostly those working somewhere other than
 where they lived, and \citet{bagchiEffectsIntroducingWithholding2022} finds
-the compliance gains largest in districts where fewest residents lived and
-worked in the same place. The enforcement shock therefore landed largely
-outside the group measured here, so a flat split is what the rule predicts
-rather than a puzzle. The two papers also do not share a unit, since his
+the compliance gains smallest in districts where the most residents lived and
+worked in the same place. The enforcement landed largely
+outside the live and work outcome variable, so finding relatively little effect is not unsurprising. The two papers also do not share the same unit, where his
 estimates are at the school district and mine at the municipality, so the
-comparison is directional and not arithmetic. What the split establishes
+comparison is directional but completely comparable. What the split establishes
 is that the effect is not an artifact of the enforcement regime, and not
 that enforcement is irrelevant.
 
-The nearest Pennsylvania precedent is
-\citet{livasLocalTaxesSuburbanization2026} on Philadelphia's wage tax and
-suburbanization. The two papers are close to disjoint by construction.
-Philadelphia's levy sits outside the Act~511 system, runs near four
-percent, and is excluded from my sample. What is estimated here is the
-response to the ordinary municipal instrument, half a percentage point at
-the median and rarely above two, across the roughly seventeen hundred
-municipalities that use it. The two papers are therefore neither a
-replication nor a contradiction of one another. They estimate responses to
-different instruments at different scales, and the estimate here is the one
-that describes what an ordinary Pennsylvania municipality can expect from
-an ordinary rate increase. %what does any of this actually mean?
+\citet{livasLocalTaxesSuburbanization2026} also study earned income taxes in Pennsylvania but specifically on Philadelphia's wage tax and the implications on
+suburbanization.
+Philadelphia's levy sits outside the Act~511 system, the tax rate is much higher, and is excluded from my sample. However, our research finds commonality in that what is estimated is the
+response to a change in local income taxes in the same state and the resulting migration due to that tax increase. The two papers are complements in that they estimate responses to
+different instruments at different scales, and the estimate in my paper is assessing what the effect for an average Pennsylvania municipality can expect from
+a typical rate increase. %what does any of this actually mean?
 
-Against the Swiss evidence the comparison is more delicate, and it is
-mostly a comparison of margins. \citet{basten2017} identifies the tax
-differential off municipal boundaries and finds it in rents, with an
-elasticity of $-0.27$ to $-0.35$, while \citet{schmidheiny2006} and
-\citet{schmidheiny2012zurich} recover income sorting from household
-location choices. Capitalization and relocation are not competing
-findings. In a spatial equilibrium the first is produced by the second,
-and the two literatures differ in which side of that equilibrium they can
-observe. My outcome is a count of workers, so I see the quantity response
-directly and say nothing about prices.
-
-One further difference bears on whether the two sets of estimates measure
-the same behaviour. Swiss municipal income taxes are progressive, so a
+While there is not a copious literature on local income taxes in the United States, there are many studies focusing on Switzerland. Comparing against the Swiss research the comparison is more difficult and an extrapolation between outcomes. \citet{basten2017} identifies the effect of tax
+differences between municipal boundaries and finds a decrease in rents and high willingness to pay as incomes increase, while
+\citet{schmidheiny2006} finds that higher income households are more likely to move to low-income municipalities, and
+\citet{schalteggerTaxCompetitionIncome2011} finds similar results from the income
+composition of communities across the canton of Zurich. One major difference between my paper and the Swiss papers is that Swiss municipal income taxes are progressive, so a
 rate difference gives high-income households a stronger reason to move
-than low-income ones, and that differential incentive is the mechanism the
-Swiss sorting results turn on \citep{schmidheiny2006}. Pennsylvania's EIT
-is a flat rate on earned income \citep{paAct511_1965, paDeskbook2025}, so
-it offers no such incentive by income, and LODES worker counts carry no
-income detail that would let me test for one. What is recovered here is an
-average response across the income distribution, not a sorting gradient
-within it.
+than low-income ones, whereas my research looks at a flat tax. Pennsylvania's EIT, being flat does not offer the same incentive by income, and LODES worker counts do not identify income at a level that would let me test for one. However, the research may permit extrapolation in that it is possible the individuals in my sample are wealthier earners and that as taxes increase higher income individuals move out but as the dosage reaches a certain level that may stall and the last marginal individual willing to move is taxed out. 
 
-Three limits deserve to be stated plainly rather than left to the
-robustness section. The estimates are not equally well identified. The
+There are three limitations worth discussing. First, the estimates are not equally well identified. The
 binding cell passes the fake-timing placebo at all three shifts and shows
-no linear pre-trend, while the partial pass-through cell fails both
-pre-trend tests and the placebo on its commuter outcomes, and those
-coefficients carry the weakest warrant in the paper. The sample is
+no linear pre-trend, while the inc-becomes cell fails both
+pre-trend tests and the placebo on its commuter outcomes. Second, the sample is
 restricted to municipalities whose rate paths do not reverse, which
-removes Pittsburgh, Allentown, Reading and Johnstown among others, so the
-estimates describe monotone rate-setters rather than the full state.
-Finally, the four outcomes are really two. In-commuters make up
+removes Pittsburgh, Allentown, Reading, and Johnstown among others, so the
+estimates describe monotone rate-setters rather than the full state of municipalities.
+Lastly, in-commuters make up
 $89$ percent of total jobs and sit in the denominator of the live-and-work
 share, and the municipal resident rate never touches an in-commuter's
-bill, so the commuter-side outcomes were weak tests of this mechanism
-before any diagnostic was run.
+bill. I utilized the commuter side outcomes as a measurement of general labor market health.
 
-For policy the useful quantity is not the coefficient but the ordering.
-The same statutory increase produces a large response, a smaller one, or
+In terms of policy, the statutory increase produces a large response, a smaller one, or
 none at all depending on where a municipality's rate sits relative to the
 work-side rate its residents face. A municipality raising a rate that
 already binds is choosing a different policy from one raising a rate that
-does not, whatever the ordinance says, and the revenue and residential
+does not, and the revenue and residential
 consequences of the two are not the same.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Do households move when a local income tax rises? In Pennsylvania they do,
-but only when the increase reaches the bill. Using the piecewise structure
-of the Earned Income Tax to separate rate changes that alter liability
+This paper estimates the movement of workers when a local income tax rises. In Pennsylvania, workers move when the increase is clearly changing their tax bill. This is identifiable by using the piecewise structure
+of the Earned Income Tax to separate rate changes that alter the tax liability
 from rate changes that do not, I find that municipalities raising a
 binding rate lose resident workers at $0.537$ log points per percentage
 point, that municipalities whose increase newly becomes binding lose
-$0.250$, and that municipalities whose rate rises without touching any
-bill show no response the data can distinguish from zero. At the average
-increase actually observed Inc-bind loses about twelve percent of
+$0.250$, and that municipalities whose rate rises without affecting the tax
+bill show no statistically significant response. At the average
+increase, Inc-bind loses about twelve percent of
 the workers who live and work there.
 
-The third group is what makes the first two interpretable. It is a placebo
-the statute generates rather than one the researcher constructs, and its
-interval excludes a response of the size Inc-bind displays. A
-design that could not separate these municipalities would report their
-average, which is roughly half the binding-cell estimate and close to what
-the existing literature on local income taxes has found.
-
-The identification is not uniform across the paper. Some cells and
-outcomes survive the diagnostics comfortably and others do not, and
-Section~\ref{sec:robustness} says which are which. What the evidence
-supports is that the response tracks tax liability rather than statutory
-rates, and that the institutional detail determining whose bill moves is
-not a nuisance to be averaged over but the thing that makes the estimate
-mean anything.
+The identification in this paper is a novel approach to estimating the causal effect of local income tax increases on worker migration. While some cells and
+outcomes do not remain perfectly identified given the plethora of diagnostics run in
+Section~\ref{sec:robustness}, the results generally show a statistically significant and predictable response. The evidence
+supports the response that tax liability experienced rather than statutory
+rates, through the law determine whose bill moves is important to consider versus simply averaging over.
 
 \newpage
 \printbibliography
@@ -1798,39 +1758,49 @@ mean anything.
 \label{app:flex-dose}
 
 The headline enters the dose linearly, so its coefficient is the ACR by
-construction. With $\mathrm{ACRT}(d)$ constant, the weights in
-$\mathrm{ACR} = \int \mathrm{ACRT}(d)\,\omega(d)\,\mathrm{d}d$ do no work.
-This appendix relaxes that restriction and computes the ACR as defined.
+construction. This appendix drops that restriction and estimates the same
+model with a quadratic and with a spline in the dose.
 
-Three specifications are estimated. They differ in the dose term and in
-nothing else:
+The three specifications differ in the dose term and in nothing else:
 %
-\begin{align*}
-\textbf{Linear:}\quad    Y_{it} &= \alpha_i + \gamma_t + \beta\,d_{it}
-  + \mathbf{X}_{it}'\phi + \varepsilon_{it}\\
-\textbf{Quadratic:}\quad Y_{it} &= \alpha_i + \gamma_t + \beta_1 d_{it}
-  + \beta_2 d_{it}^{2} + \mathbf{X}_{it}'\phi + \varepsilon_{it}\\
-\textbf{Spline:}\quad    Y_{it} &= \alpha_i + \gamma_t + B(d_{it})'b
+\begin{equation}
+Y_{it} = \alpha_i + \gamma_t + \beta\,d_{it}
   + \mathbf{X}_{it}'\phi + \varepsilon_{it}
-\end{align*}
+\label{eq:flex-linear}
+\end{equation}
 %
-where $B(\cdot)$ is a natural cubic spline with interior knots at the
-terciles of the positive treated doses and boundary knots at zero and the
-largest observed dose, and each dose term is interacted with the binding
-cell exactly as the headline interacts its own. The sample, the fiscal
-controls, the school-district co-treatment, the stacked municipality and
-year fixed effects and the clustering are the headline's, and all three
-share one complete-cases set, so $N$ is identical across every column.
+\begin{equation}
+Y_{it} = \alpha_i + \gamma_t + \beta_1 d_{it} + \beta_2 d_{it}^{2}
+  + \mathbf{X}_{it}'\phi + \varepsilon_{it}
+\label{eq:flex-quad}
+\end{equation}
+%
+\begin{equation}
+Y_{it} = \alpha_i + \gamma_t + B(d_{it})'b
+  + \mathbf{X}_{it}'\phi + \varepsilon_{it}
+\label{eq:flex-spline}
+\end{equation}
+%
+$d_{it}$ is the cumulative change in the municipal rate and
+$\mathbf{X}_{it}$ the fiscal controls. $B(\cdot)$ in
+Equation~(\ref{eq:flex-spline}) is a natural cubic spline with interior
+knots at the terciles of the positive treated doses and boundary knots at
+zero and the largest observed dose. Each dose term is interacted with the
+binding cell, as in the headline. The sample, controls, school-district
+co-treatment, stacked municipality and year fixed effects and clustering
+are the headline's, and all three share one complete-cases set, so $N$ is
+the same in every column.
 
-One departure is deliberate. The headline regressor is the rate level,
-while these enter the cumulative change. For a linear term the two are the
-same once municipality fixed effects absorb the baseline rate, which is
-why the linear row of Table~\ref{tab:flex_dose_acr} reproduces the
-headline exactly. That equivalence fails for anything nonlinear, since
-$d^2 = b_i^2 + 2b_i c_{it} + c_{it}^2$ leaves a baseline-by-change term
-the fixed effects cannot remove. Fitting the quadratic in levels instead
-flips the sign of both coefficients, so the choice matters, and the change
-is what the paper's dose-response describes.
+One difference from the headline is deliberate. The headline regressor is
+the rate level and these are the cumulative change. For a linear term the
+two are the same once municipality fixed effects absorb the baseline rate,
+which is why Equation~(\ref{eq:flex-linear}) reproduces the headline
+exactly in Table~\ref{tab:flex_dose_acr}. They are not the same for a
+nonlinear term, because $d^2 = b_i^2 + 2b_i c_{it} + c_{it}^2$ leaves a
+baseline-by-change term the fixed effects cannot remove. Fitting
+Equation~(\ref{eq:flex-quad}) in levels flips the sign of both
+coefficients, so the choice matters. The change is what the paper's
+dose-response describes.
 
 \input{../tables/flex_dose_acr.tex}
 
@@ -1838,19 +1808,8 @@ Figures~\ref{fig:flex_pooled} to~\ref{fig:flex_incbecomes} draw the two
 flexible fits against the linear model of the body. The left panels are
 ATT$(d)$ and the right panels the marginal effect ACRT$(d)$, which is where
 the three specifications differ. ACRT$(d)$ is constant by construction
-under the line, a straight tilt under the quadratic, and free to wander
+under the linearity, a straight tilt under the quadratic, and varies
 under the spline.
-
-Both flexible fits bend the same way. ATT$(d)$ falls through the middle of
-the dose range and then flattens, so ACRT$(d)$ shrinks toward zero at the
-largest increases. The pattern is clearest in Inc-becomes, the cell that
-spans the widest range of doses, where both fits have ATT$(d)$ level off
-past roughly three quarters of a percentage point. Read literally, the
-early tenths of a point do most of the work and each further increase
-moves fewer households, because the households most willing to leave over
-the tax have already left. The trade-off a municipality faces is therefore
-steepest at low rates and shallower at high ones. The bands are wide, so
-this is a shape worth noting rather than a result the paper rests on.
 
 \begin{figure}[H]
   \centering
@@ -1890,29 +1849,6 @@ this is a shape worth noting rather than a result the paper rests on.
   \end{minipage}
 \end{figure}
 
-The headline survives. On the count of workers who live and work in the
-municipality the Inc-bind ACR reads $-0.537$ linear, $-0.507$ quadratic
-and $-0.376$ under the spline, all within one standard error of each
-other, and the same ordering holds on the live-and-work share. The
-flexible fits also buy nothing in fit. $R^2$ is $0.9633$ and within $R^2$
-is $0.0021$ in all three, going from three dose parameters to eight.
-
-The underlying coefficients say why. In Inc-bind not one flexible term is
-distinguishable from zero, with standard errors running from $0.14$ on the
-linear coefficient to $0.49$, $3.17$ and $5.74$ on the three spline terms.
-Twenty-four municipalities cannot identify a curve. Inc-becomes is the
-exception, with a squared term significant at $p = 0.012$ and all three
-spline terms significant. The pooled specification inherits that, since
-its squared term is significant at $p = 0.004$ even though Inc-bind's is
-not. Pooled curvature is therefore at least as much a consequence of
-mixing cells whose linear slopes differ as a statement about the shape of
-any one response, which is the reading
-Section~\ref{subsec:causal-params} gives it.
-
-Inc-nobind cannot support either flexible form. Its quadratic returns
-$-3.937$ with a standard error of $2.425$, and its third spline term is
-dropped for collinearity, so no spline ACR exists. Fourteen municipalities
-are too few, and the table records that rather than omitting the row.
 
 \section{Realized-Dose Event Studies, Full Set}
 \label{app:es-full}
