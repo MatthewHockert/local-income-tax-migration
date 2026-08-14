@@ -44,6 +44,7 @@ RUN_POOLED   <- TRUE  # pooled Inc/Dec per-pp + binary benchmark (cousub)
 RUN_REVENUE  <- TRUE  # log EIT revenue decomposition + ES + Laffer offset + splits
 RUN_LEVELS_COMPARE <- TRUE  # headline + pooled re-run with the treatment in LEVELS
 RUN_FLEX_DOSE <- TRUE  # headline + pooled re-run with a quadratic and a spline in the dose
+RUN_REVENUE_TRADEOFF <- TRUE  # workers-vs-revenue tradeoff on ONE shared sample, and how it varies with the pre-existing rate
 
 # Shared setup ----
 # One panel build for the whole stage: classified cousub panel + muni stack.
@@ -965,4 +966,169 @@ if (RUN_FLEX_DOSE) local({
                                  max(chk$gap), nrow(chk)))
   stopifnot("flex-dose linear column does not reproduce the headline" = all(chk$gap < 1e-6))
   message("Saved flex_dose_acr.csv")
+})
+
+
+# Revenue tradeoff (RUN_REVENUE_TRADEOFF) ----
+# The separate RUN_REVENUE section above builds its own stack with the dose in
+# CHANGES, so its sample (190,760) is not the headline's (171,451) and its
+# coefficients cannot be divided into the worker coefficients. This section
+# estimates BOTH outcomes on the shared headline stack, one complete-cases set,
+# identical controls / FE / clustering, so the ratio is well defined.
+#   rho = beta_workers / beta_revenue  = log workers lost per log revenue gained.
+# beta_revenue is mechanical PLUS behavioural (revenue = rate x base), so rho is
+# workers per unit of REALIZED revenue, not a behavioural elasticity ratio.
+# Inference on the ratio uses a municipality cluster bootstrap, because a
+# delta-method interval misbehaves exactly where the denominator is small.
+if (RUN_REVENUE_TRADEOFF) local({
+  inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  outs <- c("log_live_and_work", "log_eit_revenue")
+  stk <- copy(stk_muni)
+  stk[is.na(dose_sd), dose_sd := 0]
+  stk[, direction_muni := factor(fcase(as.character(treat_cell) %in% inc_cells, "Inc",
+                                       as.character(treat_cell) == "NC", "NC",
+                                       default = NA_character_), levels = c("NC", "Inc"))]
+  stk[, direction_sd := factor(fcase(as.character(cell_sd) %in% inc_cells, "Inc",
+                                     as.character(cell_sd) == "NC", "NC",
+                                     default = NA_character_), levels = c("NC", "Inc"))]
+  # tau0 = the municipality's own pre-event RATE LEVEL inside its stack window.
+  # NOT base_rate: that is the pre-event mean of the dose, which is zero by
+  # construction. dose_stack carries the resident rate level, so average it
+  # over the pre-event years of each stack.
+  stk[, tau0 := mean(dose_stack[rel < 0], na.rm = TRUE), by = .(stack, muni)]
+  stk[!is.finite(tau0), tau0 := NA_real_]
+  stk[, dose_x_tau0 := dose_stack * tau0]
+  # share_eit is EIT revenue / total revenue, mechanically the outcome; drop it.
+  ctrls_r <- setdiff(ctrls, "share_eit")
+
+  cols <- c("muni", "treat_cell", "cell_sd", "direction_muni", "direction_sd",
+            "dose_stack", "dose_sd", "tau0", "dose_x_tau0",
+            "stack_muni", "stack_year", outs, ctrls_r)
+  d <- stk[, ..cols]; d <- d[complete.cases(d)]
+  message(sprintf("[tradeoff] shared complete-cases sample: %s rows, %d munis",
+                  format(nrow(d), big.mark = ","), uniqueN(d$muni)))
+
+  fml <- function(y, cellv, sdv, extra = "") as.formula(paste0(
+    y, " ~ i(", cellv, ", dose_stack, ref='NC')", extra,
+    " + i(", sdv, ", dose_sd, ref='NC') + ", paste(ctrls_r, collapse = " + "),
+    " | stack_muni + stack_year"))
+
+  fit <- function(dd, y, spec, extra = "") {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    sdv   <- if (spec == "decomp") "cell_sd"    else "direction_sd"
+    feols(fml(y, cellv, sdv, extra), dd, cluster = ~muni, notes = FALSE)
+  }
+  cf <- function(m, cellv, g) {
+    nm <- sprintf("%s::%s:dose_stack", cellv, g)
+    if (nm %in% names(coef(m))) unname(coef(m)[nm]) else NA_real_
+  }
+
+  rows <- list()
+  for (spec in c("pooled", "decomp")) {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    grps  <- if (spec == "decomp") inc_cells    else "Inc"
+    mW <- fit(d, outs[1], spec); mR <- fit(d, outs[2], spec)
+    for (g in grps) {
+      bW <- cf(mW, cellv, g); bR <- cf(mR, cellv, g)
+      seW <- unname(se(mW)[sprintf("%s::%s:dose_stack", cellv, g)])
+      seR <- unname(se(mR)[sprintf("%s::%s:dose_stack", cellv, g)])
+      tau_bar <- mean(d[get(cellv) == g & dose_stack > 0, tau0], na.rm = TRUE)
+      rows[[length(rows) + 1]] <- data.table(
+        spec = spec, cell = g, beta_workers = bW, se_workers = seW,
+        beta_revenue = bR, se_revenue = seR, rho = bW / bR,
+        tau0_mean = tau_bar, mechanical = 1 / tau_bar,
+        offset = 1 - bR * tau_bar, n = nobs(mW))
+    }
+  }
+  res <- rbindlist(rows)
+
+  # Cluster bootstrap for the ratio: resample municipalities with replacement,
+  # refit BOTH equations on the same draw so the ratio inherits the covariance.
+  set.seed(20260814)
+  B <- 200L; munis <- unique(d$muni)
+  boot <- vector("list", B)
+  for (b in seq_len(B)) {
+    pick <- data.table(muni = sample(munis, length(munis), replace = TRUE))
+    pick[, rep_id := seq_len(.N)]
+    db <- merge(d, pick, by = "muni", allow.cartesian = TRUE)
+    # Only the UNIT fixed effect is replicated. stack_year is a time effect and
+    # must stay shared across draws, otherwise every cell becomes a singleton.
+    db[, stack_muni := paste0(stack_muni, "_", rep_id)]
+    o <- lapply(c("pooled", "decomp"), function(spec) {
+      cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+      grps  <- if (spec == "decomp") inc_cells    else "Inc"
+      mW <- tryCatch(fit(db, outs[1], spec), error = function(e) {
+              message("[tradeoff] bootstrap fit failed: ", conditionMessage(e)); NULL })
+      mR <- tryCatch(fit(db, outs[2], spec), error = function(e) NULL)
+      if (is.null(mW) || is.null(mR)) return(NULL)
+      rbindlist(lapply(grps, function(g) data.table(spec = spec, cell = g,
+        rho = cf(mW, cellv, g) / cf(mR, cellv, g))))
+    })
+    boot[[b]] <- rbindlist(o[!sapply(o, is.null)])
+    if (b %% 50 == 0) message(sprintf("[tradeoff] bootstrap %d/%d", b, B))
+  }
+  bt <- rbindlist(boot)
+  ci <- bt[is.finite(rho), .(rho_lo = quantile(rho, .025, na.rm = TRUE),
+                             rho_hi = quantile(rho, .975, na.rm = TRUE),
+                             B_ok = .N), by = .(spec, cell)]
+  res <- merge(res, ci, by = c("spec", "cell"), all.x = TRUE)
+  fwrite(res, file.path(RESULTS_DIR, "revenue_tradeoff.csv"))
+
+  # How the tradeoff moves with the rate already levied: interact the dose with
+  # tau0 in BOTH equations, so beta(tau0) = b_main + b_int * tau0 for each.
+  extra <- " + i(treat_cell, dose_x_tau0, ref='NC')"
+  gW <- fit(d, outs[1], "decomp", extra); gR <- fit(d, outs[2], "decomp", extra)
+  grad <- rbindlist(lapply(inc_cells, function(g) {
+    nm1 <- sprintf("treat_cell::%s:dose_stack", g)
+    nm2 <- sprintf("treat_cell::%s:dose_x_tau0", g)
+    ok <- all(c(nm1, nm2) %in% names(coef(gW))) && all(c(nm1, nm2) %in% names(coef(gR)))
+    if (!ok) return(NULL)
+    tg <- seq(quantile(d[treat_cell == g & dose_stack > 0, tau0], .05, na.rm = TRUE),
+              quantile(d[treat_cell == g & dose_stack > 0, tau0], .95, na.rm = TRUE),
+              length.out = 40)
+    # beta(tau0) = b_main + b_int * tau0 is a linear combination, so its
+    # variance is w'Vw with w = (1, tau0).
+    lc <- function(m) {
+      b <- coef(m)[c(nm1, nm2)]; V <- vcov(m)[c(nm1, nm2), c(nm1, nm2)]
+      est <- b[1] + b[2] * tg
+      sev <- sqrt(pmax(V[1,1] + 2 * tg * V[1,2] + tg^2 * V[2,2], 0))
+      list(est = est, se = sev)
+    }
+    lw <- lc(gW); lr <- lc(gR)
+    data.table(cell = g, tau0 = tg,
+               beta_workers = lw$est, se_workers = lw$se,
+               beta_revenue = lr$est, se_revenue = lr$se,
+               mechanical = 1 / tg)
+  }))
+  if (nrow(grad)) {
+    grad[, `:=`(rho = beta_workers / beta_revenue,
+                w_lo = beta_workers - 1.96 * se_workers,
+                w_hi = beta_workers + 1.96 * se_workers,
+                r_lo = beta_revenue - 1.96 * se_revenue,
+                r_hi = beta_revenue + 1.96 * se_revenue)]
+    fwrite(grad, file.path(RESULTS_DIR, "revenue_tradeoff_gradient.csv"))
+    # Where the revenue response crosses zero is the implied Laffer peak.
+    peak <- grad[, {
+      i <- which(diff(sign(beta_revenue)) != 0)[1]
+      .(tau_peak = if (is.na(i)) NA_real_ else tau0[i], beta_r_min = min(beta_revenue))
+    }, by = cell]
+    print(peak)
+  }
+  # Dose-response curves for both outcomes, for the figures.
+  dr <- rbindlist(lapply(seq_len(nrow(res)), function(i) {
+    r <- res[i]; dmax <- max(d[[ "dose_stack" ]], na.rm = TRUE)
+    dd <- seq(0, dmax, length.out = 60)
+    rbind(data.table(spec = r$spec, cell = r$cell, outcome = "workers", dose = dd,
+                     y = r$beta_workers * dd,
+                     lo = (r$beta_workers - 1.96 * r$se_workers) * dd,
+                     hi = (r$beta_workers + 1.96 * r$se_workers) * dd),
+          data.table(spec = r$spec, cell = r$cell, outcome = "revenue", dose = dd,
+                     y = r$beta_revenue * dd,
+                     lo = (r$beta_revenue - 1.96 * r$se_revenue) * dd,
+                     hi = (r$beta_revenue + 1.96 * r$se_revenue) * dd))
+  }))
+  fwrite(dr, file.path(RESULTS_DIR, "revenue_tradeoff_doseresponse.csv"))
+  print(res[, .(spec, cell, beta_workers, beta_revenue, rho, rho_lo, rho_hi,
+                tau0_mean, offset, n)])
+  message("Saved revenue_tradeoff.csv / _gradient.csv / _doseresponse.csv")
 })

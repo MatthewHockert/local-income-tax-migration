@@ -155,6 +155,10 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
                                       streets_and_roads))
     debt_svc <- as.numeric(debt_service_expenditures)
     list(muni = cousub_fips, year = yr,
+         # LEVEL of EIT revenue, harmonised across the 2005/2006 AFR schema
+         # break the same way share_eit is. Carried through so the revenue
+         # tradeoff block can use it as an outcome; nothing else reads it.
+         eit_revenue     = eit_rev,
          share_police    = ifelse(total_exp > 0, police_exp  / total_exp, NA_real_),
          share_streets   = ifelse(total_exp > 0, streets_exp / total_exp, NA_real_),
          share_debt_svc  = ifelse(total_exp > 0, debt_svc    / total_exp, NA_real_),
@@ -168,6 +172,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   panel <- merge_check(panel, fc, by = c("muni", "year"),
                        label = "panel <- AFR fiscal shares",
                        expect_min_match = 0.70)
+  panel[, log_eit_revenue := log_pos(eit_revenue)]
   
   # Property-tax effective rates (statutory millage x STEB common-level ratio),
   # kept SEPARATE per rate-setter: muni_eff_rate, sd_eff_rate, county_eff_rate.

@@ -33,6 +33,7 @@ RUN_DOSE_TRAJECTORY      <- TRUE   # Inc-becomes dose-trajectory figure
 RUN_APPENDIX_ES_FIGS     <- TRUE   # unified ribbon-style ES figures (appendix set)
 RUN_EXTRA_FIGS           <- TRUE   # descriptive rate-change scatters, spaghetti, histograms
 RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, Inc-bind, Inc-becomes)
+RUN_REVENUE_TRADEOFF_FIGS <- TRUE  # workers vs EIT-revenue dose response, and the tradeoff against the pre-existing rate
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
 RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, dose vs tag)
@@ -1831,3 +1832,70 @@ if (RUN_TAX_MIX_FIG) local({
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()
+
+
+# Revenue tradeoff figures (RUN_REVENUE_TRADEOFF_FIGS) ----
+# Reads what 02_main_models.R -> RUN_REVENUE_TRADEOFF wrote. Two figures:
+#   1. ATT(d) for both outcomes side by side, per cell.
+#   2. How the revenue response and the tradeoff move with the rate already
+#      levied, with the mechanical benchmark 1/tau0 for reference.
+if (RUN_REVENUE_TRADEOFF_FIGS) local({
+  f_dr <- file.path(RESULTS_DIR, "revenue_tradeoff_doseresponse.csv")
+  f_gr <- file.path(RESULTS_DIR, "revenue_tradeoff_gradient.csv")
+  if (!file.exists(f_dr)) { message("[fig] no revenue tradeoff results; skipping"); return(invisible(NULL)) }
+  fig_dir <- OUT_DIR
+  dr <- fread(f_dr); gr <- if (file.exists(f_gr)) fread(f_gr) else NULL
+  cell_lab <- c("Inc" = "Pooled Increase", "Inc-bind" = "Inc-bind",
+                "Inc-becomes" = "Inc-becomes", "Inc-nobind" = "Inc-nobind")
+  dr[, cell_f := factor(cell_lab[cell], levels = unname(cell_lab))]
+  dr[, out_f := factor(fifelse(outcome == "workers",
+                               "Workers who live and work in the muni",
+                               "Municipal EIT revenue"),
+                       levels = c("Workers who live and work in the muni",
+                                  "Municipal EIT revenue"))]
+  g1 <- ggplot(dr, aes(dose, y)) +
+    geom_hline(yintercept = 0, linetype = "dotted", colour = "grey60") +
+    geom_ribbon(aes(ymin = lo, ymax = hi, fill = out_f), alpha = 0.15, colour = NA) +
+    geom_line(aes(colour = out_f), linewidth = 0.7) +
+    facet_grid(cell_f ~ out_f, scales = "free_y", switch = "y") +
+    scale_colour_manual(values = c("#b2182b", "#2166ac")) +
+    scale_fill_manual(values = c("#b2182b", "#2166ac")) +
+    labs(title = "Dose response: residents lost and revenue gained",
+         subtitle = paste0("ATT(d) with 95% bands, both outcomes on one shared sample.\n",
+                           "Same controls, stacked fixed effects and municipality clustering as the headline."),
+         x = "dose (cumulative muni rate change, pp)", y = NULL) +
+    theme_bw(base_size = 9) +
+    theme(legend.position = "none", strip.placement = "outside",
+          plot.subtitle = element_text(size = 8))
+  ggsave(file.path(fig_dir, "revenue_tradeoff_doseresponse.png"), g1,
+         width = 8, height = 8.5, dpi = 300)
+
+  if (!is.null(gr) && nrow(gr)) {
+    gr[, cell_f := factor(cell_lab[cell], levels = unname(cell_lab))]
+    long <- rbind(
+      gr[, .(cell_f, tau0, est = beta_workers, lo = w_lo, hi = w_hi,
+             panel = "Workers, per pp")],
+      gr[, .(cell_f, tau0, est = beta_revenue, lo = r_lo, hi = r_hi,
+             panel = "EIT revenue, per pp")])
+    long[, panel := factor(panel, levels = c("Workers, per pp", "EIT revenue, per pp"))]
+    mech <- gr[, .(cell_f, tau0, est = 1 / tau0)][
+      is.finite(est) & est < 6][, panel := factor("EIT revenue, per pp",
+        levels = c("Workers, per pp", "EIT revenue, per pp"))]
+    g2 <- ggplot(long, aes(tau0, est)) +
+      geom_hline(yintercept = 0, linetype = "dotted", colour = "grey60") +
+      geom_ribbon(aes(ymin = lo, ymax = hi), fill = "grey60", alpha = 0.18) +
+      geom_line(linewidth = 0.7, colour = "#2166ac") +
+      geom_line(data = mech, aes(tau0, est), linetype = "dashed",
+                colour = "grey35", linewidth = 0.5) +
+      facet_grid(cell_f ~ panel, scales = "free_y") +
+      labs(title = "The tradeoff depends on the rate a municipality already levies",
+           subtitle = paste0("Dose interacted with the pre-event resident rate. Grey dashed is the\n",
+                             "mechanical revenue response 1/tau0, what a rate rise would deliver if nobody moved."),
+           x = expression("pre-existing resident EIT rate " * tau[0] * " (pp)"),
+           y = "effect per percentage point") +
+      theme_bw(base_size = 9) + theme(plot.subtitle = element_text(size = 8))
+    ggsave(file.path(fig_dir, "revenue_tradeoff_gradient.png"), g2,
+           width = 8, height = 8, dpi = 300)
+  }
+  message("Saved revenue tradeoff figures")
+})
