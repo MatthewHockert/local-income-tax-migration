@@ -1114,6 +1114,66 @@ if (RUN_REVENUE_TRADEOFF) local({
     }, by = cell]
     print(peak)
   }
+  # Spline dose-response for both outcomes ------------------------------------
+  # The linear block above uses the rate LEVEL, matching the headline. A spline
+  # cannot: level and change differ by a municipality constant, which unit FE
+  # absorb for a linear term but not for a nonlinear one (see Appendix A). So
+  # the flexible fit enters the cumulative CHANGE, exactly as RUN_FLEX_DOSE does.
+  suppressMessages(library(splines))
+  stk[, dose_ch := fifelse(as.character(treat_cell) %in% inc_cells, dose_change, 0)]
+  kk <- quantile(stk[dose_ch > 0, dose_ch], c(1/3, 2/3), na.rm = TRUE)
+  bb <- c(0, max(stk[dose_ch > 0, dose_ch], na.rm = TRUE))
+  Bs <- ns(stk$dose_ch, knots = kk, Boundary.knots = bb)
+  bn <- paste0("sp", seq_len(ncol(Bs)))
+  stk[, (bn) := as.data.table(unclass(Bs))]
+  cols_s <- c(cols, "dose_ch", bn)
+  ds <- stk[, ..cols_s]; ds <- ds[complete.cases(ds)]
+  message(sprintf("[tradeoff] spline sample: %s rows (linear sample %s)",
+                  format(nrow(ds), big.mark = ","), format(nrow(d), big.mark = ",")))
+  fml_s <- function(y, cellv, sdv) as.formula(paste0(
+    y, " ~ ", paste(sprintf("i(%s, %s, ref='NC')", cellv, bn), collapse = " + "),
+    " + i(", sdv, ", dose_sd, ref='NC') + ", paste(ctrls_r, collapse = " + "),
+    " | stack_muni + stack_year"))
+  # ATT(d) = (B(d) - B(0))'b, variance w'Vw.
+  att_spline <- function(m, cellv, g, dgrid) {
+    nm <- sprintf("%s::%s:%s", cellv, g, bn)
+    if (!all(nm %in% names(coef(m)))) return(NULL)
+    b <- coef(m)[nm]; V <- vcov(m)[nm, nm, drop = FALSE]
+    W <- predict(Bs, dgrid)
+    W <- sweep(W, 2, as.numeric(predict(Bs, 0)), "-")
+    est <- as.numeric(W %*% b)
+    sev <- sqrt(pmax(rowSums((W %*% V) * W), 0))
+    data.table(dose = dgrid, est = est, lo = est - 1.96 * sev, hi = est + 1.96 * sev)
+  }
+  spl <- rbindlist(lapply(c("pooled", "decomp"), function(spec) {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    sdv   <- if (spec == "decomp") "cell_sd"    else "direction_sd"
+    grps  <- if (spec == "decomp") inc_cells    else "Inc"
+    mW <- feols(fml_s(outs[1], cellv, sdv), ds, cluster = ~muni, notes = FALSE)
+    mR <- feols(fml_s(outs[2], cellv, sdv), ds, cluster = ~muni, notes = FALSE)
+    rbindlist(lapply(grps, function(g) {
+      # Evaluate each cell only over the doses it actually contains. The basis
+      # is fitted on all treated doses, which run to the Inc-becomes maximum,
+      # so a common grid would extrapolate Inc-bind far past its own support.
+      dmax_g <- if (spec == "decomp") ds[treat_cell == g, max(dose_ch, na.rm = TRUE)]
+                else ds[direction_muni == "Inc", max(dose_ch, na.rm = TRUE)]
+      if (!is.finite(dmax_g) || dmax_g <= 0) return(NULL)
+      dgrid <- seq(0, dmax_g, length.out = 60)
+      aW <- att_spline(mW, cellv, g, dgrid); aR <- att_spline(mR, cellv, g, dgrid)
+      if (is.null(aW) || is.null(aR)) return(NULL)
+      rbind(cbind(spec = spec, cell = g, outcome = "workers", aW),
+            cbind(spec = spec, cell = g, outcome = "revenue", aR))
+    }), fill = TRUE)
+  }), fill = TRUE)
+  if (nrow(spl)) {
+    fwrite(spl, file.path(RESULTS_DIR, "revenue_tradeoff_spline.csv"))
+    # rho(d) = ATT_workers(d) / ATT_revenue(d): under linearity this is constant,
+    # under the spline it is allowed to move with the dose.
+    wide <- dcast(spl, spec + cell + dose ~ outcome, value.var = "est")
+    wide[, rho_d := workers / revenue]
+    fwrite(wide, file.path(RESULTS_DIR, "revenue_tradeoff_spline_rho.csv"))
+  }
+
   # Dose-response curves for both outcomes, for the figures.
   dr <- rbindlist(lapply(seq_len(nrow(res)), function(i) {
     r <- res[i]; dmax <- max(d[[ "dose_stack" ]], na.rm = TRUE)
@@ -1130,5 +1190,5 @@ if (RUN_REVENUE_TRADEOFF) local({
   fwrite(dr, file.path(RESULTS_DIR, "revenue_tradeoff_doseresponse.csv"))
   print(res[, .(spec, cell, beta_workers, beta_revenue, rho, rho_lo, rho_hi,
                 tau0_mean, offset, n)])
-  message("Saved revenue_tradeoff.csv / _gradient.csv / _doseresponse.csv")
+  message("Saved revenue_tradeoff.csv / _gradient.csv / _doseresponse.csv / _spline.csv")
 })

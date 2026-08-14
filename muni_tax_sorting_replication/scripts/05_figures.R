@@ -1857,7 +1857,7 @@ if (RUN_REVENUE_TRADEOFF_FIGS) local({
     geom_hline(yintercept = 0, linetype = "dotted", colour = "grey60") +
     geom_ribbon(aes(ymin = lo, ymax = hi, fill = out_f), alpha = 0.15, colour = NA) +
     geom_line(aes(colour = out_f), linewidth = 0.7) +
-    facet_grid(cell_f ~ out_f, scales = "free_y", switch = "y") +
+    facet_wrap(~ cell_f + out_f, scales = "free", ncol = 2) +
     scale_colour_manual(values = c("#b2182b", "#2166ac")) +
     scale_fill_manual(values = c("#b2182b", "#2166ac")) +
     labs(title = "Dose response: residents lost and revenue gained",
@@ -1881,13 +1881,20 @@ if (RUN_REVENUE_TRADEOFF_FIGS) local({
     mech <- gr[, .(cell_f, tau0, est = 1 / tau0)][
       is.finite(est) & est < 6][, panel := factor("EIT revenue, per pp",
         levels = c("Workers, per pp", "EIT revenue, per pp"))]
+    # facet_wrap, not facet_grid: facet_grid shares the x scale down a column,
+    # which squeezes the cells whose tau0 range is narrow into a fifth of the
+    # panel. facet_wrap frees both scales panel by panel.
+    lv <- as.vector(t(outer(levels(long$cell_f), levels(long$panel),
+                            function(a, b) paste(a, b, sep = " -- "))))
+    long[, fp := factor(paste(cell_f, panel, sep = " -- "), levels = lv)]
+    mech[, fp := factor(paste(cell_f, panel, sep = " -- "), levels = lv)]
     g2 <- ggplot(long, aes(tau0, est)) +
       geom_hline(yintercept = 0, linetype = "dotted", colour = "grey60") +
       geom_ribbon(aes(ymin = lo, ymax = hi), fill = "grey60", alpha = 0.18) +
       geom_line(linewidth = 0.7, colour = "#2166ac") +
       geom_line(data = mech, aes(tau0, est), linetype = "dashed",
                 colour = "grey35", linewidth = 0.5) +
-      facet_grid(cell_f ~ panel, scales = "free_y") +
+      facet_wrap(~ fp, scales = "free", ncol = 2) +
       labs(title = "The tradeoff depends on the rate a municipality already levies",
            subtitle = paste0("Dose interacted with the pre-event resident rate. Grey dashed is the\n",
                              "mechanical revenue response 1/tau0, what a rate rise would deliver if nobody moved."),
@@ -1896,6 +1903,31 @@ if (RUN_REVENUE_TRADEOFF_FIGS) local({
       theme_bw(base_size = 9) + theme(plot.subtitle = element_text(size = 8))
     ggsave(file.path(fig_dir, "revenue_tradeoff_gradient.png"), g2,
            width = 8, height = 8, dpi = 300)
+  }
+  f_sp <- file.path(RESULTS_DIR, "revenue_tradeoff_spline.csv")
+  if (file.exists(f_sp)) {
+    sp <- fread(f_sp)[spec == "decomp" | spec == "pooled"]
+    sp[, cell_f := factor(cell_lab[cell], levels = unname(cell_lab))]
+    sp[, out_f := factor(fifelse(outcome == "workers",
+                                 "Workers who live and work in the muni",
+                                 "Municipal EIT revenue"),
+                         levels = c("Workers who live and work in the muni",
+                                    "Municipal EIT revenue"))]
+    g3 <- ggplot(sp, aes(dose, est)) +
+      geom_hline(yintercept = 0, linetype = "dotted", colour = "grey60") +
+      geom_ribbon(aes(ymin = lo, ymax = hi, fill = out_f), alpha = 0.15, colour = NA) +
+      geom_line(aes(colour = out_f), linewidth = 0.7) +
+      facet_wrap(~ cell_f + out_f, scales = "free", ncol = 2) +
+      scale_colour_manual(values = c("#b2182b", "#2166ac")) +
+      scale_fill_manual(values = c("#b2182b", "#2166ac")) +
+      labs(title = "Dose response, natural spline in the dose",
+           subtitle = paste0("ATT(d) with 95% bands. Knots at the terciles of the positive treated doses.\n",
+                             "Each cell is drawn only over the doses it actually contains."),
+           x = "dose (cumulative muni rate change, pp)", y = NULL) +
+      theme_bw(base_size = 9) +
+      theme(legend.position = "none", plot.subtitle = element_text(size = 8))
+    ggsave(file.path(fig_dir, "revenue_tradeoff_spline.png"), g3,
+           width = 8, height = 8.5, dpi = 300)
   }
   message("Saved revenue tradeoff figures")
 })
