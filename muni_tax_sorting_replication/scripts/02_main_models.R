@@ -981,6 +981,7 @@ if (RUN_FLEX_DOSE) local({
 # Inference on the ratio uses a municipality cluster bootstrap, because a
 # delta-method interval misbehaves exactly where the denominator is small.
 if (RUN_REVENUE_TRADEOFF) local({
+  ACT32_YEAR <- 2012L
   inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
   outs <- c("log_live_and_work", "log_eit_revenue")
   stk <- copy(stk_muni)
@@ -1001,7 +1002,7 @@ if (RUN_REVENUE_TRADEOFF) local({
   # share_eit is EIT revenue / total revenue, mechanically the outcome; drop it.
   ctrls_r <- setdiff(ctrls, "share_eit")
 
-  cols <- c("muni", "treat_cell", "cell_sd", "direction_muni", "direction_sd",
+  cols <- c("muni", "year", "stack", "treat_cell", "cell_sd", "direction_muni", "direction_sd",
             "dose_stack", "dose_sd", "tau0", "dose_x_tau0",
             "stack_muni", "stack_year", outs, ctrls_r)
   d <- stk[, ..cols]; d <- d[complete.cases(d)]
@@ -1188,6 +1189,50 @@ if (RUN_REVENUE_TRADEOFF) local({
                      hi = (r$beta_revenue + 1.96 * r$se_revenue) * dd))
   }))
   fwrite(dr, file.path(RESULTS_DIR, "revenue_tradeoff_doseresponse.csv"))
+  # Gates 3 and 4: is the revenue result an artefact of the AFR schema break or
+  # of the Act 32 compliance shock? Re-estimate both outcomes on restricted
+  # windows and compare. No new specification, only the sample moves.
+  #   schema : AFR switches column names and ID at 2005/2006. Post-2006 only
+  #            uses one vintage, so agreement means the stitch is not driving it.
+  #   act32  : Bagchi finds EIT collections jump ~13% at 2012 from compliance
+  #            alone, heterogeneous across districts. Pre/post and a 2013+ window
+  #            check whether the revenue response survives away from the break.
+  gate <- function(lab, dd) {
+    if (!nrow(dd)) return(NULL)
+    rbindlist(lapply(c("pooled", "decomp"), function(spec) {
+      cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+      grps  <- if (spec == "decomp") inc_cells    else "Inc"
+      mW <- tryCatch(fit(dd, outs[1], spec), error = function(e) NULL)
+      mR <- tryCatch(fit(dd, outs[2], spec), error = function(e) NULL)
+      if (is.null(mW) || is.null(mR)) return(NULL)
+      rbindlist(lapply(grps, function(g) {
+        bW <- cf(mW, cellv, g); bR <- cf(mR, cellv, g)
+        data.table(sample = lab, spec = spec, cell = g,
+                   beta_workers = bW,
+                   se_workers = unname(se(mW)[sprintf("%s::%s:dose_stack", cellv, g)]),
+                   beta_revenue = bR,
+                   se_revenue = unname(se(mR)[sprintf("%s::%s:dose_stack", cellv, g)]),
+                   rho = bW / bR, n = nobs(mW))
+      }))
+    }), fill = TRUE)
+  }
+  # Gate 4 splits by COHORT, keeping every never-changer in both periods, which
+  # is how RUN_ACT32 in 04_robustness.R does it. Splitting on calendar year
+  # instead truncates each stack's own pre-period and destroys the within-stack
+  # comparison, which produced sign flips on a first pass.
+  gates <- rbindlist(list(
+    gate("full",                    d),
+    gate("gate3 schema 2006-2019",  d[year >= 2006]),
+    gate("gate3 schema 2010-2019",  d[year >= 2010]),
+    gate("gate4 pre-Act32 cohorts",  d[treat_cell == "NC" | stack <  ACT32_YEAR]),
+    gate("gate4 post-Act32 cohorts", d[treat_cell == "NC" | stack >= ACT32_YEAR])),
+    fill = TRUE)
+  fwrite(gates, file.path(RESULTS_DIR, "revenue_tradeoff_gates.csv"))
+  cat("\n---- gates 3 and 4: sample restrictions ----\n")
+  print(gates[spec == "decomp" & cell == "Inc-bind" |
+              spec == "pooled",
+              .(sample, spec, cell, beta_workers, beta_revenue, rho, n)])
+
   print(res[, .(spec, cell, beta_workers, beta_revenue, rho, rho_lo, rho_hi,
                 tau0_mean, offset, n)])
   message("Saved revenue_tradeoff.csv / _gradient.csv / _doseresponse.csv / _spline.csv")
