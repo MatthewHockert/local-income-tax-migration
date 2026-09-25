@@ -43,6 +43,7 @@ RUN_PRETREND_BATTERY <- TRUE   # 4-test battery per cell (moved from stage 03)
 RUN_DOSE_PERMUTATION <- FALSE  # randomization inference: shuffle dose magnitudes (~15 min)
 RUN_FAKE_TIMING      <- TRUE   # placebo cohorts 4 years early, pre-event data only
 RUN_POOLED_ROBUSTNESS <- TRUE  # the same battery, run on the pooled Inc specification
+RUN_EVENT_BY_EVENT   <- TRUE   # one ATT per treated municipality (Cengiz et al. 2019, Online Appendix C)
 
 # Shared setup ----
 env <- build_headline_env()
@@ -1238,3 +1239,65 @@ if (RUN_POOLED_ROBUSTNESS) local({
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()
+
+
+# Cohort-by-cohort ATTs (RUN_EVENT_BY_EVENT) ----
+# Cengiz, Dube, Lindner & Zipperer (2019, Online Appendix C) estimate a separate
+# effect for each of their events and show the distribution, so a reader can see
+# whether the pooled average hides a mix of large positives and negatives. The
+# analog here is one ATT per STACK: every municipality whose first rate change
+# fell in year c is one sub-experiment, estimated on that stack alone.
+#
+# For each cohort c:
+#   sample = stk_muni[stack == c]  (that cohort's treated munis + all NC),
+#            already windowed to [c-5, c+5] and dose re-baselined by build_stack
+#   Y_it   = alpha_i + gamma_t + sum_k beta_kc * dose_it * 1{cell_i = k}
+#            + SD co-treatment + X'phi + e
+# Plain muni + year FE, because a single stack has no stack dimension left.
+#
+# INFERENCE CAVEAT, repeated in the figure note: several cohorts contain only one
+# or two treated municipalities, so the cluster-robust SE on those is unreliable
+# (Conley & Taber 2011). Cengiz et al. use Ferman & Pinto for this reason. Read
+# the DISTRIBUTION of point estimates; the SEs order them, they do not test them.
+if (RUN_EVENT_BY_EVENT) local({
+  OUT <- "log_live_and_work"
+  inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  stk <- copy(stk_muni)
+  stk[is.na(dose_sd), dose_sd := 0]
+  ctrls_str <- paste(ctrls, collapse = " + ")
+
+  one <- function(cy) {
+    d <- stk[stack == cy]
+    cells_here <- intersect(inc_cells, unique(as.character(d$treat_cell)))
+    if (!length(cells_here)) return(NULL)
+    cols <- c("muni","year","treat_cell","cell_sd","dose_stack","dose_sd", OUT, ctrls)
+    d <- d[, ..cols]; d <- d[complete.cases(d)]
+    if (!nrow(d)) return(NULL)
+    f <- as.formula(paste0(OUT, " ~ i(treat_cell, dose_stack, ref='NC')",
+                           " + i(cell_sd, dose_sd, ref='NC') + ", ctrls_str,
+                           " | muni + year"))
+    m <- tryCatch(feols(f, d, cluster = ~muni, notes = FALSE), error = function(e) NULL)
+    if (is.null(m)) return(NULL)
+    rbindlist(lapply(cells_here, function(k) {
+      nm <- sprintf("treat_cell::%s:dose_stack", k)
+      if (!(nm %in% names(coef(m)))) return(NULL)
+      data.table(cohort = cy, cell = k,
+                 n_treated = d[treat_cell == k, uniqueN(muni)],
+                 est = unname(coef(m)[nm]), se = unname(se(m)[nm]),
+                 p = unname(pvalue(m)[nm]), n = nobs(m))
+    }))
+  }
+  res <- rbindlist(lapply(sort(unique(stk$stack)), one), fill = TRUE)
+  if (!nrow(res)) { message("[cohort-ATT] nothing estimated"); return(invisible(NULL)) }
+  res[, `:=`(lo = est - 1.96*se, hi = est + 1.96*se, sig = p < 0.05)]
+  fwrite(res, file.path(RESULTS_DIR, "cohort_by_cohort_att.csv"))
+
+  cat("\n---- cohort-by-cohort ATTs,", OUT, "----\n")
+  print(res[, .(cohorts = .N, munis = sum(n_treated),
+                negative = sum(est < 0), sig5 = sum(sig, na.rm = TRUE),
+                median = round(median(est), 3), mean = round(mean(est), 3),
+                min = round(min(est), 2), max = round(max(est), 2)), by = cell])
+  print(res[order(cell, cohort), .(cohort, cell, n_treated,
+            est = round(est,3), se = round(se,3), sig)], nrows = 60)
+  message("Saved cohort_by_cohort_att.csv")
+})

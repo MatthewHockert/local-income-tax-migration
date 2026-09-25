@@ -34,6 +34,7 @@ RUN_APPENDIX_ES_FIGS     <- TRUE   # unified ribbon-style ES figures (appendix s
 RUN_EXTRA_FIGS           <- TRUE   # descriptive rate-change scatters, spaghetti, histograms
 RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, Inc-bind, Inc-becomes)
 RUN_REVENUE_TRADEOFF_FIGS <- TRUE  # workers vs EIT-revenue dose response, and the tradeoff against the pre-existing rate
+RUN_COHORT_ATT_FIG <- TRUE  # one ATT per stack, Cengiz-style event distribution
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
 RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, dose vs tag)
@@ -1930,4 +1931,47 @@ if (RUN_REVENUE_TRADEOFF_FIGS) local({
            width = 8, height = 8.5, dpi = 300)
   }
   message("Saved revenue tradeoff figures")
+})
+
+
+# Cohort-by-cohort ATT figure (RUN_COHORT_ATT_FIG) ----
+# Reads 04_robustness.R -> RUN_EVENT_BY_EVENT. One point per sub-experiment,
+# ordered within cell, against the pooled headline. The Cengiz et al. (2019)
+# Appendix C figure: does the pooled average hide a mix of signs?
+if (RUN_COHORT_ATT_FIG) local({
+  fp <- file.path(RESULTS_DIR, "cohort_by_cohort_att.csv")
+  if (!file.exists(fp)) { message("[fig] no cohort ATTs; skipping"); return(invisible(NULL)) }
+  fig_dir <- OUT_DIR
+  d <- fread(fp)
+  # Headline reference lines, from the paper's own table.
+  hl <- data.table(cell = c("Inc-bind","Inc-becomes","Inc-nobind"),
+                   headline = c(-0.537, -0.250, -0.110))
+  d <- merge(d, hl, by = "cell", all.x = TRUE)
+  d[, cell_f := factor(cell, levels = c("Inc-bind","Inc-becomes","Inc-nobind"))]
+  d[, lab := paste0(cohort, "  (n=", n_treated, ")")]
+  setorder(d, cell_f, est)
+  d[, ord := seq_len(.N)]
+  g <- ggplot(d, aes(x = reorder(paste(cell, cohort), ord), y = est)) +
+    geom_hline(yintercept = 0, linetype = "dotted", colour = "grey55") +
+    geom_hline(aes(yintercept = headline), colour = "#2166ac",
+               linetype = "dashed", linewidth = 0.5) +
+    geom_errorbar(aes(ymin = lo, ymax = hi), width = 0, colour = "grey60") +
+    geom_point(aes(shape = sig, fill = sig), size = 2.4, colour = "#b2182b") +
+    scale_shape_manual(values = c(`FALSE` = 21, `TRUE` = 19), guide = "none") +
+    scale_fill_manual(values = c(`FALSE` = "white", `TRUE` = "#b2182b"), guide = "none") +
+    scale_x_discrete(labels = setNames(d$lab, paste(d$cell, d$cohort))) +
+    facet_wrap(~ cell_f, scales = "free", ncol = 1) +
+    coord_flip() +
+    labs(title = "One ATT per sub-experiment",
+         subtitle = paste0(
+           "Each point is a separate regression on a single stack: that cohort's treated\n",
+           "municipalities against all never-changers. Blue dashed is the pooled headline.\n",
+           "Filled = p<0.05, but several cohorts hold one treated muni, where the\n",
+           "cluster-robust SE is not reliable (Conley and Taber 2011)."),
+         x = "cohort year (treated municipalities)",
+         y = "effect per percentage point, log live-and-work") +
+    theme_bw(base_size = 9) + theme(plot.subtitle = element_text(size = 7.5))
+  ggsave(file.path(fig_dir, "cohort_by_cohort_att.png"), g,
+         width = 7.5, height = 8, dpi = 300)
+  message("Saved cohort_by_cohort_att.png")
 })
