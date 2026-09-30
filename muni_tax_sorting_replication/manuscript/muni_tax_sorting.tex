@@ -106,7 +106,7 @@ Beyond contributing to the general literature on local tax rate changes and resi
 The second is the treatment definition. Work on local income taxes codes a rate change as a binary indicator and recovers the average effect of having changed the rate at all \citep{yangRESPONSIVENESSINCOMELOCAL2017, yushkovLocalIncomeTaxes2025}. I use the size of the change, so the estimate is a response per percentage point rather than a response to the average change happened to be in one sample. That matters for two reasons. A binary coefficient is the per-percentage-point effect scaled by the realized distribution of rate changes, so it cannot be compared across settings with different distributions, and pooling changes of different magnitudes under a single indicator treats them as one treatment when they are several, which is the hidden-variations half of the stable unit treatment value assumption \citep[ch.~1]{imbensCausalInferenceStatistics2015}. The cost is a stronger identifying assumption, because reading the dose coefficient as a causal response requires trends to be parallel across dose magnitudes and not only between treated and control municipalities. Section~\ref{subsec:realized-dose-es} reports the event study that tests it.
 
 The decomposition is implemented at the municipality-year level in
-a continuous stacked difference-in-differences design that uses
+a continuous stacked difference-in-differences design \citep{cengizEffectMinimumWages2019a} that uses
 never-changed municipalities as the control pool. The
 school-district rate enters the design as a co-treatment on the
 home-side stack but is not used as a separate unit of analysis.
@@ -642,7 +642,7 @@ Lastly, figure~\ref{fig:pa_map} shows the spatial distribution of the rate chang
 %==========================================================
 
 I estimate two specifications using a continuous stacked
-difference-in-differences design. First, I run a pooled-increase specification (Section~\ref{subsec:pooled-spec}) that groups all
+difference-in-differences design \citep{cengizEffectMinimumWages2019a}. First, I run a pooled-increase specification (Section~\ref{subsec:pooled-spec}) that groups all
 rate-increase events into a single
 group. Second, I use the piecewise function in defined in
 Section~\ref{sec:theory}, isolating the rate changes that move the

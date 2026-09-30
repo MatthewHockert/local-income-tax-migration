@@ -1,22 +1,26 @@
-% abstract.tex -- standalone abstract-only document.
-% The abstract TEXT lives in abstract_body.tex, which the full manuscript
-% (muni_tax_sorting.tex) also \input's -- edit the text there, never here,
-% so the two can never drift apart.
+% !TEX program = pdflatex
+% Standalone abstract. Inputs abstract_body.tex so it stays in sync with the
+% paper -- edit the body, never this wrapper.
 \documentclass[12pt]{article}
 \usepackage[margin=1in]{geometry}
+\usepackage{setspace}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, citecolor=black, urlcolor=blue}
 
 \title{Do Local Income Taxes Cause Residential
 Sorting? \\
 \large Evidence from Pennsylvania's Piecewise Earned Income Tax}
 \author{Matthew Hockert\thanks{University of Minnesota. Email: hocke069@umn.edu}}
+\date{\today}
 
 \begin{document}
 \maketitle
-
-\begin{abstract}
-\input{abstract_body.tex}
-\end{abstract}
-
+\thispagestyle{empty}
+\vspace{-2em}
+\begin{center}\large\textbf{Abstract}\end{center}
+\begin{onehalfspace}
+\noindent \input{abstract_body.tex}
+\end{onehalfspace}
 \end{document}
