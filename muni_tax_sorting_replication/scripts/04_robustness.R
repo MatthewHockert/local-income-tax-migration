@@ -44,6 +44,7 @@ RUN_DOSE_PERMUTATION <- FALSE  # randomization inference: shuffle dose magnitude
 RUN_FAKE_TIMING      <- TRUE   # placebo cohorts 4 years early, pre-event data only
 RUN_POOLED_ROBUSTNESS <- TRUE  # the same battery, run on the pooled Inc specification
 RUN_EVENT_BY_EVENT   <- TRUE   # one ATT per treated municipality (Cengiz et al. 2019, Online Appendix C)
+RUN_LEVEL_ADJUST     <- TRUE   # baseline-rate trend adjustment: tau0 x time (conditional parallel trends)
 
 # Shared setup ----
 env <- build_headline_env()
@@ -1300,4 +1301,115 @@ if (RUN_EVENT_BY_EVENT) local({
   print(res[order(cell, cohort), .(cohort, cell, n_treated,
             est = round(est,3), se = round(se,3), sig)], nrows = 60)
   message("Saved cohort_by_cohort_att.csv")
+})
+
+
+# Baseline-level trend adjustment (RUN_LEVEL_ADJUST) ----
+# The control pool is nearly a point mass at a 0.5pp resident rate (mean 0.510,
+# SD 0.089), while Inc-bind municipalities start at 0.777 on average. Tested on
+# NEVER-CHANGERS ONLY, higher-baseline municipalities are already losing
+# live-and-work workers faster: -0.0171 log points per year per pp of baseline
+# (p = 0.016). Level therefore correlates with the counterfactual trend, so
+# unconditional parallel trends is the wrong assumption and the comparison has
+# to be made within baseline level.
+#
+# This is conditional parallel trends (Abadie 2005; Callaway & Sant'Anna 2021).
+# It is also the assumption Callaway, Goodman-Bacon & Sant'Anna (2024) name as
+# "strong parallel trends" for continuous treatment: ATT(d) across d confounds
+# the causal dose response with selection INTO dose, and the baseline rate is
+# the clearest observable proxy for that selection.
+#
+# Two adjustments, both added to the headline and changing nothing else:
+#   A1  + tau0:year      one linear differential trend scaled by baseline rate
+#   A2  + i(year, tau0)  a differential effect per calendar year
+# Cost: one parameter (A1) rather than a free trend per unit, which is what the
+# Wolfers (2006) / Meer & West (2016) objection to unit-specific trends targets.
+# Internal check: Inc-becomes has essentially no level imbalance (0.446 vs 0.510)
+# and should therefore NOT move if this is removing confounding rather than
+# absorbing treatment.
+if (RUN_LEVEL_ADJUST) local({
+  outs <- c("log_live_and_work", "share_live_in", "log_in_commuters", "log_total_jobs")
+  inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  stk <- copy(stk_muni)
+  stk[is.na(dose_sd), dose_sd := 0]
+  # tau0 = the municipality's own pre-event RATE LEVEL inside its stack window.
+  stk[, tau0 := mean(dose_stack[rel < 0], na.rm = TRUE), by = .(stack, muni)]
+  stk[!is.finite(tau0), tau0 := NA_real_]
+  stk[, direction_muni := factor(fcase(as.character(treat_cell) %in% inc_cells, "Inc",
+                                       as.character(treat_cell) == "NC", "NC",
+                                       default = NA_character_), levels = c("NC", "Inc"))]
+  stk[, direction_sd := factor(fcase(as.character(cell_sd) %in% inc_cells, "Inc",
+                                     as.character(cell_sd) == "NC", "NC",
+                                     default = NA_character_), levels = c("NC", "Inc"))]
+  ctrls_str <- paste(ctrls, collapse = " + ")
+
+  fit <- function(o, spec, extra) {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    sdv   <- if (spec == "decomp") "cell_sd"    else "direction_sd"
+    f <- as.formula(paste0(o, " ~ i(", cellv, ", dose_stack, ref='NC') + i(",
+                           sdv, ", dose_sd, ref='NC') + ", ctrls_str, extra,
+                           " | stack_muni + stack_year"))
+    tryCatch(feols(f, stk, cluster = ~muni, notes = FALSE), error = function(e) NULL)
+  }
+  grab <- function(m, spec, o, lab) {
+    if (is.null(m)) return(NULL)
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    grps  <- if (spec == "decomp") inc_cells    else "Inc"
+    rbindlist(lapply(grps, function(k) {
+      nm <- sprintf("%s::%s:dose_stack", cellv, k)
+      if (!(nm %in% names(coef(m)))) return(NULL)
+      data.table(adjustment = lab, spec = spec, outcome = o, cell = k,
+                 est = unname(coef(m)[nm]), se = unname(se(m)[nm]),
+                 p = unname(pvalue(m)[nm]), n = nobs(m))
+    }))
+  }
+  specs <- list(c("none", ""), c("A1 tau0 x year", " + tau0:year"),
+                c("A2 tau0 x calendar year", " + i(year, tau0)"))
+  res <- rbindlist(lapply(outs, function(o)
+    rbindlist(lapply(c("pooled", "decomp"), function(sp)
+      rbindlist(lapply(specs, function(x) grab(fit(o, sp, x[2]), sp, o, x[1])), fill = TRUE)),
+      fill = TRUE)), fill = TRUE)
+  fwrite(res, file.path(RESULTS_DIR, "level_adjusted_headline.csv"))
+  cat("\n---- baseline-level trend adjustment ----\n")
+  print(dcast(res, spec + cell + outcome ~ adjustment, value.var = "est"))
+
+  # Event study under the A1 adjustment, per cell and outcome, with the
+  # unadjusted path alongside so the correction is visible frame by frame.
+  # realized_dose_muni is muni-level and time-invariant (add_realized_dose
+  # merges it by muni), so it can be joined straight onto the stack.
+  rd <- unique(add_realized_dose(copy(panel))[, .(muni, realized_dose_muni)], by = "muni")
+  stk <- merge(stk, rd, by = "muni", all.x = TRUE)
+  stk[is.na(realized_dose_muni), realized_dose_muni := 0]
+  es_one <- function(dat, o, cl, extra, lab) {
+    keep <- c(cl, "NC")
+    dd <- dat[as.character(treat_cell) %in% keep]
+    cols <- c("muni","year","rel","treat_cell","realized_dose_muni","tau0",
+              "cell_sd","dose_sd","stack_muni","stack_year", o, ctrls)
+    cols <- intersect(cols, names(dd)); dd <- dd[, ..cols]; dd <- dd[complete.cases(dd)]
+    if (!nrow(dd) || !sum(dd$treat_cell == cl)) return(NULL)
+    f <- as.formula(paste0(o, " ~ i(rel, realized_dose_muni, ref = -1) + i(cell_sd, dose_sd, ref='NC') + ",
+                           ctrls_str, extra, " | stack_muni + stack_year"))
+    m <- tryCatch(feols(f, dd, cluster = ~muni, notes = FALSE), error = function(e) NULL)
+    if (is.null(m)) return(NULL)
+    ct <- as.data.table(m$coeftable, keep.rownames = "term")[grepl("^rel::", term)]
+    if (!nrow(ct)) return(NULL)
+    ct[, rel := as.integer(sub("rel::(-?\\d+):.*", "\\1", term))]
+    data.table(adjustment = lab, cell = cl, outcome = o, rel = ct$rel,
+               est = ct$Estimate, se = ct$`Std. Error`)
+  }
+  grid <- CJ(o = outs, cl = c("Inc", "Inc-bind", "Inc-becomes"), sorted = FALSE)
+  # "Inc" = pooled: relabel every increaser cell into one group first.
+  stk_pooled <- copy(stk)[, treat_cell := fifelse(as.character(treat_cell) %in% inc_cells,
+                                                  "Inc", as.character(treat_cell))]
+  es <- rbindlist(lapply(seq_len(nrow(grid)), function(i) {
+    o <- grid$o[i]; cl <- grid$cl[i]
+    dat <- if (cl == "Inc") stk_pooled else stk
+    rbindlist(list(es_one(dat, o, cl, "", "none"),
+                   es_one(dat, o, cl, " + tau0:year", "A1 tau0 x year")), fill = TRUE)
+  }), fill = TRUE)
+  if (nrow(es)) {
+    es[, `:=`(lo = est - 1.96*se, hi = est + 1.96*se)]
+    fwrite(es, file.path(RESULTS_DIR, "level_adjusted_es.csv"))
+    message("Saved level_adjusted_headline.csv / level_adjusted_es.csv")
+  }
 })

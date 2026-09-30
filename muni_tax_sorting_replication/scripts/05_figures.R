@@ -35,6 +35,7 @@ RUN_EXTRA_FIGS           <- TRUE   # descriptive rate-change scatters, spaghetti
 RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, Inc-bind, Inc-becomes)
 RUN_REVENUE_TRADEOFF_FIGS <- TRUE  # workers vs EIT-revenue dose response, and the tradeoff against the pre-existing rate
 RUN_COHORT_ATT_FIG <- TRUE  # one ATT per stack, Cengiz-style event distribution
+RUN_LEVEL_ADJUST_FIG <- TRUE  # realized-dose ES with and without the tau0 trend adjustment
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
 RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, dose vs tag)
@@ -1974,4 +1975,46 @@ if (RUN_COHORT_ATT_FIG) local({
   ggsave(file.path(fig_dir, "cohort_by_cohort_att.png"), g,
          width = 7.5, height = 8, dpi = 300)
   message("Saved cohort_by_cohort_att.png")
+})
+
+
+# Level-adjusted event-study figure (RUN_LEVEL_ADJUST_FIG) ----
+# Reads 04_robustness.R -> RUN_LEVEL_ADJUST. Realized-dose ES for the pooled,
+# Inc-bind and Inc-becomes groups on all four outcomes, drawn with and without
+# the baseline-rate trend adjustment (A1, + tau0:year) so the correction is
+# visible frame by frame rather than only in the aggregate coefficient.
+if (RUN_LEVEL_ADJUST_FIG) local({
+  fp <- file.path(RESULTS_DIR, "level_adjusted_es.csv")
+  if (!file.exists(fp)) { message("[fig] no level-adjusted ES; skipping"); return(invisible(NULL)) }
+  fig_dir <- OUT_DIR
+  d <- fread(fp)
+  ol <- c(log_live_and_work = "Log(work in own muni)", share_live_in = "Share live in muni",
+          log_in_commuters = "Log(in-commuters)", log_total_jobs = "Log(total jobs)")
+  cl <- c(Inc = "Pooled Increase", `Inc-bind` = "Inc-bind", `Inc-becomes` = "Inc-becomes")
+  d[, out_f  := factor(ol[outcome], levels = unname(ol))]
+  d[, cell_f := factor(cl[cell],    levels = unname(cl))]
+  d[, adj_f  := factor(adjustment, levels = c("none", "A1 tau0 x year"),
+                       labels = c("unadjusted", "baseline-rate trend adjusted"))]
+  g <- ggplot(d, aes(rel, est, colour = adj_f, fill = adj_f)) +
+    geom_hline(yintercept = 0, linetype = "dotted", colour = "grey55") +
+    geom_vline(xintercept = -0.5, linetype = "dotted", colour = "grey55") +
+    geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.12, colour = NA) +
+    geom_line(linewidth = 0.6) +
+    geom_point(size = 1.1) +
+    facet_grid(out_f ~ cell_f, scales = "free_y", switch = "y") +
+    scale_colour_manual(values = c("grey35", "#b2182b"), name = NULL) +
+    scale_fill_manual(values = c("grey35", "#b2182b"), name = NULL) +
+    scale_x_continuous(breaks = seq(-5, 5, 1)) +
+    labs(title = "Realized-dose event study, with and without the baseline-rate trend adjustment",
+         subtitle = paste0(
+           "Adjustment is A1: one linear trend scaled by the municipality's pre-event rate level.\n",
+           "Motivation: never-changers starting above 0.5pp were already losing live-and-work\n",
+           "workers at -0.017 log points per year per pp of baseline (p = 0.016)."),
+         x = "years relative to the rate change",
+         y = "effect per percentage point of realized dose") +
+    theme_bw(base_size = 9) +
+    theme(legend.position = "top", strip.placement = "outside",
+          plot.subtitle = element_text(size = 7.5))
+  ggsave(file.path(fig_dir, "level_adjusted_es.png"), g, width = 9.5, height = 9, dpi = 300)
+  message("Saved level_adjusted_es.png")
 })
