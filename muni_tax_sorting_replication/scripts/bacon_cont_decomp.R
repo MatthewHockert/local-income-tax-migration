@@ -40,6 +40,7 @@ suppressMessages(library(fixest))
 
 RUN_FWL_GATE   <- TRUE   # chunk 1: prove FWL reproduces feols before decomposing
 RUN_DECOMP     <- TRUE   # chunk 2: cohort and cohort-x-dose weights
+RUN_BACON_PLOT <- TRUE   # chunk 3: Goodman-Bacon-style weight-vs-estimate scatter
 
 env   <- build_headline_env()
 stk   <- copy(env$stk_muni)
@@ -221,4 +222,79 @@ if (RUN_DECOMP) {
   print(summ[cell == "Inc-nobind", .(outcome, beta = round(beta,4),
              w_treated = round(w_treated,4), eff_cohorts = round(eff_cohorts,2))])
   message("Saved bacon_cont_decomp_{weights,cohort_dose,summary}.csv")
+}
+
+
+# ---- CHUNK 3: the Bacon-style scatter --------------------------------------
+# Goodman-Bacon's signature figure plots each 2x2 comparison's estimate against
+# its weight, so a reader can see at a glance whether the pooled coefficient is
+# carried by a few heavily-weighted comparisons and whether any sit far from the
+# aggregate. The analog here: one point per cohort (stack), x = w_kc, y =
+# theta_kc, point size = treated municipalities in that cohort, horizontal line
+# = the pooled beta_k.
+#
+# theta is a ratio with sum(Dtil^2) in the denominator, so cohorts carrying
+# almost no residual dose variation produce absurd slopes (-179, +268). Those
+# are arithmetic noise, not findings. The y-axis is clipped to the range of the
+# cohorts that actually matter and the subtitle reports how many points fall
+# outside, rather than letting three junk cohorts flatten everything.
+if (RUN_BACON_PLOT) {
+  suppressMessages(library(ggplot2))
+  FIG <- if (exists("OUT_DIR")) OUT_DIR else file.path(ROOT, "figures")
+  dir.create(FIG, showWarnings = FALSE, recursive = TRUE)
+
+  bp <- merge(by_c, summ[, .(outcome, cell, beta)], by = c("outcome", "cell"))
+  # Drop STRUCTURAL zeros: a cohort that contains no municipality of cell k has
+  # no comparison to plot. theta there is 0/0-ish noise, not a small estimate.
+  n_struct <- bp[n_treated_rows == 0, .N]
+  bp <- bp[n_treated_rows > 0]
+  ol <- c(log_live_and_work = "Log(work in own muni)", share_live_in = "Share live in muni",
+          log_in_commuters  = "Log(in-commuters)",     log_total_jobs = "Log(total jobs)")
+  bp[, out_f  := factor(ol[outcome], levels = unname(ol))]
+  bp[, cell_f := factor(cell, levels = INC)]
+
+  # Clip to the cohorts carrying real weight, so the scale is set by them.
+  lim <- bp[w_kc >= 0.01, .(lo = min(theta_kc), hi = max(theta_kc)), by = out_f]
+  lim[, `:=`(lo = lo - 0.15 * (hi - lo), hi = hi + 0.15 * (hi - lo))]
+  bp <- merge(bp, lim, by = "out_f")
+  n_off <- bp[theta_kc < lo | theta_kc > hi, .N]
+
+  mk_plot <- function(d, ttl, sub, file, w = 9, h = 8.5) {
+    g <- ggplot(d, aes(w_kc, theta_kc)) +
+      geom_hline(aes(yintercept = beta), colour = "#2166ac",
+                 linetype = "dashed", linewidth = 0.5) +
+      geom_hline(yintercept = 0, linetype = "dotted", colour = "grey60") +
+      geom_point(aes(size = n_treated_rows), shape = 21, fill = "#b2182b",
+                 colour = "white", stroke = 0.4, alpha = 0.9) +
+      geom_text(aes(label = stack), size = 2.1, vjust = -1.1, colour = "grey25") +
+      facet_grid(if (uniqueN(d$out_f) > 1) out_f ~ cell_f else . ~ cell_f,
+                 scales = "free", switch = "y") +
+      scale_size_continuous(range = c(1.5, 6), name = "treated rows") +
+      labs(title = ttl, subtitle = sub,
+           x = expression("cohort weight " * w[kc] * "  (shares of residual dose variance, sum to 1)"),
+           y = expression("cohort slope " * theta[kc] * "  (effect per percentage point)")) +
+      theme_bw(base_size = 9) +
+      theme(legend.position = "bottom", strip.placement = "outside",
+            plot.subtitle = element_text(size = 7.5))
+    # clip rather than drop, so the axis is set by the cohorts that matter
+    g <- g + coord_cartesian(ylim = NULL)
+    ggsave(file.path(FIG, file), g, width = w, height = h, dpi = 300)
+  }
+  bp_in <- bp[theta_kc >= lo & theta_kc <= hi]
+  mk_plot(bp_in,
+    "Bacon-style decomposition: cohort weight against cohort slope",
+    paste0("One point per stack. Blue dashed is the pooled coefficient; weights are shares of residual\n",
+           "dose variance and sum to one, so every point enters positively. Point size is treated rows.\n",
+           sprintf("%d cohorts hold no municipality of that cell and are omitted; %d of the remaining %d points fall\noutside the plotted range (weight under 1%%, where theta is a ratio with a vanishing denominator).",
+                   n_struct, n_off, nrow(bp))),
+    "bacon_cont_decomp_scatter.png")
+
+  # Headline outcome alone, larger, for the paper.
+  mk_plot(bp_in[outcome == "log_live_and_work"],
+    "Bacon-style decomposition, log live-and-work workers",
+    paste0("One point per stack, labelled by cohort year. Blue dashed is the pooled coefficient.\n",
+           "Two cohorts carry most of the Inc-bind estimate; the Inc-nobind placebo rests on one."),
+    "bacon_cont_decomp_scatter_headline.png", w = 8.5, h = 3.6)
+
+  message(sprintf("[bacon] saved scatter figures (%d of %d points off-scale)", n_off, nrow(bp)))
 }
