@@ -41,6 +41,7 @@ suppressMessages(library(fixest))
 RUN_FWL_GATE   <- TRUE   # chunk 1: prove FWL reproduces feols before decomposing
 RUN_DECOMP     <- TRUE   # chunk 2: cohort and cohort-x-dose weights
 RUN_BACON_PLOT <- TRUE   # chunk 3: Goodman-Bacon-style weight-vs-estimate scatter
+RUN_NEGWEIGHTS <- TRUE   # chunk 4: de Chaisemartin-D'Haultfoeuille negative-weight diagnostic
 
 env   <- build_headline_env()
 stk   <- copy(env$stk_muni)
@@ -297,4 +298,76 @@ if (RUN_BACON_PLOT) {
     "bacon_cont_decomp_scatter_headline.png", w = 8.5, h = 3.6)
 
   message(sprintf("[bacon] saved scatter figures (%d of %d points off-scale)", n_off, nrow(bp)))
+}
+
+
+# ---- CHUNK 4: the negative-weight diagnostic -------------------------------
+# THIS is the de Chaisemartin & D'Haultfoeuille (2020) question, and it is NOT
+# what chunks 2-3 answer. Those partition rows, so their weights are sums of
+# squares and cannot be negative by construction -- finding none there proves
+# nothing.
+#
+# Write the outcome with a heterogeneous per-unit response,
+#     Y_it = Y(0)_it + D_it * tau_it .
+# FWL then gives
+#     beta = [sum Dtil Y(0)] / sum Dtil^2     (-> 0 under parallel trends)
+#          + sum_it w_it tau_it,
+#     w_it = Dtil_it * D_it / sum Dtil^2 ,   sum_it w_it = 1.
+# These weights are NOT sums of squares, so they CAN be negative: doses are
+# non-negative, so w_it < 0 wherever the residualised dose is negative on an
+# observation whose actual dose is positive. Control rows have D = 0 and so
+# carry no weight at all.
+#
+# TWO SPLITS MATTER, and reporting the headline number alone is misleading.
+#
+# (1) LEVEL vs CHANGE. The headline regressor is the rate LEVEL, which is
+#     positive (tau_0) even BEFORE the rate change, while the municipality
+#     fixed effect makes its residual negative pre-event. Every pre-period
+#     treated observation therefore gets a negative weight, mechanically. The
+#     cumulative CHANGE is zero pre-event, so those observations drop out.
+#     Both give the identical coefficient (verified in RUN_LEVELS_COMPARE), so
+#     they are two decompositions of the same number -- but only the change
+#     version has interpretable weights.
+#
+# (2) PRE vs POST. A negative weight multiplies tau_it for that observation.
+#     Pre-event, tau is zero by definition (nothing has happened), so negative
+#     pre-period weights multiply zero and cannot bias anything. Only
+#     POST-period negative mass is a real threat.
+if (RUN_NEGWEIGHTS) {
+  nw_one <- function(dosevar, lab) {
+    mc <- sc <- character(0)
+    for (k in INC) {
+      a <- paste0("nw_m_", gsub("-", "_", k)); b <- paste0("nw_s_", gsub("-", "_", k))
+      stk[, (a) := get(dosevar) * (as.character(treat_cell) == k)]
+      stk[, (b) := dose_sd      * (as.character(cell_sd)    == k)]
+      mc <- c(mc, a); sc <- c(sc, b)
+    }
+    kp <- c("muni", "stack", "rel", "treat_cell", "stack_muni", "stack_year",
+            mc, sc, ctrls, OUTS[1])
+    d <- stk[, ..kp]; d <- d[complete.cases(d)]
+    rbindlist(lapply(INC, function(k) {
+      a <- paste0("nw_m_", gsub("-", "_", k))
+      f <- as.formula(paste0(a, " ~ ", paste(setdiff(c(mc, sc, ctrls), a), collapse = " + "),
+                             " | ", FE))
+      Dt <- resid(feols(f, d, notes = FALSE), na.rm = FALSE); ok <- !is.na(Dt)
+      D <- d[[a]][ok]; Dt <- Dt[ok]; rel <- d$rel[ok]
+      w <- Dt * D / sum(Dt^2); tr <- D > 0
+      g <- function(sel) data.table(n = sum(sel), n_neg = sum(w[sel] < 0),
+                                    sum_w = sum(w[sel]), sum_neg = sum(w[sel][w[sel] < 0]))
+      rbind(cbind(dose = lab, cell = k, period = "all",  g(tr)),
+            cbind(dose = lab, cell = k, period = "pre",  g(tr & rel <  0)),
+            cbind(dose = lab, cell = k, period = "post", g(tr & rel >= 0)))
+    }), fill = TRUE)
+  }
+  negw <- rbind(nw_one("dose_stack", "level"), nw_one("dose_change", "change"))
+  negw[, share_neg := round(n_neg / pmax(n, 1), 3)]
+  stopifnot("weights do not sum to one" =
+              all(abs(negw[period == "all", sum_w] - 1) < 1e-8))
+  fwrite(negw, file.path(RESULTS_DIR, "bacon_cont_decomp_negweights.csv"))
+  cat("\n---- de Chaisemartin-D'Haultfoeuille negative weights ----\n")
+  print(negw[, .(dose, cell, period, n, n_neg, share_neg,
+                 sum_w = round(sum_w, 3), sum_neg = round(sum_neg, 3))])
+  cat("\nREAD: under the CHANGE specification, post-period negative mass is the\n",
+      "only threat. Pre-period negative weights multiply a zero effect.\n")
+  message("Saved bacon_cont_decomp_negweights.csv")
 }
