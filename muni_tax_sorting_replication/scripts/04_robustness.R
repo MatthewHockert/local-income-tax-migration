@@ -45,6 +45,7 @@ RUN_FAKE_TIMING      <- TRUE   # placebo cohorts 4 years early, pre-event data o
 RUN_POOLED_ROBUSTNESS <- TRUE  # the same battery, run on the pooled Inc specification
 RUN_EVENT_BY_EVENT   <- TRUE   # one ATT per treated municipality (Cengiz et al. 2019, Online Appendix C)
 RUN_LEVEL_ADJUST     <- TRUE   # baseline-rate trend adjustment: tau0 x time (conditional parallel trends)
+RUN_STACK_QWEIGHTS   <- TRUE   # Wing-Freedman-Hollingsworth corrective Q-weights on the stacked design
 
 # Shared setup ----
 env <- build_headline_env()
@@ -1412,4 +1413,102 @@ if (RUN_LEVEL_ADJUST) local({
     fwrite(es, file.path(RESULTS_DIR, "level_adjusted_es.csv"))
     message("Saved level_adjusted_headline.csv / level_adjusted_es.csv")
   }
+})
+
+
+# Corrective stack weights (RUN_STACK_QWEIGHTS) ----
+# Wing, Freedman & Hollingsworth, "Stacked Difference-in-Differences". The
+# unweighted stacked regression does not identify the target ATT aggregate,
+# because it weights each sub-experiment's TREATMENT and CONTROL trends
+# differently. Their fix is a sample weight
+#
+#     Q_sa = 1                                       if unit s is treated in stack a
+#     Q_sa = (N^D_a / N^D_Omega) / (N^C_a / N^C_Omega)   if unit s is a control
+#
+# counted in UNITS (municipalities), not observations. Under Q, treatment and
+# control trends enter each sub-experiment with equal weight, they cancel under
+# common trends, and the coefficient identifies the treated-count-weighted
+# average of the sub-experiment ATTs.
+#
+# WHAT THIS CHANGES HERE. Every never-changer appears in every stack, so
+# N^C_a / N^C_Omega is essentially 1/(number of stacks) and the weight reduces
+# to scaling each stack's control arm by that stack's SHARE OF TREATED
+# MUNICIPALITIES. Unweighted OLS instead weights each stack by its share of
+# residual dose variance -- which is why bacon_cont_decomp.R finds 2010 and 2012
+# carrying 74% of Inc-bind. Q-weights replace that precision rule with a
+# treated-count rule, so the two answer different questions and both are valid.
+#
+# Q is defined from the TOTAL treated count per stack (any increaser cell),
+# not per cell, because the control pool is shared across cells and the weight
+# is meant to balance the treatment and control arms of each sub-experiment.
+#
+# The baseline-rate level control (tau0 x year, see RUN_LEVEL_ADJUST) is kept
+# throughout and reported as a 2x2 against the weighting.
+if (RUN_STACK_QWEIGHTS) local({
+  outs <- c("log_live_and_work", "share_live_in", "log_in_commuters", "log_total_jobs")
+  inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  stk <- copy(stk_muni)
+  stk[is.na(dose_sd), dose_sd := 0]
+  stk[, tau0 := mean(dose_stack[rel < 0], na.rm = TRUE), by = .(stack, muni)]
+  stk[!is.finite(tau0), tau0 := NA_real_]
+  stk[, direction_muni := factor(fcase(as.character(treat_cell) %in% inc_cells, "Inc",
+                                       as.character(treat_cell) == "NC", "NC",
+                                       default = NA_character_), levels = c("NC", "Inc"))]
+  stk[, direction_sd := factor(fcase(as.character(cell_sd) %in% inc_cells, "Inc",
+                                     as.character(cell_sd) == "NC", "NC",
+                                     default = NA_character_), levels = c("NC", "Inc"))]
+
+  cols <- c("muni","stack","year","rel","treat_cell","cell_sd","direction_muni",
+            "direction_sd","dose_stack","dose_sd","tau0","stack_muni","stack_year",
+            outs, ctrls)
+  d <- stk[, ..cols]; d <- d[complete.cases(d)]
+
+  # Q-weights, counted in municipalities per stack.
+  d[, treated_unit := as.character(treat_cell) %in% inc_cells]
+  cnt <- d[, .(ND_a = uniqueN(muni[treated_unit]),
+               NC_a = uniqueN(muni[!treated_unit])), by = stack]
+  cnt[, `:=`(ND_O = sum(ND_a), NC_O = sum(NC_a))]
+  cnt[, q_ctrl := (ND_a / ND_O) / (NC_a / NC_O)]
+  d <- merge(d, cnt[, .(stack, ND_a, NC_a, q_ctrl)], by = "stack")
+  d[, Q := fifelse(treated_unit, 1, q_ctrl)]
+  message(sprintf("[qweights] %d stacks; treated munis per stack %d-%d; control Q range %.3f-%.3f",
+                  nrow(cnt), min(cnt$ND_a), max(cnt$ND_a), min(cnt$q_ctrl), max(cnt$q_ctrl)))
+  print(cnt[order(stack), .(stack, ND_a, NC_a, q_ctrl = round(q_ctrl, 4))])
+
+  ctrls_str <- paste(ctrls, collapse = " + ")
+  fit <- function(o, spec, extra, wt) {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    sdv   <- if (spec == "decomp") "cell_sd"    else "direction_sd"
+    f <- as.formula(paste0(o, " ~ i(", cellv, ", dose_stack, ref='NC') + i(",
+                           sdv, ", dose_sd, ref='NC') + ", ctrls_str, extra,
+                           " | stack_muni + stack_year"))
+    if (is.null(wt)) feols(f, d, cluster = ~muni, notes = FALSE)
+    else             feols(f, d, cluster = ~muni, weights = ~Q, notes = FALSE)
+  }
+  grab <- function(m, spec, o, lab) {
+    cellv <- if (spec == "decomp") "treat_cell" else "direction_muni"
+    grps  <- if (spec == "decomp") inc_cells    else "Inc"
+    rbindlist(lapply(grps, function(k) {
+      nm <- sprintf("%s::%s:dose_stack", cellv, k)
+      if (!(nm %in% names(coef(m)))) return(NULL)
+      data.table(spec = spec, variant = lab, outcome = o, cell = k,
+                 est = unname(coef(m)[nm]), se = unname(se(m)[nm]),
+                 p = unname(pvalue(m)[nm]), n = nobs(m))
+    }))
+  }
+  grid <- list(c("unweighted",            "",            "no"),
+               c("unweighted + tau0",     " + tau0:year", "no"),
+               c("Q-weighted",            "",            "yes"),
+               c("Q-weighted + tau0",     " + tau0:year", "yes"))
+  res <- rbindlist(lapply(outs, function(o)
+    rbindlist(lapply(c("pooled","decomp"), function(sp)
+      rbindlist(lapply(grid, function(g)
+        grab(fit(o, sp, g[2], if (g[3] == "yes") TRUE else NULL), sp, o, g[1])),
+        fill = TRUE)), fill = TRUE)), fill = TRUE)
+  fwrite(res, file.path(RESULTS_DIR, "stack_qweights.csv"))
+  cat("\n---- corrective Q-weights vs unweighted (est) ----\n")
+  print(dcast(res, spec + cell + outcome ~ variant, value.var = "est"))
+  cat("\n---- standard errors ----\n")
+  print(dcast(res, spec + cell + outcome ~ variant, value.var = "se"))
+  message("Saved stack_qweights.csv")
 })
