@@ -19,7 +19,7 @@ source(file.path(.dir, "_helpers.R"))
 # Flags ----
 RUN_PAPER_TABLES   <- TRUE    # all LaTeX table fragments -> tables/
 RUN_INTEXT_NUMBERS <- TRUE    # gates re-pinned to the post-property prose, 2026-08-06
-RUN_WORKBOOK       <- TRUE    # all result CSVs -> results/all_results.xlsx
+RUN_WORKBOOK       <- FALSE  # PARKED 2026-10-29, not in the paper: all result CSVs -> results/all_results.xlsx
 
 # Paper tables (build_paper_tables.R) ----
 # Build publication-style LaTeX table fragments from the results CSVs for

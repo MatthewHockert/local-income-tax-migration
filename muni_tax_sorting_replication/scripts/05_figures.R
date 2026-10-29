@@ -12,6 +12,7 @@
 # Run from package root:  Rscript scripts/05_figures.R
 
 suppressMessages({
+  library(dplyr)       # loaded before data.table so data.table's first/last/between win
   library(data.table)
   library(fixest)
   library(ggplot2)
@@ -28,23 +29,18 @@ source(file.path(.dir, "_helpers.R"))
 
 # Flags ----
 RUN_SUMMARY_STATS        <- TRUE   # summary tables + rate ECDF/CDF + map + binding-levels figs
-RUN_AGGREGATE_FIGS       <- TRUE   # pooled ES + dose-trajectory aggregate figures
-RUN_DOSE_TRAJECTORY      <- TRUE   # Inc-becomes dose-trajectory figure
-RUN_APPENDIX_ES_FIGS     <- TRUE   # unified ribbon-style ES figures (appendix set)
-RUN_EXTRA_FIGS           <- TRUE   # descriptive rate-change scatters, spaghetti, histograms
+RUN_DOSE_TRAJECTORY      <- FALSE  # PARKED 2026-10-29: Inc-bind + Inc-becomes dose trajectories; not in the paper, source of the 0.24 / 0.38 typical-event doses
 RUN_SPLINE_DOSE_RESPONSE <- TRUE   # ns(dose) ATT/ACRT dose-response (pooled, Inc-bind, Inc-becomes)
-RUN_REVENUE_TRADEOFF_FIGS <- TRUE  # workers vs EIT-revenue dose response, and the tradeoff against the pre-existing rate
-RUN_COHORT_ATT_FIG <- TRUE  # one ATT per stack, Cengiz-style event distribution
-RUN_LEVEL_ADJUST_FIG <- TRUE  # realized-dose ES with and without the tau0 trend adjustment
+RUN_REVENUE_TRADEOFF_FIGS <- FALSE # PARKED 2026-10-29, not in the paper: workers vs EIT-revenue dose response, and the tradeoff against the pre-existing rate
+RUN_COHORT_ATT_FIG <- FALSE # PARKED 2026-10-29, not in the paper: one ATT per stack, Cengiz-style event distribution
+RUN_LEVEL_ADJUST_FIG <- FALSE # PARKED 2026-10-29, not in the paper: realized-dose ES with and without the tau0 trend adjustment
 RUN_FEOLS_ES_BYCELL      <- TRUE   # feols realized-dose ES by group (twin of dcdh_bycell_es)
 RUN_LAW_TIMELINE         <- TRUE   # PA local-tax statute timeline
-RUN_DESIGN_SCHEMATICS    <- TRUE   # conceptual design schematics (max-rule, dose vs tag)
-RUN_TAX_MIX_FIG          <- TRUE   # tax-revenue mix by source, muni + SD panels
 
 # Shared headline environment ----
 # Built once for the sections that need the classified cousub panel / muni
 # stack (previously each sys.source()-d q3_unified_full_table.R).
-needs_env <- RUN_SUMMARY_STATS || RUN_AGGREGATE_FIGS || RUN_DOSE_TRAJECTORY ||
+needs_env <- RUN_SUMMARY_STATS || RUN_DOSE_TRAJECTORY ||
   RUN_SPLINE_DOSE_RESPONSE || RUN_FEOLS_ES_BYCELL
 if (needs_env) {
   env <- build_headline_env()
@@ -631,184 +627,12 @@ if (RUN_SUMMARY_STATS) local({
          width = 10, height = 6, dpi = 300)
 })
 
-# Aggregate figures (build_uea_aggregate_figures.R) ----
-# UEA-draft-specific aggregate figures: drop the city/borough/township
-# muni-type split from three figures, and produce a two-line muni-vs-SD
-# dose trajectory.
-# Outputs: figures/support_cohort_timing_agg.png,
-#   figures/support_dose_trajectory_muni_vs_sd.png,
-#   figures/support_dose_distribution_agg.png,
-#   figures/pooled_es_muni_only.png
-if (RUN_AGGREGATE_FIGS) local({
-  fig_dir <- OUT_DIR
-
-  PAPER_RED  <- "#C5283D"
-  PAPER_BLUE <- "#1F5673"
-  PAPER_GREY <- "#7A7A7A"
-
-  theme_paper <- function(base_size = 11) {
-    theme_bw(base_size = base_size) +
-      theme(plot.title    = element_text(face = "bold"),
-            plot.subtitle = element_text(color = "grey30"),
-            panel.grid.minor = element_blank())
-  }
-
-  # Load panel + cell labels from the shared headline env
-  panel <- copy(env$panel)
-
-  # Figure 1: aggregate Inc-bind cohort timing (no muni-type split)
-  incbind <- unique(panel[cell_muni == "Inc-bind" & !is.na(c_muni),
-                            .(muni, c_muni)])
-
-  g1 <- ggplot(incbind, aes(x = c_muni)) +
-    geom_histogram(binwidth = 1, fill = PAPER_RED, color = "white",
-                    linewidth = 0.3) +
-    scale_x_continuous(breaks = seq(2003, 2019, 1)) +
-    labs(title = "Inc-bind first-event year",
-          subtitle = sprintf("All %d Inc-bind municipalities (drop sample, post-NC-fix)",
-                             nrow(incbind)),
-          x = "Year of first municipal resident-rate event (cohort)",
-          y = "Count of municipalities") +
-    theme_paper()
-  ggsave(file.path(fig_dir, "support_cohort_timing_agg.png"),
-          g1, width = 9, height = 4.5, dpi = 300)
-
-  # Figure 2: dose trajectory -- muni cohort vs SD cohort
-  # Muni-side Inc-bind dose trajectory
-  muni_traj <- panel[cell_muni == "Inc-bind" & !is.na(c_muni) &
-                     year >= c_muni - 5 & year <= c_muni + 5,
-                     .(rel = year - c_muni, dose = dose_muni)]
-  muni_traj_summary <- muni_traj[, .(mean_dose = mean(dose, na.rm = TRUE),
-                                       q25 = quantile(dose, 0.25, na.rm = TRUE),
-                                       q75 = quantile(dose, 0.75, na.rm = TRUE),
-                                       side = "Municipality cohort"),
-                                   by = rel]
-
-  # SD-side Inc-bind dose trajectory (use cell_sd + dose_sd + c_sd if available)
-  sd_cols_present <- all(c("cell_sd","dose_sd","c_sd") %in% names(panel))
-  if (sd_cols_present) {
-    sd_traj <- panel[cell_sd == "Inc-bind" & !is.na(c_sd) &
-                     year >= c_sd - 5 & year <= c_sd + 5,
-                     .(rel = year - c_sd, dose = dose_sd)]
-    sd_traj_summary <- sd_traj[, .(mean_dose = mean(dose, na.rm = TRUE),
-                                     q25 = quantile(dose, 0.25, na.rm = TRUE),
-                                     q75 = quantile(dose, 0.75, na.rm = TRUE),
-                                     side = "School-district cohort"),
-                                by = rel]
-    combined <- rbind(muni_traj_summary, sd_traj_summary)
-  } else {
-    print("WARNING: SD-side cell/dose/cohort columns not in panel; muni-only.")
-    combined <- muni_traj_summary
-  }
-
-  g2 <- ggplot(combined, aes(x = rel, y = mean_dose, color = side,
-                                fill = side, group = side)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-    geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey50") +
-    geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.18, color = NA) +
-    geom_line(linewidth = 0.8) +
-    geom_point(size = 2) +
-    scale_color_manual(values = c("Municipality cohort"      = PAPER_RED,
-                                    "School-district cohort" = PAPER_BLUE),
-                        name = NULL) +
-    scale_fill_manual(values = c("Municipality cohort"      = PAPER_RED,
-                                   "School-district cohort" = PAPER_BLUE),
-                       guide = "none") +
-    scale_x_continuous(breaks = -5:5) +
-    labs(title = "Cumulative Inc-bind dose by event-time",
-          subtitle = "Mean and inter-quartile range relative to pre-event baseline",
-          x = "Event time k (years relative to first rate event)",
-          y = expression("Cumulative "*Delta*tau*" (pp)")) +
-    theme_paper() +
-    theme(legend.position = "bottom")
-  ggsave(file.path(fig_dir, "support_dose_trajectory_muni_vs_sd.png"),
-          g2, width = 9, height = 4.5, dpi = 300)
-
-  # Figure 3: aggregate dose distribution at k=+5 (no muni-type split)
-  dose_at_5 <- panel[cell_muni == "Inc-bind" & !is.na(c_muni) &
-                     year == c_muni + 5,
-                     .(muni, dose_5yr = dose_muni)]
-  # Fill in missing rel=5 with max post-event dose
-  missing_munis <- setdiff(incbind$muni, dose_at_5$muni)
-  if (length(missing_munis) > 0) {
-    fill <- panel[cell_muni == "Inc-bind" & muni %in% missing_munis &
-                  year >= c_muni,
-                  .(dose_5yr = max(dose_muni, na.rm = TRUE)), by = muni]
-    dose_at_5 <- rbind(dose_at_5, fill, fill = TRUE)
-  }
-
-  g3 <- ggplot(dose_at_5, aes(x = dose_5yr)) +
-    geom_histogram(binwidth = 0.1, fill = PAPER_RED, color = "white",
-                    linewidth = 0.3) +
-    scale_x_continuous(breaks = seq(0, 1.5, by = 0.1)) +
-    labs(title = "Cumulative Inc-bind dose at event-time k = +5",
-          subtitle = sprintf("All %d Inc-bind municipalities; aggregated across muni type",
-                             nrow(dose_at_5)),
-          x = expression("Cumulative "*Delta*tau^muni*" at k=+5 (pp)"),
-          y = "Count of municipalities") +
-    theme_paper()
-  ggsave(file.path(fig_dir, "support_dose_distribution_agg.png"),
-          g3, width = 9, height = 4.5, dpi = 300)
-
-  # Figure 4 & 5: split pooled ES muni-vs-SD overlay into two figures
-  prep_pooled <- function(path) {
-    if (!file.exists(path)) return(NULL)
-    d <- fread(path)
-    ref_keys <- intersect(c("outcome","direction"), names(d))
-    ref <- unique(d[, ..ref_keys])
-    ref[, `:=`(rel = -1L, est = 0, se = 0, p = NA, n = NA)]
-    rbind(d, ref, fill = TRUE)
-  }
-
-  # SD-level pooled ES dropped from the paper (2026-07-02) -- muni only.
-  cousub_dt <- prep_pooled(file.path(RESULTS_DIR, "pooled_es_cousub_coefs.csv"))
-
-  plot_one_level <- function(dt, level_label, color_pos, out_path) {
-    if (is.null(dt) || nrow(dt) == 0) return(invisible())
-    dt <- copy(dt)
-    dt[, lo := est - 1.96 * se]
-    dt[, hi := est + 1.96 * se]
-    dt[, direction := factor(direction, levels = c("Inc","Dec"))]
-    muni_outcomes <- c("log_live_and_work","log_in_commuters",
-                        "log_total_jobs", "share_live_in")
-    dt <- dt[outcome %in% muni_outcomes]
-    outcome_pretty <- c(
-      log_live_and_work = "log(live-and-work)",
-      log_in_commuters  = "log(in-commuters)",
-      log_total_jobs    = "log(total jobs)",
-      share_live_in     = "Share live-in-muni"
-    )
-    dt[, outcome := factor(outcome, levels = names(outcome_pretty),
-                            labels = outcome_pretty)]
-    p <- ggplot(dt, aes(x = rel, y = est, color = direction, fill = direction,
-                          group = direction)) +
-      geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-      geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey50") +
-      geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.18, color = NA) +
-      geom_line(linewidth = 0.7) +
-      geom_point(size = 1.1) +
-      facet_wrap(~ outcome, ncol = 2, scales = "free_y") +
-      scale_color_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
-                          labels = c(Inc = "Pooled Inc", Dec = "Pooled Dec"),
-                          name = NULL) +
-      scale_fill_manual(values = c(Inc = PAPER_RED, Dec = PAPER_BLUE),
-                         guide = "none") +
-      labs(title = sprintf("%s pooled realized-dose event study", level_label),
-            subtitle = "Per-pp coefficient by event-time. 95% confidence ribbons.",
-            x = "Event time k",
-            y = expression(beta[k])) +
-      theme_paper(base_size = 10) +
-      theme(legend.position = "bottom")
-    ggsave(out_path, p, width = 11, height = 6.5, dpi = 300)
-  }
-
-  plot_one_level(cousub_dt, "Municipality-level",
-                  color_pos = NULL,
-                  out_path = file.path(fig_dir, "pooled_es_muni_only.png"))
-})
-
-# Dose trajectory Inc-becomes (build_dose_trajectory_inc_becomes.R) ----
-# Inc-becomes analog of the muni-vs-SD overlay in the aggregate-figures section.
+# Dose trajectories (build_uea_aggregate_figures.R Fig 2 + build_dose_trajectory_inc_becomes.R) ----
+# Cumulative dose by event time for the Inc-bind and Inc-becomes cells, muni
+# cohort vs SD cohort. The mean at k = +5 is the typical-event dose used to
+# translate per-pp coefficients in the prose (0.24 Inc-bind, 0.38 Inc-becomes).
+# Outputs: figures/support_dose_trajectory_muni_vs_sd.png (Inc-bind),
+#   figures/support_dose_trajectory_inc_becomes.png
 if (RUN_DOSE_TRAJECTORY) local({
   fig_dir <- OUT_DIR
 
@@ -819,252 +643,53 @@ if (RUN_DOSE_TRAJECTORY) local({
           plot.subtitle = element_text(color = "grey30"),
           panel.grid.minor = element_blank())
 
-  panel <- copy(env$panel)
+  panel <- as_tibble(env$panel)
 
-  muni_traj <- panel[cell_muni == "Inc-becomes" & !is.na(c_muni) &
-                     year >= c_muni - 5 & year <= c_muni + 5,
-                     .(rel = year - c_muni, dose = dose_muni)]
-  muni_summary <- muni_traj[, .(mean_dose = mean(dose, na.rm = TRUE),
-                                   q25 = quantile(dose, 0.25, na.rm = TRUE),
-                                   q75 = quantile(dose, 0.75, na.rm = TRUE),
-                                   side = "Municipality cohort"), by = rel]
+  # File names kept from the two scripts these came from so the paths don't move.
+  out_file <- c("Inc-bind"    = "support_dose_trajectory_muni_vs_sd.png",
+                "Inc-becomes" = "support_dose_trajectory_inc_becomes.png")
 
-  sd_traj <- panel[cell_sd == "Inc-becomes" & !is.na(c_sd) &
-                   year >= c_sd - 5 & year <= c_sd + 5,
-                   .(rel = year - c_sd, dose = dose_sd)]
-  sd_summary <- sd_traj[, .(mean_dose = mean(dose, na.rm = TRUE),
-                               q25 = quantile(dose, 0.25, na.rm = TRUE),
-                               q75 = quantile(dose, 0.75, na.rm = TRUE),
-                               side = "School-district cohort"), by = rel]
-
-  combined <- rbind(muni_summary, sd_summary)
-
-  g <- ggplot(combined, aes(x = rel, y = mean_dose, color = side, fill = side, group = side)) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-    geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey50") +
-    geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.18, color = NA) +
-    geom_line(linewidth = 0.8) + geom_point(size = 2) +
-    scale_color_manual(values = c("Municipality cohort" = PAPER_RED,
-                                    "School-district cohort" = PAPER_BLUE), name = NULL) +
-    scale_fill_manual(values = c("Municipality cohort" = PAPER_RED,
-                                   "School-district cohort" = PAPER_BLUE), guide = "none") +
-    scale_x_continuous(breaks = -5:5) +
-    labs(title = "Cumulative Inc-becomes dose by event-time",
-          subtitle = "Mean and inter-quartile range relative to pre-event baseline",
-          x = "Event time k (years relative to first rate event)",
-          y = expression("Cumulative "*Delta*tau*" (pp)")) +
-    theme_paper() + theme(legend.position = "bottom")
-
-  ggsave(file.path(fig_dir, "support_dose_trajectory_inc_becomes.png"),
-          g, width = 9, height = 4.5, dpi = 300)
-})
-
-# Appendix ES figures (build_appendix_es_figures.R) ----
-# Regenerate the appendix-bound event-study figures in a uniform ggplot style
-# matching the main-text overlay plots. MUNI (cousub) realized-dose ONLY:
-# the SD- and block-level units and the binary Sun-Abraham ES were dropped
-# from the paper (2026-07-02) -- their builder scripts live in
-# scripts/_retired/ if those results are ever needed again.
-# Input:  data/results/headline_es_coefs.csv
-# Output: figures/es_realized_<outcome>.png
-if (RUN_APPENDIX_ES_FIGS) local({
-  data_dir <- RESULTS_DIR
-  fig_dir  <- OUT_DIR
-
-  PAPER_RED  <- "#C5283D"
-  PAPER_BLUE <- "#1F5673"
-
-  # Cell-order matches the institutional taxonomy (Inc cells only; paper drops Dec)
-  cell_levels <- c("Inc-bind","Inc-becomes","Inc-nobind")
-
-  make_plot <- function(dt, title_prefix, outcome_val,
-                         caption_subtitle, color = PAPER_RED) {
-    dd <- dt[outcome == outcome_val & cell %in% cell_levels]
-    if (nrow(dd) == 0) return(NULL)
-    # Insert reference period (rel = -1, est = 0) for visual continuity
-    ref_rows <- unique(dd[, .(cell)])[, .(cell, rel = -1L, est = 0,
-                                           se = 0, p = NA_real_, n = NA_integer_,
-                                           outcome = outcome_val)]
-    # Keep only columns common to both
-    common <- intersect(names(dd), names(ref_rows))
-    dd <- rbind(dd[, ..common], ref_rows[, ..common], fill = TRUE)
-    dd[, lo := est - 1.96 * se]
-    dd[, hi := est + 1.96 * se]
-    dd[, cell := factor(cell, levels = cell_levels)]
-    setorder(dd, cell, rel)
-    p <- ggplot(dd, aes(x = rel, y = est)) +
-      geom_hline(yintercept = 0, linetype = "dashed", color = "grey55",
-                  linewidth = 0.4) +
-      geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey55",
-                  linewidth = 0.4) +
-      geom_ribbon(aes(ymin = lo, ymax = hi), fill = color, alpha = 0.18) +
-      geom_line(color = color, linewidth = 0.7) +
-      geom_point(color = color, size = 1.6) +
-      facet_wrap(~ cell, ncol = 3, scales = "free_y") +
-      labs(title = sprintf("%s: %s", title_prefix, outcome_val),
-            subtitle = caption_subtitle,
-            x = "Event time k",
-            y = expression(beta[k])) +
-      theme_bw(base_size = 11) +
-      theme(plot.title = element_text(face = "bold", size = 12),
-            plot.subtitle = element_text(size = 10, color = "grey25"),
-            strip.background = element_rect(fill = "grey95", color = NA),
-            strip.text = element_text(face = "bold", size = 10),
-            panel.grid.minor = element_blank())
-    p
+  # Mean and IQR of the cumulative dose by event time, for one rate setter.
+  traj_summary <- function(cl, cell_col, c_col, dose_col, side_label) {
+    panel %>%
+      filter(.data[[cell_col]] == cl,
+             !is.na(.data[[c_col]]),
+             year >= .data[[c_col]] - 5,
+             year <= .data[[c_col]] + 5) %>%
+      mutate(rel = year - .data[[c_col]]) %>%
+      group_by(rel) %>%
+      summarise(mean_dose = mean(.data[[dose_col]], na.rm = TRUE),
+                q25       = quantile(.data[[dose_col]], 0.25, na.rm = TRUE),
+                q75       = quantile(.data[[dose_col]], 0.75, na.rm = TRUE),
+                .groups   = "drop") %>%
+      mutate(side = side_label)
   }
 
-  save_for <- function(coefs_path, file_prefix, title_prefix, subtitle,
-                        color = PAPER_RED, width = 10, height = 6) {
-    if (!file.exists(coefs_path)) {
-      print(sprintf("skip: %s not found", coefs_path)); return(invisible())
-    }
-    dt <- fread(coefs_path)
-    outcomes <- unique(dt$outcome)
-    for (o in outcomes) {
-      p <- make_plot(dt, title_prefix, o, subtitle, color)
-      if (is.null(p)) next
-      out_path <- file.path(fig_dir, sprintf("%s_%s.png", file_prefix, o))
-      ggsave(out_path, p, width = width, height = height, dpi = 300)
-    }
+  for (cl in names(out_file)) {
+    muni_summary <- traj_summary(cl, "cell_muni", "c_muni", "dose_muni", "Municipality cohort")
+    sd_summary   <- traj_summary(cl, "cell_sd",   "c_sd",   "dose_sd",   "School-district cohort")
+    combined     <- bind_rows(muni_summary, sd_summary)
+    message(sprintf("[trajectory] %s muni mean dose at k=+5: %.3f",
+                    cl, muni_summary$mean_dose[muni_summary$rel == 5]))
+
+    g <- ggplot(combined, aes(x = rel, y = mean_dose, color = side, fill = side, group = side)) +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+      geom_vline(xintercept = -0.5, linetype = "dotted", color = "grey50") +
+      geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.18, color = NA) +
+      geom_line(linewidth = 0.8) + geom_point(size = 2) +
+      scale_color_manual(values = c("Municipality cohort" = PAPER_RED,
+                                      "School-district cohort" = PAPER_BLUE), name = NULL) +
+      scale_fill_manual(values = c("Municipality cohort" = PAPER_RED,
+                                     "School-district cohort" = PAPER_BLUE), guide = "none") +
+      scale_x_continuous(breaks = -5:5) +
+      labs(title = sprintf("Cumulative %s dose by event-time", cl),
+            subtitle = "Mean and inter-quartile range relative to pre-event baseline",
+            x = "Event time k (years relative to first rate event)",
+            y = expression("Cumulative "*Delta*tau*" (pp)")) +
+      theme_paper() + theme(legend.position = "bottom")
+
+    ggsave(file.path(fig_dir, out_file[[cl]]), g, width = 9, height = 4.5, dpi = 300)
   }
-
-  save_for(file.path(data_dir, "headline_es_coefs.csv"),
-            file_prefix    = "es_realized",
-            title_prefix   = "Muni-level realized-dose ES",
-            subtitle       = "Per-pp dose-response at event-time k; 95% CI ribbons; k=-1 omitted as reference",
-            color          = PAPER_RED)
-})
-
-# Extra descriptive figures (build_extra_figures.R) ----
-# Descriptive figures of the local-tax rate changes. FLIP-FLOPPERS (units with both
-# a + and a - change in a given rate) are DROPPED per rate to match the estimation
-# sample. Two change measures: cumulative = cumulative dtau at +5; first = the first
-# change only. Figures:
-#   1a. scatter baseline level vs change, MUNI + SD overlaid -- {inc,dec} x {cum,first}
-#   1b. scatter baseline level vs change, TOTAL home stack    -- {inc,dec} x {cum,first}
-#   2.  spaghetti: every muni's cumulative dose by event-time -- {inc,dec}
-#   3.  mirrored histogram of muni change magnitude           -- {cum,first}
-#   4.  histogram of baseline muni-rate levels
-if (RUN_EXTRA_FIGS) local({
-  fig_dir <- OUT_DIR; K <- 5L
-  RED <- "#b2182b"; BLU <- "#2166ac"
-
-  raw <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_rate_panel.rds")))
-  raw <- raw[!is.na(cousub_fips) & !is.na(resident_eit) & year >= 2002 & year <= 2019,
-             .(muni = cousub_fips, year, muni_rate = resident_eit, sd_rate = sd_eit)]
-  raw[, stack := muni_rate + fifelse(is.na(sd_rate), 0, sd_rate)]   # home stack (SD=0 if none)
-
-  # --- per-rate change summary: baseline level, first change, cumulative at +K,
-  #     dropping THAT rate's own flip-floppers. Returns the per-unit summary and the
-  #     event-time trajectory. ---------------------------------------------------
-  build_summ <- function(dt, col) {
-    x <- dt[!is.na(get(col)), .(muni, year, rate = get(col))]
-    x <- x[, .(rate = mean(rate, na.rm = TRUE)), by = .(muni, year)]
-    setorder(x, muni, year)
-    x[, d := c(NA_real_, diff(rate)), by = muni]
-    # Lay explanation: munis that both raised and cut this rate in the
-    # window ("flip-floppers") are dropped, matching the estimation sample;
-    # their back-and-forth would blur what a single change looks like.
-    flip <- x[abs(d) > 1e-6, .(ni = sum(d > 0), nd = sum(d < 0)), by = muni][ni > 0 & nd > 0, muni]
-    x <- x[!muni %in% flip]
-    # Lay explanation: two sizes for each muni's change. "First" is the
-    # initial step alone; "cumulative" is where the rate sits five years
-    # later relative to the year before that step -- so later top-ups or
-    # partial walk-backs count in cumulative but not in first.
-    ev <- x[abs(d) > 1e-6, .(c_year = year[1], first_d = d[1]), by = muni]
-    ev[, dir := fifelse(first_d > 0, "Increase", "Decrease")]
-    x <- merge(x, ev, by = "muni", all.x = TRUE)
-    x[, rel := year - c_year]
-    x <- merge(x, x[rel == -1, .(muni, baseline = rate)], by = "muni", all.x = TRUE)
-    x[, cum_change := rate - baseline]
-    s <- x[!is.na(c_year) & rel >= 0 & rel <= K, .SD[which.max(rel)], by = muni][
-          !is.na(baseline), .(muni, dir, baseline, first = first_d, cumulative = cum_change)]
-    list(summ = s, traj = x[!is.na(c_year) & rel >= -K & rel <= K & !is.na(baseline)])
-  }
-
-  M  <- build_summ(raw, "muni_rate")
-  S  <- build_summ(raw, "sd_rate")
-  HS <- build_summ(raw, "stack")
-  sm_muni <- M$summ[, setter := "Muni"]
-  sm_sd   <- S$summ[, setter := "SD"]
-  sm_stk  <- HS$summ
-  print(sprintf("muni: %d inc / %d dec | SD: %d inc / %d dec | stack: %d inc / %d dec",
-                sm_muni[dir=="Increase",.N], sm_muni[dir=="Decrease",.N],
-                sm_sd[dir=="Increase",.N], sm_sd[dir=="Decrease",.N],
-                sm_stk[dir=="Increase",.N], sm_stk[dir=="Decrease",.N]))
-
-  th <- theme_bw(base_size = 11)
-  meas_lab <- c(cumulative = "cumulative change at +5 (pp)", first = "first-change (pp)")
-
-  ## 1a. scatter: MUNI + SD overlaid (square / triangle), ONE pooled trend line --
-  s1 <- rbind(sm_muni, sm_sd)
-  for (dd in c("Increase","Decrease")) for (m in c("cumulative","first")) {
-    d0 <- s1[dir == dd]; d0[, yv := get(m)]
-    g <- ggplot(d0, aes(baseline, yv, shape = setter)) +
-      geom_point(alpha = 0.5, color = "black", size = 2) +
-      geom_smooth(aes(group = 1), method = "lm", se = FALSE,
-                  color = "grey40", linewidth = 0.6) +
-      scale_shape_manual(values = c("Muni" = 0, "SD" = 2), name = NULL) +
-      labs(title = sprintf("Baseline level vs %s (%s)", meas_lab[m], tolower(dd)),
-           subtitle = "muni (square) and school-district (triangle) rate changes; single trend line fit to all points; flip-floppers excluded",
-           x = "baseline rate level (%)", y = meas_lab[m]) +
-      th + theme(legend.position = "bottom")
-    ggsave(file.path(fig_dir, sprintf("scatter_level_vs_change_%s_%s.png",
-           ifelse(dd=="Increase","inc","dec"), m)), g, width = 7, height = 5, dpi = 300)
-  }
-
-  ## 1b. scatter: TOTAL home stack (filled circle, all black) -------------------
-  for (dd in c("Increase","Decrease")) for (m in c("cumulative","first")) {
-    d0 <- sm_stk[dir == dd]; d0[, yv := get(m)]
-    g <- ggplot(d0, aes(baseline, yv)) +
-      geom_point(alpha = 0.5, color = "black", shape = 16, size = 2) +
-      geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "grey40", linewidth = 0.6) +
-      labs(title = sprintf("Baseline level vs %s (%s) — total home stack", meas_lab[m], tolower(dd)),
-           subtitle = "home stack = muni + SD rate (moves if either changes); flip-floppers excluded",
-           x = "baseline home-stack level (muni + SD, %)", y = meas_lab[m]) + th
-    ggsave(file.path(fig_dir, sprintf("scatter_level_vs_change_total_%s_%s.png",
-           ifelse(dd=="Increase","inc","dec"), m)), g, width = 7, height = 5, dpi = 300)
-  }
-
-  ## 2. spaghetti (muni) -------------------------------------------------------
-  for (dd in c("Increase","Decrease")) {
-    g <- ggplot(M$traj[dir == dd], aes(rel, cum_change, group = muni)) +
-      geom_hline(yintercept = 0, color = "grey70") +
-      geom_vline(xintercept = 0, linetype = "dotted", color = "grey50") +
-      geom_line(alpha = 0.25, color = ifelse(dd=="Increase", RED, BLU)) +
-      labs(title = sprintf("Cumulative muni-rate change by event-time, every %s unit", tolower(dd)),
-           subtitle = "0 = first change; each line one muni; flip-floppers excluded",
-           x = "event time (years from first change)", y = "cumulative rate change (pp)") + th
-    ggsave(file.path(fig_dir, sprintf("trajectories_spaghetti_%s.png",
-           ifelse(dd=="Increase","inc","dec"))), g, width = 7, height = 5, dpi = 300)
-  }
-
-  ## 3. mirrored histogram (muni) ----------------------------------------------
-  bw <- 0.05
-  for (m in c("cumulative","first")) {
-    mh <- copy(sm_muni); mh[, mag := abs(get(m))]
-    hd <- mh[, .(n = .N), by = .(dir, bin = round(mag/bw)*bw)]
-    hd[, y := fifelse(dir == "Increase", n, -n)]
-    g <- ggplot(hd, aes(bin, y, fill = dir)) +
-      geom_col(width = bw*0.9) + geom_hline(yintercept = 0, color = "grey40") +
-      scale_fill_manual(values = c("Increase"=RED, "Decrease"=BLU)) +
-      labs(title = sprintf("Distribution of muni %s magnitude", meas_lab[m]),
-           subtitle = "|change| (pp); increasers up, decreasers down; flip-floppers excluded",
-           x = sprintf("|%s|", meas_lab[m]), y = "number of municipalities", fill = "direction") +
-      th + theme(legend.position = "bottom")
-    ggsave(file.path(fig_dir, sprintf("change_distribution_mirrored_%s.png", m)),
-           g, width = 7.5, height = 5, dpi = 300)
-  }
-
-  ## 4. histogram of baseline muni-rate levels ---------------------------------
-  lev <- raw[, .(level = mean(muni_rate, na.rm = TRUE)), by = muni][is.finite(level)]
-  g4 <- ggplot(lev, aes(level)) +
-    geom_histogram(binwidth = 0.05, fill = "#4d4d4d", color = "white") +
-    labs(title = "Distribution of municipal resident-rate levels",
-         subtitle = "one observation per municipality (mean level)",
-         x = "resident rate level (%)", y = "number of municipalities") + th
-  ggsave(file.path(fig_dir, "level_histogram.png"), g4, width = 7, height = 5, dpi = 300)
 })
 
 # Spline dose-response (build_acr_acrt_att_spline.R) ----
@@ -1572,265 +1197,6 @@ if (RUN_LAW_TIMELINE) local({
           plot.title = element_text(face = "bold"))
 
   ggsave(file.path(fig_dir, "law_timeline.png"), g, width = 11, height = 6.5, dpi = 300)
-})
-
-# Design schematics ----
-# Two CONCEPTUAL schematic figures explaining the research design. All
-# numbers are hand-made and purely illustrative (no estimation, no data
-# files): (1) the max-rule binding mechanism behind the Inc-bind /
-# Inc-becomes / Inc-nobind cells, and (2) why the constant realized-dose
-# tag can test pre-trends when the mechanically zero pre-event dose
-# cannot. (A third stacking-construction schematic was cut from the
-# paper 2026-07-22.)
-# Outputs: figures/schematic_binding_mechanism.png,
-#   figures/schematic_dose_vs_tag.png
-if (RUN_DESIGN_SCHEMATICS) local({
-  fig_dir <- OUT_DIR
-  ACCENT  <- "#C5283D"
-
-  ## 1. The max-rule binding mechanism ----
-  # Lay explanation: a worker pays whichever is bigger -- the home-side
-  # stack (grey bar) or the workplace rate (dashed floor). The red tick
-  # marks the actual bill. The same statutory increase moves the bill
-  # fully, partly, or not at all depending on where the bar sits relative
-  # to the floor -- that is the whole cell taxonomy in one picture.
-  floor_pp <- 1.0
-  cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
-  bars <- data.table(
-    cell   = factor(rep(cells, each = 2), levels = cells),
-    period = factor(rep(c("Before", "After"), 3), levels = c("Before", "After")),
-    stack  = c(1.4, 1.8, 0.8, 1.3, 0.6, 0.9))
-  bars[, bill := pmax(stack, floor_pp)]
-  ann1 <- data.table(
-    cell = factor(cells, levels = cells),
-    lab  = c("Bill: +0.4 pp\n(full increase)",
-             "Bill: +0.3 pp\n(only the part above the floor)",
-             "Bill: +0.0 pp\n(placebo)"))
-  g1 <- ggplot(bars, aes(x = period)) +
-    geom_col(aes(y = stack), fill = "grey78", color = "grey45",
-             width = 0.55, linewidth = 0.3) +
-    geom_hline(yintercept = floor_pp, linetype = "dashed",
-               color = "grey40", linewidth = 0.5) +
-    geom_errorbar(aes(ymin = bill, ymax = bill), width = 0.7,
-                  color = ACCENT, linewidth = 1.3) +
-    geom_text(data = ann1, aes(x = 1.5, y = 2.12, label = lab),
-              color = ACCENT, size = 2.6, lineheight = 0.95) +
-    annotate("text", x = 1.5, y = floor_pp + 0.08,
-             label = "work-rate floor = 1.0 pp",
-             size = 2.3, color = "grey35") +
-    facet_wrap(~ cell, ncol = 3) +
-    scale_y_continuous(limits = c(0, 2.28),
-                       expand = expansion(mult = c(0, 0.01))) +
-    labs(title = "The max-rule: when does a rate increase move the bill?",
-         subtitle = "Grey bars: home stack (resident + SD rate), before vs after an increase. Red tick: bill = max(home stack, work-rate floor). Illustrative rates, not estimates.",
-         x = NULL, y = "Rate (percentage points)") +
-    theme_bw(base_size = 10) +
-    theme(plot.title = element_text(face = "bold", size = 11),
-          plot.subtitle = element_text(size = 7.5, color = "grey25"),
-          strip.background = element_rect(fill = "grey95", color = NA),
-          strip.text = element_text(face = "bold", size = 9),
-          panel.grid = element_blank())
-  ggsave(file.path(fig_dir, "schematic_binding_mechanism.png"), g1,
-         width = 9, height = 4, dpi = 300)
-
-  ## 2. Dose vs realized-dose tag ----
-  # Lay explanation: the headline regressor (the dose) is zero before the
-  # event by construction, so it carries no pre-event information -- it
-  # cannot reveal a pre-trend. The event study instead tags each muni with
-  # its eventual total change (a constant), and interacts that tag with
-  # event-time dummies: if big-dose munis were already drifting before the
-  # event, the pre-event interactions light up.
-  p1 <- "Dose (used by the headline model)"
-  p2 <- "Realized-dose tag (used by the event study)"
-  dose3 <- data.table(k = -5:5)
-  dose3[, y := fifelse(k < 0, 0, fifelse(k < 3, 0.25, 0.35))]
-  dose3[, panel := p1]
-  tag3 <- data.table(k = c(-5, 5), y = 0.35, panel = p2)
-  d3 <- rbind(dose3, tag3)
-  d3[, panel := factor(panel, levels = c(p1, p2))]
-  notes3 <- data.table(
-    panel = factor(c(p1, p2), levels = c(p1, p2)),
-    x = -4.9, y = c(0.42, 0.10),
-    lab = c("Mechanically zero before the event,\nso it cannot test pre-trends.",
-            "A constant magnitude tag:\ninteracted with event-time\ndummies it CAN test whether\nbig-dose munis drifted\nbefore the event."))
-  tagl3 <- data.table(panel = factor(p2, levels = c(p1, p2)), x = 0, y = 0.375,
-                      lab = 'tilde(D)[i]*" = 0.35 pp (constant)"')
-  g3 <- ggplot(d3, aes(x = k, y = y)) +
-    geom_vline(xintercept = -0.5, linetype = "dashed", color = "grey55",
-               linewidth = 0.4) +
-    geom_step(data = d3[panel == p1], color = ACCENT, linewidth = 0.8) +
-    geom_line(data = d3[panel == p2], color = ACCENT, linewidth = 0.8) +
-    geom_text(data = tagl3, aes(x = x, y = y, label = lab), parse = TRUE,
-              color = ACCENT, size = 2.8, inherit.aes = FALSE) +
-    geom_text(data = notes3, aes(x = x, y = y, label = lab), size = 2.4,
-              color = "grey30", hjust = 0, lineheight = 0.95,
-              inherit.aes = FALSE) +
-    facet_wrap(~ panel, ncol = 2) +
-    scale_x_continuous(breaks = -5:5) +
-    scale_y_continuous(limits = c(-0.02, 0.47)) +
-    labs(title = "Why the event study can test pre-trends: dose vs realized-dose tag",
-         subtitle = "One representative municipality; illustrative magnitudes (0.25 pp at k = 0, topped up to 0.35 pp at k = +3).",
-         x = "Event time k (years relative to first event)",
-         y = "Percentage points") +
-    theme_bw(base_size = 10) +
-    theme(plot.title = element_text(face = "bold", size = 11),
-          plot.subtitle = element_text(size = 8, color = "grey25"),
-          strip.background = element_rect(fill = "grey95", color = NA),
-          strip.text = element_text(face = "bold", size = 9),
-          panel.grid.minor = element_blank())
-  ggsave(file.path(fig_dir, "schematic_dose_vs_tag.png"), g3,
-         width = 9, height = 3.5, dpi = 300)
-})
-
-# Tax-revenue mix by source (build_tax_mix_figure.R) ----
-# Composition of local tax revenue in PA, 2002-2019, as each source's share of
-# its own layer's total tax revenue. Two panels, because the two rate-setting
-# layers in the design have opposite revenue structures and pooling them would
-# bury the EIT under school-district property tax:
-#   (a) municipalities -- DCED AFR, six sources
-#   (b) school districts -- Census F-33, four sources (SCHLEV 03 only)
-# Shares are of statewide summed dollars, not the mean of unit-level shares, so
-# the figure describes where PA local tax revenue actually comes from rather
-# than what the median jurisdiction looks like.
-# PHILADELPHIA IS EXCLUDED from both panels. Its wage tax is a Sterling Act levy
-# predating Act 511, outside the max-rule the paper studies, and it is dropped
-# from the estimation sample. It is also 43-47% of all municipal tax revenue in
-# the state, so leaving it in inverts the municipal panel: EIT 46% / property 32%
-# with Philadelphia, property 46% / EIT 36% without.
-# Outputs -> figures/tax_revenue_mix.png, data/results/tax_revenue_mix.csv
-# Lay explanation: this is the institutional backdrop for the paper -- it shows
-# that the earned income tax funds about a third of municipal budgets, roughly
-# on par with property tax, while school districts run almost entirely on
-# property tax and collect only about a tenth of their taxes from the EIT.
-if (RUN_TAX_MIX_FIG) local({
-  fig_dir <- OUT_DIR; YRS <- c(2002L, 2019L)
-
-  ## --- municipal: DCED Annual Financial Report -------------------------------
-  afr <- fread(file.path(RAW_DIR, "pa_afr_panel.csv"))
-  afr[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
-  afr[, yr := as.integer(ifelse(!is.na(reporting_year), reporting_year, year))]
-  afr <- afr[!is.na(muni_id) & yr %between% YRS &
-             !municipality_name %like% "PHILADELPHIA"]
-
-  # DCED changed the AFR export format in 2006: 2002-2005 rows carry the short
-  # column names and 2006+ rows the "*_revenues" names, side by side as separate
-  # columns of the same file. Coalesce new-over-old, as build_headline_env() does.
-  cz <- function(new, old) {
-    v <- suppressWarnings(as.numeric(afr[[new]]))
-    w <- suppressWarnings(as.numeric(afr[[old]]))
-    fifelse(!is.na(v), v, w)
-  }
-  add <- function(...) {
-    m <- cbind(...)
-    out <- rowSums(m, na.rm = TRUE)
-    out[rowSums(!is.na(m)) == 0] <- NA_real_
-    out
-  }
-  muni <- afr[, .(
-    year        = yr,
-    `Property`  = cz("real_estate_tax_revenues",   "real_estate_tax"),
-    `Income (EIT)` = cz("earned_income_tax_revenues", "earned_income_tax"),
-    `Realty transfer` = cz("realty_transfer_tax_revenues", "realty_transfer_tax"),
-    `Sales and gross receipts` = add(cz("business_gross_receipts_tax_revenues", "business_gross_recpts"),
-                                     cz("amusement_and_admissions_tax_revenues", "amusmnt_admsns"),
-                                     cz("mechanical_device_tax_revenues", "mechanical_devices_tax")),
-    # per capita + occupation + local services (the occupational privilege tax
-    # before Act 222 of 2004 renamed it) -- all levied per head, not on a base
-    `Head taxes` = add(cz("per_capita_tax_revenues", "per_capita_tax"),
-                       cz("occupational_tax_revenues", "occupation_tax"),
-                       cz("local_services_tax_revenues", "occptnl_priv_tax")),
-    `Other`     = cz("all_other_taxes_revenues", "all_other_taxes"),
-    reported_total = cz("total_taxes_revenues", "total_taxes"))]
-
-  cats_m <- c("Property", "Income (EIT)", "Realty transfer",
-              "Sales and gross receipts", "Head taxes", "Other")
-  agg_m <- muni[, c(lapply(.SD, sum, na.rm = TRUE), .(n_units = .N)),
-                by = year, .SDcols = c(cats_m, "reported_total")]
-
-  # The itemised lines do not always exhaust DCED's own reported tax total --
-  # a handful of cities (Pittsburgh above all) collect taxes that the AFR folds
-  # into the total without giving them a line. Rather than drop those dollars or
-  # quietly change the denominator, the unitemised residual is added to "Other",
-  # so shares are of DCED's reported total and sum to 100 by construction.
-  agg_m[, itemised := rowSums(.SD), .SDcols = cats_m]
-  agg_m[, residual := pmax(reported_total - itemised, 0)]
-  print(sprintf("[tax mix] muni: %d years, %d-%d units/yr, unitemised residual %.1f-%.1f%% of reported taxes",
-                nrow(agg_m), min(agg_m$n_units), max(agg_m$n_units),
-                100 * min(agg_m$residual / agg_m$reported_total),
-                100 * max(agg_m$residual / agg_m$reported_total)))
-  if (agg_m[, max(residual / reported_total)] > 0.10)
-    warning("unitemised municipal tax residual exceeds 10% in some year")
-  agg_m[, Other := Other + residual]
-
-  ## --- school district: Census F-33 -----------------------------------------
-  # SCHLEV 03 = operating local school districts; the other levels (charters,
-  # supervisory unions, service agencies) report no tax revenue. F-33 dollars
-  # are in thousands, so scale to match the AFR.
-  f33 <- fread(file.path(RAW_DIR, "pa_sd_finance_raw.csv"))
-  f33 <- f33[SCHLEV == "03" & fy %between% YRS & !NAME %like% "PHILADELPHIA"]
-  sd_dt <- f33[, .(year = as.integer(fy),
-                   `Property`     = as.numeric(T06) * 1000,
-                   `Income (EIT)` = as.numeric(T40) * 1000,
-                   `Sales and gross receipts` = (as.numeric(T09) + as.numeric(T15)) * 1000,
-                   `Other`        = as.numeric(T99) * 1000)]
-  cats_s <- c("Property", "Income (EIT)", "Sales and gross receipts", "Other")
-  agg_s <- sd_dt[, c(lapply(.SD, sum, na.rm = TRUE), .(n_units = .N)),
-                 by = year, .SDcols = cats_s]
-  print(sprintf("[tax mix] SD: %d years, %d-%d districts/yr",
-                nrow(agg_s), min(agg_s$n_units), max(agg_s$n_units)))
-
-  ## --- shares ---------------------------------------------------------------
-  to_long <- function(a, cats, lab) {
-    l <- melt(a[, c("year", cats), with = FALSE], id.vars = "year",
-              variable.name = "source", value.name = "dollars")
-    l[, share := 100 * dollars / sum(dollars), by = year]
-    l[, layer := lab][]
-  }
-  long <- rbind(to_long(agg_m, cats_m, "(a) Municipalities (DCED AFR)"),
-                to_long(agg_s, cats_s, "(b) School districts (Census F-33)"))
-  long[, source := factor(source, levels = cats_m)]
-  fwrite(long[order(layer, source, year)], file.path(RESULTS_DIR, "tax_revenue_mix.csv"))
-  print(long[year %in% c(2002, 2019)][order(layer, -share),
-             .(layer, year, source, share = round(share, 1))])
-
-  ## --- figure ---------------------------------------------------------------
-  # Colour and linetype both encode the source, so the panels stay readable in
-  # greyscale; the Okabe-Ito palette keeps them separable for colour-blind readers.
-  pal <- c("Property" = "#0072B2", "Income (EIT)" = "#D55E00",
-           "Realty transfer" = "#009E73", "Sales and gross receipts" = "#CC79A7",
-           "Head taxes" = "#E69F00", "Other" = "#666666")
-  lty <- c("Property" = "solid", "Income (EIT)" = "solid",
-           "Realty transfer" = "dashed", "Sales and gross receipts" = "dotted",
-           "Head taxes" = "dotdash", "Other" = "longdash")
-  lwd <- c("Property" = 1.0, "Income (EIT)" = 1.0, "Realty transfer" = 0.6,
-           "Sales and gross receipts" = 0.6, "Head taxes" = 0.6, "Other" = 0.6)
-
-  g <- ggplot(long, aes(year, share, colour = source,
-                        linetype = source, linewidth = source)) +
-    geom_line() +
-    # Free y: school-district property tax sits near 86%, and a shared 0-100 axis
-    # would compress every other source into an unreadable band at the floor.
-    facet_wrap(~ layer, nrow = 1, scales = "free_y") +
-    scale_colour_manual(values = pal, name = NULL, drop = FALSE) +
-    scale_linetype_manual(values = lty, name = NULL, drop = FALSE) +
-    scale_linewidth_manual(values = lwd, name = NULL, drop = FALSE, guide = "none") +
-    scale_x_continuous(breaks = seq(2002, 2018, 4)) +
-    scale_y_continuous(limits = c(0, NA), breaks = pretty_breaks(6),
-                       expand = expansion(mult = c(0.02, 0.08))) +
-    labs(title = "Shares of total local tax revenue, Pennsylvania 2002-2019",
-         subtitle = paste("Each source as a percent of its own layer's total tax revenue; statewide summed dollars.",
-                          "Philadelphia excluded: its wage tax is a Sterling Act levy outside the Act 511 max-rule.",
-                          sep = "\n"),
-         x = "Year", y = "Share of total taxes (%)") +
-    theme_bw(base_size = 11) +
-    theme(legend.position = "bottom",
-          plot.subtitle = element_text(size = 8, colour = "grey25"),
-          strip.background = element_rect(fill = "grey95", colour = NA),
-          strip.text = element_text(face = "bold"),
-          panel.grid.minor = element_blank()) +
-    guides(colour = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2))
-  ggsave(file.path(fig_dir, "tax_revenue_mix.png"), g,
-         width = 10, height = 5, dpi = 300)
 })
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()

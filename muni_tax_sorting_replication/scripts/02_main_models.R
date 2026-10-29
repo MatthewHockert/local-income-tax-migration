@@ -39,12 +39,12 @@ setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
 # Flags ----
 RUN_HEADLINE <- TRUE  # headline binding decomposition (8 outcomes) + validation gate
-RUN_NOPROP   <- TRUE  # headline re-run WITHOUT the property effective-rate controls
+RUN_NOPROP   <- FALSE  # PARKED 2026-10-29, not in the paper: headline re-run WITHOUT the property effective-rate controls
 RUN_POOLED   <- TRUE  # pooled Inc/Dec per-pp + binary benchmark (cousub)
 RUN_REVENUE  <- TRUE  # log EIT revenue decomposition + ES + Laffer offset + splits
-RUN_LEVELS_COMPARE <- TRUE  # headline + pooled re-run with the treatment in LEVELS
+RUN_LEVELS_COMPARE <- FALSE  # PARKED 2026-10-29, not in the paper: headline + pooled re-run with the treatment in LEVELS
 RUN_FLEX_DOSE <- TRUE  # headline + pooled re-run with a quadratic and a spline in the dose
-RUN_REVENUE_TRADEOFF <- TRUE  # workers-vs-revenue tradeoff on ONE shared sample, and how it varies with the pre-existing rate
+RUN_REVENUE_TRADEOFF <- FALSE  # PARKED 2026-10-29, not in the paper: workers-vs-revenue tradeoff on ONE shared sample, and how it varies with the pre-existing rate
 
 # Shared setup ----
 # One panel build for the whole stage: classified cousub panel + muni stack.
