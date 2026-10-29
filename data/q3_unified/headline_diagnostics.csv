@@ -1,9 +1,0 @@
-outcome,n,R2,Within_R2,dep_mean,dep_sd,cluster_n,fe,se_type
-log_live_and_work,174929,0.9634,9e-04,3.6593,1.9256,175491,stack_muni + stack_year,cluster: muni
-log_in_commuters,191405,0.9594,0.0013,5.8361,1.8825,191536,stack_muni + stack_year,cluster: muni
-log_out_commuters,194533,0.9789,0.0012,6.626,1.2617,194554,stack_muni + stack_year,cluster: muni
-log_total_jobs,191413,0.9614,0.0014,5.9367,1.8968,191544,stack_muni + stack_year,cluster: muni
-log_total_residents,194533,0.9804,0.0013,6.6865,1.2963,194554,stack_muni + stack_year,cluster: muni
-share_live_in,191413,0.8251,0.001,0.0925,0.0755,191544,stack_muni + stack_year,cluster: muni
-share_work_outside,194533,0.9432,0.0011,0.9438,0.0639,194554,stack_muni + stack_year,cluster: muni
-share_nonres,191413,0.8251,0.001,0.9075,0.0755,191544,stack_muni + stack_year,cluster: muni

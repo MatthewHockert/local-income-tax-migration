@@ -1,7 +1,0 @@
-source,cell,beta,se,p,es_pre,wald_pre_p
-EIT,Inc-bind,1.064,0.154,0,0.04,0.4377
-EIT,Inc-becomes,0.965,0.142,0,0.257,0.1161
-EIT,Inc-nobind,3.217,0.285,0,-0.811,0
-property_tax,Inc-bind,0.627,0.331,0.0587,0.309,0.0015
-property_tax,Inc-becomes,0.192,0.164,0.2419,-0.007,0.0086
-property_tax,Inc-nobind,0.144,0.176,0.4109,-0.151,0

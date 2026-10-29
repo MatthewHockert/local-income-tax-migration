@@ -1,9 +1,0 @@
-period,outcome,n,r2,wr2,dep_mean,dep_sd
-pre,log_home_count,8123874,0.8555,4e-04,2.2104,1.1923
-pre,log_work_count,3005755,0.8676,2e-04,2.2709,1.6529
-pre,home_in_muni_share,8123874,0.4717,1e-04,0.1052,0.1616
-pre,share_work_outside,8123874,0.4717,1e-04,0.8948,0.1616
-post,log_home_count,10023438,0.8596,3e-04,2.2405,1.1828
-post,log_work_count,3689637,0.8624,1e-04,2.3328,1.6414
-post,home_in_muni_share,10023438,0.418,4e-04,0.1017,0.1563
-post,share_work_outside,10023438,0.418,4e-04,0.8983,0.1563

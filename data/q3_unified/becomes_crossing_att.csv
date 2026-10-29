@@ -1,5 +1,0 @@
-outcome,side,post_per_pp,pre_per_pp,wald_pre_stat,wald_pre_df,wald_pre_p,n
-log_live_and_work,muni-becomes,-0.216,0.081,13.074,4,0.0109,172628
-log_live_and_work,SD-becomes,-0.289,,,0,,172628
-log_in_commuters,muni-becomes,-0.247,0.094,18.439,4,0.001,188841
-log_in_commuters,SD-becomes,-0.312,,,0,,188841

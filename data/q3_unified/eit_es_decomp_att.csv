@@ -1,7 +1,0 @@
-outcome,att_post,att_pre,pre_t,wald_pre_p,kind,n
-log_live_and_work,0.037,0.174,2.86,0.2248,scale,1486
-log_total_residents,-0.01,0.025,0.69,0.3277,scale,1688
-log_total_jobs,-0.038,0.099,1.62,0.0841,scale,1643
-log_in_commuters,-0.049,0.101,1.64,0.0686,scale,1643
-share_live_in,0.007,-0.001,-0.2,0.6368,composition,1643
-share_work_outside,-0.004,-0.012,-2.86,0.1299,composition,1688
