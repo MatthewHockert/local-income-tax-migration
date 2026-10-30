@@ -1,7 +1,6 @@
-# helpers.R -- shared by every model and output script.
-# Paths, merge/filter logging, the estimation panel and stacks
-# (build_headline_env), the realized-dose tag, pre-trend tests, and the
-# labels, theme and table formatters used for the paper.
+# helpers.R
+# Code every model and output script shares: it builds the estimation panel,
+# and holds the pre-trend tests and the table and figure formatting.
 
 suppressMessages({
   library(dplyr)   # before data.table so data.table's first/last/between win
@@ -14,8 +13,8 @@ suppressMessages({
 source(here::here("scripts", "helpers", "config.R"))
 
 # Merge and filter logging ----
-# Every join and filter reports rows in and out, the key match rate and the
-# unmatched keys, so nothing drops silently. Set VERBOSE_MERGES <- FALSE to mute.
+# Wrappers that print what a join or filter did, so no rows vanish without
+# a message. Set VERBOSE_MERGES <- FALSE to turn the printing off.
 if (!exists("VERBOSE_MERGES")) VERBOSE_MERGES <- TRUE
 
 merge_check <- function(left, right, by, label, all.x = TRUE, expect_min_match = NULL,
@@ -66,8 +65,8 @@ filter_check <- function(data, keep, label, unit = NULL) {
 }
 
 # Headline environment ----
-# Builds the municipality panel, classifies binding cells and stacks it.
-# Returns list(panel, stk_muni, ctrls, ctrls_str). Sample ends at max_year (2019).
+# Builds the town-year panel, sorts towns into binding cells and stacks it.
+# Every model script starts from this.
 build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   work_panel <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_panel.rds")))[year <= max_year]
   home_panel <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_residence_panel.rds")))[year <= max_year]
@@ -80,8 +79,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     home_panel[, .(muni, year, residents_employed, residents_work_in_own,
                    residents_work_outside, share_work_outside)],
     by = c("muni", "year"), all = TRUE)
-  # ---- rates: several DCED rows can map to one cousub. Resident and
-  # nonresident rates are averaged, the SD rate takes the max.
+  # Tax rates. A Census town can hold more than one DCED town, so their resident
+  # and nonresident rates are averaged and the higher school-district rate is kept.
   rates <- rate_panel[!is.na(cousub_fips) & year <= max_year,
                       .(muni = cousub_fips, year, resident_eit, sd_eit, muni_nonres_eit)]
   rates <- rates[, .(resident_eit    = mean(resident_eit, na.rm = TRUE),
@@ -105,8 +104,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   panel[, log_total_residents := log_pos(total_residents)]
   panel[, share_nonres := ifelse(total_jobs > 0, in_commuters / total_jobs, NA_real_)]
 
-  # ---- fiscal controls from the AFR. Column names changed at the 2005/2006
-  # schema break, so each line takes the new column and falls back to the old.
+  # Budget-share controls from the towns' annual financial reports. DCED renamed
+  # the columns in 2006, so each line uses the new name and falls back to the old one.
   afr <- fread(file.path(RAW_DIR, "pa_afr_panel.csv"))
   muni_xwalk <- unique(rate_panel[!is.na(cousub_fips), .(municipality_id, cousub_fips)])
   afr[, muni_id := ifelse(!is.na(municipality_id), municipality_id, municipal_code)]
@@ -133,11 +132,11 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     streets_exp <- as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
                                       `public_works-highways_and_streets_expenditures`,
                                       streets_and_roads))
-    # no pre-2006 debt-service column to fall back on, so share_debt_svc is NA
-    # for 2002-2005 and the headline sample effectively starts in 2006
+    # debt service has no pre-2006 column, so this share is missing for 2002-2005,
+    # which is why the headline sample really starts in 2006
     debt_service <- as.numeric(debt_service_expenditures)
     list(muni = cousub_fips, year = afr_year,
-         # EIT revenue level, an outcome for the (parked) revenue tradeoff
+         # EIT revenue in dollars, only used by the parked revenue section
          eit_revenue     = eit_revenue_amount,
          share_police    = ifelse(total_exp > 0, police_exp   / total_exp, NA_real_),
          share_streets   = ifelse(total_exp > 0, streets_exp  / total_exp, NA_real_),
@@ -154,8 +153,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
                        expect_min_match = 0.70)
   panel[, log_eit_revenue := log_pos(eit_revenue)]
 
-  # ---- property effective rates, one per rate setter, from 2_build_data/.
-  # No fallback to the unrepaired panel, which keeps the basis errors.
+  # Property-tax rates (town, school district, county). Only the repaired file
+  # will do: the raw one still has the reassessment errors.
   burden_path <- file.path(DERIVED_DIR, "pa_property_burden_panel_repaired.csv")
   if (!file.exists(burden_path))
     stop("Missing ", burden_path, ": run scripts/2_build_data/2_build_property_rates.py ",
@@ -166,7 +165,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
                         muni_xwalk, by = "municipality_id",
                         label = "property burden <- cousub xwalk",
                         expect_min_match = 0.95)
-  # x100: decimals to percentage points, the same units as the EIT dose
+  # times 100 so property rates are in percentage points, like the EIT rate
   burden <- burden[!is.na(cousub_fips),
                    .(muni_eff_rate   = 100 * mean(muni_eff_rate,   na.rm = TRUE),
                      sd_eff_rate     = 100 * mean(sd_eff_rate,     na.rm = TRUE),
@@ -176,7 +175,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
                        label = "panel <- property effective rates",
                        expect_min_match = 0.90)
 
-  # duplicate muni-years are averaged, non-finite values become NA
+  # collapse any town-year that appears twice, and turn Inf into NA
   panel <- panel[, lapply(.SD, function(column) {
     if (is.numeric(column)) mean(column, na.rm = TRUE) else first(column)
   }), by = .(muni, year)]
@@ -186,8 +185,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     }
   }
 
-  # Report property rates above 5 pp (real ones run about 0.1-3 pp). Anything
-  # left after the repair is a millage/CLR basis mismatch. Reported, not changed.
+  # Warn about property rates over 5 pp (real ones are 0.1-3 pp). These are
+  # leftovers the repair missed; they are reported, not changed.
   if (isTRUE(VERBOSE_MERGES)) {
     for (rate_col in c("muni_eff_rate", "sd_eff_rate", "county_eff_rate")) {
       high_rows <- panel[is.finite(get(rate_col)) & get(rate_col) > 5]
@@ -202,41 +201,39 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     }
   }
 
-  # Controls. share_eit is left out (it moves with the treatment) and share_re
-  # is replaced by the three property effective rates.
+  # The control set. The EIT revenue share is left out because it moves with the
+  # tax rate itself, and the property rates replace the property-tax revenue share.
   ctrls <- c("share_police", "share_streets", "share_debt_svc", "share_intergov",
              "muni_eff_rate", "sd_eff_rate", "county_eff_rate")
 
   # Cell classification ----
-  # For one rate setter at a time, take each muni's first rate change and
-  # classify it by direction and by whether the home stack set the bill
-  # (home_stack > nonresident rate) the year before (prebind) and the year
-  # of the change (postbind). Never changers are NC. Units that both raised
-  # and cut are Uncertain and dropped.
+  # Sort each town by its first rate change: did it raise or cut, and did the
+  # home rates set workers' bills before and after? Run once per rate setter.
   classify_treatment <- function(data, rate_var, tag) {
     setorder(data, muni, year)
-    # home_binds = 1 when the home rates set the worker's bill. This is the
-    # same comparison for every rate setter, including tag "nr".
+    # 1 when the home rates (town + school district) beat the work-town rate,
+    # i.e. the home rates are what the worker actually pays
     data[, home_binds := as.integer(home_stack > muni_nonres_eit)]
     lag_col <- paste0("lag_", tag)
     data[, (lag_col) := shift(get(rate_var)), by = muni]
-    # Inc/Dec for each year the rate moves, with a 1e-6 tolerance for float noise
+    # mark each year the rate went up or down (ignoring rounding noise)
     event_col <- paste0("ev_", tag)
     data[, (event_col) := fifelse(is.na(get(lag_col)), NA_character_,
                           fifelse(get(rate_var) > get(lag_col) + 1e-6, "Inc",
                           fifelse(get(rate_var) < get(lag_col) - 1e-6, "Dec", NA_character_)))]
-    # the first event per muni sets its cohort year c_<tag>
+    # a town's first change sets its cohort year
     first_events <- data[!is.na(get(event_col)), .SD[1], by = muni,
                          .SDcols = c("year", event_col, lag_col, rate_var, "home_binds")]
     setnames(first_events, c("year", event_col, lag_col, rate_var, "home_binds"),
              c("cohort_year", "direction", "baseline_rate", "rate_at_event", "postbind"))
-    # prebind = home_binds the year before the event, postbind = the event year
+    # did the home rates set the bill the year before the change (prebind)? the year of it (postbind)?
     lagged_binds <- data[, .(muni, year, lag_home_binds = shift(home_binds)), by = muni]
     first_events <- merge(first_events, lagged_binds[, .(muni, year, lag_home_binds)],
                           by.x = c("muni", "cohort_year"), by.y = c("muni", "year"), all.x = TRUE)
     first_events[, prebind := lag_home_binds]; first_events[, lag_home_binds := NULL]
-    # Inc-bind: home rates set the bill before and after. Inc-becomes: the
-    # increase made them set it. Inc-nobind: no bill moved (the placebo).
+    # Inc-bind: the home rate already set the bill, so the increase raised it.
+    # Inc-becomes: the increase pushed the home rate past the work rate.
+    # Inc-nobind: the rate rose on paper but no bill changed (the placebo).
     first_events[, cell := fcase(
       direction == "Inc" & prebind == 1 & postbind == 1, "Inc-bind",
       direction == "Inc" & prebind == 0 & postbind == 1, "Inc-becomes",
@@ -256,15 +253,15 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
              c(cohort_col, baseline_col, cell_col))
     first_events <- first_events[, .SD, .SDcols = c("muni", cohort_col, baseline_col, cell_col)]
     classified <- merge(data, first_events, by = "muni", all.x = TRUE)
-    # NC only if the rate never changes in the sample. A change that cannot be
-    # dated (e.g. a missing lag year) is Uncertain, not NC.
+    # a control town (NC) is one whose rate never changes; a change we can't date
+    # (say, a missing year) makes it Uncertain instead of a control
     change_counts <- classified[!is.na(get(rate_var)), .(
       n_changes = sum(abs(diff(get(rate_var))) > 1e-6, na.rm = TRUE)
     ), by = muni]
     never_changers <- change_counts[n_changes == 0, muni]
     classified[muni %in% never_changers, (cell_col) := "NC"]
     classified[!muni %in% never_changers & is.na(get(cell_col)), (cell_col) := "Uncertain"]
-    # flip-floppers (changes in both directions) become Uncertain
+    # towns that both raised and cut can't be called treated either way: Uncertain
     rate_steps <- classified[!is.na(get(rate_var)), .(year, rate = get(rate_var)), by = muni][
       order(muni, year)]
     rate_steps[, step := c(NA_real_, diff(rate)), by = muni]
@@ -272,7 +269,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
       n_inc = sum(step > 0), n_dec = sum(step < 0)), by = muni]
     flip_floppers <- step_counts[n_inc > 0 & n_dec > 0, muni]
     classified[muni %in% flip_floppers, (cell_col) := "Uncertain"]
-    # dose = cumulative change since the pre-event rate, 0 before the event and for NC
+    # dose: how far the rate has risen since just before the first change (0 before it, 0 for controls)
     classified[, (dose_col) := fifelse(!is.na(get(cohort_col)) & year >= get(cohort_col),
                                        get(rate_var) - get(baseline_col), 0)]
     cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
@@ -291,8 +288,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   panel <- filter_check(panel, !panel$muni %in% uncertain_munis,
                         "drop flip-floppers (Uncertain)", unit = "muni")
 
-  # the paper covers increases only: a muni with a decrease on any side is
-  # dropped, neither treated nor control
+  # the paper is about increases, so a town with a decrease on any side is dropped
   dec_cells <- c("Dec-bind", "Dec-becomes-non", "Dec-nobind", "Dec-gains")
   dec_munis <- unique(c(panel[cell_muni %in% dec_cells, muni],
                         panel[cell_sd   %in% dec_cells, muni],
@@ -304,9 +300,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   panel[, cell_nr   := droplevels(cell_nr)]
 
   # Stack builder ----
-  # One stack per cohort year (Cengiz et al. 2019): the cohort's treated munis
-  # in a +-K_stack window plus a copy of every NC muni. NC munis repeat across
-  # stacks, which is why the fixed effects are stack_muni and stack_year.
+  # One mini-experiment per cohort year (Cengiz et al. 2019): that year's treated
+  # towns, five years either side, plus a fresh copy of every control town.
   build_stack <- function(data, side_tag, dose_col, K = K_stack) {
     cell_col   <- paste0("cell_", side_tag)
     cohort_col <- paste0("c_", side_tag)
@@ -331,15 +326,15 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     stacked <- rbindlist(lapply(cohort_years, build_cohort_stack), fill = TRUE)
     stacked[, stack_muni := paste0(stack, "_", muni)]
     stacked[, stack_year := paste0(stack, "_", year)]
-    # dose_change: the dose re-zeroed on its pre-event mean within each stack
+    # dose_change: the dose measured from the town's own pre-change average in this stack
     stacked[, base_rate := mean(get(dose_col)[rel < 0], na.rm = TRUE),
             by = .(stack, muni)]
     stacked[!is.finite(base_rate), base_rate := 0]
     stacked[, dose_change := get(dose_col) - base_rate]
 
-    # The regressor is the rate LEVEL. With stack_muni fixed effects it gives the
-    # same coefficients as dose_change (checked in RUN_LEVELS_COMPARE). Levels
-    # are missing on ~1,300 stacked rows where the change is known to be 0.
+    # The model uses the rate level. With town fixed effects that gives the same
+    # coefficients as the change (checked in RUN_LEVELS_COMPARE), but the level is
+    # missing on about 1,300 rows where the change is known, so those rows drop.
     level_col <- c(muni = "resident_eit", sd = "sd_eit",
                    nr = "muni_nonres_eit")[[side_tag]]
     stacked[, dose_stack := get(level_col)]
@@ -349,7 +344,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     stacked
   }
   stk_muni <- build_stack(panel, "muni", "dose_muni")
-  # SD co-treatment in levels too; dose_sd_change keeps the change version
+  # the school-district rate goes in as a level too
   stk_muni[, dose_sd_change := dose_sd]
   stk_muni[, dose_sd := sd_eit]
 
@@ -358,9 +353,8 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
 }
 
 # Realized dose ----
-# Constant per-muni tag for the realized-dose event studies: the resident rate
-# at c+K (or the last year observed) minus the rate the year before the event.
-# 0 for never-changers and where either year is missing.
+# For the event studies: one number per town, how much its rate ended up rising
+# five years after its first change. 0 for controls.
 add_realized_dose <- function(panel, K = 5L) {
   rate_in <- function(rates, years, target_year) {
     matched <- rates[years == target_year]
@@ -381,10 +375,9 @@ add_realized_dose <- function(panel, K = 5L) {
 }
 
 # Pre-trend tests ----
-# All tests for one fitted event-study model: joint Wald on the leads, the
-# individual leads, and a linear pre-slope (from lin_model). The joint Wald
-# over-rejects with 14-24 treated clusters, so it is reported but does not
-# decide. robust_clean = no lead significant at 5% and pre-slope p > 0.10.
+# Runs the pre-trend checks on one event-study model. The joint Wald test is
+# unreliable with only 14-24 treated towns, so it is printed but the verdict
+# (robust_clean) rests on the individual leads and the pre-trend slope.
 pretrend_bucket <- function(model, lin_model = NULL, lin_term = "dose_rel") {
   leads <- tibble(term = rownames(model$coeftable), pval = model$coeftable[, "Pr(>|t|)"]) %>%
     filter(grepl("^rel::", term)) %>%
@@ -406,7 +399,7 @@ pretrend_bucket <- function(model, lin_model = NULL, lin_term = "dose_rel") {
 }
 
 # Labels ----
-# Outcome names to paper labels, for table headers and figure facets.
+# Variable names to the labels printed in tables and figures.
 OUTCOME_LABELS <- c(
   log_live_and_work    = "Log(residents working in own municipality)",
   log_in_commuters     = "Log(in-commuters)",
@@ -435,7 +428,7 @@ OUTCOME_LABELS_SHORT <- c(
   home_in_muni_share   = "Share live+work in muni"
 )
 
-# unknown names fall back to the raw name with underscores escaped for TeX
+# a name with no label prints as itself (underscores escaped for LaTeX)
 outcome_label <- function(outcomes, short = FALSE) {
   lookup <- if (short) OUTCOME_LABELS_SHORT else OUTCOME_LABELS
   labels <- lookup[outcomes]
@@ -444,7 +437,7 @@ outcome_label <- function(outcomes, short = FALSE) {
 }
 
 # Theme and colors ----
-# red = muni side, blue = SD side
+# red for the town rate, blue for the school-district rate
 PAPER_RED  <- "#C0392B"
 PAPER_BLUE <- "#1F4E79"
 
@@ -465,8 +458,8 @@ theme_paper <- function(base_size = 10) {
 }
 
 # Joint Wald test on the leads ----
-# W = b' V^-1 b ~ chi-squared(k) over the coefficients matching term_regex,
-# with the model's clustered vcov. NA if fewer than 2 terms or V is singular.
+# Tests whether all the pre-change coefficients are zero together, using the
+# clustered standard errors. NA if there are fewer than two of them.
 wald_pretrend <- function(model, term_regex = "^rel::-[2-9]") {
   coef_names <- names(coef(model))
   lead_idx <- grep(term_regex, coef_names)
@@ -511,9 +504,8 @@ fmt_coef <- function(estimate, pval) {
 }
 
 # Table builder ----
-# LaTeX fragment: one column per outcome, two lines per cell (estimate with
-# stars, then SE), an optional pre-trend p line under each cell, an optional
-# fiscal-controls block, and diagnostics rows chosen by diag_fields.
+# Writes a LaTeX table: one column per outcome, each cell's estimate with stars
+# and its SE underneath, then optional pre-trend p, controls and diagnostics rows.
 #   coefs_dt     outcome, cell, est, se, p (long)
 #   diag_dt      one row per outcome: n, r2, wr2, pre_baseline, ...
 #   pretrend_dt  cell, outcome, wald_pre_p
