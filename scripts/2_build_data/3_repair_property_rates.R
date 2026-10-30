@@ -5,176 +5,128 @@
 # Output: data/derived/pa_property_burden_panel_repaired.csv (what the models use)
 #         data/results/property_rebase_log.csv (every corrected unit-year)
 # Run:    Rscript scripts/2_build_data/3_repair_property_rates.R
+#
+# Each effective rate is mills / 1000 x CLR, with one CLR per county-year shared
+# by the muni, SD and county layers. When a county reassesses, the CLR resets
+# toward 1 and millage should fall by the same factor, leaving the effective rate
+# unchanged. Many governments never rebased the millage they report to DCED, so
+# old-basis millage meets a new-basis CLR and the rate blows up. Wilkes-Barre, an
+# Inc-bind unit, reads 7-14 pp of market value for eleven years against its own
+# 0.36-0.48 pp before Luzerne's 2009 reassessment.
+#
+# Two corrections, per layer:
+#   1. Reassessment. In a year the CLR resets to market, a unit that rebased cuts
+#      its millage by about the CLR ratio. (mills / previous mills) x CLR ratio is
+#      about 1 if it did and the full CLR ratio if it did not; above 2 the unit is
+#      stranded and that ratio is the correction, carried forward until the unit's
+#      millage finally halves. Testing the millage response, not the effective-rate
+#      jump, matters: with unchanged millage the rate jump always equals the CLR
+#      jump, so matching the two fires on ordinary CLR drift.
+#   2. Peers. Units in a county-year share one CLR, so a unit above 5x its
+#      county-year peer median in at least half its years is on the wrong basis
+#      and is divided by its peer ratio. One-off spikes above 5 pp (decimal-shift
+#      parse errors, e.g. Beaver SD 6555 mills) get the same correction.
+# Counties have no within-county peers, so their peers are all counties that year.
+# data.table throughout: the steps are lags and running max/sums within units,
+# and the audit log keeps data.table's sort order.
 
 suppressMessages(library(data.table))
 source(here::here("scripts", "helpers", "config.R"))
 
-# ---------------------------------------------------------------------------
-# Property-tax effective rates: assessment-basis repair
-# ---------------------------------------------------------------------------
-# WHY THIS EXISTS
-# Every effective rate in the property panel is  mills/1000 x CLR.  The CLR is
-# one number per county-year, shared by all three layers (muni, school
-# district, county).  When a county reassesses, the assessment basis resets:
-# the CLR jumps toward 1.0 (assessed = market) and statutory millage should
-# fall by the same factor, leaving the effective rate CONTINUOUS.  A
-# reassessment changes the basis, not the burden.
-#
-# In the DCED source, many governments never rebased their reported millage.
-# Their old-basis millage then gets multiplied by a new-basis CLR and the
-# effective rate blows up.  Wilkes-Barre City is the worst case: Luzerne
-# reassessed effective 2009 (its CLR moved in 2008), the county-wide median
-# muni millage fell 22.50 -> 0.93, and Wilkes-Barre stayed at 73.63 -> 96.63
-# -> 141.33.  Its effective rate reads 7-14 pp of market value for eleven
-# straight years against its own correct pre-2008 range of 0.36-0.48 pp.
-# Wilkes-Barre is an Inc-bind treated unit, so this is a corrupted control on
-# a treated observation in the headline cell.
-#
-# TWO PROCESSES
-#   1. Reassessment rebasing.  A unit that rebased shows a FLAT effective rate
-#      through the basis reset; a stranded one shows the effective rate rise by
-#      exactly the CLR ratio.  So the test is whether the unit's own
-#      effective-rate jump MATCHES its county's CLR jump.  No threshold on the
-#      CLR jump is used or wanted: 13 genuine reassessments have CLR jumps
-#      below 1.5 (Allegheny 2013 = 1.17, York 2006 = 1.33, Lancaster 2018 =
-#      1.36) because those counties already assessed near market, and the CLR
-#      jump distribution is continuous with no natural break.  Matching the
-#      two ratios identifies the failure and supplies the correction factor at
-#      the same time, and it scales automatically.
-#   2. Peer consistency.  Every unit in a county-year is multiplied by the SAME
-#      CLR, so their effective rates should be comparable.  A unit sitting far
-#      above its county-year peers for most of the panel is on the wrong basis
-#      even if no reassessment occurred inside the sample window to reveal it.
-#      This catches level mismatches and outright parse errors (Beaver SD
-#      45853 reads 6555 mills against 63.55 and 67.05 either side).
-#
-# The raw panel is never overwritten.  Output is a repaired copy plus a full
-# audit log of every correction.
 local({
+  burden <- fread(file.path(DERIVED_DIR, "pa_property_burden_panel.csv"))
 
-  raw_path <- file.path(DERIVED_DIR, "pa_property_burden_panel.csv")
-  b <- fread(raw_path)
+  plausible_pp     <- 5     # a single layer above this is impossible (real ones run ~0.1-3 pp)
+  at_market        <- 0.95  # a CLR at or above this means assessed value was reset to market
+  rebase_tolerance <- 0.5   # stranded if millage did not fall to within 1 / 0.5 of the reset
+  peer_ratio_max   <- 5     # this many times the county-year peer median is suspect
+  peer_persistence <- 0.5   # ...in at least this share of the unit's years
 
-  # Tunables. PLAUSIBLE_PP is the ceiling above which a single layer's
-  # effective rate is treated as impossible: PA rates run ~0.1-3 pp of market
-  # value per layer, so 5 pp is already generous.
-  PLAUSIBLE_PP    <- 5      # ceiling for a single layer, percentage points
-  AT_MARKET       <- 0.95   # CLR at/above this = assessed value reset to market
-  REBASE_TOL      <- 0.5    # millage must fall to <=50% of what the reset implies
-  PEER_RATIO      <- 5      # x county-year peer median to suspect wrong basis
-  PEER_PERSIST    <- 0.5    # ...in at least this share of the unit's years
-
-  # CLR basis-change ratio, per county-year. Shared by all three layers.
-  cl <- unique(b[, .(county, year, clr)])[order(county, year)]
-  cl[, clr_prev := shift(clr), by = county]
-  cl[, clr_ratio := clr / clr_prev]
-  # A REASSESSMENT is not "the CLR moved a lot" -- the CLR drifts every year
-  # with the market. It is the CLR being reset TO market value: assessed =
-  # market, so the ratio lands at ~1.0 having been below it. That is the
-  # definitional signature and it catches both the dramatic resets (Luzerne
-  # 0.05 -> 1.00) and the quiet ones in counties already near market
-  # (Allegheny 0.855 -> 1.00), which any jump-magnitude threshold misses.
-  cl[, reassess := !is.na(clr_prev) & clr >= AT_MARKET & clr_prev < AT_MARKET]
+  # CLR change per county-year. A reassessment is the CLR reaching market from
+  # below, not a big CLR move (the CLR drifts every year), which catches quiet
+  # resets like Allegheny 0.855 -> 1.00 as well as Luzerne 0.05 -> 1.00.
+  clr_changes <- unique(burden[, .(county, year, clr)])[order(county, year)]
+  clr_changes[, clr_prev := shift(clr), by = county]
+  clr_changes[, clr_ratio := clr / clr_prev]
+  clr_changes[, reassess := !is.na(clr_prev) & clr >= at_market & clr_prev < at_market]
 
   audit <- list()
 
-  repair_layer <- function(id, mill_col, lbl) {
-    keep <- unique(c(id, "county"))
-    d <- unique(b[, c(keep, "year", mill_col), with = FALSE])
-    setnames(d, mill_col, "mills")
-    d <- merge(d, cl[, .(county, year, clr, clr_ratio, reassess)], by = c("county", "year"))
-    setorderv(d, c(id, "year"))
-    d[, eff := mills / 1000 * clr * 100]
+  repair_layer <- function(unit_col, mills_col, layer_label) {
+    layer <- unique(burden[, c(unique(c(unit_col, "county")), "year", mills_col), with = FALSE])
+    setnames(layer, mills_col, "mills")
+    layer <- merge(layer, clr_changes[, .(county, year, clr, clr_ratio, reassess)], by = c("county", "year"))
+    setorderv(layer, c(unit_col, "year"))
+    layer[, eff := mills / 1000 * clr * 100]
 
-    # ---- Process 1: reassessment rebasing -------------------------------
-    d[, mill_prev := shift(mills), by = id]
-    # In a reassessment year the basis changed by clr_ratio, so a unit that
-    # rebased correctly shows its millage FALL by roughly that factor. A unit
-    # still reporting on the old basis did not. Testing the millage response
-    # (not the effective-rate ratio) is essential: because eff = mills x clr,
-    # any unit with unchanged millage has eff_ratio identically equal to
-    # clr_ratio, so matching those two ratios fires on ordinary CLR drift and
-    # over-corrects roughly a third of the panel.
-    # resid = 1 if the unit rebased exactly; = clr_ratio if it did not move at
-    # all. Flag when it is well above 1, and use resid itself as the correction
-    # so partial rebasing is handled too.
-    d[, resid := (mills / mill_prev) * clr_ratio]
-    d[, stranded := reassess %in% TRUE & !is.na(mill_prev) & mill_prev > 0 &
-                    is.finite(resid) & resid > 1 / REBASE_TOL]
-    d[, f1 := fifelse(stranded %in% TRUE, resid, 1)]
-    d[, f1 := cummax(f1), by = id]          # carry forward: still on old basis
-    # Release once the unit's own millage finally drops onto the new basis.
-    d[, released := !is.na(mill_prev) & mills / mill_prev < 0.5]
-    d[, rel := cumsum(fifelse(released %in% TRUE, 1L, 0L)), by = id]
-    d[rel > 0, f1 := 1]
-    d[, eff_p1 := eff / f1]
+    # ---- 1. reassessment
+    layer[, mills_prev := shift(mills), by = unit_col]
+    layer[, rebase_residual := (mills / mills_prev) * clr_ratio]
+    layer[, stranded := reassess %in% TRUE & !is.na(mills_prev) & mills_prev > 0 &
+                        is.finite(rebase_residual) & rebase_residual > 1 / rebase_tolerance]
+    layer[, reassess_factor := fifelse(stranded %in% TRUE, rebase_residual, 1)]
+    layer[, reassess_factor := cummax(reassess_factor), by = unit_col]   # still on the old basis
+    layer[, released := !is.na(mills_prev) & mills / mills_prev < 0.5]    # millage finally rebased
+    layer[, n_releases := cumsum(fifelse(released %in% TRUE, 1L, 0L)), by = unit_col]
+    layer[n_releases > 0, reassess_factor := 1]
+    layer[, eff_after_reassess := eff / reassess_factor]
 
-    # ---- Process 2: peer consistency ------------------------------------
-    # Peers are the other units of the SAME layer in the same county-year,
-    # all multiplied by the identical CLR. Counties have no within-county
-    # peers, so their peer set is all other counties that year.
-    peer_key <- if (identical(id, "county")) "year" else c("county", "year")
-    d[, peer_med := median(eff_p1, na.rm = TRUE), by = peer_key]
-    d[, peer_n   := .N, by = peer_key]
-    d[, peer_ratio := eff_p1 / peer_med]
-    # Persistent, not a one-off: a unit genuinely on the wrong basis is far
-    # from its peers in most of its years.
-    d[, persist := mean(peer_ratio > PEER_RATIO, na.rm = TRUE), by = id]
-    d[, f2 := 1]
-    d[peer_n >= 3 & persist >= PEER_PERSIST & peer_ratio > PEER_RATIO,
-      f2 := peer_ratio]
-    # One-off spikes above the ceiling are parse errors (decimal shifts);
-    # correct them by their own peer ratio too, but log separately.
-    d[, parse_err := peer_n >= 3 & persist < PEER_PERSIST &
-                     eff_p1 > PLAUSIBLE_PP & peer_ratio > PEER_RATIO]
-    d[parse_err %in% TRUE, f2 := peer_ratio]
-    d[, eff_fixed := eff_p1 / f2]
+    # ---- 2. peers
+    peer_key <- if (identical(unit_col, "county")) "year" else c("county", "year")
+    layer[, peer_median := median(eff_after_reassess, na.rm = TRUE), by = peer_key]
+    layer[, n_peers     := .N, by = peer_key]
+    layer[, peer_ratio  := eff_after_reassess / peer_median]
+    layer[, share_far_from_peers := mean(peer_ratio > peer_ratio_max, na.rm = TRUE), by = unit_col]
+    layer[, peer_factor := 1]
+    layer[n_peers >= 3 & share_far_from_peers >= peer_persistence & peer_ratio > peer_ratio_max,
+          peer_factor := peer_ratio]
+    layer[, parse_error := n_peers >= 3 & share_far_from_peers < peer_persistence &
+                           eff_after_reassess > plausible_pp & peer_ratio > peer_ratio_max]
+    layer[parse_error %in% TRUE, peer_factor := peer_ratio]
+    layer[, eff_fixed := eff_after_reassess / peer_factor]
 
-    corrected <- d[f1 > 1 | f2 > 1]
+    corrected <- layer[reassess_factor > 1 | peer_factor > 1]
     if (nrow(corrected)) {
-      a <- corrected[, .(layer = lbl, unit = as.character(get(id)), county, year,
-                         mills, clr,
-                         eff_raw = eff, factor_p1 = f1, factor_p2 = f2,
-                         eff_repaired = eff_fixed,
-                         process = fifelse(f1 > 1 & f2 > 1, "both",
-                                   fifelse(f1 > 1, "reassessment", "peer")))]
-      audit[[lbl]] <<- a
+      audit[[layer_label]] <<- corrected[, .(
+        layer = layer_label, unit = as.character(get(unit_col)), county, year, mills, clr,
+        eff_raw = eff, factor_p1 = reassess_factor, factor_p2 = peer_factor, eff_repaired = eff_fixed,
+        process = fifelse(reassess_factor > 1 & peer_factor > 1, "both",
+                  fifelse(reassess_factor > 1, "reassessment", "peer")))]
     }
     message(sprintf(
       "[rebase] %-16s units corrected %4d | rows %5d | >%dpp: %5d -> %4d | max %8.2f -> %6.2f",
-      lbl, uniqueN(corrected[[id]]), nrow(corrected), PLAUSIBLE_PP,
-      sum(d$eff > PLAUSIBLE_PP, na.rm = TRUE),
-      sum(d$eff_fixed > PLAUSIBLE_PP, na.rm = TRUE),
-      max(d$eff, na.rm = TRUE), max(d$eff_fixed, na.rm = TRUE)))
-    out <- unique(d[, c(id, "year", "eff_fixed"), with = FALSE], by = c(id, "year"))
-    setnames(out, "eff_fixed", "eff_new")
-    out
+      layer_label, uniqueN(corrected[[unit_col]]), nrow(corrected), plausible_pp,
+      sum(layer$eff > plausible_pp, na.rm = TRUE), sum(layer$eff_fixed > plausible_pp, na.rm = TRUE),
+      max(layer$eff, na.rm = TRUE), max(layer$eff_fixed, na.rm = TRUE)))
+    repaired <- unique(layer[, c(unit_col, "year", "eff_fixed"), with = FALSE], by = c(unit_col, "year"))
+    setnames(repaired, "eff_fixed", "eff_new")
+    repaired
   }
 
-  m_fix <- repair_layer("muni_id", "muni_re_total_mills", "MUNICIPAL")
-  s_fix <- repair_layer("sd_id",   "sd_re_total_mills",   "SCHOOL DISTRICT")
-  c_fix <- repair_layer("county",  "cty_re_total_mills",  "COUNTY")
+  muni_fixed   <- repair_layer("muni_id", "muni_re_total_mills", "MUNICIPAL")
+  sd_fixed     <- repair_layer("sd_id",   "sd_re_total_mills",   "SCHOOL DISTRICT")
+  county_fixed <- repair_layer("county",  "cty_re_total_mills",  "COUNTY")
 
-  # Write the repaired panel: same schema as the raw file, effective rates
-  # replaced (back to DECIMAL units, as the raw file stores them).
-  out <- copy(b)
-  out <- merge(out, m_fix[, .(muni_id, year, m_new = eff_new)], by = c("muni_id","year"), all.x = TRUE)
-  out <- merge(out, s_fix[, .(sd_id,   year, s_new = eff_new)], by = c("sd_id","year"),   all.x = TRUE)
-  out <- merge(out, c_fix[, .(county,  year, c_new = eff_new)], by = c("county","year"),  all.x = TRUE)
-  out[!is.na(m_new), muni_eff_rate   := m_new / 100]
-  out[!is.na(s_new), sd_eff_rate     := s_new / 100]
-  out[!is.na(c_new), county_eff_rate := c_new / 100]
-  out[, eff_property_tax_rate := rowSums(cbind(muni_eff_rate, sd_eff_rate, county_eff_rate), na.rm = TRUE)]
-  out[, c("m_new","s_new","c_new") := NULL]
-
-  fwrite(out, file.path(DERIVED_DIR, "pa_property_burden_panel_repaired.csv"))
+  # Same schema as the input, with the three layer rates replaced (back in
+  # decimals). The total is recomputed with na.rm, so a muni-year with every
+  # layer missing gets 0 rather than NA; the models use only the three layers.
+  repaired <- copy(burden)
+  repaired <- merge(repaired, muni_fixed[, .(muni_id, year, muni_new = eff_new)], by = c("muni_id", "year"), all.x = TRUE)
+  repaired <- merge(repaired, sd_fixed[, .(sd_id, year, sd_new = eff_new)], by = c("sd_id", "year"), all.x = TRUE)
+  repaired <- merge(repaired, county_fixed[, .(county, year, county_new = eff_new)], by = c("county", "year"), all.x = TRUE)
+  repaired[!is.na(muni_new),   muni_eff_rate   := muni_new / 100]
+  repaired[!is.na(sd_new),     sd_eff_rate     := sd_new / 100]
+  repaired[!is.na(county_new), county_eff_rate := county_new / 100]
+  repaired[, eff_property_tax_rate := rowSums(cbind(muni_eff_rate, sd_eff_rate, county_eff_rate), na.rm = TRUE)]
+  repaired[, c("muni_new", "sd_new", "county_new") := NULL]
+  fwrite(repaired, file.path(DERIVED_DIR, "pa_property_burden_panel_repaired.csv"))
   message("[rebase] wrote data/derived/pa_property_burden_panel_repaired.csv")
 
   if (length(audit)) {
-    log_dt <- rbindlist(audit, fill = TRUE)
-    fwrite(log_dt, file.path(RESULTS_DIR, "property_rebase_log.csv"))
+    audit_log <- rbindlist(audit, fill = TRUE)
+    fwrite(audit_log, file.path(RESULTS_DIR, "property_rebase_log.csv"))
     message(sprintf("[rebase] audit log: %s corrected unit-years -> data/results/property_rebase_log.csv",
-                    format(nrow(log_dt), big.mark = ",")))
-    print(log_dt[, .N, by = .(layer, process)][order(layer, process)])
+                    format(nrow(audit_log), big.mark = ",")))
+    print(audit_log[, .N, by = .(layer, process)][order(layer, process)])
   }
 })
