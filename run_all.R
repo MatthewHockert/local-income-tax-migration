@@ -1,9 +1,7 @@
 #!/usr/bin/env Rscript
-# run_all.R -- rebuild every result, figure and table the paper uses.
-# Run from the repo root:  Rscript run_all.R
-# Each script runs in a fresh R session; its output goes to logs/<script>.log.
-# Not run here: scripts/1_get_data/ (needs internet) and scripts/2_build_data/
-# (rebuilds the panels and property rates from data/raw/; data/derived/ ships built).
+# run_all.R
+# Reruns every model, figure and table in the paper: Rscript run_all.R
+# It skips downloading and building the data (scripts/1_get_data and 2_build_data).
 
 steps <- c("scripts/3_models/1_main_models.R",
            "scripts/3_models/2_event_studies.R",
@@ -15,6 +13,7 @@ setwd(here::here())
 dir.create("logs", showWarnings = FALSE)
 
 failed <- character(0)
+# each script runs in a fresh R session, with its output saved to logs/
 for (s in steps) {
   log_file <- file.path("logs", sub("\\.R$", ".log", basename(s)))
   t0 <- Sys.time()

@@ -1,20 +1,11 @@
 """
-2_build_property_rates.py -- muni-year effective property-tax rates.
+2_build_property_rates.py
+Works out each town's property-tax rate as a share of market value, for the
+town, its school district and its county, and saves it to
+data/derived/pa_property_burden_panel.csv.
 
-effective rate = statutory mills / 1000 * CLR, separately for the muni, school
-district and county layers. Mills are levied on assessed value and the common
-level ratio (CLR) is assessed / market, so the result is a share of market value.
-
-Inputs:  data/raw/pa_dced_raw/          DCED muni tax register (scrape_pa_dced_eit.py)
-         data/raw/pa_county_raw/        DCED county tax register (download_property.py)
-         data/raw/pde_retax_raw/        PDE school-district millage (download_property.py)
-         data/raw/clr_raw/              PA Revenue CLR factors (download_property.py)
-         data/derived/sd_id_xwalk.csv   SD name crosswalk (1_build_panels.R)
-         data/raw/pa_eit_rate_panel.csv each muni's school district
-Output:  data/derived/pa_property_burden_panel.csv
-
-Run with a Python that has pandas, xlrd and openpyxl:
-  python3 scripts/2_build_data/2_build_property_rates.py
+Run it with the pkg-test Python (it needs pandas, xlrd and openpyxl):
+  ~/packaging-test/pkg-test/bin/python scripts/2_build_data/2_build_property_rates.py
 """
 
 import os
@@ -126,11 +117,7 @@ def sd_millage(reg):
 
 
 # PDE school-district millage ------------------------------------------------
-# PDE files list one row per district x county (multi-county districts can have
-# different mills per county) and split-rate districts as separate Land and
-# Buildings rows. The buildings rate is kept as the district's rate, the land
-# row is dropped, and a district's rate is the max across its rows (the same
-# rule the register uses for SDs).
+# The state education department's millage files, used to fill gaps in the DCED register.
 
 # PDE names that the crosswalk spells completely differently
 MANUAL_RENAMES = {
@@ -185,6 +172,7 @@ def parse_pde_file(path, school_year):
     out["role"] = np.where(is_land, "land", np.where(is_bldg, "buildings", "uniform"))
     out["county"] = out["county"].str.replace(r"\s*\((land|bldg|building)s?\)", "",
                                               regex=True, case=False).str.strip()
+    # a few districts tax land and buildings at different rates: keep the buildings rate
     out = out[out["district_raw"].str.len() > 0]
     out = out[~out["district_raw"].str.lower().str.contains("total|statewide|average", na=False)]
     return out.dropna(subset=["mills"])
@@ -217,6 +205,7 @@ def pde_millage(xwalk_path):
                    glob.glob(os.path.join(RAW, "pde_retax_raw", "pde_*.xlsx")))
     long = pd.concat([parse_pde_file(f, re.search(r"pde_(\d{4}-\d{2})", os.path.basename(f)).group(1))
                       for f in files], ignore_index=True)
+    # a district spanning several counties can list different mills per county: keep the highest
     dist = (long[long.role != "land"]
             .groupby(["school_year", "aun", "district_raw"])
             .agg(mills=("mills", "max")).reset_index())
@@ -268,9 +257,7 @@ def county_millage():
 
 
 # Common level ratio ------------------------------------------------------------
-# The PDF publishes the factor market / assessed, so CLR = 1 / factor. A factor
-# is keyed to the year its acceptance period starts, which equals the tax year:
-# CLR = 1.00 in every county's reassessment year under that alignment.
+# The CLR converts mills on assessed value into a rate on market value.
 CLR_ROW = re.compile(r"(\d{1,2})-(\d{1,2})-(\d{4})\s+\d{1,2}-\d{1,2}-\d{4}\s+(\d*\.\d+)")
 
 
@@ -287,6 +274,8 @@ def clr_panel():
         county = re.sub(r"\s+", " ", m.group(1)).strip().upper()
         for mm, dd, yyyy, factor in CLR_ROW.findall(pg):
             f = float(factor)
+            # the PDF prints market / assessed, so the CLR is 1 over it. The year it
+            # starts is the tax year (that's what makes CLR = 1 in reassessment years).
             rows.append(dict(county=county, year=int(yyyy), month=int(mm),
                              clr=round(1.0 / f, 4) if f else None))
     clr = pd.DataFrame(rows)

@@ -1,14 +1,10 @@
 """
-download_property.py -- raw inputs for the property-tax effective rates.
+download_property.py
+Downloads the raw property-tax files: the DCED county tax register, the state
+education department's school-district millage, and the PA Revenue common
+level ratios. Anything already downloaded is skipped.
 
-Downloads only; scripts/2_build_data/2_build_property_rates.py parses them.
-Every download is skipped when the file is already on disk.
-
-  data/raw/pa_county_raw/pa_county_taxes_YYYY.xls   DCED county tax register, 2002-2019
-  data/raw/pde_retax_raw/pde_<schoolyear>.xls(x)    PDE school-district millage, 2002-03 to 2019-20
-  data/raw/clr_raw/clr_factor_historical.pdf        PA Revenue common level ratio factors
-
-Run:  python3 scripts/1_get_data/download_property.py
+Run: ~/packaging-test/pkg-test/bin/python scripts/1_get_data/download_property.py
 """
 
 import os
@@ -54,8 +50,7 @@ def download_county(year, s):
 
 
 # PDE real estate tax rates, by school year ----------------------------------
-# 2002-03 to 2015-16 only survive on the Wayback Machine (snapshots from 2015);
-# 2016-17 on are on the live pa.gov site. PDE misnamed the 2013-14 file "2013-24".
+# The older years (2002-03 to 2015-16) only survive on the Wayback Machine
 PDE_DIR = os.path.join(RAW, "pde_retax_raw")
 WB = "http://web.archive.org/web/{ts}id_/{orig}"
 WB_BASE = ("http://www.education.pa.gov/Documents/Teachers-Administrators/"
@@ -73,7 +68,7 @@ WAYBACK = {
     "2010-11": ("20151127065431", "xlsx", "2010-11%20Real%20Estate%20Tax%20Rates.xlsx"),
     "2011-12": ("20151127035034", "xlsx", "2011-12%20Real%20Estate%20Tax%20Rates.xlsx"),
     "2012-13": ("20151127005714", "xlsx", "2012-13%20Real%20Estate%20Tax%20Rates.xlsx"),
-    "2013-14": ("20151127055126", "xlsx", "2013-24%20Real%20Estate%20Tax%20Rates.xlsx"),
+    "2013-14": ("20151127055126", "xlsx", "2013-24%20Real%20Estate%20Tax%20Rates.xlsx"),  # PDE's typo, not ours
     "2014-15": ("20151127020458", "xlsx", "Finances%20RETaxRates%202014-2015.xlsx"),
     "2015-16": ("20151127081251", "xlsx", "Finances%20RETaxRates%202015-2016.xlsx"),
 }

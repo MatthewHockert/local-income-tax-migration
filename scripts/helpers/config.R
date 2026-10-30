@@ -1,7 +1,6 @@
-# config.R -- every path the pipeline uses, relative to the repo root.
-# here::here() finds the root by climbing up from the working directory to the
-# folder holding local_income_tax_migration.Rproj, so scripts work from RStudio
-# (with the project open) or from the terminal anywhere inside the repo.
+# config.R
+# Every folder path the scripts use. here::here() finds the repo by looking for
+# the .Rproj file, so scripts work from RStudio or the terminal.
 
 ROOT       <- here::here()
 DATA_DIR   <- file.path(ROOT, "data")
@@ -9,10 +8,7 @@ SCRIPT_DIR <- file.path(ROOT, "scripts")
 TABLE_DIR  <- file.path(ROOT, "tables")
 OUT_DIR    <- file.path(ROOT, "figures")
 
-# Data layout (restructured 2026-07-02) ----
-# raw/     scraped inputs only -- never written by analysis scripts
-# derived/ built panels and crosswalks (.rds) -- written by 2_build_data/1_build_panels.R
-# results/ model-output CSVs -- written by stages 02-04
+# data/raw: downloads. data/derived: built panels. data/results: model output.
 RAW_DIR     <- file.path(DATA_DIR, "raw")
 DERIVED_DIR <- file.path(DATA_DIR, "derived")
 RESULTS_DIR <- file.path(DATA_DIR, "results")
