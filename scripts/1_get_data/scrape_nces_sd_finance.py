@@ -13,7 +13,7 @@ URL pattern:
   https://www.census.gov/programs-surveys/school-finances/tables/{YYYY}/secondary-education-finance/elsec{YY}.xls
   (or elsec{YY}.txt for fixed-width)
 
-Output: data/pa_sd_finance_raw.csv with one row per (sd_id_census, fy) and
+Output: data/raw/pa_sd_finance_raw.csv with one row per (sd_id_census, fy) and
 all raw revenue/expenditure variables, filtered to PA (FIPS 42).
 
 Usage: python3 scrape_nces_sd_finance.py

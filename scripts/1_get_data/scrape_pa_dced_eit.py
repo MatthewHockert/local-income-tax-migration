@@ -6,7 +6,7 @@ Each year returns an .xls file (~12 MB) with all PA municipalities.
 We extract EIT resident/nonresident rates and save a clean CSV panel.
 
 Usage: python scrape_pa_dced_eit.py
-Output: data/pa_eit_rate_panel.csv
+Output: data/raw/pa_eit_rate_panel.csv
 """
 
 import os

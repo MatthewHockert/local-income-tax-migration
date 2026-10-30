@@ -6,7 +6,7 @@ Each year returns ~1.5 MB XLS with all PA municipalities (2,572 rows x 71 cols).
 Includes: tax revenue by type, expenditures, debt, fund balance, per capita.
 
 Usage: python scrape_pa_dced_afr.py
-Output: data/pa_afr_panel.csv
+Output: data/raw/pa_afr_panel.csv
 """
 
 import os

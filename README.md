@@ -4,42 +4,51 @@ Code for the paper in `manuscript/muni_tax_sorting.tex`. It estimates how Pennsy
 
 Matthew Hockert, matthew.hockert@gmail.com
 
-## How to run it
+## Replication
 
-Open `local_income_tax_migration.Rproj` (or `cd` into the repo) and run the steps in order. Every R script finds the repo root with `here::here()`, so it runs from anywhere inside the repo.
+The master script `run_all.R` runs the pipeline end to end with stage flags (`RUN_DATA_BUILD`, `RUN_MAIN_MODELS`, `RUN_EVENT_STUDIES`, `RUN_ROBUSTNESS`, `RUN_FIGURES`, `RUN_TABLES`). `RUN_DATA_BUILD` is `FALSE` by default because the panel build is a one-time step. Set it to `TRUE` for a cold build. Downloading the raw data is always done by hand. Open `local_income_tax_migration.Rproj` (or `cd` into the repo). Every R script finds the repo root with `here::here()`, so it runs from anywhere inside the repo.
 
-| Step | Command | Needs | Time |
-|---|---|---|---|
-| 1. Get data | the scripts in `scripts/1_get_data/` | internet | about 1 hour, once |
-| 2. Build data | the scripts in `scripts/2_build_data/`, in number order | `data/raw/` | not timed |
-| 3 and 4. Models, figures, tables | `Rscript run_all.R` | `data/derived/` | about 45 min (dCDH is 40 of it) |
-| 5. Paper | see below | `figures/`, `tables/` | 1 min |
+To run the steps by hand:
 
-Steps 1 and 2 can be skipped when `data/raw/` and `data/derived/` come from the data deposit. `run_all.R` runs steps 3 and 4 only and writes a log per script to `logs/`.
+```
+# 1. Download the raw data (one-time, needs internet, about 1 hour)
+python3 scripts/1_get_data/scrape_pa_dced_eit.py      # DCED tax register, one .xls per year (EIT + millage) -> data/raw/pa_dced_raw/, pa_eit_rate_panel.csv
+python3 scripts/1_get_data/scrape_pa_dced_afr.py      # DCED Annual Financial Reports -> data/raw/pa_afr_raw/, pa_afr_panel.csv
+python3 scripts/1_get_data/scrape_nces_sd_finance.py  # Census F-33 SD finances -> data/raw/pa_sd_afr_raw/, pa_sd_finance_raw.csv
+python3 scripts/1_get_data/download_property.py       # county register, PDE millage, CLR -> data/raw/pa_county_raw/, pde_retax_raw/, clr_raw/
+Rscript scripts/1_get_data/download_lodes.R           # LODES8 block flows, ~600 MB -> data/raw/lodes_block/pa_od_S000_main.rds
+
+# 2. Build the panels (one-time; or set RUN_DATA_BUILD <- TRUE in run_all.R)
+Rscript scripts/2_build_data/1_build_panels.R           # SD ids (rewrites raw/pa_eit_rate_panel.csv), rate panel, SD controls + crosswalk, workplace,
+                                                        # residence and block panels -> data/derived/*.rds, sd_id_xwalk.csv
+python3 scripts/2_build_data/2_build_property_rates.py  # millage x CLR -> data/derived/pa_property_burden_panel.csv
+Rscript scripts/2_build_data/3_repair_property_rates.R  # basis fixes -> data/derived/pa_property_burden_panel_repaired.csv
+
+# 3-4. Everything else, in order, via the master script (about 45 min, dCDH is 40 of it)
+Rscript run_all.R
+```
+
+`run_all.R` then runs, in stage order, with a log per script in `logs/`:
+
+```
+1_main_models.R    [models]   headline binding decomposition, pooled per-pp + binary, EIT revenue,
+                              pre-period baselines, flexible dose -> data/results/headline_*, pooled_*,
+                              eit_revenue_*, treated_pre_baselines.csv, flex_dose_acr.csv
+2_event_studies.R  [models]   realized-dose event studies, headline and pooled -> headline_es_*, pooled_es_cousub_*
+3_robustness.R     [models]   dCDH, Act 32 split, Act 47 exclusion, pre-trend battery, fake timing
+                              -> dcdh_*, act32_*, act47_*, pretrend_battery.csv, fake_timing_placebo.csv, pooled_*,
+                              figures/dcdh_*.png
+1_figures.R        [output]   every paper figure, summary tables -> figures/*.png, tables/summary_*.tex
+2_tables.R         [output]   every paper table, in-text number checks -> tables/*.tex, intext_numbers.csv
+```
+
+`helpers/config.R` holds all paths. `helpers/helpers.R` builds the estimation panel, cells and stacks that every model script starts from. Then build the paper (about 1 min):
 
 ```bash
 cd manuscript && pdflatex muni_tax_sorting && biber muni_tax_sorting && pdflatex muni_tax_sorting && pdflatex muni_tax_sorting
 ```
 
-## Scripts
-
-| Script | What it does | Writes |
-|---|---|---|
-| `1_get_data/scrape_pa_dced_eit.py` | DCED municipal tax register, one `.xls` per year (EIT and property millage) | `data/raw/pa_dced_raw/`, `data/raw/pa_eit_rate_panel.csv` |
-| `1_get_data/scrape_pa_dced_afr.py` | DCED municipal Annual Financial Reports (fiscal controls) | `data/raw/pa_afr_raw/`, `data/raw/pa_afr_panel.csv` |
-| `1_get_data/scrape_nces_sd_finance.py` | Census F-33 school-district finances | `data/raw/pa_sd_afr_raw/`, `data/raw/pa_sd_finance_raw.csv` |
-| `1_get_data/download_lodes.R` | LEHD LODES origin-destination flows, PA blocks | `data/raw/lodes_block/` |
-| `1_get_data/download_property.py` | county tax register, PDE school-district millage, PA Revenue CLR factors | `data/raw/pa_county_raw/`, `pde_retax_raw/`, `clr_raw/` |
-| `2_build_data/1_build_panels.R` | re-parses the DCED register to add SD ids, then builds the rate panel, SD controls and crosswalk, municipality (workplace and residence) and block panels | `data/raw/pa_eit_rate_panel.csv`, `data/derived/*.rds`, `sd_id_xwalk.csv` |
-| `2_build_data/2_build_property_rates.py` | muni, SD and county millage times the CLR, as effective rates | `data/derived/pa_property_burden_panel.csv` |
-| `2_build_data/3_repair_property_rates.R` | fixes rates where millage and CLR sit on different assessment bases | `data/derived/pa_property_burden_panel_repaired.csv` |
-| `3_models/1_main_models.R` | headline binding decomposition, pooled specification, EIT revenue, flexible dose | `data/results/` |
-| `3_models/2_event_studies.R` | realized-dose event studies, headline and pooled | `data/results/` |
-| `3_models/3_robustness.R` | dCDH, Act 32 split, Act 47 exclusion, pre-trend battery, fake timing | `data/results/`, `figures/` |
-| `4_output/1_figures.R` | every paper figure, summary tables | `figures/`, `tables/` |
-| `4_output/2_tables.R` | every paper table, in-text number checks | `tables/` |
-| `helpers/config.R` | all paths | |
-| `helpers/helpers.R` | builds the estimation panel, cells and stacks, shared by every model script | |
+Steps 1 and 2 can be skipped when `data/raw/` and `data/derived/` come from the data deposit. Sample construction, joins and other conventions are in `CONVENTIONS.md`.
 
 Each model and output script is split into sections switched on by `RUN_*` flags at the top. Set a flag to `FALSE` to skip a section. Sections marked `PARKED` are off because they are not in the paper. `scripts/parked/bacon_cont_decomp.R` is a parked standalone diagnostic.
 
