@@ -30,7 +30,7 @@ cd manuscript && pdflatex muni_tax_sorting && biber muni_tax_sorting && pdflatex
 | `1_get_data/scrape_nces_sd_finance.py` | Census F-33 school-district finances | `data/raw/pa_sd_afr_raw/`, `data/raw/pa_sd_finance_raw.csv` |
 | `1_get_data/download_lodes.R` | LEHD LODES origin-destination flows, PA blocks | `data/raw/lodes_block/` |
 | `1_get_data/download_property.py` | county tax register, PDE school-district millage, PA Revenue CLR factors | `data/raw/pa_county_raw/`, `pde_retax_raw/`, `clr_raw/` |
-| `2_build_data/1_build_panels.R` | re-parses the DCED register to add SD ids, then builds the rate panel, SD controls and crosswalk, municipality and block panels | `data/raw/pa_eit_rate_panel.csv`, `data/derived/*.rds`, `sd_id_xwalk.csv` |
+| `2_build_data/1_build_panels.R` | re-parses the DCED register to add SD ids, then builds the rate panel, SD controls and crosswalk, municipality (workplace and residence) and block panels | `data/raw/pa_eit_rate_panel.csv`, `data/derived/*.rds`, `sd_id_xwalk.csv` |
 | `2_build_data/2_build_property_rates.py` | muni, SD and county millage times the CLR, as effective rates | `data/derived/pa_property_burden_panel.csv` |
 | `2_build_data/3_repair_property_rates.R` | fixes rates where millage and CLR sit on different assessment bases | `data/derived/pa_property_burden_panel_repaired.csv` |
 | `3_models/1_main_models.R` | headline binding decomposition, pooled specification, EIT revenue, flexible dose | `data/results/` |

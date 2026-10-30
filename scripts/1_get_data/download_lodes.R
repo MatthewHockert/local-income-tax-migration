@@ -37,19 +37,8 @@ download_and_save <- function(state, lodes_type, segment, state_part = NULL,
   cat("Saved:", fname, "(", nrow(df), "rows)\n")
 }
 
-# Pennsylvania RAC segments
-for (seg in c("S000", "SE01", "SE03", "SA01", "SA03")) {
-  download_and_save("pa", "rac", seg)
-}
-
-# Pennsylvania OD
-for (seg in c("S000", "SE03")) {
-  download_and_save("pa", "od", seg, state_part = "main", suffix = "_main")
-}
-
-# Pennsylvania WAC (Workplace Area Characteristics) for industry decomposition
-# WAC blocks include CNS01-CNS20 industry-supersector counts
-download_and_save("pa", "wac", "S000")
+# Pennsylvania home-to-work flows (OD), all workers, PA residents only
+download_and_save("pa", "od", "S000", state_part = "main", suffix = "_main")
 
 cat("\nAll LODES data cached in", lodes_dir, "\n")
 
