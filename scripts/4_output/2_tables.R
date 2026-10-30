@@ -1,13 +1,12 @@
 #!/usr/bin/env Rscript
-# 4_output/2_tables.R -- Paper LaTeX tables, in-text-number reconciliation, and the
-# all-results Excel workbook, inline and flag-gated.
-# Consolidates: build_paper_tables.R, build_intext_numbers.R,
-#   build_results_workbook.R.
-# Run AFTER 02+03 so the result CSVs in data/results/ are current.
-# Outputs -> tables/*.tex, data/results/intext_numbers.csv, results/all_results.xlsx.
-# Run from package root:  Rscript scripts/4_output/2_tables.R
+# 2_tables.R -- the paper's LaTeX tables, built from data/results/, and the
+# in-text number checks. Run after the model scripts.
+# Each section is switched by a RUN_* flag. PARKED sections are not in the paper.
+# Writes tables/*.tex and data/results/intext_numbers.csv.
+# Run: Rscript scripts/4_output/2_tables.R
 
 suppressMessages({
+  library(dplyr)   # before data.table so data.table's first/last/between win
   library(data.table)
   library(openxlsx)
 })
@@ -17,147 +16,19 @@ source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack buil
 # Flags ----
 RUN_PAPER_TABLES   <- TRUE    # all LaTeX table fragments -> tables/
 RUN_INTEXT_NUMBERS <- TRUE    # gates re-pinned to the post-property prose, 2026-08-06
+RUN_FLEX_DOSE_TABLE <- TRUE   # Appendix A flexible-dose ACR table
+RUN_POOLED_ROBUSTNESS_TABLES <- TRUE  # pooled versions of the Section 6 checks
 RUN_WORKBOOK       <- FALSE  # PARKED 2026-10-29, not in the paper: all result CSVs -> results/all_results.xlsx
 
-# Paper tables (build_paper_tables.R) ----
-# Build publication-style LaTeX table fragments from the results CSVs for
-# direct \input{} into the paper.
-#
-# COUSUB-ONLY (repo-cleanup, 2026-05): builders for the retired SD-unit,
-# block-unit, industry, Sun-Abraham binary, tercile, alt-control, and the
-# block/SD pooled & ES & appendix-full tables were removed, together with
-# the helper functions only those builders used. What remains builds only
-# the cousub/municipality fragments the kept paper \input's
-# (headline_muni_combined, act32_cousub, pooled_per_pp_cousub,
-# es_pooled_cousub_summary, es_realized_cousub, app_full_muni_cell_results)
-# plus a few muni-level supporting tables that read kept inputs.
-#
-# Each table reports coefficient (with sig stars) and SE (in parens below)
-# per cell-by-outcome cell, plus a per-column diagnostic block (N, R^2,
-# within R^2, dep mean, dep SD). Uses the formatting helpers in helpers/helpers.R for
-# the label map, formatters, and table builder.
+# Paper tables ----
+# One coefficient (with stars) and SE per cell x outcome, plus diagnostics.
+# Several tables are written that the paper no longer \input's (kept by request).
 if (RUN_PAPER_TABLES) local({
-  out_dir <- TABLE_DIR
-  in_dir  <- RESULTS_DIR
-
-  # Outcome and cell sets per level
-  # Column order per user (2026-07-06): share first, then log live-and-work.
-  muni_outcomes  <- c("share_live_in","log_live_and_work",
-                      "log_in_commuters","log_total_jobs")
-  block_outcomes        <- c("log_home_count","log_work_count",
-                             "home_in_muni_share")
-  block_outcomes_main   <- c("log_home_count","log_work_count")
-  block_outcomes_shares <- c("home_in_muni_share")
-  cells_main     <- c("Inc-bind","Inc-becomes","Inc-nobind")
-
-  # Read + parse helpers (data CSVs come in slightly different formats)
-  read_coefs <- function(coef_csv, side = NULL) {
-    if (!file.exists(coef_csv)) return(NULL)
-    d <- fread(coef_csv)
-    # Parse cell column
-    if (!"cell" %in% names(d)) {
-      if ("term" %in% names(d)) {
-        d[, cell := sub(".*::([^:]+):.*", "\\1", term)]
-      }
-    }
-    # Lay explanation: the headline model estimates the muni-rate and the
-    # school-rate effects together in one regression, so its output file
-    # mixes both. Each coefficient's name is prefixed with the rate-setter
-    # it belongs to; this pulls out just the rows for the side we need.
-    # Filter by side. Rename the parameter to avoid data.table column masking:
-    # if `side` is also a column name, `d[d$side == side]` evaluates RHS in
-    # the data.table's column scope, becoming `column == column` (always TRUE).
-    if (!is.null(side)) {
-      # Lay explanation: without the rename, R would find a column named
-      # "side" inside the table and compare it to itself -- every row would
-      # match. Copying the argument to a fresh name avoids that mix-up.
-      .side_arg <- side
-      # Aliases: cousub headline CSV uses term prefixes `treat_cell::` (muni)
-      # and `cell_sd::` (SD); block CSV uses a literal `side` column.
-      term_prefix_alias <- c(muni = "treat_cell", sd = "cell_sd")
-      if ("side" %in% names(d)) {
-        d <- d[side == .side_arg]
-      } else if ("term" %in% names(d)) {
-        pfx <- if (.side_arg %in% names(term_prefix_alias))
-                term_prefix_alias[[.side_arg]] else .side_arg
-        d <- d[grepl(paste0("^", pfx, "::"), term)]
-      }
-    }
-    # Harmonize coefficient column names
-    if (!"est" %in% names(d)) {
-      if ("Estimate" %in% names(d)) setnames(d, "Estimate", "est")
-    }
-    if (!"se" %in% names(d) && "Std. Error" %in% names(d)) setnames(d, "Std. Error", "se")
-    if (!"p"  %in% names(d) && "Pr(>|t|)"   %in% names(d)) setnames(d, "Pr(>|t|)", "p")
-    d
-  }
-
-  read_diag <- function(diag_csv) {
-    if (!file.exists(diag_csv)) return(data.table())
-    d <- fread(diag_csv)
-    # Harmonize diagnostics names: lowercase r2/wr2 plus dep_mean/dep_sd
-    ren <- c(R2 = "r2", Within_R2 = "wr2",
-             dep_mean = "dep_mean", dep_sd = "dep_sd",
-             n = "n", N = "n")
-    for (nm in names(ren)) {
-      if (nm %in% names(d) && ren[nm] != nm) setnames(d, nm, ren[nm])
-    }
-    d
-  }
-
-  # Convenience wrapper for the simplest "one side per table" case
-  write_cell_table <- function(coef_csv, diag_csv, side, outcomes, cells,
-                                caption, label_id, out_name,
-                                short = TRUE, notes = character(0)) {
-    coefs <- read_coefs(coef_csv, side = side)
-    if (is.null(coefs) || nrow(coefs) == 0) {
-      print(sprintf("Skipping %s: source CSV missing or empty", out_name))
-      return(invisible())
-    }
-    diag <- read_diag(diag_csv)
-    # Per-cell pre-trend p from that cell's own realized-dose event study,
-    # so the diagnostic that licenses each coefficient sits with it.
-    pt <- tryCatch({
-      a <- fread(file.path(in_dir, "headline_es_att.csv"))
-      a[, .(cell, outcome, wald_pre_p)]
-    }, error = function(e) NULL)
-    body <- build_pub_table(
-      coefs_dt  = coefs,
-      diag_dt   = diag,
-      pretrend_dt = pt,
-      outcomes  = outcomes,
-      cells     = cells,
-      caption   = caption,
-      label     = label_id,
-      short_labels = short,
-      notes     = notes
-    )
-    writeLines(body, file.path(out_dir, out_name))
-  }
-
-  # write_merged_cell_table: muni-side + SD-side from the SAME joint
-  # regression in one table, with section headers. Used for appendix tables
-  # where the same outcomes are shown for both rate-setters.
-  # Read fiscal controls in long format (outcome, term, est, se, p)
-  read_controls_long <- function(csv_path, term_filter = NULL) {
-    if (!file.exists(csv_path) || file.size(csv_path) == 0) return(NULL)
-    d <- fread(csv_path)
-    if ("Estimate" %in% names(d) && !"est" %in% names(d)) setnames(d, "Estimate", "est")
-    if ("Std. Error" %in% names(d) && !"se" %in% names(d)) setnames(d, "Std. Error", "se")
-    if ("Pr(>|t|)" %in% names(d) && !"p" %in% names(d)) setnames(d, "Pr(>|t|)", "p")
-    needed <- c("outcome","term","est","se","p")
-    if (!all(needed %in% names(d))) return(NULL)
-    if (!is.null(term_filter)) d <- d[term %in% term_filter]
-    # Mask rows with absurd SEs (near-singular fit; happens with collinear
-    # share controls in some regressions). Treat SE > 100 as not identified.
-    d[!is.na(se) & abs(se) > 100, `:=`(est = NA_real_, se = NA_real_, p = NA_real_)]
-    d[, .(outcome, term, est, se, p)]
-  }
-
-  # Pretty labels for controls used in appendix full-spec tables.
-  # share_eit / share_re labels kept for legacy CSVs, but the active control set
-  # (build_headline_env ctrls) replaced them with the three property
-  # effective rates (millage x CLR) on 2026-07-02.
+  # column order: share first, then log live-and-work
+  muni_outcomes <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
+  cells_main    <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
+  muni_notes    <- "Stacked-DiD; muni$\\times$stack and year$\\times$stack FE; SE clustered at muni."
+  stars_note    <- "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."
   muni_ctrl_labels <- c(
     share_police    = "police-services share",
     share_streets   = "streets share",
@@ -167,133 +38,124 @@ if (RUN_PAPER_TABLES) local({
     share_intergov  = "intergovernmental-revenue share",
     muni_eff_rate   = "muni property eff.\\ rate (pp)",
     sd_eff_rate     = "SD property eff.\\ rate (pp)",
-    county_eff_rate = "county property eff.\\ rate (pp)"
-  )
-  sd_ctrl_labels <- c(
-    share_state_rev_sd       = "state-revenue share",
-    share_local_rev_sd       = "local-revenue share",
-    share_federal_rev_sd     = "federal-revenue share",
-    share_property_tax_sd    = "property-tax share",
-    share_instructional_sd   = "instructional-expenditure share",
-    share_support_sd         = "support-services share",
-    share_capital_sd         = "capital-expenditure share",
-    share_debt_int_sd        = "debt-interest share",
-    mean_muni_rate           = "mean municipality rate"
-  )
-  block_ctrl_labels <- c(muni_ctrl_labels, sd_ctrl_labels)
+    county_eff_rate = "county property eff.\\ rate (pp)")
 
-  write_merged_cell_table <- function(coef_csv, diag_csv,
-                                        outcomes, cells,
-                                        caption, label_id, out_name,
-                                        short = TRUE, notes = character(0)) {
-    coefs_muni <- read_coefs(coef_csv, side = "muni")
-    coefs_sd   <- read_coefs(coef_csv, side = "sd")
-    if (is.null(coefs_muni) || nrow(coefs_muni) == 0) {
-      print(sprintf("Skipping %s: source CSV missing", out_name)); return(invisible())
+  # ---- readers
+  # Coefficients for one side of the joint regression. side is "muni"/"sd" (term
+  # prefixes treat_cell:: / cell_sd::) or a prefix itself. Names harmonized to est/se/p.
+  read_coefs <- function(coef_csv, side = NULL) {
+    if (!file.exists(coef_csv)) return(NULL)
+    coefs <- fread(coef_csv)
+    if (!"cell" %in% names(coefs) && "term" %in% names(coefs))
+      coefs[, cell := sub(".*::([^:]+):.*", "\\1", term)]
+    if (!is.null(side)) {
+      prefix <- c(muni = "treat_cell", sd = "cell_sd")[side]
+      prefix <- if (is.na(prefix)) side else prefix
+      coefs <- coefs[grepl(paste0("^", prefix, "::"), term)]
     }
-    diag <- read_diag(diag_csv)
-    short_lab <- short
-    ncols <- length(outcomes)
-    hdr_labels <- outcome_label(outcomes, short = short_lab)
-    hdr <- paste0("Cell & ", paste(hdr_labels, collapse = " & "), " \\\\")
-
-    fmt_one <- function(side_coefs, cells, ncols) {
-      body <- character(0); dropped <- character(0)
-      for (cl in cells) {
-        est_row <- character(ncols); se_row <- character(ncols); any_present <- FALSE
-        for (j in seq_along(outcomes)) {
-          r <- side_coefs[cell == cl & outcome == outcomes[j]]
-          if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
-          stars <- sig_stars(r$p[1])
-          est_str <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-          est_row[j] <- est_str; se_row[j] <- fmt_se(r$se[1])
-          if (est_str != "---") any_present <- TRUE
-        }
-        if (!any_present) { dropped <- c(dropped, cl); next }
-        body <- c(body,
-                  paste0("\\textbf{", cl, "} & ", paste(est_row, collapse = " & "), " \\\\"),
-                  paste0("                  & ", paste(se_row,  collapse = " & "), " \\\\"))
-      }
-      list(body = body, dropped = dropped)
-    }
-
-    muni_section <- fmt_one(coefs_muni, cells, ncols)
-    sd_section   <- fmt_one(coefs_sd,   cells, ncols)
-    mc <- paste0("\\multicolumn{", ncols + 1, "}{l}")
-
-    body <- c(
-      paste0(mc, "{\\textit{Muni resident rate ($\\tau^M$)}} \\\\"),
-      muni_section$body,
-      "\\midrule",
-      paste0(mc, "{\\textit{School district rate ($\\tau^{SD}$)}} \\\\"),
-      sd_section$body
-    )
-
-    diag_block <- character(0)
-    if (nrow(diag) > 0) {
-      pick <- function(field) {
-        out <- character(ncols)
-        for (j in seq_along(outcomes)) {
-          r <- diag[outcome == outcomes[j]]
-          if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
-          v <- r[[field]][1]
-          if (is.na(v)) { out[j] <- "---"; next }
-          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
-                     else formatC(v, format = "f", digits = 3)
-        }
-        out
-      }
-      diag_block <- c(
-        paste0(mc, "{\\textit{Diagnostics}} \\\\"),
-        paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
-        paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
-        paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\")
-      )
-    }
-
-    col_spec <- paste0("l", strrep("c", ncols))
-    notes_all <- paste(c(notes,
-                          "Both rate-setters enter the same joint regression; the table reports both sets of cell$\\times$dose coefficients.",
-                          if (length(muni_section$dropped) + length(sd_section$dropped) > 0)
-                            paste0("Cells omitted (no estimable coefficients): ",
-                                    paste(unique(c(muni_section$dropped, sd_section$dropped)), collapse = ", "), "."),
-                          "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
-                        collapse = " ")
-    tabular <- c(
-      paste0("  \\begin{tabular}{", col_spec, "}"),
-      "    \\toprule",
-      paste0("    ", hdr),
-      "    \\midrule",
-      paste0("    ", body),
-      if (length(diag_block)) "    \\midrule" else character(0),
-      if (length(diag_block)) paste0("    ", diag_block) else character(0),
-      "    \\bottomrule",
-      "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-
-    out <- c(
-      "\\begin{table}[H]",
-      "  \\centering",
-      paste0("  \\caption{", caption, "}"),
-      paste0("  \\label{", label_id, "}"),
-      "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.9}",
-      tabular,
-      "  \\vspace{0.3em}",
-      "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
-      "  \\end{minipage}",
-      "\\end{table}")
-    writeLines(out, file.path(out_dir, out_name))
+    if (!"est" %in% names(coefs) && "Estimate" %in% names(coefs)) setnames(coefs, "Estimate", "est")
+    if (!"se" %in% names(coefs) && "Std. Error" %in% names(coefs)) setnames(coefs, "Std. Error", "se")
+    if (!"p"  %in% names(coefs) && "Pr(>|t|)"   %in% names(coefs)) setnames(coefs, "Pr(>|t|)", "p")
+    coefs
+  }
+  # diagnostics with names harmonized to n / r2 / wr2
+  read_diag <- function(diag_csv) {
+    if (!file.exists(diag_csv)) return(data.table())
+    diag <- fread(diag_csv)
+    renames <- c(R2 = "r2", Within_R2 = "wr2", N = "n")
+    for (old in intersect(names(renames), names(diag))) setnames(diag, old, renames[[old]])
+    diag
+  }
+  # fiscal-control coefficients, long. An SE above 100 marks a near-singular
+  # fit (collinear shares), so those rows print as missing.
+  read_controls_long <- function(csv_path, term_filter = NULL) {
+    if (!file.exists(csv_path) || file.size(csv_path) == 0) return(NULL)
+    controls <- fread(csv_path)
+    if ("Estimate" %in% names(controls) && !"est" %in% names(controls)) setnames(controls, "Estimate", "est")
+    if ("Std. Error" %in% names(controls) && !"se" %in% names(controls)) setnames(controls, "Std. Error", "se")
+    if ("Pr(>|t|)" %in% names(controls) && !"p" %in% names(controls)) setnames(controls, "Pr(>|t|)", "p")
+    if (!all(c("outcome", "term", "est", "se", "p") %in% names(controls))) return(NULL)
+    if (!is.null(term_filter)) controls <- controls[term %in% term_filter]
+    controls[!is.na(se) & abs(se) > 100, `:=`(est = NA_real_, se = NA_real_, p = NA_real_)]
+    controls[, .(outcome, term, est, se, p)]
   }
 
-  # write_merged_full_spec_table: one table with the muni-side and SD-side cells
-  # as two panels (both from the same joint regression), the shared fiscal
-  # controls, and diagnostics. Used for the combined Appendix A cousub table.
+  # ---- shared pieces of a table
+  # the two rows for one cell (estimates with stars, then SEs); NULL if every column is empty
+  cell_rows <- function(coefs, cell_name, outcomes) {
+    strings <- vapply(outcomes, function(outcome_name) {
+      row <- filter(coefs, cell == cell_name, outcome == outcome_name)
+      if (nrow(row) == 0) c("---", "") else c(fmt_coef(row$est[1], row$p[1]), fmt_se(row$se[1]))
+    }, character(2))
+    if (all(strings[1, ] == "---")) return(NULL)
+    c(paste0("\\textbf{", cell_name, "} & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+      paste0("                  & ", paste(strings[2, ], collapse = " & "), " \\\\"))
+  }
+  # estimate-with-stars and SE strings for one row; dashes when missing or non-finite
+  coef_pair <- function(row) {
+    if (nrow(row) == 0 || is.na(row$est[1]) || !is.finite(row$est[1])) c("---", "")
+    else c(fmt_coef(row$est[1], row$p[1]), fmt_se(row$se[1]))
+  }
+  # two rows per fiscal control; controls with no estimate anywhere are skipped
+  control_rows <- function(controls, outcomes, ctrl_labels) {
+    unlist(lapply(unique(controls$term), function(control_term) {
+      strings <- vapply(outcomes, function(outcome_name) {
+        row <- filter(controls, outcome == outcome_name, term == control_term)
+        if (nrow(row) == 0 || is.na(row$est[1])) c("---", "")
+        else c(fmt_coef(row$est[1], row$p[1]), fmt_se(row$se[1]))
+      }, character(2))
+      if (all(strings[1, ] == "---")) return(NULL)
+      label <- if (control_term %in% names(ctrl_labels)) ctrl_labels[[control_term]] else gsub("_", "\\\\_", control_term)
+      c(paste0(label, " & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+        paste0("                  & ", paste(strings[2, ], collapse = " & "), " \\\\"))
+    }))
+  }
+  # one diagnostics value per outcome: N with commas, anything else to 3 decimals
+  diag_values <- function(diag, field, outcomes) {
+    vapply(outcomes, function(outcome_name) {
+      row <- filter(diag, outcome == outcome_name)
+      if (nrow(row) == 0 || !(field %in% names(row)) || is.na(row[[field]][1])) return("---")
+      if (field == "n") format(as.integer(row[[field]][1]), big.mark = ",")
+      else formatC(row[[field]][1], format = "f", digits = 3)
+    }, character(1), USE.NAMES = FALSE)
+  }
+  # tabular inside a [H] table, scaled to the text width at 3+ columns, notes underneath
+  table_shell <- function(header, body, caption, label_id, notes, ncols, row_spacing = "0.9") {
+    tabular <- c(
+      paste0("  \\begin{tabular}{", paste0("l", strrep("c", ncols)), "}"),
+      "    \\toprule", paste0("    ", header), "    \\midrule",
+      paste0("    ", body), "    \\bottomrule", "  \\end{tabular}")
+    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
+    c("\\begin{table}[H]", "  \\centering",
+      paste0("  \\caption{", caption, "}"), paste0("  \\label{", label_id, "}"),
+      "  \\footnotesize", paste0("  \\renewcommand{\\arraystretch}{", row_spacing, "}"), tabular,
+      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
+      paste0("    \\footnotesize \\textit{Notes:} ", notes),
+      "  \\end{minipage}", "\\end{table}")
+  }
+
+  # One side of the headline regression, via build_pub_table(), with each
+  # cell's own event-study pre-trend p under its coefficient.
+  write_cell_table <- function(coef_csv, diag_csv, side, outcomes, cells,
+                               caption, label_id, out_name, notes = character(0)) {
+    coefs <- read_coefs(coef_csv, side = side)
+    if (is.null(coefs) || nrow(coefs) == 0) {
+      print(sprintf("Skipping %s: source CSV missing or empty", out_name))
+      return(invisible())
+    }
+    pretrend <- tryCatch(fread(file.path(RESULTS_DIR, "headline_es_att.csv"))[, .(cell, outcome, wald_pre_p)],
+                         error = function(e) NULL)
+    writeLines(build_pub_table(coefs_dt = coefs, diag_dt = read_diag(diag_csv), pretrend_dt = pretrend,
+                               outcomes = outcomes, cells = cells, caption = caption,
+                               label = label_id, short_labels = TRUE, notes = notes),
+               file.path(TABLE_DIR, out_name))
+  }
+
+  # Muni-side and SD-side cells of the joint regression as two panels, with
+  # the fiscal controls and diagnostics (N, R2, within R2, optional Wald row).
   write_merged_full_spec_table <- function(coef_csv, diag_csv, ctrl_csv, ctrl_labels,
-                                            outcomes, cells, caption, label_id, out_name,
-                                            short = TRUE, notes = character(0),
-                                            wald_dt = NULL, diag_dt_override = NULL) {
+                                           outcomes, cells, caption, label_id, out_name,
+                                           notes = character(0), wald_dt = NULL, diag_dt_override = NULL) {
     coefs_muni <- read_coefs(coef_csv, side = "muni")
     coefs_sd   <- read_coefs(coef_csv, side = "sd")
     if (is.null(coefs_muni) || nrow(coefs_muni) == 0) {
@@ -302,973 +164,515 @@ if (RUN_PAPER_TABLES) local({
     diag     <- if (!is.null(diag_dt_override)) diag_dt_override else read_diag(diag_csv)
     controls <- read_controls_long(ctrl_csv, term_filter = names(ctrl_labels))
     ncols <- length(outcomes)
-    hdr <- paste0("Cell & ", paste(outcome_label(outcomes, short = short), collapse = " & "), " \\\\")
-    mc  <- paste0("\\multicolumn{", ncols + 1, "}{l}")
-
-    fmt_cells <- function(side_coefs) {
-      body <- character(0)
-      for (cl in cells) {
-        est_row <- character(ncols); se_row <- character(ncols); any_present <- FALSE
-        for (j in seq_along(outcomes)) {
-          r <- side_coefs[cell == cl & outcome == outcomes[j]]
-          if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
-          stars <- sig_stars(r$p[1])
-          est_str <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-          est_row[j] <- est_str; se_row[j] <- fmt_se(r$se[1]); if (est_str != "---") any_present <- TRUE
-        }
-        if (!any_present) next
-        body <- c(body,
-                  paste0("\\textbf{", cl, "} & ", paste(est_row, collapse = " & "), " \\\\"),
-                  paste0("                  & ", paste(se_row,  collapse = " & "), " \\\\"))
-      }
-      body
-    }
+    multicol <- paste0("\\multicolumn{", ncols + 1, "}{l}")
 
     controls_block <- character(0)
-    if (!is.null(controls) && nrow(controls) > 0) {
-      controls_block <- c("\\midrule", paste0(mc, "{\\textit{Fiscal controls}} \\\\"))
-      for (tm in unique(controls$term)) {
-        est_vec <- character(ncols); se_vec <- character(ncols); any_present <- FALSE
-        for (j in seq_along(outcomes)) {
-          r <- controls[outcome == outcomes[j] & term == tm]
-          if (nrow(r) == 0 || is.na(r$est[1])) { est_vec[j] <- "---"; se_vec[j] <- ""; next }
-          any_present <- TRUE; stars <- sig_stars(r$p[1])
-          est_vec[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-          se_vec[j] <- fmt_se(r$se[1])
-        }
-        if (!any_present) next
-        pretty <- if (tm %in% names(ctrl_labels)) ctrl_labels[[tm]] else gsub("_", "\\\\_", tm)
-        controls_block <- c(controls_block,
-                            paste0(pretty, " & ", paste(est_vec, collapse = " & "), " \\\\"),
-                            paste0("                  & ", paste(se_vec, collapse = " & "), " \\\\"))
-      }
-    }
+    if (!is.null(controls) && nrow(controls) > 0)
+      controls_block <- c("\\midrule", paste0(multicol, "{\\textit{Fiscal controls}} \\\\"),
+                          control_rows(controls, outcomes, ctrl_labels))
 
     diag_block <- character(0)
     if (nrow(diag) > 0) {
-      pick <- function(field) {
-        out <- character(ncols)
-        for (j in seq_along(outcomes)) {
-          r <- diag[outcome == outcomes[j]]
-          if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
-          v <- r[[field]][1]; if (is.na(v)) { out[j] <- "---"; next }
-          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",") else formatC(v, format = "f", digits = 3)
-        }
-        out
-      }
       wald_row <- character(0)
       if (!is.null(wald_dt) && nrow(wald_dt) > 0) {
-        wv <- character(ncols)
-        for (j in seq_along(outcomes)) {
-          r <- wald_dt[outcome == outcomes[j]]
-          wv[j] <- if (nrow(r) == 0 || is.na(r$wald_p[1])) "---"
-                   else formatC(r$wald_p[1], format = "f", digits = 3)
-        }
-        wald_row <- paste0("Joint Wald $p$ (leads) & ", paste(wv, collapse = " & "), " \\\\")
+        wald_values <- vapply(outcomes, function(outcome_name) {
+          row <- filter(wald_dt, outcome == outcome_name)
+          if (nrow(row) == 0 || is.na(row$wald_p[1])) "---" else formatC(row$wald_p[1], format = "f", digits = 3)
+        }, character(1))
+        wald_row <- paste0("Joint Wald $p$ (leads) & ", paste(wald_values, collapse = " & "), " \\\\")
       }
-      diag_block <- c("\\midrule", paste0(mc, "{\\textit{Diagnostics}} \\\\"),
-        paste0("$N$           & ", paste(pick("n"),        collapse = " & "), " \\\\"),
-        paste0("$R^2$         & ", paste(pick("r2"),       collapse = " & "), " \\\\"),
-        paste0("Within $R^2$  & ", paste(pick("wr2"),      collapse = " & "), " \\\\"),
+      diag_block <- c("\\midrule", paste0(multicol, "{\\textit{Diagnostics}} \\\\"),
+        paste0("$N$           & ", paste(diag_values(diag, "n",   outcomes), collapse = " & "), " \\\\"),
+        paste0("$R^2$         & ", paste(diag_values(diag, "r2",  outcomes), collapse = " & "), " \\\\"),
+        paste0("Within $R^2$  & ", paste(diag_values(diag, "wr2", outcomes), collapse = " & "), " \\\\"),
         wald_row)
     }
 
     body <- c(
-      paste0(mc, "{\\textit{Muni resident rate ($\\tau^M$)}} \\\\"),
-      fmt_cells(coefs_muni),
+      paste0(multicol, "{\\textit{Muni resident rate ($\\tau^M$)}} \\\\"),
+      unlist(lapply(cells, function(cell_name) cell_rows(coefs_muni, cell_name, outcomes))),
       "\\midrule",
-      paste0(mc, "{\\textit{School district rate ($\\tau^{SD}$)}} \\\\"),
-      fmt_cells(coefs_sd),
+      paste0(multicol, "{\\textit{School district rate ($\\tau^{SD}$)}} \\\\"),
+      unlist(lapply(cells, function(cell_name) cell_rows(coefs_sd, cell_name, outcomes))),
       controls_block, diag_block)
-
-    col_spec <- paste0("l", strrep("c", ncols))
+    header <- paste0("Cell & ", paste(outcome_label(outcomes, short = TRUE), collapse = " & "), " \\\\")
     notes_all <- paste(c(notes,
       "Both rate-setters enter the same joint regression; the table reports both sets of cell$\\times$dose coefficients with the shared fiscal controls.",
-      "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."), collapse = " ")
-    tabular <- c(
-      paste0("  \\begin{tabular}{", col_spec, "}"),
-      "    \\toprule", paste0("    ", hdr), "    \\midrule",
-      paste0("    ", body), "    \\bottomrule", "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[H]", "  \\centering",
-      paste0("  \\caption{", caption, "}"), paste0("  \\label{", label_id, "}"),
-      "  \\footnotesize", "  \\renewcommand{\\arraystretch}{0.9}", tabular,
-      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
-      "  \\end{minipage}", "\\end{table}")
-    writeLines(out, file.path(out_dir, out_name))
+      stars_note), collapse = " ")
+    writeLines(table_shell(header, body, caption, label_id, notes_all, ncols),
+               file.path(TABLE_DIR, out_name))
   }
 
-  # 1. Headline tables (municipality + SD + block)
-  muni_notes <- c(
-    paste("Stacked-DiD; muni$\\times$stack and year$\\times$stack FE; SE clustered at muni.")
-  )
-
+  # ---- headline tables
   write_cell_table(
-    coef_csv = file.path(in_dir, "headline_full_table.csv"),
-    diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
-    side     = "treat_cell",
-    outcomes = muni_outcomes, cells = cells_main,
+    coef_csv = file.path(RESULTS_DIR, "headline_full_table.csv"),
+    diag_csv = file.path(RESULTS_DIR, "headline_diagnostics.csv"),
+    side = "treat_cell", outcomes = muni_outcomes, cells = cells_main,
     caption  = "Municipality-level dose-response: muni resident-rate cells",
-    label_id = "tab:headline_muni_cell_results",
-    out_name = "headline_muni_cell_results.tex",
-    notes    = muni_notes
-  )
-
+    label_id = "tab:headline_muni_cell_results", out_name = "headline_muni_cell_results.tex",
+    notes = muni_notes)
   write_cell_table(
-    coef_csv = file.path(in_dir, "headline_full_table.csv"),
-    diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
-    side     = "cell_sd",
-    outcomes = muni_outcomes, cells = cells_main,
+    coef_csv = file.path(RESULTS_DIR, "headline_full_table.csv"),
+    diag_csv = file.path(RESULTS_DIR, "headline_diagnostics.csv"),
+    side = "cell_sd", outcomes = muni_outcomes, cells = cells_main,
     caption  = "Municipality-level dose-response: SD resident-rate cells (partial)",
-    label_id = "tab:headline_muni_sd_side_results",
-    out_name = "headline_muni_sd_side_results.tex",
-    notes    = c(muni_notes[1],
-                 "SD-side cells from the same regression as the muni-side table.")
-  )
-
-  # Combined muni + SD coefficients from the same joint regression in one FULL
-  # table: cells + fiscal controls + diagnostics (no dep-SD row).
-  # No Wald row: the table carries six coefficient rows and the test covers only
-  # the Inc-bind cell, so a single row under all six invites a misreading. All
-  # cells and outcomes are in the pre-trend battery, Table~\\ref{tab:pretrend_battery}.
+    label_id = "tab:headline_muni_sd_side_results", out_name = "headline_muni_sd_side_results.tex",
+    notes = c(muni_notes, "SD-side cells from the same regression as the muni-side table."))
+  # The paper's headline table. No Wald row: the test covers only Inc-bind, so
+  # one row under six coefficients would mislead; the battery has every cell.
   write_merged_full_spec_table(
-    coef_csv = file.path(in_dir, "headline_full_table.csv"),
-    diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
-    ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
-    ctrl_labels = muni_ctrl_labels,
-    outcomes = muni_outcomes, cells = cells_main,
+    coef_csv = file.path(RESULTS_DIR, "headline_full_table.csv"),
+    diag_csv = file.path(RESULTS_DIR, "headline_diagnostics.csv"),
+    ctrl_csv = file.path(RESULTS_DIR, "headline_full_table.csv"),
+    ctrl_labels = muni_ctrl_labels, outcomes = muni_outcomes, cells = cells_main,
     caption  = "Municipality-level dose-response: muni and SD resident-rate cells (joint regression)",
-    label_id = "tab:headline_muni_combined",
-    out_name = "headline_muni_combined.tex",
-    notes    = c(muni_notes,
-                 "Realized-dose pre-trend tests for every cell and outcome are reported in the pre-trend battery.")
-  )
+    label_id = "tab:headline_muni_combined", out_name = "headline_muni_combined.tex",
+    notes = c(muni_notes,
+              "Realized-dose pre-trend tests for every cell and outcome are reported in the pre-trend battery."))
 
-  # Act 47 exclusion, main-results format: full coeftable on the sample that
-  # drops the Act 47 Inc-bind munis (built by 3_models/3_robustness.R).
-  a47_path <- file.path(in_dir, "act47_full_table.csv")
-  if (file.exists(a47_path)) {
-    a47_diag <- unique(fread(a47_path)[, .(outcome, n, r2, wr2, dep_mean)])
+  # ---- Act 47 exclusion, in the headline format (from 3_robustness.R)
+  act47_path <- file.path(RESULTS_DIR, "act47_full_table.csv")
+  if (file.exists(act47_path)) {
     write_merged_full_spec_table(
-      coef_csv = a47_path,
-      diag_csv = "",
-      ctrl_csv = a47_path,
-      ctrl_labels = muni_ctrl_labels,
-      outcomes = muni_outcomes, cells = cells_main,
+      coef_csv = act47_path, diag_csv = "", ctrl_csv = act47_path,
+      ctrl_labels = muni_ctrl_labels, outcomes = muni_outcomes, cells = cells_main,
       caption  = "Inc-bind effect excluding Hazleton, the one Act 47 designated municipality",
-      label_id = "tab:act47_full_results",
-      out_name = "act47_full_results.tex",
-      notes    = c(muni_notes, "Leave-one-out on the Inc-bind cell, dropping Hazleton. Identical specification and dose source to the headline table, so the cells other than Inc-bind reproduce it."),
-      diag_dt_override = a47_diag
-    )
+      label_id = "tab:act47_full_results", out_name = "act47_full_results.tex",
+      notes = c(muni_notes, "Leave-one-out on the Inc-bind cell, dropping Hazleton. Identical specification and dose source to the headline table, so the cells other than Inc-bind reproduce it."),
+      diag_dt_override = unique(fread(act47_path)[, .(outcome, n, r2, wr2, dep_mean)]))
   }
 
-  # Act 32 split, full format: one table per period (cells + controls + diag).
-  a32_path <- file.path(in_dir, "act32_full_cousub.csv")
-  if (file.exists(a32_path)) {
-    a32 <- fread(a32_path)
-    for (per in c("pre", "post")) {
-      ap <- a32[period == per]
-      if (nrow(ap) == 0) next
-      cf <- ap[grepl("^treat_cell::", term)]
-      cf[, cell := sub("^.*::([^:]+):.*$", "\\1", term)]
-      ctl <- ap[term %in% names(muni_ctrl_labels), .(outcome, term, est, se, p)]
-      dg <- unique(ap[, .(outcome, n, r2, wr2, dep_mean)])
-      body <- build_pub_table(
-        coefs_dt = cf[, .(outcome, cell, est, se, p)],
-        diag_dt  = dg,
+  # ---- Act 32 split, full format: one table per period
+  act32_path <- file.path(RESULTS_DIR, "act32_full_cousub.csv")
+  if (file.exists(act32_path)) {
+    act32 <- fread(act32_path)
+    for (period_name in c("pre", "post")) {
+      period_rows <- filter(act32, period == period_name)
+      if (nrow(period_rows) == 0) next
+      writeLines(build_pub_table(
+        coefs_dt = period_rows %>%
+          filter(grepl("^treat_cell::", term)) %>%
+          transmute(outcome, cell = sub("^.*::([^:]+):.*$", "\\1", term), est, se, p),
+        diag_dt  = distinct(period_rows, outcome, n, r2, wr2, dep_mean),
         outcomes = muni_outcomes, cells = cells_main,
         caption  = sprintf("Act 32 split, %s-enforcement cohorts (first event %s 2012): full specification",
-                           per, ifelse(per == "pre", "before", "in/after")),
-        label    = sprintf("tab:act32_full_%s", per),
-        controls_dt = ctl, control_labels = muni_ctrl_labels,
-        notes    = c(muni_notes,
-                     if (per == "pre") "Inc-nobind is absent pre-2012: 11 municipalities are in the cell, but their dose term is collinear with the stack fixed effects on the thin pre-enforcement subsample and is dropped by the estimator."))
-      writeLines(body, file.path(out_dir, sprintf("act32_full_%s.tex", per)))
+                           period_name, ifelse(period_name == "pre", "before", "in/after")),
+        label    = sprintf("tab:act32_full_%s", period_name),
+        controls_dt = period_rows %>% filter(term %in% names(muni_ctrl_labels)) %>%
+          select(outcome, term, est, se, p),
+        control_labels = muni_ctrl_labels,
+        notes = c(muni_notes,
+                  if (period_name == "pre") "Inc-nobind is absent pre-2012: 11 municipalities are in the cell, but their dose term is collinear with the stack fixed effects on the thin pre-enforcement subsample and is dropped by the estimator.")),
+        file.path(TABLE_DIR, sprintf("act32_full_%s.tex", period_name)))
     }
   }
 
-  # Cousub per-cell realized-dose ES (tab:es_realized_cousub) is built below via
-  # write_es_summary so it carries the joint pre-trend Wald p row; it backs the
-  # decomposition-diagnostic prose in section 5.
-
-  # 4. Pre/Post Act 32
-  write_act32_table <- function(coef_csv, diag_csv, outcomes, cells,
-                                  caption, label_id, out_name, notes = character(0)) {
+  # ---- Act 32 split, summary format: each cell with a pre and a post row
+  write_act32_table <- function(coef_csv, diag_csv, outcomes, cells, caption, label_id, out_name) {
     if (!file.exists(coef_csv) || file.size(coef_csv) == 0) {
       print(sprintf("Skipping Act32 %s", out_name)); return(invisible())
     }
-    a <- fread(coef_csv)
-    d <- if (!is.null(diag_csv) && file.exists(diag_csv)) fread(diag_csv) else NULL
-
-    # Build the table body with hierarchical layout:
-    #   \textbf{Inc-bind}
-    #     \quad Pre  & est & est & ... \\
-    #                & (se) & (se) & ... \\
-    #     \quad Post & est & est & ... \\
-    #                & (se) & (se) & ... \\
-    short <- TRUE
-    hdr_labels <- outcome_label(outcomes, short = short)
+    coefs <- fread(coef_csv)
+    diag  <- if (!is.null(diag_csv) && file.exists(diag_csv)) fread(diag_csv) else NULL
     ncols <- length(outcomes)
-    hdr <- paste0("Outcome & ", paste(hdr_labels, collapse = " & "), " \\\\")
+    periods <- c("Pre-Act 32" = "pre", "Post-Act 32" = "post")
+    blank_cells <- paste(rep("&", ncols), collapse = " ")
 
     body <- character(0)
     dropped <- character(0)
-    fmt_cell <- function(est, se, p) {
-      if (length(est) == 0 || is.na(est) || !is.finite(est)) return(list("---",""))
-      stars <- sig_stars(p)
-      est_str <- if (nchar(stars) == 0) fmt_est(est) else paste0(fmt_est(est), "\\sym{", stars, "}")
-      list(est_str, fmt_se(se))
-    }
-    for (cl in cells) {
+    for (cell_name in cells) {
       cell_lines <- character(0)
-      any_present <- FALSE
-      for (per_label in c("Pre-Act 32","Post-Act 32")) {
-        per <- if (per_label == "Pre-Act 32") "pre" else "post"
-        est_row <- character(ncols); se_row <- character(ncols)
-        row_present <- FALSE
-        for (j in seq_along(outcomes)) {
-          r <- a[cell == cl & period == per & outcome == outcomes[j]]
-          if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
-          v <- fmt_cell(r$est[1], r$se[1], r$p[1])
-          est_row[j] <- v[[1]]; se_row[j] <- v[[2]]
-          if (est_row[j] != "---") row_present <- TRUE
-        }
-        if (!row_present) next
-        any_present <- TRUE
+      for (period_label in names(periods)) {
+        strings <- vapply(outcomes, function(outcome_name) {
+          coef_pair(filter(coefs, cell == cell_name, period == periods[[period_label]], outcome == outcome_name))
+        }, character(2))
+        if (all(strings[1, ] == "---")) next
         cell_lines <- c(cell_lines,
-          paste0("\\quad ", per_label, " & ",
-                  paste(est_row, collapse = " & "), " \\\\"),
-          paste0("                & ",
-                  paste(se_row,  collapse = " & "), " \\\\"))
+          paste0("\\quad ", period_label, " & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+          paste0("                & ", paste(strings[2, ], collapse = " & "), " \\\\"))
       }
-      if (!any_present) { dropped <- c(dropped, cl); next }
-      body <- c(body,
-                paste0("\\textbf{", cl, "} ", paste(rep("&", ncols), collapse = " "), " \\\\"),
-                cell_lines)
+      if (!length(cell_lines)) { dropped <- c(dropped, cell_name); next }
+      body <- c(body, paste0("\\textbf{", cell_name, "} ", blank_cells, " \\\\"), cell_lines)
     }
-
-    # Diagnostics block (per outcome). For Act-32 we have TWO regressions per
-    # outcome (pre / post). We show separate rows for each.
-    diag_block <- character(0)
-    if (!is.null(d)) {
-      for (per_label in c("Pre-Act 32","Post-Act 32")) {
-        per <- if (per_label == "Pre-Act 32") "pre" else "post"
-        diag_block <- c(diag_block,
-          paste0("\\textit{", per_label, "} ",
-                 paste(rep("&", ncols), collapse = " "), " \\\\"))
-        for (field in c("n","r2","wr2")) {
-          label <- switch(field,
-                          n = "\\quad $N$",
-                          r2 = "\\quad $R^2$",
-                          wr2 = "\\quad Within $R^2$",
-                          dep_mean = "\\quad Dep.\\ mean",
-                          dep_sd   = "\\quad Dep.\\ SD")
-          vals <- character(ncols)
-          for (j in seq_along(outcomes)) {
-            row <- d[period == per & outcome == outcomes[j]]
-            if (nrow(row) == 0 || !(field %in% names(row))) { vals[j] <- "---"; next }
-            x <- row[[field]][1]
-            vals[j] <- if (is.na(x)) "---"
-                       else if (field == "n") formatC(as.numeric(x), format = "d", big.mark = ",")
-                       else formatC(x, format = "f", digits = 3)
-          }
-          diag_block <- c(diag_block,
-                          paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
-        }
+    # two regressions per outcome, so diagnostics for each period
+    if (!is.null(diag)) {
+      body <- c(body, "\\midrule")
+      for (period_label in names(periods)) {
+        period_diag <- filter(diag, period == periods[[period_label]])
+        body <- c(body, paste0("\\textit{", period_label, "} ", blank_cells, " \\\\"),
+          paste0("\\quad $N$ & ",          paste(diag_values(period_diag, "n",   outcomes), collapse = " & "), " \\\\"),
+          paste0("\\quad $R^2$ & ",        paste(diag_values(period_diag, "r2",  outcomes), collapse = " & "), " \\\\"),
+          paste0("\\quad Within $R^2$ & ", paste(diag_values(period_diag, "wr2", outcomes), collapse = " & "), " \\\\"))
       }
     }
-
-    col_spec <- paste0("l", strrep("c", ncols))
-    notes_all <- c(notes,
-                    "Cluster-robust standard errors in parentheses.",
-                    "Treated cohorts split at first event year $c < 2012$ (Pre-Act~32) vs $c \\geq 2012$ (Post-Act~32).",
-                    if (length(dropped) > 0) paste0("Cells omitted (no estimable coefficients): ",
-                                                     paste(dropped, collapse = ", "), "."),
-                    "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.")
-    notes_all <- paste(notes_all, collapse = " ")
-
-    tabular <- c(
-      paste0("  \\begin{tabular}{", col_spec, "}"),
-      "    \\toprule",
-      paste0("    ", hdr),
-      "    \\midrule",
-      paste0("    ", body),
-      if (length(diag_block)) "    \\midrule" else character(0),
-      if (length(diag_block)) paste0("    ", diag_block) else character(0),
-      "    \\bottomrule",
-      "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-
-    out <- c(
-      "\\begin{table}[H]",
-      "  \\centering",
-      paste0("  \\caption{", caption, "}"),
-      paste0("  \\label{", label_id, "}"),
-      "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.85}",
-      tabular,
-      "  \\vspace{0.3em}",
-      "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
-      "  \\end{minipage}",
-      "\\end{table}")
-    writeLines(out, file.path(out_dir, out_name))
+    notes <- paste(c("Cluster-robust standard errors in parentheses.",
+                     "Treated cohorts split at first event year $c < 2012$ (Pre-Act~32) vs $c \\geq 2012$ (Post-Act~32).",
+                     if (length(dropped) > 0) paste0("Cells omitted (no estimable coefficients): ", paste(dropped, collapse = ", "), "."),
+                     stars_note), collapse = " ")
+    header <- paste0("Outcome & ", paste(outcome_label(outcomes, short = TRUE), collapse = " & "), " \\\\")
+    writeLines(table_shell(header, body, caption, label_id, notes, ncols, row_spacing = "0.85"),
+               file.path(TABLE_DIR, out_name))
   }
-  write_act32_table(file.path(in_dir, "act32_split_cousub.csv"),
-                     file.path(in_dir, "act32_split_cousub_diag.csv"),
-                     muni_outcomes, cells_main,
-                     "Pre-/post-Act-32 split --- municipality level",
-                     "tab:act32_cousub", "act32_cousub.tex")
+  write_act32_table(file.path(RESULTS_DIR, "act32_split_cousub.csv"),
+                    file.path(RESULTS_DIR, "act32_split_cousub_diag.csv"),
+                    muni_outcomes, cells_main,
+                    "Pre-/post-Act-32 split --- municipality level",
+                    "tab:act32_cousub", "act32_cousub.tex")
 
-  # 8. Pooled Increase headline tables
-  # Each table reports four coefficients of interest per outcome:
-  #   muni-Inc, muni-Dec, SD-Inc, SD-Dec (per-pp or binary, depending on mode).
-  # The block level has 4 outcomes; the cousub level has up to 5; the SD
-  # level has only one rate-setter side (sd-Inc, sd-Dec).
-  write_pooled_table <- function(level_tag, spec_mode, outcomes, caption, label_id,
-                                  out_name, has_two_sides = TRUE,
-                                  notes = character(0)) {
-    res_path <- file.path(in_dir, "pooled_results.csv")
-    diag_path <- file.path(in_dir, "pooled_diagnostics.csv")
-    if (!file.exists(res_path)) {
-      print(sprintf("Skipping %s: pooled_results.csv missing", out_name))
-      return(invisible())
+  # ---- pooled specification: the Inc coefficient for each rate setter, with
+  # fiscal controls and the pooled event study's Wald p in the per-pp version
+  write_pooled_table <- function(spec_mode, outcomes, caption, label_id, out_name, notes = character(0)) {
+    results_path <- file.path(RESULTS_DIR, "pooled_results.csv")
+    diag_path    <- file.path(RESULTS_DIR, "pooled_diagnostics.csv")
+    if (!file.exists(results_path)) {
+      print(sprintf("Skipping %s: pooled_results.csv missing", out_name)); return(invisible())
     }
-    .lev <- level_tag; .mod <- spec_mode
-    a <- fread(res_path)[level == .lev & mode == .mod]
-    d <- if (file.exists(diag_path)) fread(diag_path)[level == .lev & mode == .mod]
-         else data.table()
-    if (nrow(a) == 0) { print(sprintf("No rows for %s/%s", level_tag, mode)); return(invisible()) }
-
-    # Build hierarchical rows: side header -> Inc subrow -> Dec subrow
-    sides <- if (has_two_sides) c("muni","sd") else c("sd")
-    side_labels <- c(muni = "Municipality rate ($\\tau^{M}$)",
-                      sd   = "School district rate ($\\tau^{SD}$)")
-    short <- TRUE
-    hdr_labels <- outcome_label(outcomes, short = short)
+    results <- filter(fread(results_path), level == "cousub", mode == spec_mode)
+    diag <- if (file.exists(diag_path)) filter(fread(diag_path), level == "cousub", mode == spec_mode) else data.table()
+    if (nrow(results) == 0) { print(sprintf("No rows for cousub/%s", spec_mode)); return(invisible()) }
     ncols <- length(outcomes)
-    hdr <- paste0("Outcome & ", paste(hdr_labels, collapse = " & "), " \\\\")
+    side_labels <- c(muni = "Municipality rate ($\\tau^{M}$)", sd = "School district rate ($\\tau^{SD}$)")
+
     body <- character(0)
-    fmt_cell <- function(est, se, p) {
-      if (length(est) == 0 || is.na(est) || !is.finite(est)) return(list("---",""))
-      stars <- sig_stars(p)
-      est_str <- if (nchar(stars) == 0) fmt_est(est) else paste0(fmt_est(est), "\\sym{", stars, "}")
-      list(est_str, fmt_se(se))
-    }
-    for (side_tag in sides) {
+    for (side_name in names(side_labels)) {
+      strings <- vapply(outcomes, function(outcome_name) {
+        coef_pair(filter(results, side == side_name, direction == "Inc", outcome == outcome_name))
+      }, character(2))
       body <- c(body,
-                paste0("\\textbf{", side_labels[[side_tag]], "} ",
-                       paste(rep("&", ncols), collapse = " "), " \\\\"))
-      for (dir in c("Inc")) {
-        est_row <- character(ncols); se_row <- character(ncols)
-        for (j in seq_along(outcomes)) {
-          r <- a[side == side_tag & direction == dir & outcome == outcomes[j]]
-          if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
-          v <- fmt_cell(r$est[1], r$se[1], r$p[1])
-          est_row[j] <- v[[1]]; se_row[j] <- v[[2]]
-        }
-        pretty_dir <- if (dir == "Inc") "$\\Delta\\tau > 0$ (Inc)" else "$\\Delta\\tau < 0$ (Dec)"
-        body <- c(body,
-                  paste0("\\quad ", pretty_dir, " & ",
-                         paste(est_row, collapse = " & "), " \\\\"),
-                  paste0("                       & ",
-                         paste(se_row,  collapse = " & "), " \\\\"))
-      }
+        paste0("\\textbf{", side_labels[[side_name]], "} ", paste(rep("&", ncols), collapse = " "), " \\\\"),
+        paste0("\\quad $\\Delta\\tau > 0$ (Inc) & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+        paste0("                       & ", paste(strings[2, ], collapse = " & "), " \\\\"))
     }
-    # Fiscal-control coefficients (per-pp table only, from pooled_full_table.csv)
-    ctrl_block <- character(0)
     if (spec_mode == "per_pp") {
-      pc <- read_controls_long(file.path(in_dir, "pooled_full_table.csv"),
-                               term_filter = names(muni_ctrl_labels))
-      if (!is.null(pc) && nrow(pc) > 0) {
-        mcp <- paste0("\\multicolumn{", ncols + 1, "}{l}")
-        ctrl_block <- c("\\midrule", paste0(mcp, "{\\textit{Fiscal controls}} \\\\"))
-        for (tm in unique(pc$term)) {
-          est_vec <- character(ncols); se_vec <- character(ncols); any_present <- FALSE
-          for (j in seq_along(outcomes)) {
-            r <- pc[outcome == outcomes[j] & term == tm]
-            if (nrow(r) == 0 || is.na(r$est[1])) { est_vec[j] <- "---"; se_vec[j] <- ""; next }
-            any_present <- TRUE; stars <- sig_stars(r$p[1])
-            est_vec[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-            se_vec[j] <- fmt_se(r$se[1])
-          }
-          if (!any_present) next
-          pretty <- if (tm %in% names(muni_ctrl_labels)) muni_ctrl_labels[[tm]] else gsub("_", "\\\\_", tm)
-          ctrl_block <- c(ctrl_block,
-                          paste0(pretty, " & ", paste(est_vec, collapse = " & "), " \\\\"),
-                          paste0("                  & ", paste(se_vec, collapse = " & "), " \\\\"))
-        }
+      controls <- read_controls_long(file.path(RESULTS_DIR, "pooled_full_table.csv"),
+                                     term_filter = names(muni_ctrl_labels))
+      if (!is.null(controls) && nrow(controls) > 0)
+        body <- c(body, "\\midrule", paste0("\\multicolumn{", ncols + 1, "}{l}{\\textit{Fiscal controls}} \\\\"),
+                  control_rows(controls, outcomes, muni_ctrl_labels))
+    }
+    if (nrow(diag) > 0) {
+      body <- c(body, "\\midrule",
+        paste0("$N$ & ",          paste(diag_values(diag, "n",   outcomes), collapse = " & "), " \\\\"),
+        paste0("$R^2$ & ",        paste(diag_values(diag, "r2",  outcomes), collapse = " & "), " \\\\"),
+        paste0("Within $R^2$ & ", paste(diag_values(diag, "wr2", outcomes), collapse = " & "), " \\\\"))
+      es_summary_path <- file.path(RESULTS_DIR, "pooled_es_cousub_att.csv")
+      if (spec_mode == "per_pp" && file.exists(es_summary_path)) {
+        es_summary <- filter(fread(es_summary_path), direction == "Inc")
+        wald_values <- vapply(outcomes, function(outcome_name) {
+          row <- filter(es_summary, outcome == outcome_name)
+          if (nrow(row) == 0 || is.na(row$wald_pre_p[1])) "---" else formatC(row$wald_pre_p[1], format = "f", digits = 3)
+        }, character(1))
+        body <- c(body, paste0("Joint Wald $p$ (leads) & ", paste(wald_values, collapse = " & "), " \\\\"))
       }
     }
-
-    # Diagnostics: per-outcome N, R2, dep mean (+ pooled-ES joint Wald p, per-pp only)
-    diag_block <- character(0)
-    if (nrow(d) > 0) {
-      for (field in c("n","r2","wr2")) {
-        label <- switch(field,
-                        n = "$N$", r2 = "$R^2$",
-                        wr2 = "Within $R^2$",
-                        dep_mean = "Dep.\\ mean")
-        vals <- character(ncols)
-        for (j in seq_along(outcomes)) {
-          row <- d[outcome == outcomes[j]]
-          if (nrow(row) == 0 || !(field %in% names(row))) { vals[j] <- "---"; next }
-          x <- row[[field]][1]
-          vals[j] <- if (is.na(x)) "---"
-                     else if (field == "n") formatC(as.numeric(x), format = "d", big.mark = ",")
-                     else formatC(x, format = "f", digits = 3)
-        }
-        diag_block <- c(diag_block,
-                        paste0(label, " & ", paste(vals, collapse = " & "), " \\\\"))
-      }
-      if (spec_mode == "per_pp") {
-        pw_path <- file.path(in_dir, "pooled_es_cousub_att.csv")
-        if (file.exists(pw_path)) {
-          pw <- fread(pw_path)[direction == "Inc"]
-          wv <- character(ncols)
-          for (j in seq_along(outcomes)) {
-            r <- pw[outcome == outcomes[j]]
-            wv[j] <- if (nrow(r) == 0 || is.na(r$wald_pre_p[1])) "---"
-                     else formatC(r$wald_pre_p[1], format = "f", digits = 3)
-          }
-          diag_block <- c(diag_block,
-            paste0("Joint Wald $p$ (leads) & ", paste(wv, collapse = " & "), " \\\\"))
-        }
-      }
-    }
-
-    col_spec <- paste0("l", strrep("c", ncols))
     notes_all <- paste(c(notes,
-      paste0("Cluster-robust standard errors in parentheses.",
-             if (has_two_sides) " Each regression includes both rate-setters' direction-pooled Inc treatments jointly; the reported coefficients are $\\beta^M_{\\text{Inc}}$ and $\\beta^{SD}_{\\text{Inc}}$." else ""),
-      "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
-      collapse = " ")
-    tabular <- c(
-      paste0("  \\begin{tabular}{", col_spec, "}"),
-      "    \\toprule",
-      paste0("    ", hdr),
-      "    \\midrule",
-      paste0("    ", body),
-      if (length(ctrl_block)) paste0("    ", ctrl_block) else character(0),
-      if (length(diag_block)) "    \\midrule" else character(0),
-      if (length(diag_block)) paste0("    ", diag_block) else character(0),
-      "    \\bottomrule",
-      "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c(
-      "\\begin{table}[H]",
-      "  \\centering",
-      paste0("  \\caption{", caption, "}"),
-      paste0("  \\label{", label_id, "}"),
-      "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.85}",
-      tabular,
-      "  \\vspace{0.3em}",
-      "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
-      "  \\end{minipage}",
-      "\\end{table}")
-    writeLines(out, file.path(out_dir, out_name))
+      "Cluster-robust standard errors in parentheses. Each regression includes both rate-setters' direction-pooled Inc treatments jointly; the reported coefficients are $\\beta^M_{\\text{Inc}}$ and $\\beta^{SD}_{\\text{Inc}}$.",
+      stars_note), collapse = " ")
+    header <- paste0("Outcome & ", paste(outcome_label(outcomes, short = TRUE), collapse = " & "), " \\\\")
+    writeLines(table_shell(header, body, caption, label_id, notes_all, ncols, row_spacing = "0.85"),
+               file.path(TABLE_DIR, out_name))
   }
-
-  # Per-pp pooled tables
-  write_pooled_table("cousub", "per_pp", muni_outcomes,
+  write_pooled_table("per_pp", muni_outcomes,
                      "Pooled Increase headline --- municipality level (per pp)",
                      "tab:pooled_per_pp_cousub", "pooled_per_pp_cousub.tex")
-
-  # Binary pooled tables
-  write_pooled_table("cousub", "binary", muni_outcomes,
+  write_pooled_table("binary", muni_outcomes,
                      "Pooled Increase headline --- municipality level (binary event)",
                      "tab:pooled_binary_cousub", "pooled_binary_cousub.tex",
-                     notes = c("Binary post-treatment indicator: 1 in the event year and after."))
+                     notes = "Binary post-treatment indicator: 1 in the event year and after.")
 
-  # 9. ES summary tables (post-mean / pre-mean ATT with Wald pre-trend p)
-  # These tables sit immediately before each ES figure in the paper so the
-  # reader sees the numerical ATT summary alongside the dynamic-response plot.
-  # Source CSVs are att.csv outputs from each ES script; columns include
-  # att_post, att_post_se, att_pre, att_pre_se, wald_pre_stat, wald_pre_df,
-  # wald_pre_p, n. Tables use the short outcome labels and the publication
-  # theme.
-
+  # ---- event-study summaries: post mean, pre mean and Wald p per row
   fmt_wald_p <- function(p) {
     if (is.null(p) || length(p) == 0 || is.na(p)) return("---")
     if (p < 1e-4) return("$<\\!0.0001$")
     formatC(p, format = "f", digits = 4)
   }
-
-  write_es_summary <- function(att_csv, row_var, row_levels, outcomes,
-                                caption, label_id, out_name,
-                                short_labels = TRUE,
-                                extra_notes = character(0)) {
+  write_es_summary <- function(att_csv, row_col, row_label, row_levels, outcomes,
+                               caption, label_id, out_name, extra_notes = character(0)) {
     if (!file.exists(att_csv) || file.size(att_csv) == 0) {
       print(sprintf("Skipping %s: %s missing", out_name, att_csv)); return(invisible())
     }
-    a <- fread(att_csv)
-    # Harmonize column names across ES variants
-    if ("att_post_per_pp" %in% names(a)) setnames(a, "att_post_per_pp", "att_post", skip_absent = TRUE)
-    if ("att_pre_per_pp"  %in% names(a)) setnames(a, "att_pre_per_pp",  "att_pre",  skip_absent = TRUE)
-
+    es_summary <- fread(att_csv)
+    if ("att_post_per_pp" %in% names(es_summary)) setnames(es_summary, "att_post_per_pp", "att_post")
+    if ("att_pre_per_pp"  %in% names(es_summary)) setnames(es_summary, "att_pre_per_pp",  "att_pre")
     ncols <- length(outcomes)
-    hdr_labels <- outcome_label(outcomes, short = short_labels)
-    hdr <- paste0(row_var$label, " & ",
-                   paste(hdr_labels, collapse = " & "), " \\\\")
+
     body <- character(0)
     dropped <- character(0)
-    for (lvl in row_levels) {
-      post_row <- character(ncols); se_row <- character(ncols)
-      pre_row  <- character(ncols); pre_se_row <- character(ncols)
-      wald_row <- character(ncols)
-      any_present <- FALSE
-      for (j in seq_along(outcomes)) {
-        r <- a[get(row_var$col) == lvl & outcome == outcomes[j]]
-        if (nrow(r) == 0) {
-          post_row[j] <- se_row[j] <- pre_row[j] <- pre_se_row[j] <- wald_row[j] <- "---"
-          next
-        }
-        r <- r[1]
-        any_present <- TRUE
-        post_row[j]   <- fmt_est(r$att_post)
-        se_row[j]     <- fmt_se(r$att_post_se)
-        pre_row[j]    <- fmt_est(r$att_pre)
-        pre_se_row[j] <- fmt_se(r$att_pre_se)
-        wald_row[j]   <- if ("wald_pre_p" %in% names(r))
-                            fmt_wald_p(r$wald_pre_p) else "---"
-      }
-      if (!any_present) { dropped <- c(dropped, lvl); next }
+    for (level_name in row_levels) {
+      strings <- vapply(outcomes, function(outcome_name) {
+        row <- filter(es_summary, .data[[row_col]] == level_name, outcome == outcome_name)
+        if (nrow(row) == 0) return(rep("---", 5))
+        c(fmt_est(row$att_post[1]), fmt_se(row$att_post_se[1]), fmt_est(row$att_pre[1]),
+          fmt_se(row$att_pre_se[1]), if ("wald_pre_p" %in% names(row)) fmt_wald_p(row$wald_pre_p[1]) else "---")
+      }, character(5))
+      if (all(strings[1, ] == "---" & strings[2, ] == "---")) { dropped <- c(dropped, level_name); next }
       body <- c(body,
-                paste0("\\textbf{", lvl, "} (post) & ",
-                       paste(post_row, collapse = " & "), " \\\\"),
-                paste0("                  & ",
-                       paste(se_row,   collapse = " & "), " \\\\"),
-                paste0("\\textbf{", lvl, "} (pre) & ",
-                       paste(pre_row, collapse = " & "), " \\\\"),
-                paste0("                  & ",
-                       paste(pre_se_row, collapse = " & "), " \\\\"),
-                paste0("\\textbf{", lvl, "} Wald $p$ & ",
-                       paste(wald_row, collapse = " & "), " \\\\"))
+        paste0("\\textbf{", level_name, "} (post) & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+        paste0("                  & ", paste(strings[2, ], collapse = " & "), " \\\\"),
+        paste0("\\textbf{", level_name, "} (pre) & ", paste(strings[3, ], collapse = " & "), " \\\\"),
+        paste0("                  & ", paste(strings[4, ], collapse = " & "), " \\\\"),
+        paste0("\\textbf{", level_name, "} Wald $p$ & ", paste(strings[5, ], collapse = " & "), " \\\\"))
     }
-    # Diagnostics block (per outcome; uses Inc-direction model)
+    # a diagnostics row only when the field has a value (ES summaries carry N but not R2)
+    diag_line <- function(field, label_text) {
+      values <- diag_values(es_summary, field, outcomes)
+      if (all(values == "---")) character(0) else paste0(label_text, " & ", paste(values, collapse = " & "), " \\\\")
+    }
     diag_rows <- character(0)
-    if (any(c("r2","wr2","dep_mean","dep_sd","n") %in% names(a))) {
-      pick <- function(field) {
-        out <- character(ncols)
-        for (j in seq_along(outcomes)) {
-          r <- a[outcome == outcomes[j]]
-          if (nrow(r) == 0 || !(field %in% names(r))) { out[j] <- "---"; next }
-          v <- r[[field]][1]
-          if (is.na(v)) { out[j] <- "---"; next }
-          out[j] <- if (field == "n") format(as.integer(v), big.mark = ",")
-                     else formatC(v, format = "f", digits = 3)
-        }
-        out
-      }
-      # Only emit a diagnostic row when the field has at least one real value;
-      # ES att CSVs carry N but not R^2/dep stats, so those rows are dropped.
-      diag_line <- function(field, label_text) {
-        vals <- pick(field)
-        if (all(vals == "---")) return(character(0))
-        paste0(label_text, " & ", paste(vals, collapse = " & "), " \\\\")
-      }
-      diag_rows <- c(
-        paste0("\\multicolumn{", ncols + 1, "}{l}{\\textit{Diagnostics}} \\\\"),
-        diag_line("n",        "$N$             "),
-        diag_line("r2",       "$R^2$           "),
-        diag_line("wr2",      "Within $R^2$    "),
-        diag_line("dep_sd",   "Dep.\\ SD        ")
-      )
-    }
-    body <- c(body, "\\midrule", diag_rows)
-    col_spec <- paste0("l", strrep("c", ncols))
-    notes_all <- paste(c(
+    if (any(c("r2", "wr2", "dep_mean", "dep_sd", "n") %in% names(es_summary)))
+      diag_rows <- c(paste0("\\multicolumn{", ncols + 1, "}{l}{\\textit{Diagnostics}} \\\\"),
+                     diag_line("n",      "$N$             "),
+                     diag_line("r2",     "$R^2$           "),
+                     diag_line("wr2",    "Within $R^2$    "),
+                     diag_line("dep_sd", "Dep.\\ SD        "))
+    notes <- paste(c(
       "Cluster-robust standard errors in parentheses.",
       "Post = mean of $\\beta_k$ for $k = 0, \\ldots, 5$; pre = mean for $k \\leq -2$.",
       "Wald $p$ is the cluster-robust joint test of $H_0\\colon \\beta_k = 0$ across pre-event $k$.",
       extra_notes,
-      if (length(dropped) > 0)
-        paste0("Rows omitted: ", paste(dropped, collapse = ", "), "."),
-      "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
-      collapse = " ")
-    tabular <- c(
-      paste0("  \\begin{tabular}{", col_spec, "}"),
-      "    \\toprule",
-      paste0("    ", hdr),
-      "    \\midrule",
-      paste0("    ", body),
-      "    \\bottomrule",
-      "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c(
-      "\\begin{table}[H]",
-      "  \\centering",
-      paste0("  \\caption{", caption, "}"),
-      paste0("  \\label{", label_id, "}"),
-      "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.85}",
-      tabular,
-      "  \\vspace{0.3em}",
-      "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} ", notes_all),
-      "  \\end{minipage}",
-      "\\end{table}")
-    writeLines(out, file.path(out_dir, out_name))
+      if (length(dropped) > 0) paste0("Rows omitted: ", paste(dropped, collapse = ", "), "."),
+      stars_note), collapse = " ")
+    header <- paste0(row_label, " & ", paste(outcome_label(outcomes, short = TRUE), collapse = " & "), " \\\\")
+    writeLines(table_shell(header, c(body, "\\midrule", diag_rows), caption, label_id, notes, ncols,
+                           row_spacing = "0.85"),
+               file.path(TABLE_DIR, out_name))
   }
-
-  # Pooled ES summary tables: rows = direction (Inc, Dec)
-  direction_row <- list(col = "direction", label = "Direction")
-
   write_es_summary(
-    att_csv = file.path(in_dir, "pooled_es_cousub_att.csv"),
-    row_var = direction_row, row_levels = c("Inc"),
-    outcomes = muni_outcomes,
+    att_csv = file.path(RESULTS_DIR, "pooled_es_cousub_att.csv"),
+    row_col = "direction", row_label = "Direction", row_levels = "Inc", outcomes = muni_outcomes,
     caption  = "Pooled realized-dose event study --- municipality level.",
-    label_id = "tab:es_pooled_cousub",
-    out_name = "es_pooled_cousub_summary.tex")
-
-  # Block per-cell ES summary
-  cell_row <- list(col = "cell", label = "Cell")
-
-  # Cousub per-cell ES summary -- backs the decomposition-diagnostic prose; the
-  # joint pre-trend Wald p row is the source of the numbers cited in section 5.2.
+    label_id = "tab:es_pooled_cousub", out_name = "es_pooled_cousub_summary.tex")
   write_es_summary(
-    att_csv = file.path(in_dir, "headline_es_att.csv"),
-    row_var = cell_row, row_levels = cells_main,
-    outcomes = muni_outcomes,
+    att_csv = file.path(RESULTS_DIR, "headline_es_att.csv"),
+    row_col = "cell", row_label = "Cell", row_levels = cells_main, outcomes = muni_outcomes,
     caption  = "Realized-dose event study by binding-state cell --- municipality level.",
-    label_id = "tab:es_realized_cousub",
-    out_name = "es_realized_cousub.tex",
-    extra_notes = c("Per-cell decomposition of the muni-level realized-dose ES; each cell is run as a separate regression on \\{NC, cell\\}. Inc-bind is the load-bearing cell, with clean pre-trends on the three count outcomes."))
+    label_id = "tab:es_realized_cousub", out_name = "es_realized_cousub.tex",
+    extra_notes = "Per-cell decomposition of the muni-level realized-dose ES; each cell is run as a separate regression on \\{NC, cell\\}. Inc-bind is the load-bearing cell, with clean pre-trends on the three count outcomes.")
 
-  # Appendix A: full-spec tables (cells + fiscal controls, same regression)
-  ## A.1 Municipality-level (cousub): muni + SD resident-rate cells in ONE table,
-  ## sharing the muni-AFR fiscal controls (both sides from the same joint regression).
+  # ---- the headline regression with fiscal controls, appendix version
   write_merged_full_spec_table(
-    coef_csv = file.path(in_dir, "headline_full_table.csv"),
-    diag_csv = file.path(in_dir, "headline_diagnostics.csv"),
-    ctrl_csv = file.path(in_dir, "headline_full_table.csv"),
-    ctrl_labels = muni_ctrl_labels,
-    outcomes = muni_outcomes, cells = cells_main,
+    coef_csv = file.path(RESULTS_DIR, "headline_full_table.csv"),
+    diag_csv = file.path(RESULTS_DIR, "headline_diagnostics.csv"),
+    ctrl_csv = file.path(RESULTS_DIR, "headline_full_table.csv"),
+    ctrl_labels = muni_ctrl_labels, outcomes = muni_outcomes, cells = cells_main,
     caption  = "Municipality-level dose-response: muni and SD resident-rate cells with fiscal controls (full spec)",
-    label_id = "tab:app_full_muni_cell_results",
-    out_name = "app_full_muni_cell_results.tex",
-    notes    = muni_notes
-  )
+    label_id = "tab:app_full_muni_cell_results", out_name = "app_full_muni_cell_results.tex",
+    notes = muni_notes)
 
-  ## Pre-trend battery table: four tests per group x outcome.
-  bat_path <- file.path(in_dir, "pretrend_battery.csv")
-  if (file.exists(bat_path)) {
-    bat <- fread(bat_path)
-    bgl <- c("Inc-bind" = "Inc-bind", "Inc-becomes" = "Inc-becomes",
-             "Inc-nobind" = "Inc-nobind", "Pooled-Inc" = "Pooled Increase")
-    ncols <- length(muni_outcomes)
-    fmt3 <- function(x) formatC(x, format = "f", digits = 3)
-    pick_b <- function(cl, field, fmt = fmt3) {
-      out <- character(ncols)
-      for (j in seq_along(muni_outcomes)) {
-        r <- bat[cell == cl & outcome == muni_outcomes[j]]
-        out[j] <- if (nrow(r) == 0 || is.na(r[[field]][1])) "---"
-                  else if (is.logical(r[[field]][1])) ifelse(r[[field]][1], "yes", "no")
-                  else fmt(r[[field]][1])
-      }
-      out
+  ncols <- length(muni_outcomes)
+  outcome_header <- function(first) paste0(first, " & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
+  fmt_3dp <- function(value) formatC(value, format = "f", digits = 3)
+
+  # ---- pre-trend battery: the tests per group x outcome
+  battery_path <- file.path(RESULTS_DIR, "pretrend_battery.csv")
+  if (file.exists(battery_path)) {
+    battery <- fread(battery_path)
+    group_labels <- c("Inc-bind" = "Inc-bind", "Inc-becomes" = "Inc-becomes",
+                      "Inc-nobind" = "Inc-nobind", "Pooled-Inc" = "Pooled Increase")
+    battery_values <- function(group_name, field, fmt = fmt_3dp) {
+      vapply(muni_outcomes, function(outcome_name) {
+        row <- filter(battery, cell == group_name, outcome == outcome_name)
+        if (nrow(row) == 0 || is.na(row[[field]][1])) "---"
+        else if (is.logical(row[[field]][1])) ifelse(row[[field]][1], "yes", "no")
+        else fmt(row[[field]][1])
+      }, character(1))
     }
     body <- character(0)
-    for (cl in names(bgl)) {
-      if (!nrow(bat[cell == cl])) next
-      nt <- bat[cell == cl, n_treated][1]
+    for (group_name in names(group_labels)) {
+      if (!any(battery$cell == group_name)) next
       body <- c(body,
-        paste0("\\textbf{", bgl[[cl]], "} (", nt, " munis) & ",
-               paste(rep("", ncols), collapse = " & "), " \\\\"),
-        paste0("\\quad Joint Wald $p$ (leads) & ", paste(pick_b(cl, "wald_joint_p"), collapse = " & "), " \\\\"),
+        paste0("\\textbf{", group_labels[[group_name]], "} (", battery$n_treated[battery$cell == group_name][1],
+               " munis) & ", paste(rep("", ncols), collapse = " & "), " \\\\"),
+        paste0("\\quad Joint Wald $p$ (leads) & ", paste(battery_values(group_name, "wald_joint_p"), collapse = " & "), " \\\\"),
         paste0("\\quad Leads significant at 5\\% (of 4) & ",
-               paste(pick_b(cl, "n_leads_sig5", fmt = function(x) sprintf("%d", as.integer(x))), collapse = " & "), " \\\\"),
-        paste0("\\quad Linear pre-slope $p$ & ", paste(pick_b(cl, "lin_slope_p"), collapse = " & "), " \\\\"),
-        paste0("\\quad Robust clean & ", paste(pick_b(cl, "robust_clean"), collapse = " & "), " \\\\"))
+               paste(battery_values(group_name, "n_leads_sig5", function(x) sprintf("%d", as.integer(x))), collapse = " & "), " \\\\"),
+        paste0("\\quad Linear pre-slope $p$ & ", paste(battery_values(group_name, "lin_slope_p"), collapse = " & "), " \\\\"),
+        paste0("\\quad Robust clean & ", paste(battery_values(group_name, "robust_clean"), collapse = " & "), " \\\\"))
     }
-    hdr <- paste0("Cell & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
-    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
-      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
-      "    \\bottomrule", "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[H]", "  \\centering",
-      "  \\caption{Pre-trend battery: three tests per binding cell}",
-      "  \\label{tab:pretrend_battery}", "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
-      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} All three tests are run on the realized-dose leads, and larger $p$ means no detectable pre-trend. ",
+    writeLines(table_shell(outcome_header("Cell"), body,
+      "Pre-trend battery: three tests per binding cell", "tab:pretrend_battery",
+      paste0("All three tests are run on the realized-dose leads, and larger $p$ means no detectable pre-trend. ",
              "Leads significant counts individually significant pre-event coefficients. Robust clean requires no significant lead and a flat slope. ",
              "The joint Wald over-rejects on thin cohorts and does not drive the verdict. The pooled row is shown for comparison."),
-      "  \\end{minipage}", "\\end{table}")
-    writeLines(out, file.path(out_dir, "pretrend_battery.tex"))
+      ncols), file.path(TABLE_DIR, "pretrend_battery.tex"))
   }
 
-  ## Dose-permutation randomization-inference table.
-  pi_path <- file.path(in_dir, "perm_inference_summary.csv")
-  if (file.exists(pi_path)) {
-    ps <- fread(pi_path)
-    body <- character(0)
-    for (i in seq_len(nrow(ps))) {
-      body <- c(body, paste0(ps$cell[i], " & ",
-        formatC(ps$beta_true[i], format = "f", digits = 2), " & ",
-        formatC(ps$perm_mean[i], format = "f", digits = 2), " & ",
-        formatC(ps$perm_p[i], format = "f", digits = 3), " \\\\"))
-    }
-    out <- c("\\begin{table}[H]", "  \\centering",
+  # ---- dose-permutation inference (its model section is parked, so this
+  # rebuilds from the last saved summary, if any)
+  permutation_path <- file.path(RESULTS_DIR, "perm_inference_summary.csv")
+  if (file.exists(permutation_path)) {
+    permutation <- fread(permutation_path)
+    body <- sprintf("%s & %s & %s & %s \\\\", permutation$cell,
+                    formatC(permutation$beta_true, format = "f", digits = 2),
+                    formatC(permutation$perm_mean, format = "f", digits = 2),
+                    formatC(permutation$perm_p, format = "f", digits = 3))
+    writeLines(c("\\begin{table}[H]", "  \\centering",
       "  \\caption{Dose-permutation randomization inference (log live-and-work)}",
       "  \\label{tab:perm_inference}", "  \\footnotesize",
       "  \\begin{tabular}{lccc}", "    \\toprule",
-      paste0("    Cell & True $\\beta$ & Permutation mean & Permutation $p$ \\\\"),
+      "    Cell & True $\\beta$ & Permutation mean & Permutation $p$ \\\\",
       "    \\midrule", paste0("    ", body), "    \\bottomrule", "  \\end{tabular}",
       "  \\vspace{0.3em}", "  \\begin{minipage}{0.9\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} ", ps$n_perm[1],
+      paste0("    \\footnotesize \\textit{Notes:} ", permutation$n_perm[1],
              " permutations of the realized dose magnitudes across treated municipalities, holding each municipality's event timing and binding cell fixed. ",
              "Permutation $p$ is the share of permuted coefficients at least as large in absolute value as the true one; small values mean the size of the increase, not the identity of the municipality, drives the estimate."),
-      "  \\end{minipage}", "\\end{table}")
-    writeLines(out, file.path(out_dir, "perm_inference.tex"))
+      "  \\end{minipage}", "\\end{table}"), file.path(TABLE_DIR, "perm_inference.tex"))
   }
 
-  ## Fake-timing placebo table: one panel per placebo shift (3 / 4 / 5 years
-  ## early), cells x outcomes within each panel.
-  ft_path <- file.path(in_dir, "fake_timing_placebo.csv")
-  if (file.exists(ft_path)) {
-    ft <- fread(ft_path)
-    if (!"shift" %in% names(ft)) ft[, shift := 4L]
-    ncols <- length(muni_outcomes)
-    mc <- paste0("\\multicolumn{", ncols + 1, "}{l}")
+  # ---- fake-timing placebo: one panel per shift (3, 4, 5 years early)
+  fake_path <- file.path(RESULTS_DIR, "fake_timing_placebo.csv")
+  if (file.exists(fake_path)) {
+    placebo <- fread(fake_path)
+    if (!"shift" %in% names(placebo)) placebo[, shift := 4L]
     body <- character(0)
-    for (sh in sort(unique(ft$shift))) {
-      fs <- ft[shift == sh]
-      nt <- fs$n_treated[1]
-      body <- c(body,
-        paste0(mc, "{\\textit{Placebo event at $c-", sh, "$ (", nt,
-               " eligible munis)}} \\\\"))
-      for (cl in cells_main) {
-        est_row <- character(ncols); se_row <- character(ncols); any_p <- FALSE
-        for (j in seq_along(muni_outcomes)) {
-          r <- fs[cell == cl & outcome == muni_outcomes[j]]
-          if (nrow(r) == 0 || is.na(r$est[1])) { est_row[j] <- "---"; se_row[j] <- ""; next }
-          any_p <- TRUE
-          stars <- sig_stars(r$p[1])
-          est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-          se_row[j]  <- fmt_se(r$se[1])
-        }
-        if (!any_p) next
+    for (shift_years in sort(unique(placebo$shift))) {
+      shift_rows <- filter(placebo, shift == shift_years)
+      body <- c(body, paste0("\\multicolumn{", ncols + 1, "}{l}{\\textit{Placebo event at $c-", shift_years, "$ (",
+                             shift_rows$n_treated[1], " eligible munis)}} \\\\"))
+      for (cell_name in cells_main) {
+        strings <- vapply(muni_outcomes, function(outcome_name) {
+          row <- filter(shift_rows, cell == cell_name, outcome == outcome_name)
+          if (nrow(row) == 0 || is.na(row$est[1])) c("---", "") else c(fmt_coef(row$est[1], row$p[1]), fmt_se(row$se[1]))
+        }, character(2))
+        if (all(strings[1, ] == "---")) next
         body <- c(body,
-                  paste0("\\quad ", cl, " & ", paste(est_row, collapse = " & "), " \\\\"),
-                  paste0("       & ", paste(se_row, collapse = " & "), " \\\\"))
+                  paste0("\\quad ", cell_name, " & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+                  paste0("       & ", paste(strings[2, ], collapse = " & "), " \\\\"))
       }
-      if (sh != max(ft$shift)) body <- c(body, "\\midrule")
+      if (shift_years != max(placebo$shift)) body <- c(body, "\\midrule")
     }
-    hdr <- paste0("Cell & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
-    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
-      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
-      "    \\bottomrule", "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[H]", "  \\centering",
-      "  \\caption{Fake-timing placebos: events shifted 3--5 years early, pre-event data only}",
-      "  \\label{tab:fake_timing}", "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
-      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} Each treated municipality is assigned a placebo event 3, 4 or 5 years before its real one and only data preceding the real event enter, so every coefficient should be null. ",
+    writeLines(table_shell(outcome_header("Cell"), body,
+      "Fake-timing placebos: events shifted 3--5 years early, pre-event data only", "tab:fake_timing",
+      paste0("Each treated municipality is assigned a placebo event 3, 4 or 5 years before its real one and only data preceding the real event enter, so every coefficient should be null. ",
              "The three panels share municipalities and overlapping windows, so they are consistency checks rather than independent tests, and eligibility varies with the shift. SE in parens. ",
-             "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
-      "  \\end{minipage}", "\\end{table}")
-    writeLines(out, file.path(out_dir, "fake_timing.tex"))
+             stars_note),
+      ncols), file.path(TABLE_DIR, "fake_timing.tex"))
   }
 
-  ## dCDH results table: per-group effect at +5 (level-at-realized-dose scale)
-  ## with the joint placebo p as the per-group diagnostic. Rows = groups,
-  ## columns = outcomes; matches the main-table layout conventions.
-  dcdh_path <- file.path(in_dir, "dcdh_bycell.csv")
+  # ---- dCDH: effect at k = +5 per group, with the per-pp ATE, joint placebo p,
+  # N and switchers. Stars use a normal approximation to est/se.
+  dcdh_path <- file.path(RESULTS_DIR, "dcdh_bycell.csv")
   if (file.exists(dcdh_path)) {
-    dc <- fread(dcdh_path)
-    glab <- c(pooled = "Pooled Increase", incbind = "Inc-bind", incbecomes = "Inc-becomes")
-    # Dep. mean per group x outcome, computed from the same panel subset the
-    # dCDH estimator saw ({group's cells + NC}, complete cases on
-    # outcome + controls). Needs the headline env (adds ~40s to this stage).
-    dcdh_groups <- list(pooled = c("Inc-bind", "Inc-becomes", "Inc-nobind"),
-                        incbind = "Inc-bind", incbecomes = "Inc-becomes")
-    env_dm <- build_headline_env()
-    pan_dm <- env_dm$panel[as.character(cell_muni) %in%
-                             c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind") &
-                             !is.na(resident_eit)]
-    dep_means <- rbindlist(lapply(names(dcdh_groups), function(gn) {
-      pg <- pan_dm[as.character(cell_muni) %in% c("NC", dcdh_groups[[gn]])]
-      rbindlist(lapply(muni_outcomes, function(o) {
-        cols <- c("muni", "year", "resident_eit", o, env_dm$ctrls)
-        d <- pg[, ..cols][complete.cases(pg[, ..cols])]
-        data.table(group = gn, outcome = o, dep_mean = mean(d[[o]], na.rm = TRUE))
-      }))
-    }))
-    ncols <- length(muni_outcomes)
+    dcdh_k5 <- filter(fread(dcdh_path), rel == 5)
+    group_labels <- c(pooled = "Pooled Increase", incbind = "Inc-bind", incbecomes = "Inc-becomes")
+    dcdh_values <- function(group_name, field, fmt) {
+      vapply(muni_outcomes, function(outcome_name) {
+        row <- filter(dcdh_k5, group == group_name, outcome == outcome_name)
+        if (nrow(row) == 0 || !(field %in% names(row)) || is.na(row[[field]][1])) "---" else fmt(row[[field]][1])
+      }, character(1))
+    }
+    fmt_count <- function(value) format(as.integer(value), big.mark = ",")
     body <- character(0)
-    pick_dc <- function(gn, field, fmt) {
-      out <- character(ncols)
-      for (j in seq_along(muni_outcomes)) {
-        r <- dc[group == gn & outcome == muni_outcomes[j] & rel == 5]
-        out[j] <- if (nrow(r) == 0 || !(field %in% names(r)) || is.na(r[[field]][1])) "---"
-                  else fmt(r[[field]][1])
-      }
-      out
-    }
-    fmt3 <- function(x) formatC(x, format = "f", digits = 3)
-    fmtn <- function(x) format(as.integer(x), big.mark = ",")
-    for (gn in names(glab)) {
-      est_row <- character(ncols); se_row <- character(ncols)
-      for (j in seq_along(muni_outcomes)) {
-        r <- dc[group == gn & outcome == muni_outcomes[j] & rel == 5]
-        if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
-        pz <- 2 * pnorm(-abs(r$est[1] / r$se[1]))
-        stars <- sig_stars(pz)
-        est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-        se_row[j]  <- fmt_se(r$se[1])
-      }
+    for (group_name in names(group_labels)) {
+      strings <- vapply(muni_outcomes, function(outcome_name) {
+        row <- filter(dcdh_k5, group == group_name, outcome == outcome_name)
+        if (nrow(row) == 0) c("---", "")
+        else c(fmt_coef(row$est[1], 2 * pnorm(-abs(row$est[1] / row$se[1]))), fmt_se(row$se[1]))
+      }, character(2))
       body <- c(body,
-                paste0("\\textbf{", glab[[gn]], "} & ", paste(est_row, collapse = " & "), " \\\\"),
-                paste0("                  & ", paste(se_row, collapse = " & "), " \\\\"),
-                # Lay explanation: the rows above give the alternative
-                # estimator's total effect of a typical event; this row is
-                # its dose-normalized version -- effect per percentage point
-                # -- so its answer sits on the same per-pp scale as the
-                # headline ACR and the two can be compared directly.
-                paste0("\\quad Avg total effect per pp ($\\approx$ ACR) & ",
-                       paste(pick_dc(gn, "ate", fmt3), collapse = " & "), " \\\\"),
-                paste0("\\quad Joint placebo $p$ & ",
-                       paste(pick_dc(gn, "joint_placebo_p", fmt3), collapse = " & "), " \\\\"),
-                paste0("\\quad $N$ (at $k=+5$) & ",
-                       paste(pick_dc(gn, "n_obs", fmtn), collapse = " & "), " \\\\"),
-                paste0("\\quad Switchers & ",
-                       paste(pick_dc(gn, "n_switchers", fmtn), collapse = " & "), " \\\\"))
+        paste0("\\textbf{", group_labels[[group_name]], "} & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+        paste0("                  & ", paste(strings[2, ], collapse = " & "), " \\\\"),
+        paste0("\\quad Avg total effect per pp ($\\approx$ ACR) & ", paste(dcdh_values(group_name, "ate", fmt_3dp), collapse = " & "), " \\\\"),
+        paste0("\\quad Joint placebo $p$ & ", paste(dcdh_values(group_name, "joint_placebo_p", fmt_3dp), collapse = " & "), " \\\\"),
+        paste0("\\quad $N$ (at $k=+5$) & ", paste(dcdh_values(group_name, "n_obs", fmt_count), collapse = " & "), " \\\\"),
+        paste0("\\quad Switchers & ", paste(dcdh_values(group_name, "n_switchers", fmt_count), collapse = " & "), " \\\\"))
     }
-    hdr <- paste0("Group & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
-    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
-      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
-      "    \\bottomrule", "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[H]", "  \\centering",
-      "  \\caption{Cumulative effect at $k=+5$ by group, de Chaisemartin and D'Haultf\\oe uille estimator}",
-      "  \\label{tab:dcdh_results}", "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
-      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      paste0("    \\footnotesize \\textit{Notes:} Effects are levels at the realized dose, not per-point slopes, so compare them to the linear ACR times the group's mean dose. The per-pp row is already dose-normalized. Larger placebo $p$ means no detectable pre-trend. ",
+    writeLines(table_shell(outcome_header("Group"), body,
+      "Cumulative effect at $k=+5$ by group, de Chaisemartin and D'Haultf\\oe uille estimator", "tab:dcdh_results",
+      paste0("Effects are levels at the realized dose, not per-point slopes, so compare them to the linear ACR times the group's mean dose. The per-pp row is already dose-normalized. Larger placebo $p$ means no detectable pre-trend. ",
              "Estimated with the \\texttt{continuous} option and analytical standard errors, which the package documentation notes can be liberal, so the standard errors are a lower bound. ",
              "Controls are partialled out within baseline-dose groups, so no control coefficients exist to report. ",
              "$^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$ (normal approximation)."),
-      "  \\end{minipage}", "\\end{table}")
-    writeLines(out, file.path(out_dir, "dcdh_results.tex"))
+      ncols), file.path(TABLE_DIR, "dcdh_results.tex"))
   }
 
-  ## Event-study appendix full tables: lead/lag coefficients by event time,
-  ## one table per group (Inc-bind / Inc-becomes / Inc-nobind / Pooled-Inc).
-  write_es_full_table <- function(dt, group_label, label_id, out_name, diag = NULL) {
-    if (is.null(dt) || nrow(dt) == 0) return(invisible())
-    rels <- sort(unique(dt$rel))
-    ncols <- length(muni_outcomes)
+  # ---- event studies, every coefficient: one table per group, diagnostics underneath
+  write_es_full_table <- function(coefs, group_label, label_id, out_name, diag = NULL) {
+    if (is.null(coefs) || nrow(coefs) == 0) return(invisible())
     body <- character(0)
-    for (k in rels) {
-      est_row <- character(ncols); se_row <- character(ncols); any_present <- FALSE
-      for (j in seq_along(muni_outcomes)) {
-        r <- dt[rel == k & outcome == muni_outcomes[j]]
-        if (nrow(r) == 0) { est_row[j] <- "---"; se_row[j] <- ""; next }
-        any_present <- TRUE
-        stars <- sig_stars(r$p[1])
-        est_row[j] <- if (nchar(stars) == 0) fmt_est(r$est[1]) else paste0(fmt_est(r$est[1]), "\\sym{", stars, "}")
-        se_row[j]  <- fmt_se(r$se[1])
-      }
-      if (!any_present) next
+    for (event_time in sort(unique(coefs$rel))) {
+      strings <- vapply(muni_outcomes, function(outcome_name) {
+        row <- filter(coefs, rel == event_time, outcome == outcome_name)
+        if (nrow(row) == 0) c("---", "") else c(fmt_coef(row$est[1], row$p[1]), fmt_se(row$se[1]))
+      }, character(2))
+      if (!any(coefs$rel == event_time & coefs$outcome %in% muni_outcomes)) next
       body <- c(body,
-                paste0("$k = ", k, "$ & ", paste(est_row, collapse = " & "), " \\\\"),
-                paste0("        & ", paste(se_row, collapse = " & "), " \\\\"))
+                paste0("$k = ", event_time, "$ & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+                paste0("        & ", paste(strings[2, ], collapse = " & "), " \\\\"))
     }
-    # Diagnostics footer: one row per statistic, aligned to the outcome columns.
     if (!is.null(diag) && nrow(diag)) {
-      pick <- function(col) vapply(muni_outcomes, function(o) {
-        r <- diag[outcome == o]
-        if (!nrow(r) || is.null(r[[col]]) || is.na(r[[col]][1])) return("---")
-        v <- r[[col]][1]
-        if (col == "n") formatC(v, format = "d", big.mark = ",")
-        else if (col == "n_munis") formatC(v, format = "d")
-        else sprintf("%.3f", v)
-      }, character(1))
-      dg <- character(0)
-      for (cc in c("n", "n_munis", "r2", "wr2", "wald_pre_p")) {
-        if (!cc %in% names(diag)) next
-        lab <- c(n = "$N$", n_munis = "Municipalities", r2 = "$R^2$",
-                 wr2 = "Within $R^2$", wald_pre_p = "Joint Wald $p$ (leads)")[[cc]]
-        dg <- c(dg, paste0(lab, " & ", paste(pick(cc), collapse = " & "), " \\\\"))
-      }
-      if (length(dg)) body <- c(body, "\\midrule", dg)
+      diag_labels <- c(n = "$N$", n_munis = "Municipalities", r2 = "$R^2$",
+                       wr2 = "Within $R^2$", wald_pre_p = "Joint Wald $p$ (leads)")
+      diag_lines <- unlist(lapply(intersect(names(diag_labels), names(diag)), function(field) {
+        values <- vapply(muni_outcomes, function(outcome_name) {
+          row <- filter(diag, outcome == outcome_name)
+          if (!nrow(row) || is.na(row[[field]][1])) return("---")
+          value <- row[[field]][1]
+          if (field == "n") formatC(value, format = "d", big.mark = ",")
+          else if (field == "n_munis") formatC(value, format = "d")
+          else sprintf("%.3f", value)
+        }, character(1))
+        paste0(diag_labels[[field]], " & ", paste(values, collapse = " & "), " \\\\")
+      }))
+      if (length(diag_lines)) body <- c(body, "\\midrule", diag_lines)
     }
-    hdr <- paste0("Event time & ", paste(outcome_label(muni_outcomes, short = TRUE), collapse = " & "), " \\\\")
-    tabular <- c(paste0("  \\begin{tabular}{l", strrep("c", ncols), "}"),
-      "    \\toprule", paste0("    ", hdr), "    \\midrule", paste0("    ", body),
-      "    \\bottomrule", "  \\end{tabular}")
-    if (ncols >= 3) tabular <- c("  \\resizebox{\\textwidth}{!}{", tabular, "  }")
-    out <- c("\\begin{table}[H]", "  \\centering",
-      paste0("  \\caption{Realized-dose event study, full coefficients: ", group_label, "}"),
-      paste0("  \\label{", label_id, "}"), "  \\footnotesize",
-      "  \\renewcommand{\\arraystretch}{0.9}", tabular,
-      "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
-      "    \\footnotesize \\textit{Notes:} Per-pp realized-dose coefficient at each event time; $k=-1$ omitted as the reference. SE clustered by municipality. Joint Wald tests the four pre-event leads against zero. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.",
-      "  \\end{minipage}", "\\end{table}")
-    writeLines(out, file.path(out_dir, out_name))
+    writeLines(table_shell(outcome_header("Event time"), body,
+      paste0("Realized-dose event study, full coefficients: ", group_label), label_id,
+      "Per-pp realized-dose coefficient at each event time; $k=-1$ omitted as the reference. SE clustered by municipality. Joint Wald tests the four pre-event leads against zero. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.",
+      ncols), file.path(TABLE_DIR, out_name))
   }
-  es_coef_path <- file.path(in_dir, "headline_es_coefs.csv")
-  if (file.exists(es_coef_path)) {
-    ec <- fread(es_coef_path)
-    ea_path <- file.path(in_dir, "headline_es_att.csv")
-    ea <- if (file.exists(ea_path)) fread(ea_path) else NULL
-    dsub <- function(cl) if (is.null(ea)) NULL else ea[cell == cl]
-    write_es_full_table(ec[cell == "Inc-bind"],    "Inc-bind cell",    "tab:es_full_incbind",    "es_full_incbind.tex",    dsub("Inc-bind"))
-    write_es_full_table(ec[cell == "Inc-becomes"], "Inc-becomes cell", "tab:es_full_incbecomes", "es_full_incbecomes.tex", dsub("Inc-becomes"))
-    write_es_full_table(ec[cell == "Inc-nobind"],  "Inc-nobind cell (placebo)", "tab:es_full_incnobind", "es_full_incnobind.tex", dsub("Inc-nobind"))
+  es_coefs_path <- file.path(RESULTS_DIR, "headline_es_coefs.csv")
+  if (file.exists(es_coefs_path)) {
+    es_coefs <- fread(es_coefs_path)
+    es_summary_path <- file.path(RESULTS_DIR, "headline_es_att.csv")
+    es_summary <- if (file.exists(es_summary_path)) fread(es_summary_path) else NULL
+    for (cell_name in cells_main) {
+      write_es_full_table(filter(es_coefs, cell == cell_name),
+                          if (cell_name == "Inc-nobind") "Inc-nobind cell (placebo)" else paste(cell_name, "cell"),
+                          paste0("tab:es_full_", tolower(gsub("-", "", cell_name))),
+                          paste0("es_full_", tolower(gsub("-", "", cell_name)), ".tex"),
+                          if (is.null(es_summary)) NULL else filter(es_summary, cell == cell_name))
+    }
   }
-  pe_coef_path <- file.path(in_dir, "pooled_es_cousub_coefs.csv")
-  if (file.exists(pe_coef_path)) {
-    pe <- fread(pe_coef_path)
-    if ("direction" %in% names(pe)) pe <- pe[direction == "Inc"]
-    pa_path <- file.path(in_dir, "pooled_es_cousub_att.csv")
-    pa <- if (file.exists(pa_path)) fread(pa_path) else NULL
-    if (!is.null(pa) && "direction" %in% names(pa)) pa <- pa[direction == "Inc"]
-    write_es_full_table(pe, "Pooled Increase", "tab:es_full_pooled", "es_full_pooled.tex", pa)
+  pooled_coefs_path <- file.path(RESULTS_DIR, "pooled_es_cousub_coefs.csv")
+  if (file.exists(pooled_coefs_path)) {
+    pooled_coefs <- fread(pooled_coefs_path)
+    if ("direction" %in% names(pooled_coefs)) pooled_coefs <- filter(pooled_coefs, direction == "Inc")
+    pooled_summary_path <- file.path(RESULTS_DIR, "pooled_es_cousub_att.csv")
+    pooled_summary <- if (file.exists(pooled_summary_path)) fread(pooled_summary_path) else NULL
+    if (!is.null(pooled_summary) && "direction" %in% names(pooled_summary))
+      pooled_summary <- filter(pooled_summary, direction == "Inc")
+    write_es_full_table(pooled_coefs, "Pooled Increase", "tab:es_full_pooled", "es_full_pooled.tex", pooled_summary)
   }
 })
 
-# In-text numbers (build_intext_numbers.R) ----
-# Reconcile the manuscript's headline IN-TEXT numbers to the script/CSV that
-# produces each one, in a single table -> data/results/intext_numbers.csv
-# (workbook sheet "in_text_numbers"). In-text numbers are the exhibits most often
-# forgotten and most embarrassing when they don't reconcile, so this makes them a
-# first-class, gate-checked artifact like the tables and figures. Validation gates
-# (stopifnot) halt loudly if a headline number drifts.
-# Run after stage 02. Sources every value from a CSV; nothing is hand-entered
-# except the typical event doses, which the abstract itself states (0.24, 0.41 pp,
-# the cumulative dose at +5 from the dose-trajectory figures).
-# Lay explanation: the numbers quoted in the paper's sentences are the
-# easiest ones to let drift when results change. This section re-derives
-# each from its source CSV, compares it to what the prose claims, and stops
-# the whole build with an error if any headline number no longer matches.
+# In-text numbers ----
+# Every number the prose quotes, re-derived from its CSV into
+# data/results/intext_numbers.csv, with gates that stop the build if one drifts.
+# Only the typical-event doses are typed in: 0.243 and 0.384 pp, the mean
+# cumulative dose at +5 (cell_counts_summary.csv, dose_k5).
 if (RUN_INTEXT_NUMBERS) local({
-  in_dir <- RESULTS_DIR
+  headline <- fread(file.path(RESULTS_DIR, "headline_full_table.csv"))
+  live_work_coef <- function(cell_name, column = "est") {
+    headline[[column]][headline$term == sprintf("treat_cell::%s:dose_stack", cell_name) &
+                         headline$outcome == "log_live_and_work"][1]
+  }
+  inc_bind     <- live_work_coef("Inc-bind")
+  inc_becomes  <- live_work_coef("Inc-becomes")
+  inc_nobind   <- live_work_coef("Inc-nobind")
+  inc_nobind_p <- live_work_coef("Inc-nobind", "p")
+  n_obs <- headline$n[headline$outcome == "log_live_and_work"][1]
+  dose_inc_bind <- 0.243; dose_inc_becomes <- 0.384
 
-  h <- fread(file.path(in_dir, "headline_full_table.csv"))
-  g <- function(cell) h[term == sprintf("treat_cell::%s:dose_stack", cell) &
-                        outcome == "log_live_and_work", est][1]
-  ib  <- g("Inc-bind"); ibec <- g("Inc-becomes"); inb <- g("Inc-nobind")
-  inb_p <- h[term == "treat_cell::Inc-nobind:dose_stack" & outcome == "log_live_and_work", p][1]
-  N <- h[outcome == "log_live_and_work", n][1]
-  dose_ib <- 0.243; dose_ibec <- 0.384  # cumulative dtau at +5 (cell_counts_summary.csv, dose_k5)
+  revenue <- fread(file.path(RESULTS_DIR, "eit_revenue_offset.csv"))
+  splits  <- fread(file.path(RESULTS_DIR, "eit_revenue_split.csv"))
+  # the paper's ~37% offset is the low-baseline (standard-structure) group, not
+  # the overall mean; the "five high-baseline" munis are Inc-bind-hi
+  offset_low  <- splits$offset[splits$split == "cap_1pp" & splits$cell == "Inc-bind-lo"][1]
+  offset_high <- splits$offset[splits$split == "cap_1pp" & splits$cell == "Inc-bind-hi"][1]
 
-  rev <- fread(file.path(in_dir, "eit_revenue_offset.csv"))
-  spl <- fread(file.path(in_dir, "eit_revenue_split.csv"))
-  # the paper's "~36% offset" is the STANDARD-STRUCTURE (low-baseline) subgroup, not the
-  # overall mean offset; the "five high-baseline" munis are Inc-bind-hi.
-  off_lo <- spl[split == "cap_1pp" & cell == "Inc-bind-lo", offset][1]
-  off_hi <- spl[split == "cap_1pp" & cell == "Inc-bind-hi", offset][1]
-
-  pct <- function(b) round(100 * (exp(b) - 1), 1)
-  intext <- data.table(
+  pct <- function(log_change) round(100 * (exp(log_change) - 1), 1)
+  intext <- tibble(
     claim = c(
       "Inc-bind muni-rate effect on log live-and-work (per pp)",
       "Inc-bind full-pp percent change  exp(b)-1",
@@ -1284,10 +688,10 @@ if (RUN_INTEXT_NUMBERS) local({
       "EIT revenue behavioral offset, standard-structure (low-baseline) munis",
       "EIT revenue behavioral offset, high-baseline munis"),
     value = c(
-      round(ib, 3), pct(ib), round(dose_ib * ib, 3), pct(dose_ib * ib),
-      round(ibec, 3), round(dose_ibec * ibec, 3), pct(dose_ibec * ibec),
-      round(inb, 3), round(inb_p, 3), N,
-      round(rev$beta_net[1], 3), round(off_lo, 3), round(off_hi, 3)),
+      round(inc_bind, 3), pct(inc_bind), round(dose_inc_bind * inc_bind, 3), pct(dose_inc_bind * inc_bind),
+      round(inc_becomes, 3), round(dose_inc_becomes * inc_becomes, 3), pct(dose_inc_becomes * inc_becomes),
+      round(inc_nobind, 3), round(inc_nobind_p, 3), n_obs,
+      round(revenue$beta_net[1], 3), round(offset_low, 3), round(offset_high, 3)),
     paper_says = c("-0.537", "-41.6%", "-0.131", "-12.2%",
                    "-0.250", "-0.096", "-9.2%", "null", "> 0.1", "—",
                    "1.04", "~ 37%", "(five high-baseline)"),
@@ -1296,76 +700,73 @@ if (RUN_INTEXT_NUMBERS) local({
                "eit_revenue_offset.csv  (sheet rev_offset)",
                "eit_revenue_split.csv  (sheet rev_split, cap_1pp Inc-bind-lo)",
                "eit_revenue_split.csv  (sheet rev_split, cap_1pp Inc-bind-hi)"))
-  fwrite(intext, file.path(in_dir, "intext_numbers.csv"))
+  fwrite(intext, file.path(RESULTS_DIR, "intext_numbers.csv"))
 
-  # --- validation gates: halt if a headline in-text number drifts -------------
   stopifnot(
-    "Inc-bind log_LW drifted from -0.537"    = abs(ib   - (-0.537)) < 0.01,
-    "Inc-becomes log_LW drifted from -0.250" = abs(ibec - (-0.250)) < 0.01,
-    "Inc-nobind placebo no longer null"      = inb_p > 0.10,
-    "Estimation N changed from 171,451"      = N == 171451L,
-    "EIT revenue net coef drifted from 1.04" = abs(rev$beta_net[1] - 1.041) < 0.02,
-    "Low-baseline offset drifted from ~37%"  = abs(off_lo - 0.374) < 0.03)
+    "Inc-bind log_LW drifted from -0.537"    = abs(inc_bind    - (-0.537)) < 0.01,
+    "Inc-becomes log_LW drifted from -0.250" = abs(inc_becomes - (-0.250)) < 0.01,
+    "Inc-nobind placebo no longer null"      = inc_nobind_p > 0.10,
+    "Estimation N changed from 171,451"      = n_obs == 171451L,
+    "EIT revenue net coef drifted from 1.04" = abs(revenue$beta_net[1] - 1.041) < 0.02,
+    "Low-baseline offset drifted from ~37%"  = abs(offset_low - 0.374) < 0.03)
   print(sprintf("[validation] in-text numbers reconcile: Inc-bind=%.3f (%.0f%%), Inc-becomes=%.3f, placebo p=%.2f, N=%s, rev_net=%.2f, offset_lo=%.0f%%",
-                ib, pct(ib), ibec, inb_p, format(N, big.mark = ","), rev$beta_net[1], 100*off_lo))
+                inc_bind, pct(inc_bind), inc_becomes, inc_nobind_p, format(n_obs, big.mark = ","),
+                revenue$beta_net[1], 100 * offset_low))
 })
 
-
-# Flexible-dose ACR appendix table (from RUN_FLEX_DOSE in 3_models/1_main_models.R) ----
-local({
-  p <- file.path(RESULTS_DIR, "flex_dose_acr.csv")
-  if (!file.exists(p)) return(invisible())
-  x <- fread(p)
-  o4  <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
-  hdr <- c("Share live in muni", "Log(work in own muni)", "Log(in-commuters)", "Log(total jobs)")
-  rowspec <- list(list("pooled", "Inc", "\\textbf{Pooled Increase}"),
-                  list("decomp", "Inc-bind", "\\textbf{Inc-bind}"),
-                  list("decomp", "Inc-becomes", "\\textbf{Inc-becomes}"),
-                  list("decomp", "Inc-nobind", "\\textbf{Inc-nobind}"))
-  modspec <- list(c("acr_linear","se_linear","p_linear","\\quad Linear (headline)"),
-                  c("acr_quad","se_quad","p_quad","\\quad Quadratic"),
-                  c("acr_spline","se_spline","p_spline","\\quad Natural spline"))
-  cell <- function(v, se) if (is.na(v)) "---" else
-    sprintf("%s", fmt_est(v))
-  body <- character(0); dosenote <- character(0)
-  for (rs in rowspec) {
-    sub <- x[spec == rs[[1]] & cell == rs[[2]]]
-    if (!nrow(sub)) next
-    body <- c(body, paste0("    ", rs[[3]], " & & & & \\\\"))
-    for (ms in modspec) {
-      est <- vapply(o4, function(o) { r <- sub[outcome == o]
-        if (!nrow(r) || is.na(r[[ms[1]]][1])) "---" else {
-          st <- sig_stars(r[[ms[3]]][1])
-          paste0(fmt_est(r[[ms[1]]][1]), if (nchar(st)) paste0("\\sym{", st, "}") else "") } },
-        character(1))
-      se  <- vapply(o4, function(o) { r <- sub[outcome == o]
-        if (!nrow(r) || is.na(r[[ms[2]]][1])) "" else fmt_se(r[[ms[2]]][1]) }, character(1))
-      body <- c(body, paste0("    ", ms[4], " & ", paste(est, collapse = " & "), " \\\\"),
-                      paste0("        & ", paste(se, collapse = " & "), " \\\\"))
+# Flexible-dose ACR table ----
+# Appendix A: the ACR under the linear, quadratic and spline dose (from
+# RUN_FLEX_DOSE in 1_main_models.R), with the mean dose per group in the note.
+if (RUN_FLEX_DOSE_TABLE) local({
+  acr_path <- file.path(RESULTS_DIR, "flex_dose_acr.csv")
+  if (!file.exists(acr_path)) return(invisible())
+  acr_table <- fread(acr_path)
+  outcomes <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
+  header   <- c("Share live in muni", "Log(work in own muni)", "Log(in-commuters)", "Log(total jobs)")
+  row_groups <- list(list("pooled", "Inc", "\\textbf{Pooled Increase}"),
+                     list("decomp", "Inc-bind", "\\textbf{Inc-bind}"),
+                     list("decomp", "Inc-becomes", "\\textbf{Inc-becomes}"),
+                     list("decomp", "Inc-nobind", "\\textbf{Inc-nobind}"))
+  # estimate, SE and p columns for each dose specification, and its row label
+  specifications <- list(c("acr_linear", "se_linear", "p_linear", "\\quad Linear (headline)"),
+                         c("acr_quad", "se_quad", "p_quad", "\\quad Quadratic"),
+                         c("acr_spline", "se_spline", "p_spline", "\\quad Natural spline"))
+  body <- character(0); dose_notes <- character(0)
+  for (row_group in row_groups) {
+    group_rows <- filter(acr_table, spec == row_group[[1]], cell == row_group[[2]])
+    if (!nrow(group_rows)) next
+    body <- c(body, paste0("    ", row_group[[3]], " & & & & \\\\"))
+    for (specification in specifications) {
+      strings <- vapply(outcomes, function(outcome_name) {
+        row <- filter(group_rows, outcome == outcome_name)
+        estimate <- if (!nrow(row) || is.na(row[[specification[1]]][1])) "---"
+                    else fmt_coef(row[[specification[1]]][1], row[[specification[3]]][1])
+        se <- if (!nrow(row) || is.na(row[[specification[2]]][1])) "" else fmt_se(row[[specification[2]]][1])
+        c(estimate, se)
+      }, character(2))
+      body <- c(body, paste0("    ", specification[4], " & ", paste(strings[1, ], collapse = " & "), " \\\\"),
+                      paste0("        & ", paste(strings[2, ], collapse = " & "), " \\\\"))
     }
-    dosenote <- c(dosenote, sprintf("%s %.3f (%d munis)",
-                                    gsub("\\\\textbf\\{|\\}", "", rs[[3]]),
-                                    sub$mean_dose[1], sub$n_treated[1]))
+    dose_notes <- c(dose_notes, sprintf("%s %.3f (%d munis)", gsub("\\\\textbf\\{|\\}", "", row_group[[3]]),
+                                        group_rows$mean_dose[1], group_rows$n_treated[1]))
   }
-  nrow_n <- unique(x$n)[1]
-  out <- c("\\begin{table}[H]", "  \\centering",
+  writeLines(c("\\begin{table}[H]", "  \\centering",
     "  \\caption{ACR under three dose specifications}",
     "  \\label{tab:flex_dose_acr}", "  \\footnotesize",
     "  \\renewcommand{\\arraystretch}{0.9}",
     "  \\resizebox{\\textwidth}{!}{",
     "  \\begin{tabular}{lcccc}", "    \\toprule",
-    paste0("    & ", paste(hdr, collapse = " & "), " \\\\"), "    \\midrule",
+    paste0("    & ", paste(header, collapse = " & "), " \\\\"), "    \\midrule",
     body, "    \\bottomrule", "  \\end{tabular}", "  }",
     "  \\vspace{0.3em}", "  \\begin{minipage}{0.95\\textwidth}",
     paste0("    \\footnotesize \\textit{Notes:} Each row is the ACR, the average of ACRT$(d)$ weighted by $\\omega(d)$, which puts one weight on each treated municipality at the dose it took. ",
-           "The linear row is the headline coefficient. Mean doses: ", paste(dosenote, collapse = ", "), ". ",
+           "The linear row is the headline coefficient. Mean doses: ", paste(dose_notes, collapse = ", "), ". ",
            "The quadratic and spline rows enter the dose as the cumulative change rather than the rate level, which is the same as the headline for a linear term but not for a nonlinear one. ",
            "Sample, controls, school-district co-treatment, fixed effects and clustering are the headline's, ",
-           sprintf("$N = %s$. ", formatC(nrow_n, format = "d", big.mark = ",")),
+           sprintf("$N = %s$. ", formatC(unique(acr_table$n)[1], format = "d", big.mark = ",")),
            "Inc-nobind's 14 treated municipalities cannot identify a spline. ",
            "SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$."),
-    "  \\end{minipage}", "\\end{table}")
-  writeLines(out, file.path(TABLE_DIR, "flex_dose_acr.tex"))
+    "  \\end{minipage}", "\\end{table}"), file.path(TABLE_DIR, "flex_dose_acr.tex"))
   message("Saved flex_dose_acr.tex")
 })
 
@@ -1376,9 +777,9 @@ local({
 # Run after stages 02-03 so the ES + robustness CSVs are current. Missing CSVs are
 # skipped, so it is safe to run on a partial pipeline.
 if (RUN_WORKBOOK) local({
-  in_dir  <- RESULTS_DIR
-  out_dir <- file.path(ROOT, "results"); dir.create(out_dir, showWarnings = FALSE)
-  out_xlsx <- file.path(out_dir, "all_results.xlsx")
+  RESULTS_DIR  <- RESULTS_DIR
+  TABLE_DIR <- file.path(ROOT, "results"); dir.create(TABLE_DIR, showWarnings = FALSE)
+  out_xlsx <- file.path(TABLE_DIR, "all_results.xlsx")
 
   # (file in data/results, sheet name <=31 chars, description)
   # Lay explanation: this list is the workbook's table of contents -- every
@@ -1422,7 +823,7 @@ if (RUN_WORKBOOK) local({
   hdr <- createStyle(textDecoration = "bold", fgFill = "#D9E1F2", border = "bottom")
   idx_rows <- list(); added <- 0L
   for (m in manifest) {
-    f <- file.path(in_dir, m[1]); sh <- m[2]; desc <- m[3]
+    f <- file.path(RESULTS_DIR, m[1]); sh <- m[2]; desc <- m[3]
     if (!file.exists(f)) { print(sprintf("skip (missing): %s", m[1])); next }
     dt <- fread(f)
     addWorksheet(wb, sh)
@@ -1445,87 +846,72 @@ if (RUN_WORKBOOK) local({
 })
 
 
-# ---------------------------------------------------------------------------
-# Pooled-specification robustness battery (appendix)
-# ---------------------------------------------------------------------------
-# One table per check, mirroring the decomposition tables in Section 6.
-local({
-  outs <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
-  hdr  <- c("Share live in muni", "Log(work in own muni)",
-            "Log(in-commuters)", "Log(total jobs)")
-  TERM <- "direction_muni::Inc:dose_stack"
+# Pooled robustness tables ----
+# The pooled-specification versions of the Section 6 checks, one table each.
+# Estimates always carry \sym{} (empty when not significant), as before.
+if (RUN_POOLED_ROBUSTNESS_TABLES) local({
+  outcomes <- c("share_live_in", "log_live_and_work", "log_in_commuters", "log_total_jobs")
+  header   <- c("Share live in muni", "Log(work in own muni)", "Log(in-commuters)", "Log(total jobs)")
+  pooled_term <- "direction_muni::Inc:dose_stack"
 
-  wrap <- function(body, cap, lab, notes) c(
-    "\\begin{table}[H]", "  \\centering", sprintf("  \\caption{%s}", cap),
-    sprintf("  \\label{%s}", lab), "  \\small", "  \\resizebox{\\textwidth}{!}{",
+  table_lines <- function(body, caption, label_id, notes) c(
+    "\\begin{table}[H]", "  \\centering", sprintf("  \\caption{%s}", caption),
+    sprintf("  \\label{%s}", label_id), "  \\small", "  \\resizebox{\\textwidth}{!}{",
     "  \\begin{tabular}{lcccc}", "    \\toprule",
-    sprintf("    & %s \\\\", paste(hdr, collapse = " & ")), "    \\midrule",
+    sprintf("    & %s \\\\", paste(header, collapse = " & ")), "    \\midrule",
     body, "    \\bottomrule", "  \\end{tabular}", "  }", "  \\vspace{0.3em}",
     "  \\begin{minipage}{0.95\\textwidth}",
     paste("    \\footnotesize \\textit{Notes:}", notes), "  \\end{minipage}", "\\end{table}")
-
-  # `want` rather than `term`: the data.table has a column called `term`, and a
-  # parameter of the same name shadows it inside the j-expression.
-  rowpair <- function(x, label, want = TERM) {
-    est <- se <- character(length(outs))
-    for (j in seq_along(outs)) {
-      r <- x[outcome == outs[j]][grepl(want, term, fixed = TRUE)]
-      if (!nrow(r)) { est[j] <- "---"; se[j] <- ""; next }
-      est[j] <- paste0(fmt_est(r$est[1]), "\\sym{", sig_stars(r$p[1]), "}")
-      se[j]  <- fmt_se(r$se[1])
-    }
-    c(sprintf("    %s & %s \\\\", label, paste(est, collapse = " & ")),
-      sprintf("     & %s \\\\", paste(se, collapse = " & ")))
+  # estimate and SE rows for the pooled Inc term
+  term_rows <- function(results, label, wanted_term = pooled_term) {
+    strings <- vapply(outcomes, function(outcome_name) {
+      row <- filter(results, outcome == outcome_name, grepl(wanted_term, term, fixed = TRUE))
+      if (!nrow(row)) c("---", "")
+      else c(paste0(fmt_est(row$est[1]), "\\sym{", sig_stars(row$p[1]), "}"), fmt_se(row$se[1]))
+    }, character(2))
+    c(sprintf("    %s & %s \\\\", label, paste(strings[1, ], collapse = " & ")),
+      sprintf("     & %s \\\\", paste(strings[2, ], collapse = " & ")))
   }
 
-  ## Act 32
-  f <- file.path(RESULTS_DIR, "pooled_act32.csv")
-  if (file.exists(f)) {
-    d <- fread(f); body <- character(0)
-    for (pd in c("pre", "post")) {
-      x <- d[period == pd]; if (!nrow(x)) next
-      nt <- x$n_treated[1]
-      body <- c(body, rowpair(x, sprintf("%s-Act 32 cohorts (%d munis)",
-                                          tools::toTitleCase(pd), nt)))
-    }
-    writeLines(wrap(body,
-      "Pooled Increase effect, split at the Act 32 enforcement break",
-      "tab:pooled_act32",
+  act32_path <- file.path(RESULTS_DIR, "pooled_act32.csv")
+  if (file.exists(act32_path)) {
+    act32 <- fread(act32_path)
+    body <- unlist(lapply(c("pre", "post"), function(period_name) {
+      period_rows <- filter(act32, period == period_name)
+      if (!nrow(period_rows)) return(NULL)
+      term_rows(period_rows, sprintf("%s-Act 32 cohorts (%d munis)", tools::toTitleCase(period_name),
+                                     period_rows$n_treated[1]))
+    }))
+    writeLines(table_lines(body, "Pooled Increase effect, split at the Act 32 enforcement break", "tab:pooled_act32",
       paste("Cohorts split at Act 32's effective year, 2012. Specification otherwise",
             "unchanged. SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.")),
       file.path(TABLE_DIR, "pooled_act32.tex"))
     message("Saved tables/pooled_act32.tex")
   }
 
-  ## Act 47
-  f <- file.path(RESULTS_DIR, "pooled_act47.csv")
-  if (file.exists(f)) {
-    d <- fread(f); body <- character(0)
-    for (sp in unique(d$spec)) {
-      x <- d[spec == sp]; body <- c(body, rowpair(x, sprintf("%s", sp)))
-    }
-    writeLines(wrap(body,
-      "Pooled Increase effect, excluding Act 47 distressed municipalities",
-      "tab:pooled_act47",
+  act47_path <- file.path(RESULTS_DIR, "pooled_act47.csv")
+  if (file.exists(act47_path)) {
+    act47 <- fread(act47_path)
+    body <- unlist(lapply(unique(act47$spec), function(spec_name)
+      term_rows(filter(act47, spec == spec_name), spec_name)))
+    writeLines(table_lines(body, "Pooled Increase effect, excluding Act 47 distressed municipalities", "tab:pooled_act47",
       paste("Act 47 status from DCED's distressed register. Excluded from the treated",
             "group only. SE in parens. $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.")),
       file.path(TABLE_DIR, "pooled_act47.tex"))
     message("Saved tables/pooled_act47.tex")
   }
 
-  ## Fake timing
-  f <- file.path(RESULTS_DIR, "pooled_fake_timing.csv")
-  if (file.exists(f)) {
-    d <- fread(f); body <- character(0)
-    for (sh in sort(unique(d$shift))) {
-      x <- d[shift == sh]; if (!nrow(x)) next
-      nt <- x$n_treated[1]
-      body <- c(body, sprintf("    \\multicolumn{5}{l}{\\textit{Placebo event at $c-%d$ (%d eligible munis)}} \\\\", sh, nt),
-                rowpair(x, "\\quad Pooled Inc", want = "direction_muni::Inc:dose_fake"))
-    }
-    writeLines(wrap(body,
-      "Pooled Increase effect at placebo event dates",
-      "tab:pooled_fake_timing",
+  fake_path <- file.path(RESULTS_DIR, "pooled_fake_timing.csv")
+  if (file.exists(fake_path)) {
+    placebo <- fread(fake_path)
+    body <- unlist(lapply(sort(unique(placebo$shift)), function(shift_years) {
+      shift_rows <- filter(placebo, shift == shift_years)
+      if (!nrow(shift_rows)) return(NULL)
+      c(sprintf("    \\multicolumn{5}{l}{\\textit{Placebo event at $c-%d$ (%d eligible munis)}} \\\\",
+                shift_years, shift_rows$n_treated[1]),
+        term_rows(shift_rows, "\\quad Pooled Inc", wanted_term = "direction_muni::Inc:dose_fake"))
+    }))
+    writeLines(table_lines(body, "Pooled Increase effect at placebo event dates", "tab:pooled_fake_timing",
       paste("Placebo events 3, 4 or 5 years early, using only data before the real",
             "change, so every coefficient should be null. Counts fall with the shift",
             "because eligibility needs two placebo pre-years inside the panel. Panels",
@@ -1534,26 +920,24 @@ local({
     message("Saved tables/pooled_fake_timing.tex")
   }
 
-  ## Pre-trend battery
-  f <- file.path(RESULTS_DIR, "pooled_pretrend_battery.csv")
-  if (file.exists(f)) {
-    d <- fread(f)
-    pick <- function(field, fmt) vapply(outs, function(o) {
-      r <- d[outcome == o]; if (!nrow(r) || is.na(r[[field]][1])) "---" else fmt(r[[field]][1])
+  battery_path <- file.path(RESULTS_DIR, "pooled_pretrend_battery.csv")
+  if (file.exists(battery_path)) {
+    battery <- fread(battery_path)
+    battery_values <- function(field, fmt) vapply(outcomes, function(outcome_name) {
+      row <- filter(battery, outcome == outcome_name)
+      if (!nrow(row) || is.na(row[[field]][1])) "---" else fmt(row[[field]][1])
     }, character(1))
-    f3 <- function(x) formatC(x, format = "f", digits = 3)
+    fmt_3dp <- function(value) formatC(value, format = "f", digits = 3)
     body <- c(
-      sprintf("    Joint Wald $p$ (leads) & %s \\\\", paste(pick("wald_joint_p", f3), collapse = " & ")),
+      sprintf("    Joint Wald $p$ (leads) & %s \\\\", paste(battery_values("wald_joint_p", fmt_3dp), collapse = " & ")),
       sprintf("    Leads significant at 5\\%% (of 4) & %s \\\\",
-              paste(pick("n_leads_sig5", function(x) sprintf("%d", as.integer(x))), collapse = " & ")),
-      sprintf("    Smallest lead $p$ & %s \\\\", paste(pick("min_lead_p", f3), collapse = " & ")),
-      sprintf("    Linear pre-slope & %s \\\\", paste(pick("lin_slope", f3), collapse = " & ")),
-      sprintf("    Linear pre-slope $p$ & %s \\\\", paste(pick("lin_slope_p", f3), collapse = " & ")),
-      sprintf("    Clean & %s \\\\", paste(pick("robust_clean",
-              function(x) ifelse(as.logical(x), "yes", "no")), collapse = " & ")))
-    writeLines(wrap(body,
-      "Pre-trend battery for the pooled Increase specification",
-      "tab:pooled_pretrend_battery",
+              paste(battery_values("n_leads_sig5", function(x) sprintf("%d", as.integer(x))), collapse = " & ")),
+      sprintf("    Smallest lead $p$ & %s \\\\", paste(battery_values("min_lead_p", fmt_3dp), collapse = " & ")),
+      sprintf("    Linear pre-slope & %s \\\\", paste(battery_values("lin_slope", fmt_3dp), collapse = " & ")),
+      sprintf("    Linear pre-slope $p$ & %s \\\\", paste(battery_values("lin_slope_p", fmt_3dp), collapse = " & ")),
+      sprintf("    Clean & %s \\\\", paste(battery_values("robust_clean", function(x) ifelse(as.logical(x), "yes", "no")),
+                                         collapse = " & ")))
+    writeLines(table_lines(body, "Pre-trend battery for the pooled Increase specification", "tab:pooled_pretrend_battery",
       paste("Tests on the four pre-event leads of the pooled realized-dose event study.",
             "Clean means the joint Wald does not reject at 10\\% and no single lead is",
             "significant at 5\\%.")),
