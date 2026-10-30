@@ -1,34 +1,8 @@
 #!/usr/bin/env Rscript
-# 3_repair_property_rates.R -- fix effective property-tax rates where the
-# statutory millage and the CLR are on different assessment bases.
-# Input:  data/derived/pa_property_burden_panel.csv (2_build_property_rates.py)
-# Output: data/derived/pa_property_burden_panel_repaired.csv (what the models use)
-#         data/results/property_rebase_log.csv (every corrected unit-year)
-# Run:    Rscript scripts/2_build_data/3_repair_property_rates.R
-#
-# Each effective rate is mills / 1000 x CLR, with one CLR per county-year shared
-# by the muni, SD and county layers. When a county reassesses, the CLR resets
-# toward 1 and millage should fall by the same factor, leaving the effective rate
-# unchanged. Many governments never rebased the millage they report to DCED, so
-# old-basis millage meets a new-basis CLR and the rate blows up. Wilkes-Barre, an
-# Inc-bind unit, reads 7-14 pp of market value for eleven years against its own
-# 0.36-0.48 pp before Luzerne's 2009 reassessment.
-#
-# Two corrections, per layer:
-#   1. Reassessment. In a year the CLR resets to market, a unit that rebased cuts
-#      its millage by about the CLR ratio. (mills / previous mills) x CLR ratio is
-#      about 1 if it did and the full CLR ratio if it did not; above 2 the unit is
-#      stranded and that ratio is the correction, carried forward until the unit's
-#      millage finally halves. Testing the millage response, not the effective-rate
-#      jump, matters: with unchanged millage the rate jump always equals the CLR
-#      jump, so matching the two fires on ordinary CLR drift.
-#   2. Peers. Units in a county-year share one CLR, so a unit above 5x its
-#      county-year peer median in at least half its years is on the wrong basis
-#      and is divided by its peer ratio. One-off spikes above 5 pp (decimal-shift
-#      parse errors, e.g. Beaver SD 6555 mills) get the same correction.
-# Counties have no within-county peers, so their peers are all counties that year.
-# data.table throughout: the steps are lags and running max/sums within units,
-# and the audit log keeps data.table's sort order.
+# 3_repair_property_rates.R -- fix effective property-tax rates where millage and
+# the CLR are on different assessment bases (e.g. Wilkes-Barre after 2009).
+# In:  data/derived/pa_property_burden_panel.csv
+# Out: data/derived/pa_property_burden_panel_repaired.csv, data/results/property_rebase_log.csv
 
 suppressMessages(library(data.table))
 source(here::here("scripts", "helpers", "config.R"))
@@ -42,9 +16,7 @@ local({
   peer_ratio_max   <- 5     # this many times the county-year peer median is suspect
   peer_persistence <- 0.5   # ...in at least this share of the unit's years
 
-  # CLR change per county-year. A reassessment is the CLR reaching market from
-  # below, not a big CLR move (the CLR drifts every year), which catches quiet
-  # resets like Allegheny 0.855 -> 1.00 as well as Luzerne 0.05 -> 1.00.
+  # a reassessment = the CLR reaching market from below (not just a big CLR move)
   clr_changes <- unique(burden[, .(county, year, clr)])[order(county, year)]
   clr_changes[, clr_prev := shift(clr), by = county]
   clr_changes[, clr_ratio := clr / clr_prev]
@@ -59,7 +31,7 @@ local({
     setorderv(layer, c(unit_col, "year"))
     layer[, eff := mills / 1000 * clr * 100]
 
-    # ---- 1. reassessment
+    # ---- 1. reassessment: a unit whose millage did not fall when the CLR reset is stranded
     layer[, mills_prev := shift(mills), by = unit_col]
     layer[, rebase_residual := (mills / mills_prev) * clr_ratio]
     layer[, stranded := reassess %in% TRUE & !is.na(mills_prev) & mills_prev > 0 &
@@ -71,7 +43,7 @@ local({
     layer[n_releases > 0, reassess_factor := 1]
     layer[, eff_after_reassess := eff / reassess_factor]
 
-    # ---- 2. peers
+    # ---- 2. peers: a unit far above its county-year peers (same CLR) is on the wrong basis
     peer_key <- if (identical(unit_col, "county")) "year" else c("county", "year")
     layer[, peer_median := median(eff_after_reassess, na.rm = TRUE), by = peer_key]
     layer[, n_peers     := .N, by = peer_key]
@@ -107,9 +79,8 @@ local({
   sd_fixed     <- repair_layer("sd_id",   "sd_re_total_mills",   "SCHOOL DISTRICT")
   county_fixed <- repair_layer("county",  "cty_re_total_mills",  "COUNTY")
 
-  # Same schema as the input, with the three layer rates replaced (back in
-  # decimals). The total is recomputed with na.rm, so a muni-year with every
-  # layer missing gets 0 rather than NA; the models use only the three layers.
+  # Same schema as the input with the three layer rates replaced. The total uses
+  # na.rm, so all-missing muni-years get 0 (the models use only the layers).
   repaired <- copy(burden)
   repaired <- merge(repaired, muni_fixed[, .(muni_id, year, muni_new = eff_new)], by = c("muni_id", "year"), all.x = TRUE)
   repaired <- merge(repaired, sd_fixed[, .(sd_id, year, sd_new = eff_new)], by = c("sd_id", "year"), all.x = TRUE)
