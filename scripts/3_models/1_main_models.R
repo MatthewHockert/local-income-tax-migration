@@ -1,11 +1,9 @@
 #!/usr/bin/env Rscript
-# 1_main_models.R -- the headline binding decomposition, the pooled
-# specification, the EIT revenue response, and the flexible-dose versions.
-# Each section is switched by a RUN_* flag. PARKED sections are not in the paper.
-# Reads the panel and stack from build_headline_env() (helpers.R).
-# Writes data/results/: headline_full_table, headline_diagnostics, pooled_*,
-#   eit_revenue_*, flex_dose_acr (.csv)
-# Run: Rscript scripts/3_models/1_main_models.R
+# 1_main_models.R
+# The paper's main regressions: the headline binding decomposition, the pooled
+# version, the EIT revenue response and the flexible-dose fits. Results go to
+# data/results/. Turn sections on and off with the RUN_ flags; PARKED ones are
+# not in the paper.
 
 suppressMessages({
   library(dplyr)   # before data.table so data.table's first/last/between win
@@ -28,7 +26,7 @@ RUN_FLEX_DOSE <- TRUE  # headline + pooled re-run with a quadratic and a spline 
 RUN_REVENUE_TRADEOFF <- FALSE  # PARKED 2026-10-29, not in the paper: workers-vs-revenue tradeoff on ONE shared sample, and how it varies with the pre-existing rate
 
 # Shared setup ----
-# One panel and stack for every section below.
+# build the panel and stacks once; every section below uses them
 env <- build_headline_env()
 panel <- env$panel
 stk_muni <- env$stk_muni
@@ -36,8 +34,7 @@ ctrls <- env$ctrls
 ctrls_str <- env$ctrls_str
 
 # Headline binding decomposition ----
-# Muni and SD cell x rate in one regression, eight outcomes, stack fixed
-# effects, clustered by muni.
+# Table 3: the town and school-district rates, by binding cell, in one regression.
 if (RUN_HEADLINE) local({
 
   outcomes <- c("log_live_and_work", "log_in_commuters", "log_out_commuters",
@@ -45,8 +42,8 @@ if (RUN_HEADLINE) local({
                 "share_live_in", "share_work_outside", "share_nonres")
 
   run_headline <- function(stack_data, outcome) {
-    # a muni-year with no SD event has dose_sd = NA, which means no SD change: set to 0.
-    # Then drop rows missing the outcome or any control (listwise).
+    # no school-district change means a dose of 0, not missing; then drop rows
+    # missing the outcome or a control
     model_data <- stack_data %>%
       select(any_of(c("muni", "year", "treat_cell", "dose_stack", "cell_sd", "dose_sd",
                       "stack_muni", "stack_year", outcome, ctrls))) %>%
@@ -77,8 +74,8 @@ if (RUN_HEADLINE) local({
   fwrite(coefs, file.path(RESULTS_DIR, "headline_full_table.csv"))
 
   # Validation gate ----
-  # Stops if an Inc-bind coefficient drifts more than 0.005 from the paper.
-  # Update these values only when a change to the headline is intended.
+  # Stop if an Inc-bind number moves more than 0.005 away from the paper.
+  # Only change these values when you mean to change the headline.
   inc_bind_rows <- filter(coefs, grepl("Inc-bind:dose_stack", term))
   expected <- c(log_live_and_work = -0.537, log_in_commuters = -0.345,
                 log_total_jobs = -0.423, share_live_in = -0.058)
@@ -207,9 +204,8 @@ if (RUN_NOPROP) local({
 })
 
 # Pooled Inc/Dec benchmark ----
-# The binding cells collapsed to Inc / Dec / NC on each side (muni and SD):
-# what a design that ignores the max rule would estimate. A per-pp version and
-# a binary post-indicator version, same controls and fixed effects as the headline.
+# What you'd estimate ignoring which rate binds: every increase lumped together.
+# Same controls and fixed effects as the headline.
 if (RUN_POOLED) local({
 
   inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
@@ -303,16 +299,8 @@ if (RUN_POOLED) local({
 })
 
 # EIT revenue response ----
-# Log EIT revenue through the same binding decomposition. The Inc-bind
-# coefficient is the net per-pp revenue response (mechanical plus behavioral).
-# With no behavior, d log R / d tau = 1 / tau_pre, so
-#   offset = 1 - beta_net * tau_pre
-# is the share of the mechanical revenue gain lost to sorting. It is a
-# within-PA figure for the 24-muni Inc-bind cohort, not a state-level multiplier.
-# Revenue is the AFR EIT line: earned_income_tax_revenues (2006+), falling back
-# to earned_income_tax (2002-2005). The Local Services Tax is a separate line
-# and is never added in. Unlike the headline, the dose here is the change from
-# the pre-event mean rather than the level, so the sample differs slightly.
+# Does raising the rate raise revenue, and how much of the gain do the people
+# who leave take with them?
 if (RUN_REVENUE) local({
 
   K_stack <- 5L
@@ -324,7 +312,8 @@ if (RUN_REVENUE) local({
   ctrls <- setdiff(ctrls, "share_eit")
   ctrls_str <- paste(ctrls, collapse = " + ")
 
-  # ---- EIT revenue onto the panel. Zero or missing revenue is NA.
+  # EIT revenue from the financial reports: the 2006+ column, else the older one.
+  # The Local Services Tax is its own line and never gets added in. Zero counts as missing.
   rate_panel <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_rate_panel.rds")))
   muni_xwalk <- unique(rate_panel[!is.na(cousub_fips), .(municipality_id, cousub_fips)])
   afr <- fread(file.path(RAW_DIR, "pa_afr_panel.csv"))
@@ -345,8 +334,8 @@ if (RUN_REVENUE) local({
                 100 * mean(!is.na(panel$log_eit_revenue)),
                 sum(panel$cell_muni == "Inc-bind" & !is.na(panel$log_eit_revenue))))
 
-  # ---- stacks. Same design as build_headline_env(), rebuilt here because the
-  # outcome has to be on the panel before stacking. cell_col names the cell to stack on.
+  # Same stacking as build_headline_env(), redone here because revenue has to be
+  # on the panel before stacking.
   build_revenue_stack <- function(data, cell_col, levels) {
     treated_munis <- unique(data[get(cell_col) != "NC" & !is.na(c_muni),
                                  .(muni, cohort = c_muni, cell = get(cell_col))])
@@ -365,7 +354,8 @@ if (RUN_REVENUE) local({
     }), fill = TRUE)
     stacked[, stack_muni := paste0(stack, "_", muni)]
     stacked[, stack_year := paste0(stack, "_", year)]
-    # dose = change from the muni's pre-event mean within the stack
+    # note: unlike the headline, the dose here is the change, not the level,
+    # so this sample is slightly different
     stacked[, base_rate := mean(dose_muni[rel < 0], na.rm = TRUE), by = .(stack, muni)]
     stacked[!is.finite(base_rate), base_rate := 0]
     stacked[, dose_stack := dose_muni - base_rate]
@@ -380,7 +370,7 @@ if (RUN_REVENUE) local({
   revenue_formula <- as.formula(paste0("log_eit_revenue ~ i(treat_cell, dose_stack, ref='NC') ",
                       "+ i(cell_sd, dose_sd, ref='NC') + ", ctrls_str, " | stack_muni + stack_year"))
 
-  # ---- binding decomposition on log EIT revenue
+  # the headline regression with log EIT revenue as the outcome
   model_data <- build_revenue_stack(panel, "cell_muni", cell_levels) %>%
     select(all_of(model_vars)) %>%
     filter(complete.cases(.))
@@ -397,7 +387,7 @@ if (RUN_REVENUE) local({
   print(decomp[match(inc_cells, decomp$cell), ])
   fwrite(decomp, file.path(RESULTS_DIR, "eit_revenue_decomp.csv"))
 
-  # ---- realized-dose event study on log EIT revenue (the pre-trend test)
+  # event study on revenue, to check for pre-trends
   panel <- add_realized_dose(panel, K = K_stack)
   treated_munis <- unique(panel[cell_muni != "NC" & !is.na(c_muni), .(muni, cohort = c_muni)])
   nc_munis <- unique(panel[cell_muni == "NC", muni])
@@ -448,7 +438,9 @@ if (RUN_REVENUE) local({
   fwrite(bind_rows(es_coefs), file.path(RESULTS_DIR, "eit_revenue_es.csv"))
   print(bind_rows(es_summary))
 
-  # ---- offset for Inc-bind, at the mean and median pre-event rate
+  # If nobody moved, a 1 pp increase would raise log revenue by 1 / (starting rate).
+  # The offset is the share of that gain lost to people leaving: 1 - beta x starting rate.
+  # It applies to these 24 Inc-bind towns, not to Pennsylvania as a whole.
   beta_net <- decomp$beta[decomp$cell == "Inc-bind"]
   pre_event_rates <- panel %>%
     filter(cell_muni == "Inc-bind") %>%
@@ -464,9 +456,8 @@ if (RUN_REVENUE) local({
   print(offset)
   fwrite(offset, file.path(RESULTS_DIR, "eit_revenue_offset.csv"))
 
-  # ---- each Inc cell split by its pre-event rate, to separate the high-rate
-  # Home Rule / Act 47 cities from munis under the 1pp Act 511 cap.
-  # Splits at the cap (1pp) and at the median (0.5pp). -lo = below, -hi = at or above.
+  # Split each cell by starting rate, to separate the few high-rate cities from
+  # towns under the usual 1 pp cap. Splits at 1 pp and at 0.5 pp (-lo below, -hi at or above).
   baselines <- panel %>%
     filter(cell_muni %in% inc_cells) %>%
     group_by(muni) %>%
@@ -618,12 +609,8 @@ if (RUN_LEVELS_COMPARE) local({
 })
 
 # Treated pre-period baselines ----
-# The "Treated pre-period baseline" row under the results tables: treated munis
-# in the estimation sample, years c-5 to c-1. Logged outcomes get a geometric
-# mean in levels (exp of mean(log Y) is not an arithmetic mean, so it is
-# labeled). The share outcome gets its plain mean, the denominator needed to
-# read beta as a proportional change. Also merged into headline_ and
-# pooled_diagnostics.csv as pre_baseline, which the table builder reads.
+# The "Treated pre-period baseline" row in the results tables: what treated
+# towns looked like in the five years before their change.
 if (RUN_PRE_BASELINES) local({
   inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
   pre_period <- stk_muni %>%
@@ -631,6 +618,7 @@ if (RUN_PRE_BASELINES) local({
                     "total_jobs", "share_live_in", ctrls))) %>%
     filter(if_all(all_of(ctrls), ~ !is.na(.x))) %>%   # same rows as the models' complete controls
     filter(as.character(treat_cell) %in% inc_cells, rel >= -5, rel <= -1)
+  # for the logged outcomes: a geometric mean, labeled as such in the table
   geometric_mean <- function(values) {
     values <- values[is.finite(values) & values > 0]
     if (!length(values)) NA_real_ else exp(mean(log(values)))
@@ -647,6 +635,7 @@ if (RUN_PRE_BASELINES) local({
   message("Saved data/results/treated_pre_baselines.csv")
   print(baselines)
 
+  # add the baseline to the diagnostics files the table builder reads
   for (file_name in c("headline_diagnostics.csv", "pooled_diagnostics.csv")) {
     path <- file.path(RESULTS_DIR, file_name)
     if (!file.exists(path)) next
@@ -661,13 +650,8 @@ if (RUN_PRE_BASELINES) local({
 })
 
 # Flexible dose ----
-# The headline is linear in the dose, so its coefficient is the ACR by
-# construction. This section fits a quadratic and a natural spline (knots at
-# the treated-dose terciles) and computes the ACR as the dose-weighted average
-# of ACRT(d). Everything else is the headline: stack, sample, controls, SD
-# co-treatment, fixed effects, clustering. The dose here is the CHANGE, not the
-# level: the two agree for a linear term but not for a nonlinear one (the
-# quadratic fit in levels flips both signs).
+# Appendix A: the headline with a quadratic and a spline in the dose instead of
+# a straight line, to see whether bigger increases bite differently.
 if (RUN_FLEX_DOSE) local({
   suppressMessages(library(splines))
   inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
@@ -675,12 +659,13 @@ if (RUN_FLEX_DOSE) local({
     cell <- as.character(cell)
     factor(case_when(cell %in% inc_cells ~ "Inc", cell == "NC" ~ "NC"), levels = c("NC", "Inc"))
   }
+  # the dose as a change here: for a curve, level and change are not interchangeable
   flex_data <- stk_muni %>%
     mutate(dose_sd = coalesce(dose_sd, 0),
            dose    = if_else(as.character(treat_cell) %in% inc_cells, dose_change, 0),
            dose2   = dose^2)
   treated_dose   <- flex_data$dose[flex_data$dose > 0]
-  interior_knots <- quantile(treated_dose, c(1/3, 2/3), na.rm = TRUE)
+  interior_knots <- quantile(treated_dose, c(1/3, 2/3), na.rm = TRUE)   # spline bends at the dose terciles
   boundary_knots <- c(0, max(treated_dose, na.rm = TRUE))
   spline_basis   <- ns(flex_data$dose, knots = interior_knots, Boundary.knots = boundary_knots)
   basis_cols     <- paste0("sp", seq_len(ncol(spline_basis)))
