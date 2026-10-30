@@ -144,20 +144,18 @@ if (RUN_SUMMARY_STATS) local({
               "Rates in percentage points. Effective property rates are millage times the county",
               "common-level ratio, after the repair in Section~\\ref{subsec:sources}."))
 
-  # Means by muni type. BROKEN: this joins the panel's muni (a cousub code) to
-  # the DCED municipality_id, which never match, so the file is empty. Nothing
-  # reads it. A fix would join on cousub_fips.
+  # Means by muni type (city / borough / township), joined on the cousub code.
+  # Every cousub-year has exactly one type, so the join cannot fan out.
   muni_types <- rate_panel %>%
-    distinct(municipality_id, year, municipality) %>%
-    mutate(municipality_id = as.character(municipality_id),
-           muni_type = case_when(grepl("\\bCITY\\b", toupper(municipality)) ~ "City",
+    filter(!is.na(cousub_fips)) %>%
+    distinct(cousub_fips, year, municipality) %>%
+    mutate(muni_type = case_when(grepl("\\bCITY\\b", toupper(municipality)) ~ "City",
                                  grepl("\\bBORO|BOROUGH\\b", toupper(municipality)) ~ "Borough",
                                  grepl("\\bTWP|TOWNSHIP\\b", toupper(municipality)) ~ "Township",
                                  TRUE ~ "Other")) %>%
-    distinct(municipality_id, year, muni_type)
+    distinct(cousub_fips, year, muni_type)
   estimation %>%
-    mutate(muni = as.character(muni)) %>%
-    inner_join(muni_types, by = c("muni" = "municipality_id", "year")) %>%
+    inner_join(muni_types, by = c("muni" = "cousub_fips", "year")) %>%
     group_by(muni_type) %>%
     summarise(N_muni_years = n(),
               mean_res = mean(resident_eit, na.rm = TRUE),
@@ -166,7 +164,7 @@ if (RUN_SUMMARY_STATS) local({
               mean_stk = mean(resident_eit + sd_eit, na.rm = TRUE),
               mean_jobs = mean(total_jobs, na.rm = TRUE),
               mean_share_in = mean(share_live_in, na.rm = TRUE), .groups = "drop") %>%
-    fwrite(file.path(DERIVED_DIR, "summary_muni_by_type.csv"))
+    fwrite(file.path(RESULTS_DIR, "summary_muni_by_type.csv"))
 
   # ---- 2. block-year summary (not in the paper). data.table: ~5M rows
   block_rows <- list(
@@ -823,9 +821,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
 # The realized-dose event study for the pooled Increase group, Inc-bind and
 # Inc-becomes, drawn in the layout of dcdh_bycell_es.png. Coefficients are scaled
 # to the effect at the group's mean realized dose (beta_k x mean dose), the scale
-# dCDH reports, so the two figures can be read side by side. The subtitle's
-# "SD + nonres controls" is out of date: the model has only the SD terms. Like
-# the pooled ES, the sample does not condition on dose_stack.
+# dCDH reports, so the two figures can be read side by side. Like the pooled
+# ES, the sample does not condition on dose_stack.
 if (RUN_FEOLS_ES_BYCELL) local({
   K <- 5L
   ctrls <- env$ctrls
@@ -902,7 +899,7 @@ if (RUN_FEOLS_ES_BYCELL) local({
     scale_color_manual(values = group_colors, name = NULL) +
     scale_fill_manual(values = group_colors, name = NULL) +
     labs(title = "feols realized-dose event study by group -- twin of the dCDH figure",
-         subtitle = "beta_k x mean realized dose (level-at-mean-dose scale, comparable to dCDH); SD + nonres controls",
+         subtitle = "beta_k x mean realized dose (level-at-mean-dose scale, comparable to dCDH); SD co-treatment controls",
          x = "periods since rate change", y = "effect at mean dose") +
     theme_bw(base_size = 10) + theme(legend.position = "bottom")
   ggsave(file.path(OUT_DIR, "feols_es_bycell.png"), plot, width = 9, height = 6, dpi = 300)
