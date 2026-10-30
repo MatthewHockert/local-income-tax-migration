@@ -1,15 +1,8 @@
 #!/usr/bin/env Rscript
-# 2_event_studies.R -- realized-dose event studies, by cell and pooled.
-# For each muni-side cell c, on the stack restricted to {NC, c}:
-#   y = alpha_{stack,muni} + gamma_{stack,year}
-#       + sum_{k != -1} beta_k 1{rel = k} x realized_dose_muni
-#       + SD cell x dose + controls
-# realized_dose_muni is each treated muni's rate change from c-1 to c+5, a
-# constant per muni, so the leads test strong parallel trends: eventual dose
-# size should not predict outcomes before the event.
-# Writes data/results/: headline_es_coefs, headline_es_att,
-#   pooled_es_cousub_coefs, pooled_es_cousub_att (.csv)
-# Run: Rscript scripts/3_models/2_event_studies.R
+# 2_event_studies.R
+# Event studies: the effect year by year around each rate increase, by binding
+# cell and pooled. The years before the change test for pre-trends.
+# Results go to data/results/.
 
 suppressMessages({
   library(dplyr)   # before data.table so data.table's first/last/between win
@@ -36,7 +29,9 @@ cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
                  "Dec-bind", "Dec-becomes-non", "Dec-nobind")
 
 # Event-study stack ----
-# Same stacking as the headline, on the panel with realized_dose_muni added.
+# Each town is tagged with the total increase it eventually got (its realized
+# dose). If towns headed for bigger increases were already drifting before the
+# change, the pre-change years will show it.
 if (RUN_HEADLINE_ES || RUN_POOLED_ES) {
   es_panel <- add_realized_dose(copy(panel), K = K_stack)
 
@@ -63,20 +58,20 @@ if (RUN_HEADLINE_ES || RUN_POOLED_ES) {
   es_stack[, treat_cell_muni := factor(treat_cell_muni, levels = cell_levels)]
   es_stack[, cell_sd := factor(cell_sd, levels = cell_levels)]
   es_stack[, cell_nr := factor(cell_nr, levels = cell_levels)]
-  # SD and nonresident doses are already 0 before each event; this only fills rows with no cell tag
+  # a missing school-district or nonresident dose means no change: 0
   es_stack[is.na(dose_sd), dose_sd := 0]
   es_stack[is.na(dose_nr), dose_nr := 0]
 }
 
-# event-time coefficients from one model
+# pull the year-by-year coefficients out of one model
 event_coefs <- function(model) {
   as_tibble(model$coeftable, rownames = "term") %>%
     filter(grepl("^rel::", term)) %>%
     transmute(rel = as.integer(sub("rel::(-?\\d+):.*", "\\1", term)),
               est = Estimate, se = `Std. Error`, p = `Pr(>|t|)`)
 }
-# SE of an average of event-time coefficients, treating them as independent
-# (it ignores their covariances, so it is an approximation)
+# SE of an average of several years' coefficients. Rough: it treats the years as
+# independent when they aren't.
 mean_se <- function(ses) sqrt(mean(ses^2, na.rm = TRUE) / max(length(ses), 1))
 es_formula <- function(outcome) {
   as.formula(paste0(outcome, " ~ i(rel, realized_dose_muni, ref = -1) ",
@@ -85,9 +80,7 @@ es_formula <- function(outcome) {
 }
 
 # Headline realized-dose ES ----
-# Same sample and right-hand side as the headline, so the pre-trend test is
-# about the regression it supports: dose_stack is in the complete-cases set
-# (the headline needs it non-missing), and the nonresident terms are left out.
+# One event study per cell, on exactly the headline's sample and controls.
 if (RUN_HEADLINE_ES) local({
   outcomes <- c("log_live_and_work", "log_in_commuters", "log_total_jobs",
                 "share_live_in", "share_work_outside")
@@ -95,6 +88,7 @@ if (RUN_HEADLINE_ES) local({
   summary_rows <- list()
   for (outcome in outcomes) {
     for (cell_name in setdiff(cell_levels, "NC")) {
+      # dose_stack is kept only so rows the headline drops are dropped here too
       model_data <- es_stack %>%
         filter(treat_cell_muni %in% c("NC", cell_name)) %>%
         select(any_of(c("muni", "year", "stack_muni", "stack_year", "treat_cell_muni",
@@ -134,9 +128,7 @@ if (RUN_HEADLINE_ES) local({
 })
 
 # Pooled realized-dose ES ----
-# All increases (or all decreases) together against NC, same stack and
-# controls. Unlike the headline ES, dose_stack is not in the complete-cases
-# set, so this sample is about 1,300 rows larger than the pooled regression's.
+# All increases together against the control towns.
 if (RUN_POOLED_ES) local({
   inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
   dec_cells <- c("Dec-bind", "Dec-becomes-non", "Dec-nobind")
@@ -146,6 +138,8 @@ if (RUN_POOLED_ES) local({
   run_pooled_es <- function(direction) {
     pooled_cells <- if (direction == "Inc") inc_cells else dec_cells
     direction_data <- filter(es_stack, as.character(treat_cell_muni) %in% c(pooled_cells, "NC"))
+    # note: unlike above, rows missing dose_stack stay in, so this sample is about
+    # 1,300 rows bigger than the pooled regression's
     coef_rows <- list()
     summary_rows <- list()
     for (outcome in outcomes) {
