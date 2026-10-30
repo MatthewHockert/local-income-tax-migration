@@ -20,8 +20,15 @@ Act 32 split, Inc-bind: pre-2012 -0.544 (0.201), post -0.531 (0.162).
 
 - The headline sample is effectively 2006 to 2019: `share_debt_svc` and `share_intergov` come from post-2005 AFR columns, so complete cases drop 2002 to 2005.
 - The paper says Sun and Abraham (lines ~652 and ~931), but `sunab()` is not run anywhere.
-- Shamokin is missing from the Act 47 list in `3_robustness.R`. Erie's rate above the cap is an Act 205 pension surcharge.
+- Erie's rate above the cap is an Act 205 pension surcharge, not an EIT increase. 16 Act 47 municipalities (Pittsburgh, Altoona, Johnstown, ...) are not in the estimation panel at all, so the Act 47 exclusion removes fewer cities than its list suggests.
 - `1_build_panels.R` rewrites `data/raw/pa_eit_rate_panel.csv`, so raw is not strictly download-only.
+- Specifications that differ from the headline (found in the 2026-10 code pass, not yet changed):
+  - The decomposition Act 32 split has no SD co-treatment term. The pooled Act 32 split has one.
+  - Fake timing: the decomposition placebo uses the realized dose, the pooled placebo uses the rate level.
+  - Pre-trend battery: the decomposition version ignores the joint Wald and uses a regression pre-slope. The pooled version needs Wald p >= 0.10 and fits its slope by lm() on the lead estimates.
+  - The EIT revenue section uses the dose as a change from the pre-event mean, not the level.
+  - The pooled event study does not condition on dose_stack, so it runs on ~1,300 more rows than the pooled regression.
+  - The averaged ATT SEs in `2_event_studies.R` treat event-time coefficients as independent.
 
 ## Working rules
 
