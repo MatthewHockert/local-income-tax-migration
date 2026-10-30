@@ -1,10 +1,7 @@
 #!/usr/bin/env Rscript
-# 1_figures.R -- every figure, plus the descriptive tables (summary statistics
-# and cell counts). Run after the model scripts: several sections read their CSVs.
-# Each section is switched by a RUN_* flag. PARKED sections are not in the paper.
-# Writes figures/*.png, tables/summary_*.tex, tables/cell_counts_summary.tex and
-# .csv copies in data/results/.
-# Run: Rscript scripts/4_output/1_figures.R
+# 1_figures.R
+# Every figure, plus the summary-statistics and cell-count tables. Run it after
+# the model scripts, since several sections read their results.
 
 suppressMessages({
   library(dplyr)       # loaded before data.table so data.table's first/last/between win
@@ -38,9 +35,8 @@ if (needs_env) {
 }
 
 # Summary stats ----
-# Tables summary_muni, summary_block, summary_sd and cell_counts_summary (.tex,
-# with .csv copies), and the figures rate_double_histogram, act32_cdf,
-# rate_changes_by_year, pa_rate_trajectories, pa_map, binding_levels_by_year.
+# The Data section's tables and figures: summary statistics, cell counts, the
+# rate-change figures and the map.
 if (RUN_SUMMARY_STATS) local({
   max_year <- 2019L
   rate_panel <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_rate_panel.rds")))[year <= max_year]
@@ -48,7 +44,7 @@ if (RUN_SUMMARY_STATS) local({
   block_panel <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_block_panel.rds")))[year <= max_year]
   sd_controls <- as.data.table(readRDS(file.path(DERIVED_DIR, "pa_sd_controls.rds")))
 
-  # ---- summary-table helpers
+  # helpers for the summary tables
   summarize_vec <- function(values) {
     values <- values[is.finite(values)]
     if (length(values) == 0) return(rep(NA_real_, 7))
@@ -97,9 +93,8 @@ if (RUN_SUMMARY_STATS) local({
     fwrite(rows, file.path(RESULTS_DIR, sub("\\.tex$", ".csv", out_name)))
   }
 
-  # ---- 1. muni-year summary on the estimation sample: the panel after the
-  # flip-flopper and decrease drops, less muni-years missing a fiscal control.
-  # Each row reports its own non-missing N.
+  # 1. Summary table on the estimation sample: the panel after the drops, less
+  # town-years missing a control. Each row has its own N.
   ctrls <- env$ctrls
   estimation <- env$panel %>% filter(if_all(all_of(ctrls), ~ !is.na(.x)))
   raw_munis <- rename(work_panel, muni = work_city)
@@ -111,8 +106,7 @@ if (RUN_SUMMARY_STATS) local({
     muni_years = c(nrow(raw_munis), nrow(env$panel), nrow(estimation)))
   fwrite(sample_steps, file.path(RESULTS_DIR, "sample_construction.csv"))
 
-  # rates first, then the stack, then the work-side rate it is compared with;
-  # shares in percent so two decimals stay informative
+  # home rates first, then the work-side rate they're compared with; shares in percent
   muni_rows <- list(
     panel_header("Tax rates (percentage points)"),
     summary_row("Resident EIT rate $\\tau^{M}$",            estimation$resident_eit),
@@ -144,8 +138,7 @@ if (RUN_SUMMARY_STATS) local({
               "Rates in percentage points. Effective property rates are millage times the county",
               "common-level ratio, after the repair in Section~\\ref{subsec:sources}."))
 
-  # Means by muni type (city / borough / township), joined on the cousub code.
-  # Every cousub-year has exactly one type, so the join cannot fan out.
+  # means by town type (city, borough, township); each Census town has exactly one type
   muni_types <- rate_panel %>%
     filter(!is.na(cousub_fips)) %>%
     distinct(cousub_fips, year, municipality) %>%
@@ -166,7 +159,7 @@ if (RUN_SUMMARY_STATS) local({
               mean_share_in = mean(share_live_in, na.rm = TRUE), .groups = "drop") %>%
     fwrite(file.path(RESULTS_DIR, "summary_muni_by_type.csv"))
 
-  # ---- 2. block-year summary (not in the paper). data.table: ~5M rows
+  # 2. block summary (not in the paper; data.table because it has ~5M rows)
   block_rows <- list(
     summary_row("Resident rate $\\tau^{M}$ (\\%)",  block_panel$resident_eit),
     summary_row("Nonresident rate $\\tau^{nr,M}$ (\\%)", block_panel$muni_nonres_eit),
@@ -184,7 +177,7 @@ if (RUN_SUMMARY_STATS) local({
                       format(uniqueN(block_panel$block_geoid), big.mark = ","),
                       format(uniqueN(block_panel$muni), big.mark = ","))))
 
-  # ---- 3. school-district-year summary (not in the paper)
+  # 3. school-district summary (not in the paper)
   sd_rates <- rate_panel %>%
     filter(!is.na(sd_eit)) %>%
     group_by(municipality_id, year) %>%
@@ -204,9 +197,7 @@ if (RUN_SUMMARY_STATS) local({
     "tab:summary_sd", "summary_sd.tex",
     notes = c("SD-year level. F-33 share controls are constructed from Census F-33 revenue/expenditure totals."))
 
-  # ---- 4. cell counts on the same estimation sample, so they reconcile with
-  # the regression Ns. Mean dose at +5 is the eventual increase used to turn
-  # per-pp coefficients into effects; plain mean dose includes zero pre-event years.
+  # 4. Cell counts, on the same sample so they match the regression Ns
   cell_order <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind")
   cell_counts <- estimation %>%
     filter(as.character(cell_muni) %in% cell_order) %>%
@@ -216,6 +207,7 @@ if (RUN_SUMMARY_STATS) local({
   dose_k5 <- treated_k5 %>%
     group_by(cell_muni = factor(as.character(treat_cell), levels = cell_order)) %>%
     summarise(dose_k5 = mean(dose_change, na.rm = TRUE), .groups = "drop")
+  # the dose five years after the change: the typical increase the paper uses to read the coefficients
   dose_k5_pooled <- mean(treated_k5$dose_change, na.rm = TRUE)
   dose_range <- estimation %>%
     filter(!is.na(cell_muni), cell_muni != "NC") %>%
@@ -262,7 +254,7 @@ if (RUN_SUMMARY_STATS) local({
   writeLines(body, file.path(TABLE_DIR, "cell_counts_summary.tex"))
   fwrite(cell_table, file.path(RESULTS_DIR, "cell_counts_summary.csv"))
 
-  # ---- 5. figure: rate ECDFs (resident, nonresident, home stack), 0-5 pp
+  # 5. figure: how the resident, nonresident and home-stack rates are distributed
   rate_type_levels <- c("resident_eit", "muni_nonres_eit", "home_stack")
   rate_long <- rate_panel %>%
     transmute(resident_eit, muni_nonres_eit, home_stack = resident_eit + sd_eit) %>%
@@ -287,7 +279,7 @@ if (RUN_SUMMARY_STATS) local({
     theme(legend.position = "bottom")
   ggsave(file.path(OUT_DIR, "rate_double_histogram.png"), ecdf_plot, width = 9, height = 5, dpi = 200)
 
-  # ---- 6. figure: share of munis reporting a (non-imputed) nonresident rate, by year
+  # 6. figure: share of towns reporting a nonresident rate each year (jumps with Act 32)
   coverage <- rate_panel %>%
     group_by(year) %>%
     summarise(coverage = mean(!is.na(muni_nonres_eit) & !nonres_imputed, na.rm = TRUE), .groups = "drop") %>%
@@ -303,7 +295,7 @@ if (RUN_SUMMARY_STATS) local({
     theme_paper()
   ggsave(file.path(OUT_DIR, "act32_cdf.png"), coverage_plot, width = 8, height = 4.5, dpi = 200)
 
-  # ---- 7. figure: resident-rate increases by year
+  # 7. figure: how many towns raised their rate each year
   increases <- rate_panel %>%
     filter(year >= 2002, year <= 2019, !is.na(rate_change)) %>%
     group_by(year) %>%
@@ -321,7 +313,7 @@ if (RUN_SUMMARY_STATS) local({
     theme(legend.position = "bottom")
   ggsave(file.path(OUT_DIR, "rate_changes_by_year.png"), increases_plot, width = 8.5, height = 5, dpi = 200)
 
-  # ---- 8. figure: rate paths of the top 20 munis by cumulative |change| and by number of changes
+  # 8. figure: rate histories of the 20 towns that changed most, and the 20 that changed most often
   change_totals <- rate_panel[year >= 2002 & year <= 2019,
      .(cum_abs_dtau = sum(abs(rate_change), na.rm = TRUE),
        n_events     = sum(abs(rate_change) > 1e-6, na.rm = TRUE)),
@@ -349,7 +341,7 @@ if (RUN_SUMMARY_STATS) local({
            path_plot(rate_paths(top_by_count), "Top 20 by number of rate-change events"),
          width = 16, height = 9, dpi = 180)
 
-  # ---- 9. figure: PA map of munis by direction of resident-rate change
+  # 9. figure: map of which towns raised, cut, or both
   cousubs <- st_as_sf(readRDS(file.path(DERIVED_DIR, "pa_cousub.rds")))
   change_types <- rate_panel[year >= 2002 & year <= 2019 & !is.na(rate_change),
                              .(n_inc = sum(rate_change >  1e-6), n_dec = sum(rate_change < -1e-6)),
@@ -380,10 +372,8 @@ if (RUN_SUMMARY_STATS) local({
           panel.grid = element_blank(), panel.border = element_blank(), legend.position = "bottom")
   ggsave(file.path(OUT_DIR, "pa_map.png"), map_plot, width = 11, height = 7, dpi = 220)
 
-  # ---- 10. figure: mean home stack vs mean work (nonresident) rate by year
-  # Muni-years that report a non-imputed work rate (reporting jumps at Act 32 in
-  # 2012), collapsed as in build_headline_env (resident mean, SD max, nonresident
-  # mean). The work rate binds only when strictly above the home stack.
+  # 10. figure: average home rate vs work rate each year, for towns that actually
+  # report a work rate (collapsed the same way as build_headline_env())
   binding <- rate_panel[!is.na(cousub_fips) & year >= 2002,
                         .(resident_eit    = mean(resident_eit,    na.rm = TRUE),
                           sd_eit          = max(sd_eit,            na.rm = TRUE),
@@ -395,7 +385,7 @@ if (RUN_SUMMARY_STATS) local({
            home_stack = resident_eit + sd_eit,
            work_rate  = muni_nonres_eit) %>%
     filter(!is.na(home_stack), !is.na(work_rate), nonres_imputed == FALSE) %>%
-    mutate(work_binds = work_rate > home_stack + 1e-6)
+    mutate(work_binds = work_rate > home_stack + 1e-6)   # a tie counts as the home rate binding
   binding_by_year <- binding %>%
     group_by(year) %>%
     summarise(n = n(), mean_home = mean(home_stack), mean_work = mean(work_rate),
@@ -505,31 +495,27 @@ if (RUN_DOSE_TRAJECTORY) local({
 })
 
 # Spline dose-response ----
-# ATT(d) and ACRT(d) for the muni dose from a natural spline, for the pooled
-# Increase group, Inc-bind and Inc-becomes, each on {its treated cells + NC}
-# with the SD co-treatment term as in the headline. Paper figures: att_linear_*
-# (body) and att_flex_* (Appendix A). Also writes acr_acrt_att_spline_*,
-# spline_knot_placement and the spline_*.csv files the explorer reads.
-# The dose is dose_change, not the level dose_stack: as an x-axis the level
-# would put NC at 0 against treated munis at 0.5-2.5 and invent a dose-response.
+# The dose-response figures: att_linear_* in the body, att_flex_* in Appendix A.
+# Also some figures and CSVs not in the paper (noted below).
 if (RUN_SPLINE_DOSE_RESPONSE) local({
   ctrls <- env$ctrls
   ctrls_str <- paste(ctrls, collapse = " + ")
   inc_cells <- c("Inc-bind", "Inc-becomes", "Inc-nobind")
   spline_stack <- env$stk_muni %>%
     mutate(is_increase = as.integer(as.character(treat_cell) %in% inc_cells),
+           # the x-axis is the change, not the level: as levels, controls would sit at 0
+           # and treated towns at 0.5-2.5, which would invent a dose-response
            dose = if_else(is_increase == 1, dose_change, 0)) %>%
     as.data.table()
   outcome_labels <- c(log_live_and_work = "Work in own muni", share_live_in = "Share live in muni",
                       log_total_jobs = "Total jobs", log_in_commuters = "In-commuters")
   outcomes <- c("log_live_and_work", "share_live_in", "log_total_jobs", "log_in_commuters")
-  # pooled 95th-percentile dose; only the (non-paper) plot_spline() figures use it
+  # only the spline-only figures (not in the paper) use this
   pooled_dose_p95 <- quantile(spline_stack$dose[spline_stack$is_increase == 1 & spline_stack$dose > 0],
                               0.95, na.rm = TRUE)
   sd_term <- "i(cell_sd, dose_sd, ref='NC')"
 
-  # The labeled linear ACR is the paper's own estimate, read from the result
-  # files, so the figure label matches the table to the last digit.
+  # the ACR printed on the figures is read from the results, so it matches the tables exactly
   pooled_results   <- tryCatch(fread(file.path(RESULTS_DIR, "pooled_results.csv")), error = function(e) NULL)
   headline_results <- tryCatch(fread(file.path(RESULTS_DIR, "headline_full_table.csv")), error = function(e) NULL)
   headline_acr <- function(treated_cells, outcome_name, column = "est") {
@@ -545,16 +531,14 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     if (length(values)) as.numeric(values[1]) else NA_real_
   }
 
-  # Fit one group. A continuous-dose spline on the subset, not a cell-interacted
-  # one: i(treat_cell, spline) absorbed the level and pinned the Inc-bind ATT
-  # near zero. Knots at the group's dose terciles, boundary [0, max dose]. The
-  # curve is drawn only to the group's own 95th-percentile dose.
+  # Fit the curves for one group, on that group's towns plus the controls.
+  # (Interacting the spline with the cell instead pinned the Inc-bind curve near zero.)
   fit_group <- function(treated_cells) {
     att_rows <- list(); acrt_rows <- list(); basis_rows <- list(); quad_rows <- list(); point_rows <- list()
     group_cells <- c(treated_cells, "NC")
     group_dose_p95 <- quantile(spline_stack$dose[as.character(spline_stack$treat_cell) %in% treated_cells &
                                                    spline_stack$dose > 0], 0.95, na.rm = TRUE)
-    dose_grid <- seq(0, group_dose_p95, length.out = 80)
+    dose_grid <- seq(0, group_dose_p95, length.out = 80)   # draw only as far as the group's own doses go
     for (outcome in outcomes) {
       model_data <- spline_stack[as.character(treat_cell) %in% group_cells,
                                  c("muni", "dose", "cell_sd", "dose_sd", "treat_cell",
@@ -572,9 +556,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       linear_model <- feols(as.formula(paste0(outcome, " ~ dose", rhs_rest)), model_data, cluster = ~muni)
       quad_model   <- feols(as.formula(paste0(outcome, " ~ dose + dose2", rhs_rest)), model_data, cluster = ~muni)
 
-      # One point per treated muni: its pre/post change in the outcome minus the
-      # same change for the NC munis in its stack, at the dose it took. A raw
-      # per-unit DiD with no controls, to show the data behind the curve.
+      # One dot per treated town: how its outcome changed after the increase,
+      # minus how the control towns changed, at the dose it got. No controls, just the raw data.
       outcome_stack <- spline_stack[as.character(treat_cell) %in% group_cells & !is.na(get(outcome)) & !is.na(rel)]
       control_changes <- outcome_stack[treat_cell == "NC",
                                        .(nc_d = mean(get(outcome)[rel >= 0], na.rm = TRUE) -
@@ -594,7 +577,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       spline_coefs <- coef(spline_model)[basis_cols]
       spline_vcov  <- vcov(spline_model)[basis_cols, basis_cols]
 
-      # ACR from the flexible fits: ACRT(d) averaged over the doses treated munis took
+      # the average effect per point under the curve, averaged over the doses towns actually got
       treated_doses <- unique(unit_points[, .(muni, dose)])[, .(dose = max(dose)), by = muni]$dose
       acr_quad <- NA_real_; acr_spline <- NA_real_
       if (length(treated_doses) > 1) {
@@ -608,11 +591,11 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
       acr_se <- headline_acr(treated_cells, outcome, "se")
       if (is.na(acr)) { acr <- as.numeric(coef(linear_model)["dose"]); acr_se <- as.numeric(se(linear_model)["dose"]) }
 
-      # ATT(d) = B(d)'b - B(0)'b, delta-method SEs from the basis difference
+      # total effect of a dose d, relative to no dose, with its SE
       basis_diff <- sweep(predict(spline_basis, dose_grid), 2, as.numeric(predict(spline_basis, 0)))
       att_spline <- as.numeric(basis_diff %*% spline_coefs)
       att_se     <- sqrt(pmax(rowSums((basis_diff %*% spline_vcov) * basis_diff), 0))
-      # ACRT(d) = dATT/dd by central difference of the basis
+      # the curve's slope at each dose: the effect of one more point
       h <- 1e-4
       grid_slope <- (predict(spline_basis, dose_grid + h) - predict(spline_basis, dose_grid - h)) / (2 * h)
       acrt_spline <- as.numeric(grid_slope %*% spline_coefs)
@@ -629,7 +612,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
                                           acr_quad = acr_quad, acr_spline = acr_spline,
                                           mean_dose = mean(treated_doses), n_treated = length(treated_doses),
                                           q1 = quad_coefs[1], q2 = quad_coefs[2], q_dose2_p = quad_p)
-      # quadratic: ATT(d) = b1 d + b2 d^2, ACRT(d) = b1 + 2 b2 d, delta-method SEs
+      # the same two curves for the quadratic
       att_quad   <- quad_coefs[1] * dose_grid + quad_coefs[2] * dose_grid^2
       att_quad_v <- dose_grid^2 * quad_vcov[1, 1] + dose_grid^4 * quad_vcov[2, 2] + 2 * dose_grid^3 * quad_vcov[1, 2]
       acrt_quad   <- quad_coefs[1] + 2 * quad_coefs[2] * dose_grid
@@ -646,14 +629,13 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
          BASIS = rbindlist(basis_rows), QUAD = rbindlist(quad_rows), PTS = rbindlist(point_rows))
   }
 
-  # facet keys "<outcome> — <panel>" in a fixed order
+  # panel titles in a fixed order
   facet_order <- function(panels) as.vector(t(outer(outcome_labels[outcomes], panels, paste, sep = " — ")))
   add_facet <- function(data, panels) {
     mutate(data, facet = factor(paste(outcome, panel, sep = " — "), levels = facet_order(panels)))
   }
 
-  # Body figure: the linear model only. ATT(d) = ACR x d with a 95% band; no
-  # ACRT column, since under linearity it is the constant ACR.
+  # Body figure: the straight-line model only (its slope is the same at every dose)
   plot_linear <- function(fit, title, outfile) {
     att_panel <- "ATT(d): total effect"
     acr_by_outcome <- distinct(fit$ACRT, outcome, acr, acr_se) %>%
@@ -683,7 +665,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     ggsave(file.path(OUT_DIR, outfile), plot, width = 7.5, height = 8.5, dpi = 300)
   }
 
-  # Appendix figure: quadratic and spline, with the linear model as a dashed reference
+  # Appendix figure: quadratic and spline, with the straight line dashed for comparison
   plot_flex <- function(fit, title, outfile) {
     att_panel <- "ATT(d): total effect"; acrt_panel <- "ACRT(d): marginal effect"
     acr_by_outcome <- distinct(fit$ACRT, outcome, acr)
@@ -721,8 +703,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     ggsave(file.path(OUT_DIR, outfile), width = 10, height = 11, dpi = 300)
   }
 
-  # Spline-only figure (not in the paper). Its linear reference runs to the
-  # POOLED 95th-percentile dose for every group, not the group's own range.
+  # Spline-only figure (not in the paper). Its dashed line runs to the pooled
+  # group's dose range for every group, not each group's own.
   plot_spline <- function(fit, title, outfile) {
     att_panel <- "ATT(d): total effect"; acrt_panel <- "ACRT(d): marginal effect + ACR"
     curves <- bind_rows(
@@ -754,9 +736,8 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
     ggsave(file.path(OUT_DIR, outfile), plot, width = 10, height = 11, dpi = 300)
   }
 
-  # Knot-placement figure (not in the paper): treated doses, interior knots
-  # (solid) and boundary knots (dotted), computed as in fit_group() on the
-  # log_live_and_work sample. The points are jittered without a seed.
+  # Knot figure (not in the paper): where the spline is allowed to bend. The
+  # points are jittered with no seed, so this file changes every run.
   knot_groups <- list("Pooled Increase" = inc_cells, "Inc-bind" = "Inc-bind", "Inc-becomes" = "Inc-becomes")
   knot_points <- list(); knots <- list()
   for (group_name in names(knot_groups)) {
@@ -803,7 +784,7 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
                 sprintf("acr_acrt_att_spline_%s.png", tag))
   }
 
-  # fitted curves, basis parameters and unit points for the spline explorer
+  # save the curves and points for the interactive spline explorer
   export_curves <- function(fit, group_name) rbind(
     fit$ATT[,  .(group = group_name, outcome, dose, curve = "ATT",  y, lo, hi, acr = NA_real_)],
     fit$ACRT[, .(group = group_name, outcome, dose, curve = "ACRT", y, lo, hi, acr)],
@@ -818,17 +799,14 @@ if (RUN_SPLINE_DOSE_RESPONSE) local({
 })
 
 # feols ES by cell ----
-# The realized-dose event study for the pooled Increase group, Inc-bind and
-# Inc-becomes, drawn in the layout of dcdh_bycell_es.png. Coefficients are scaled
-# to the effect at the group's mean realized dose (beta_k x mean dose), the scale
-# dCDH reports, so the two figures can be read side by side. Like the pooled
-# ES, the sample does not condition on dose_stack.
+# The event study by group, drawn to match the dCDH figure so the two can sit side by side.
 if (RUN_FEOLS_ES_BYCELL) local({
   K <- 5L
   ctrls <- env$ctrls
   ctrls_str <- paste(ctrls, collapse = " + ")
   cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind", "Dec-bind", "Dec-becomes-non", "Dec-nobind")
   es_panel <- add_realized_dose(copy(env$panel), K = K)
+  # note: like the pooled event study, rows missing dose_stack stay in
 
   treated_munis <- unique(es_panel[cell_muni != "NC", .(muni, cohort = c_muni)])
   nc_munis <- unique(es_panel[cell_muni == "NC", muni])
@@ -859,7 +837,7 @@ if (RUN_FEOLS_ES_BYCELL) local({
     group_cells <- groups[[group_name]]
     group_dose <- es_stack$realized_dose_muni[es_stack$treat_cell_muni %in% group_cells &
                                                 es_stack$realized_dose_muni > 0]
-    mean_dose <- mean(group_dose, na.rm = TRUE)
+    mean_dose <- mean(group_dose, na.rm = TRUE)   # effects are shown for this typical increase, like dCDH
     for (outcome in outcomes) {
       model_data <- es_stack %>%
         filter(treat_cell_muni %in% c("NC", group_cells)) %>%
@@ -877,7 +855,7 @@ if (RUN_FEOLS_ES_BYCELL) local({
     }
   }
   coefs <- bind_rows(coef_rows)
-  # rel = -1 is the reference period, drawn at 0
+  # the year before the change is the reference, drawn at 0
   event_study <- bind_rows(coefs, distinct(coefs, group, outcome, mean_dose) %>%
                              mutate(rel = -1L, beta = 0, se = 0, .before = mean_dose)) %>%
     mutate(est = beta * mean_dose, lo = (beta - 1.96 * se) * mean_dose, hi = (beta + 1.96 * se) * mean_dose) %>%
@@ -908,9 +886,7 @@ if (RUN_FEOLS_ES_BYCELL) local({
 })
 
 # Law timeline ----
-# The PA local-tax statutes in the Institutional Background section, with the
-# estimation window shaded. Labels alternate above and below the spine so
-# neighbors (the 1998-2012 cluster) do not overlap. Only the 2012 binding date is bold.
+# Timeline of the Pennsylvania tax laws in the Institutional Background section.
 if (RUN_LAW_TIMELINE) local({
   statutes <- tibble(
     year  = c(1932, 1965, 1972, 1984, 1987, 1998, 2001, 2006, 2008, 2012),
@@ -927,6 +903,7 @@ if (RUN_LAW_TIMELINE) local({
               "consolidated\nwithholding",
               "max-rule binding\nvia withholding"),
     type  = c(rep("EIT statute", 9), "Binding date"),
+    # labels alternate above and below the line so the crowded 1998-2012 ones don't overlap
     ypos  = c( 1.0, -1.0,  2.4, -2.4,  1.0, -1.0,  2.4, -2.4,  1.0, -1.0)) %>%
     mutate(label = paste0(name, " (", year, ")\n", desc),
            face  = ifelse(type == "Binding date", "bold", "plain"))
