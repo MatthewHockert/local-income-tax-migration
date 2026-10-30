@@ -2,8 +2,8 @@
 # run_all.R -- rebuild every result, figure and table the paper uses.
 # Run from the repo root:  Rscript run_all.R
 # Each script runs in a fresh R session; its output goes to logs/<script>.log.
-# Not run here: scripts/1_get_data/ (needs internet) and
-# scripts/2_build_data/1_build_panels.R (rebuilds the panels from the raw data).
+# Not run here: scripts/1_get_data/ (needs internet) and scripts/2_build_data/
+# (rebuilds the panels and property rates from data/raw/; data/derived/ ships built).
 
 steps <- c("scripts/3_models/1_main_models.R",
            "scripts/3_models/2_event_studies.R",

@@ -174,18 +174,13 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   # Property-tax effective rates (statutory millage x STEB common-level ratio),
   # kept SEPARATE per rate-setter: muni_eff_rate, sd_eff_rate, county_eff_rate.
   # Key: burden muni_id == DCED municipality_id -> cousub_fips via `xw` (line above).
-  # Provenance: built in the parent repo
-  #   scrape_pa_dced_county_tax.py -> build_pde_sd_millage.py ->
-  #   multitax_gapfill_sd.py -> multitax_effective_rate.py
-  # vendored here as data/multitax/pa_property_burden_panel.csv (regenerate via those).
-  # Prefer the assessment-basis-repaired panel when 2_build_data/1_build_panels.R has built it
-  # (RUN_PROPERTY_REBASE). Falls back to the raw panel so the pipeline still
-  # runs on a fresh checkout. See the repair block in 2_build_data/1_build_panels.R for why.
-  .burden_fixed <- file.path(RAW_DIR, "multitax", "pa_property_burden_panel_repaired.csv")
-  .burden_raw   <- file.path(RAW_DIR, "multitax", "pa_property_burden_panel.csv")
-  .burden_path  <- if (file.exists(.burden_fixed)) .burden_fixed else .burden_raw
-  if (isTRUE(VERBOSE_MERGES))
-    message(sprintf("[data]   property burden: %s", basename(.burden_path)))
+  # Built by scripts/2_build_data/2_build_property_rates.py, then repaired by
+  # 3_repair_property_rates.R. No fallback to the unrepaired panel: it carries
+  # the assessment-basis errors (e.g. Wilkes-Barre) the repair removes.
+  .burden_path <- file.path(DERIVED_DIR, "pa_property_burden_panel_repaired.csv")
+  if (!file.exists(.burden_path))
+    stop("Missing ", .burden_path, ": run scripts/2_build_data/2_build_property_rates.py ",
+         "then scripts/2_build_data/3_repair_property_rates.R")
   burden <- fread(.burden_path)
   burden <- merge_check(burden[, .(municipality_id = muni_id, year,
                                    muni_eff_rate, sd_eff_rate, county_eff_rate)],
