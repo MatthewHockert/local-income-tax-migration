@@ -18,8 +18,9 @@ import warnings
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(PROJECT_DIR, "data")
+# repo root is two folders up (scripts/1_get_data/<this file>)
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_DIR = os.path.join(ROOT, "data", "raw")
 RAW_DIR = os.path.join(DATA_DIR, "pa_afr_raw")
 os.makedirs(RAW_DIR, exist_ok=True)
 

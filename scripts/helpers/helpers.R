@@ -1,4 +1,4 @@
-# _helpers.R
+# helpers/helpers.R
 # Shared modeling machinery for the consolidated stage scripts (01-06).
 # Sourced at the top of every stage script. Contains:
 #   - path constants (RAW_DIR / DERIVED_DIR / RESULTS_DIR / FIG_DIR)
@@ -16,10 +16,7 @@ suppressMessages({
 })
 
 # Config and paths ----
-.cfg_args <- commandArgs(trailingOnly = FALSE)
-.cfg_fa   <- grep("^--file=", .cfg_args, value = TRUE)
-.cfg_dir  <- if (length(.cfg_fa)) dirname(normalizePath(sub("^--file=", "", .cfg_fa[1]))) else getwd()
-source(file.path(.cfg_dir, "config.R"))
+source(here::here("scripts", "helpers", "config.R"))
 # RAW_DIR / DERIVED_DIR / RESULTS_DIR come from config.R (single source).
 FIG_DIR <- OUT_DIR
 
@@ -181,9 +178,9 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   #   scrape_pa_dced_county_tax.py -> build_pde_sd_millage.py ->
   #   multitax_gapfill_sd.py -> multitax_effective_rate.py
   # vendored here as data/multitax/pa_property_burden_panel.csv (regenerate via those).
-  # Prefer the assessment-basis-repaired panel when 01_data_prep.R has built it
+  # Prefer the assessment-basis-repaired panel when 2_build_data/1_build_panels.R has built it
   # (RUN_PROPERTY_REBASE). Falls back to the raw panel so the pipeline still
-  # runs on a fresh checkout. See the repair block in 01_data_prep.R for why.
+  # runs on a fresh checkout. See the repair block in 2_build_data/1_build_panels.R for why.
   .burden_fixed <- file.path(RAW_DIR, "multitax", "pa_property_burden_panel_repaired.csv")
   .burden_raw   <- file.path(RAW_DIR, "multitax", "pa_property_burden_panel.csv")
   .burden_path  <- if (file.exists(.burden_fixed)) .burden_fixed else .burden_raw
@@ -434,7 +431,7 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
     # municipality-specific constant, and stack_muni FE absorb constants, so
     # every coefficient and standard error is identical either way. Verified
     # coefficient by coefficient, controls included, in RUN_LEVELS_COMPARE
-    # (02_main_models.R -> data/results/levels_vs_changes.csv): max absolute
+    # (3_models/1_main_models.R -> data/results/levels_vs_changes.csv): max absolute
     # difference 0.0000 across both specifications and all four outcomes.
     #
     # We pass the LEVEL so the code matches how the paper describes the

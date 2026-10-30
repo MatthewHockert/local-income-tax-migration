@@ -1,10 +1,10 @@
 #!/usr/bin/env Rscript
-# 02_main_models.R -- Main models stage (self-contained, flag-gated).
+# 3_models/1_main_models.R -- Main models stage (self-contained, flag-gated).
 #
 # Consolidates the former q3_unified_full_table.R (regression/output section),
 # q3_unified_pooled.R, and q3_unified_eit_revenue.R into one script. The shared
 # data prep (panel build + cell classification + muni stack) lives in
-# _helpers.R::build_headline_env(), extracted verbatim from the headline script.
+# helpers/helpers.R::build_headline_env(), extracted verbatim from the headline script.
 #
 # Sections (each gated by a RUN_* flag):
 #   1. Headline binding decomposition -- stacked continuous DiD, muni + SD
@@ -24,16 +24,14 @@
 #   eit_revenue_decomp.csv, eit_revenue_es.csv, eit_revenue_offset.csv,
 #   eit_revenue_split.csv
 #
-# Run from package root:  Rscript scripts/02_main_models.R
+# Run from package root:  Rscript scripts/3_models/1_main_models.R
 
 suppressMessages({
   library(data.table)
   library(fixest)
 })
 
-.a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-.dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
-source(file.path(.dir, "_helpers.R"))
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 
 setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
@@ -141,7 +139,7 @@ if (RUN_HEADLINE) local({
   # future change makes the headline drift from the current values (Table:
   # headline_muni_combined; Inc-bind row, muni resident rate). Values updated
   # 2026-07-30 for the assessment-basis-repaired property panel (see
-  # RUN_PROPERTY_REBASE in 01_data_prep.R). Lineage of this gate:
+  # RUN_PROPERTY_REBASE in 2_build_data/1_build_panels.R). Lineage of this gate:
   #   pre-property           log_LW=-0.573 log_IC=-0.412 log_TJ=-0.490 share=-0.058
   #   property, raw register log_LW=-0.437 log_IC=-0.317 log_TJ=-0.391 share=-0.054
   #   property, repaired     log_LW=-0.539 log_IC=-0.349 log_TJ=-0.428 share=-0.058
@@ -1217,7 +1215,7 @@ if (RUN_REVENUE_TRADEOFF) local({
     }), fill = TRUE)
   }
   # Gate 4 splits by COHORT, keeping every never-changer in both periods, which
-  # is how RUN_ACT32 in 04_robustness.R does it. Splitting on calendar year
+  # is how RUN_ACT32 in 3_models/3_robustness.R does it. Splitting on calendar year
   # instead truncates each stack's own pre-period and destroys the within-stack
   # comparison, which produced sign flips on a first pass.
   gates <- rbindlist(list(

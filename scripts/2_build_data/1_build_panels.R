@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
-# 01_data_prep.R -- build the analysis panels from LOCAL inputs (no network*).
+# 2_build_data/1_build_panels.R -- build the analysis panels from LOCAL inputs (no network*).
 #
 # Inputs (data/raw/):
-#   pa_dced_raw/pa_taxes_YYYY.xls   DCED tax-register XLS (from 00_scrape.R)
-#   pa_sd_finance_raw.csv           Census F-33 SD finances (from 00_scrape.R)
-#   pa_afr_panel.csv                DCED muni AFR panel (from 00_scrape.R)
-#   lodes_block/*.rds               PA block-level LODES (from 00_scrape.R)
+#   pa_dced_raw/pa_taxes_YYYY.xls   DCED tax-register XLS (1_get_data/scrape_pa_dced_eit.py)
+#   pa_sd_finance_raw.csv           Census F-33 SD finances (1_get_data/scrape_nces_sd_finance.py)
+#   pa_afr_panel.csv                DCED muni AFR panel (1_get_data/scrape_pa_dced_afr.py)
+#   lodes_block/*.rds               PA block-level LODES (1_get_data/download_lodes.R)
 #   pa_eit_rate_panel.csv           rewritten in place by the DCED reparse section
 #
 # Outputs (data/derived/):
@@ -15,7 +15,7 @@
 #
 # *The cousub-panels section falls back to tigris (cached) only for PA
 #  geometry not already on disk (pa_cousub.rds is vendored in data/derived/).
-# Run from package root:  Rscript scripts/01_data_prep.R
+# Run from package root:  Rscript scripts/2_build_data/1_build_panels.R
 
 suppressMessages({
   library(sf)
@@ -28,9 +28,7 @@ suppressMessages({
   library(tigris)
 })
 
-.a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-.dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
-source(file.path(.dir, "_helpers.R"))
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 
 # Flags ----
 RUN_DCED_REPARSE  <- TRUE  # DCED XLS -> pa_eit_rate_panel.csv, keeping SD id/name
@@ -352,7 +350,7 @@ if (RUN_COUSUB_PANELS) local({
   ## Pennsylvania rate panel ----
   # Source: DCED MunStats via scrape_pa_dced_eit.py
   pa_eit_file <- file.path(RAW_DIR, "pa_eit_rate_panel.csv")
-  if (!file.exists(pa_eit_file)) stop("Run: python3 scrape_pa_dced_eit.py first")
+  if (!file.exists(pa_eit_file)) stop("Run: python3 scripts/1_get_data/scrape_pa_dced_eit.py first")
 
   pa_raw <- fread(pa_eit_file)
 

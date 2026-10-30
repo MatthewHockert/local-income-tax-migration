@@ -1,15 +1,15 @@
 #!/usr/bin/env Rscript
-# 05_figures.R -- Every figure and descriptive table-figure, inline and flag-gated.
+# 4_output/1_figures.R -- Every figure and descriptive table-figure, inline and flag-gated.
 # Consolidates: build_summary_stats.R, build_uea_aggregate_figures.R,
 #   build_dose_trajectory_inc_becomes.R, build_appendix_es_figures.R,
 #   build_extra_figures.R, build_acr_acrt_att_spline.R, build_feols_es_bycell.R,
 #   build_law_timeline.R.
 # Run AFTER 02+03 (several sections read their result CSVs). The headline
 # environment (panel + muni stack + controls) is built ONCE via
-# build_headline_env() from _helpers.R and shared by the sections that
+# build_headline_env() from helpers/helpers.R and shared by the sections that
 # previously sys.source()-d q3_unified_full_table.R.
 # Outputs -> figures/*.png, tables/summary_*.tex, data/results/*.csv mirrors.
-# Run from package root:  Rscript scripts/05_figures.R
+# Run from package root:  Rscript scripts/4_output/1_figures.R
 
 suppressMessages({
   library(dplyr)       # loaded before data.table so data.table's first/last/between win
@@ -23,9 +23,7 @@ suppressMessages({
   library(splines)
 })
 
-.a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-.dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
-source(file.path(.dir, "_helpers.R"))
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 
 # Flags ----
 RUN_SUMMARY_STATS        <- TRUE   # summary tables + rate ECDF/CDF + map + binding-levels figs
@@ -1203,7 +1201,7 @@ if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()
 
 
 # Revenue tradeoff figures (RUN_REVENUE_TRADEOFF_FIGS) ----
-# Reads what 02_main_models.R -> RUN_REVENUE_TRADEOFF wrote. Two figures:
+# Reads what 3_models/1_main_models.R -> RUN_REVENUE_TRADEOFF wrote. Two figures:
 #   1. ATT(d) for both outcomes side by side, per cell.
 #   2. How the revenue response and the tradeoff move with the rate already
 #      levied, with the mechanical benchmark 1/tau0 for reference.
@@ -1302,7 +1300,7 @@ if (RUN_REVENUE_TRADEOFF_FIGS) local({
 
 
 # Cohort-by-cohort ATT figure (RUN_COHORT_ATT_FIG) ----
-# Reads 04_robustness.R -> RUN_EVENT_BY_EVENT. One point per sub-experiment,
+# Reads 3_models/3_robustness.R -> RUN_EVENT_BY_EVENT. One point per sub-experiment,
 # ordered within cell, against the pooled headline. The Cengiz et al. (2019)
 # Appendix C figure: does the pooled average hide a mix of signs?
 if (RUN_COHORT_ATT_FIG) local({
@@ -1345,7 +1343,7 @@ if (RUN_COHORT_ATT_FIG) local({
 
 
 # Level-adjusted event-study figure (RUN_LEVEL_ADJUST_FIG) ----
-# Reads 04_robustness.R -> RUN_LEVEL_ADJUST. Realized-dose ES for the pooled,
+# Reads 3_models/3_robustness.R -> RUN_LEVEL_ADJUST. Realized-dose ES for the pooled,
 # Inc-bind and Inc-becomes groups on all four outcomes, drawn with and without
 # the baseline-rate trend adjustment (A1, + tau0:year) so the correction is
 # visible frame by frame rather than only in the aggregate coefficient.

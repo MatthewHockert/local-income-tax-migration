@@ -5,8 +5,8 @@
 library(lehdr)
 library(data.table)
 
-data_dir <- "data"
-lodes_dir <- file.path(data_dir, "lodes_block")
+source(here::here("scripts", "helpers", "config.R"))
+lodes_dir <- file.path(RAW_DIR, "lodes_block")
 dir.create(lodes_dir, showWarnings = FALSE)
 
 download_and_save <- function(state, lodes_type, segment, state_part = NULL,

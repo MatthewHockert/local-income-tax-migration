@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
-# 03_event_studies.R -- Event studies: realized-dose ES + pooled ES + pre-trend battery.
-# Consolidates (verbatim model code, shared data build via _helpers.R):
+# 3_models/2_event_studies.R -- Event studies: realized-dose ES + pooled ES + pre-trend battery.
+# Consolidates (verbatim model code, shared data build via helpers/helpers.R):
 #   q3_unified_headline_es.R       -> Headline realized-dose ES section
 #   q3_unified_pooled_es.R         -> Pooled realized-dose ES section
 #   q3_unified_pretrend_battery.R  -> Pre-trend battery section
@@ -14,23 +14,21 @@
 # trends: before the event, eventual-dose size should not predict outcomes.
 # Outputs -> data/results/: headline_es_coefs.csv, headline_es_att.csv,
 #   pooled_es_cousub_coefs.csv, pooled_es_cousub_att.csv, pretrend_battery.csv
-# Run from package root:  Rscript scripts/03_event_studies.R
+# Run from package root:  Rscript scripts/3_models/2_event_studies.R
 
 suppressMessages({
   library(data.table)
   library(fixest)
 })
 
-.a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-.dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
-source(file.path(.dir, "_helpers.R"))
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 
 setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
 # Flags ----
 RUN_HEADLINE_ES      <- TRUE
 RUN_POOLED_ES        <- TRUE
-# RUN_PRETREND_BATTERY moved to 04_robustness.R (2026-07-07)
+# RUN_PRETREND_BATTERY moved to 3_models/3_robustness.R (2026-07-07)
 
 # Shared setup ----
 env <- build_headline_env()
@@ -45,7 +43,7 @@ cell_levels <- c("NC", "Inc-bind", "Inc-becomes", "Inc-nobind",
 # Shared realized-dose stack ----
 # The pooled-ES section originally sys.source()d q3_unified_headline_es.R just
 # to reuse its stacked panel (`stk`) and controls; both sections now share this
-# one build. Realized dose comes from add_realized_dose() in _helpers.R (same
+# one build. Realized dose comes from add_realized_dose() in helpers/helpers.R (same
 # column name, `realized_dose_muni`, as the original inline block). Stack is on
 # muni cohorts, identical to the headline construction.
 if (RUN_HEADLINE_ES || RUN_POOLED_ES) {
@@ -249,7 +247,7 @@ if (RUN_POOLED_ES) local({
   print(rbind(r_muni_inc$att, r_muni_dec$att, fill = TRUE))
 })
 
-# (Pre-trend battery moved to 04_robustness.R on 2026-07-07 -- it is a
+# (Pre-trend battery moved to 3_models/3_robustness.R on 2026-07-07 -- it is a
 #  robustness test, and the user wants all robustness in one script.)
 
 if (requireNamespace("beepr", quietly = TRUE)) beepr::beep()

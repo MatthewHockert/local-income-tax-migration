@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# 04_robustness.R -- Every robustness / alternative-specification model,
+# 3_models/3_robustness.R -- Every robustness / alternative-specification model,
 # consolidated from the former standalone scripts:
 #   q3_unified_dcdh_robustness.R      -> RUN_DCDH_POOLED
 #   q3_unified_dcdh_bycell.R          -> RUN_DCDH_BYCELL
@@ -9,11 +9,11 @@
 #   pre-trend battery (moved in from stage 03, 2026-07-07)
 #
 # All sections share ONE headline environment (build_headline_env() in
-# _helpers.R): the cousub panel with binding-cell classification and the
+# helpers/helpers.R): the cousub panel with binding-cell classification and the
 # muni-side Cengiz stack -- identical to what q3_unified_full_table.R built.
 #
 # Outputs -> data/results/*.csv, figures/*.png, tables/act47_robustness.tex.
-# Run from package root:  Rscript scripts/04_robustness.R
+# Run from package root:  Rscript scripts/3_models/3_robustness.R
 
 suppressMessages({
   library(data.table)
@@ -23,9 +23,7 @@ suppressMessages({
 # DIDmultiplegtDYN is heavy to load; it is attached inside the sections that
 # need it (dCDH pooled / dCDH by cell / curvature Part B) rather than here.
 
-.a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-.dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
-source(file.path(.dir, "_helpers.R"))
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 
 setFixest_etable(signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1))
 
@@ -537,7 +535,7 @@ if (RUN_ACT47) local({
     s[is.na(dose_sd), dose_sd := 0]
     s[is.na(dose_nr), dose_nr := 0]
     # Take the regressor from the SAME source column build_stack() in
-    # _helpers.R uses, which is the resident rate level. Building it from
+    # helpers/helpers.R uses, which is the resident rate level. Building it from
     # dose_muni instead admitted 1,972 stacked rows where resident_eit is
     # missing but dose_muni is not, roughly 1,350 of them surviving listwise
     # deletion. The cells with real data barely moved, but Inc-nobind has 14
@@ -547,7 +545,7 @@ if (RUN_ACT47) local({
   }
 
   # Returns TWO tables per model: the Inc-bind summary row (concise CSV, as
-  # before) and the FULL coeftable + diagnostics, so 06_tables.R can build a
+  # before) and the FULL coeftable + diagnostics, so 4_output/2_tables.R can build a
   # main-results-format Act 47 table (all cells + controls + diagnostics).
   run_one <- function(stk, outcome) {
     f <- as.formula(paste0(outcome,
@@ -654,7 +652,7 @@ if (RUN_ACT47) local({
 #        violation (relative to the max pre-period deviation) is needed before
 #        the post-effect CI includes zero; bigger = more robust.
 # Per-model tests now come from pretrend_bucket() in
-# _helpers.R (extracted verbatim). robust_clean = passes the
+# helpers/helpers.R (extracted verbatim). robust_clean = passes the
 # few-clusters-robust frequentist tests (individual leads + linear slope);
 # the joint Wald is reported but does not drive the
 # verdict.

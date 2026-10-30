@@ -1,20 +1,18 @@
 #!/usr/bin/env Rscript
-# 06_tables.R -- Paper LaTeX tables, in-text-number reconciliation, and the
+# 4_output/2_tables.R -- Paper LaTeX tables, in-text-number reconciliation, and the
 # all-results Excel workbook, inline and flag-gated.
 # Consolidates: build_paper_tables.R, build_intext_numbers.R,
 #   build_results_workbook.R.
 # Run AFTER 02+03 so the result CSVs in data/results/ are current.
 # Outputs -> tables/*.tex, data/results/intext_numbers.csv, results/all_results.xlsx.
-# Run from package root:  Rscript scripts/06_tables.R
+# Run from package root:  Rscript scripts/4_output/2_tables.R
 
 suppressMessages({
   library(data.table)
   library(openxlsx)
 })
 
-.a <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-.dir <- if (length(.a)) dirname(normalizePath(sub("^--file=", "", .a[1]))) else getwd()
-source(file.path(.dir, "_helpers.R"))
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 
 # Flags ----
 RUN_PAPER_TABLES   <- TRUE    # all LaTeX table fragments -> tables/
@@ -36,7 +34,7 @@ RUN_WORKBOOK       <- FALSE  # PARKED 2026-10-29, not in the paper: all result C
 #
 # Each table reports coefficient (with sig stars) and SE (in parens below)
 # per cell-by-outcome cell, plus a per-column diagnostic block (N, R^2,
-# within R^2, dep mean, dep SD). Uses the formatting helpers in _helpers.R for
+# within R^2, dep mean, dep SD). Uses the formatting helpers in helpers/helpers.R for
 # the label map, formatters, and table builder.
 if (RUN_PAPER_TABLES) local({
   out_dir <- TABLE_DIR
@@ -448,7 +446,7 @@ if (RUN_PAPER_TABLES) local({
   )
 
   # Act 47 exclusion, main-results format: full coeftable on the sample that
-  # drops the Act 47 Inc-bind munis (built by 04_robustness.R).
+  # drops the Act 47 Inc-bind munis (built by 3_models/3_robustness.R).
   a47_path <- file.path(in_dir, "act47_full_table.csv")
   if (file.exists(a47_path)) {
     a47_diag <- unique(fread(a47_path)[, .(outcome, n, r2, wr2, dep_mean)])
@@ -1313,7 +1311,7 @@ if (RUN_INTEXT_NUMBERS) local({
 })
 
 
-# Flexible-dose ACR appendix table (from RUN_FLEX_DOSE in 02_main_models.R) ----
+# Flexible-dose ACR appendix table (from RUN_FLEX_DOSE in 3_models/1_main_models.R) ----
 local({
   p <- file.path(RESULTS_DIR, "flex_dose_acr.csv")
   if (!file.exists(p)) return(invisible())
@@ -1439,7 +1437,7 @@ if (RUN_WORKBOOK) local({
   idx <- rbindlist(idx_rows, fill = TRUE)
   addWorksheet(wb, "INDEX"); writeData(wb, "INDEX",
     data.table(workbook = "Do Local Taxes Cause Residential Sorting? -- paper results",
-               generated = "run scripts/06_tables.R (RUN_WORKBOOK) to refresh"))
+               generated = "run scripts/4_output/2_tables.R (RUN_WORKBOOK) to refresh"))
   writeData(wb, "INDEX", idx, startRow = 3, headerStyle = hdr)
   setColWidths(wb, "INDEX", cols = 1:5, widths = c(20, 8, 8, 38, 90))
   worksheetOrder(wb) <- c(length(names(wb)), seq_len(length(names(wb)) - 1L))  # INDEX first

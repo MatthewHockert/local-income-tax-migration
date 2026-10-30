@@ -30,12 +30,11 @@
 # rate variation can carry less weight than a single-municipality cohort whose
 # rate moved a lot.
 #
-# Run:  Rscript bacon_cont_decomp.R
+# Run:  Rscript scripts/parked/bacon_cont_decomp.R
 # Out:  data/results/bacon_cont_decomp_{weights,summary}.csv
 # ---------------------------------------------------------------------------
 
-source("config.R")
-source("_helpers.R")
+source(here::here("scripts", "helpers", "helpers.R"))  # paths, panel/stack builder, shared helpers
 suppressMessages(library(fixest))
 
 RUN_FWL_GATE   <- TRUE   # chunk 1: prove FWL reproduces feols before decomposing
