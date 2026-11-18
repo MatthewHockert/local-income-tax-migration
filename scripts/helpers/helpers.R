@@ -116,31 +116,33 @@ build_headline_env <- function(max_year = 2019, K_stack = 5L) {
   setnames(muni_xwalk, "muni_id", "municipality_id")
   afr[, afr_year := ifelse(!is.na(reporting_year), as.integer(reporting_year), as.integer(year))]
   fiscal <- afr[!is.na(cousub_fips), {
-    total_rev <- as.numeric(ifelse(!is.na(total_revenues), total_revenues, revenues))
+    total_rev <- as.numeric(ifelse(!is.na(total_revenues), total_revenues,
+                                   ifelse(!is.na(revenues), revenues, total_revenue)))  # total_revenue is the pre-2006 name
     total_exp <- as.numeric(total_expenditures)
     eit_revenue_amount <- as.numeric(ifelse(!is.na(earned_income_tax_revenues),
                                             earned_income_tax_revenues, earned_income_tax))
     re_tax_revenue <- as.numeric(ifelse(!is.na(real_estate_tax_revenues),
                                         real_estate_tax_revenues, real_estate_tax))
-    intergov_federal <- as.numeric(`intergovernmental_revenues-federal_government`)
+    intergov_federal <- as.numeric(ifelse(!is.na(`intergovernmental_revenues-federal_government`),
+                                          `intergovernmental_revenues-federal_government`, federal_govt))
     intergov_state   <- as.numeric(ifelse(!is.na(`intergovernmental_revenues-state_government`),
                                           `intergovernmental_revenues-state_government`, state_govt))
-    intergov_local   <- as.numeric(`intergovernmental_revenues-local_government`)
+    intergov_local   <- as.numeric(ifelse(!is.na(`intergovernmental_revenues-local_government`),
+                                          `intergovernmental_revenues-local_government`, local_govt))
     intergov <- rowSums(cbind(intergov_federal, intergov_state, intergov_local), na.rm = TRUE)
     intergov[is.na(intergov_federal) & is.na(intergov_state) & is.na(intergov_local)] <- NA_real_
     police_exp <- as.numeric(ifelse(!is.na(police_expenditures), police_expenditures, police))
     streets_exp <- as.numeric(ifelse(!is.na(`public_works-highways_and_streets_expenditures`),
                                       `public_works-highways_and_streets_expenditures`,
                                       streets_and_roads))
-    # debt service has no pre-2006 column, so this share is missing for 2002-2005,
-    # which is why the headline sample really starts in 2006
-    debt_service <- as.numeric(debt_service_expenditures)
+    debt_service_spending <- as.numeric(ifelse(!is.na(debt_service_expenditures),
+                                               debt_service_expenditures, debt_service))
     list(muni = cousub_fips, year = afr_year,
          # EIT revenue in dollars, only used by the parked revenue section
          eit_revenue     = eit_revenue_amount,
          share_police    = ifelse(total_exp > 0, police_exp   / total_exp, NA_real_),
          share_streets   = ifelse(total_exp > 0, streets_exp  / total_exp, NA_real_),
-         share_debt_svc  = ifelse(total_exp > 0, debt_service / total_exp, NA_real_),
+         share_debt_svc  = ifelse(total_exp > 0, debt_service_spending / total_exp, NA_real_),
          share_eit       = ifelse(total_rev > 0, eit_revenue_amount / total_rev, NA_real_),
          share_re        = ifelse(total_rev > 0, re_tax_revenue     / total_rev, NA_real_),
          share_intergov  = ifelse(total_rev > 0, intergov           / total_rev, NA_real_))
