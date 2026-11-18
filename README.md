@@ -55,7 +55,7 @@ Each model and output script is split into sections switched on by `RUN_*` flags
 `1_main_models.R` stops if the headline drifts. A good run prints
 
 ```
-[validation] headline Inc-bind matches spec: log_LW=-0.537 log_IC=-0.345 log_TJ=-0.423 share=-0.058
+[validation] headline Inc-bind matches spec: log_LW=-0.307 log_IC=-0.091 log_TJ=-0.184 share=-0.068
 ```
 
 ## Where each exhibit comes from

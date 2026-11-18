@@ -12,7 +12,7 @@ Notes on how the sample is built and how the data sources are joined. The README
 
 - Pennsylvania only, 2002 to 2019. `build_headline_env()` in `helpers.R` trims at load (`max_year = 2019`) to keep out the COVID years of LODES (2020 to 2021) and the ARPA years of the fiscal data (2020 to 2023).
 - There is no minimum-jobs filter. Older versions kept only towns with `total_jobs > 50`. The current code does not.
-- Models run on complete cases of the outcome, dose and controls. `share_debt_svc` and `share_intergov` come from AFR columns that start in 2006, so the headline sample is effectively 2006 to 2019.
+- Models run on complete cases of the outcome, dose and controls. The AFR renamed its columns in 2006, so `helpers.R` reads the new name and falls back to the old one (`total_revenue`, `federal_govt`, `state_govt`, `local_govt`, `debt_service`). With both, every control covers 2002 to 2019 and the shares line up across the 2005 to 2006 change.
 - A treated town gets a binding cell only if its nonresident rate is known the year before and the year of its first rate change. Without it the cell is missing and the town drops out of the cell regressions.
 - Rates above 5 pp (10 pp for the total) in the DCED register are Local Services Tax dollar amounts in the rate column. `1_build_panels.R` drops those lines.
 - Before 2012 many towns did not report their nonresident rate. A missing pre-2012 value takes the town's earliest post-2012 rate, and `nonres_imputed` flags it.

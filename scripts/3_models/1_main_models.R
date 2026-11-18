@@ -77,8 +77,8 @@ if (RUN_HEADLINE) local({
   # Stop if an Inc-bind number moves more than 0.005 away from the paper.
   # Only change these values when you mean to change the headline.
   inc_bind_rows <- filter(coefs, grepl("Inc-bind:dose_stack", term))
-  expected <- c(log_live_and_work = -0.537, log_in_commuters = -0.345,
-                log_total_jobs = -0.423, share_live_in = -0.058)
+  expected <- c(log_live_and_work = -0.307, log_in_commuters = -0.091,
+                log_total_jobs = -0.184, share_live_in = -0.068)
   for (outcome in names(expected)) {
     estimate <- inc_bind_rows$est[inc_bind_rows$outcome == outcome]
     if (length(estimate) != 1 || abs(estimate - expected[outcome]) > 0.005)
@@ -87,7 +87,7 @@ if (RUN_HEADLINE) local({
                    expected[outcome]))
   }
   print(paste("[validation] headline Inc-bind matches spec:",
-              "log_LW=-0.537 log_IC=-0.345 log_TJ=-0.423 share=-0.058"))
+              "log_LW=-0.307 log_IC=-0.091 log_TJ=-0.184 share=-0.068"))
 
   diagnostics <- bind_rows(lapply(names(models), function(outcome) {
     model <- models[[outcome]]

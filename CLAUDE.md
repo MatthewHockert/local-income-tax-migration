@@ -11,14 +11,14 @@ Continuous stacked difference-in-differences at the municipality (Census county 
 - Fixed effects `stack_muni + stack_year`. Clustering `~muni`. Controls: `share_police`, `share_streets`, `share_debt_svc`, `share_intergov`, and the muni, SD and county effective property-tax rates.
 - Pre-trends: realized-dose event study (each unit's cumulative change at +5 as a constant tag) plus the four-test battery in `3_robustness.R`.
 
-Current headline (`data/results/headline_full_table.csv`), log live-and-work per pp:
-Inc-bind -0.537 (0.141), Inc-becomes -0.250 (0.048), Inc-nobind -0.110 (0.151).
-Inc-bind event study: post -0.617, pre -0.116, joint Wald p = 0.053, linear pre-slope p = 0.47.
-Act 32 split, Inc-bind: pre-2012 -0.544 (0.201), post -0.531 (0.162).
+Current headline (`data/results/headline_full_table.csv`), 2002 to 2019, log live-and-work per pp:
+Inc-bind -0.307 (0.139), Inc-becomes -0.149 (0.065), Inc-nobind -0.232 (0.087).
+Inc-bind event study: post -0.333, pre -0.054, joint Wald p = 0.58. The pre-slope and Act 32 split have not been rerun on 2002 to 2019.
+The paper still reports the old 2006 to 2019 numbers (Inc-bind -0.537), which came from controls that were blank before 2006.
 
 ## Open issues (not yet fixed)
 
-- The headline sample is effectively 2006 to 2019: `share_debt_svc` and `share_intergov` come from post-2005 AFR columns, so complete cases drop 2002 to 2005.
+- On 2002 to 2019 the Inc-nobind placebo is significant (-0.232, 0.087). Splitting live-and-work by LODES industry puts it on goods-producing job loss. Services alone gives Inc-bind -0.341 with a null placebo. Mechanism (residents moving vs. local jobs) is unresolved.
 - The paper says Sun and Abraham (lines ~652 and ~931), but `sunab()` is not run anywhere.
 - Erie's rate above the cap is an Act 205 pension surcharge, not an EIT increase. 16 Act 47 municipalities (Pittsburgh, Altoona, Johnstown, ...) are not in the estimation panel at all, so the Act 47 exclusion removes fewer cities than its list suggests.
 - `1_build_panels.R` rewrites `data/raw/pa_eit_rate_panel.csv`, so raw is not strictly download-only.
